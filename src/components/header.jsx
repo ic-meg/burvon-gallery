@@ -1,5 +1,5 @@
-
 import { useState } from "react";
+//icons and logo
 import {
   IconSearch,
   IconUser,
@@ -7,66 +7,177 @@ import {
   IconBag,
   LogoImage,
   WhiteLogo,
+  BagWhite,
+  SearchWhite,
+  Hamburger,
 } from "../assets/index";
 
 const Header = () => {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
-    <header className="fixed top-0 left-0 w-full z-50 py-4 px-4 md:py-7 md:px-8  flex items-center justify-between">
-      {/* Left nav */}
-      <nav className="flex-1 flex justify-end items-center space-x-8 -mt-8 avant uppercase cream-text text-[1.26rem] tracking-[0.3em]">
-        <a href="#necklaces" className="hover:opacity-60">
-          Necklaces
-        </a>
-        <a href="#earrings" className="hover:opacity-60">
-          Earrings
-        </a>
-      </nav>
-
-      {/* Center logo */}
-      <div className="relative z-10 -top-7 bg-[#FFF7DC] w-[340px] md:w-[360px] h-[94px] clip-logo shadow-md flex items-center justify-center">
+    <>
+      {/* Mobile Header */}
+      <header className="xl:hidden fixed top-0 left-0 w-full z-50 h-[80px] px-4 py-4 flex items-center justify-between">
+        {/* Logo */}
         <img
-          src={LogoImage}
+          src={WhiteLogo}
           alt="BURVON Logo"
-          className="h-[173px] w-auto object-contain mt-4"
+          className="max-h-[80px] w-auto object-contain"
         />
-      </div>
 
-      {/* Right nav  */}
-      <div className="flex-1 flex justify-start items-center space-x-8">
-        <nav className="flex space-x-8 avant uppercase cream-text -mt-8 text-[1.26rem] tracking-[0.3em]">
-          <a href="#rings" className="hover:opacity-60">
-            Rings
+        {/*  White icons + Hamburger */}
+        <div className="flex items-center space-x-2">
+          <img
+            src={SearchWhite}
+            alt="Search"
+            className="w-6 h-6  cursor-pointer"
+          />
+
+          <img src={BagWhite} alt="Cart" className="w-6 h-6 cursor-pointer" />
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => setMenuOpen(!menuOpen)}
+            onKeyDown={(e) => e.key === "Enter" && setMenuOpen(!menuOpen)}
+            className="w-6 h-6 cursor-pointer"
+          >
+            <img src={Hamburger} alt="Menu" className="w-full h-full" />
+          </div>
+        </div>
+
+        {/* Slide Menu */}
+        <div
+          className={`fixed inset-0 z-40 cream-bg flex flex-col justify-between text-center transition-all duration-1300 ease-in-out transform ${
+            menuOpen
+              ? "translate-x-0 opacity-100"
+              : "-translate-x-full opacity-0 pointer-events-none"
+          }
+`}
+        >
+          {/* Profile icons */}
+          <div className="w-full flex justify-between items-center px-6 pt-6">
+            <img
+              src={IconUser}
+              alt="User"
+              className="w-6 h-6 hover:opacity-80 cursor-pointer"
+            />
+            <div
+              role="button"
+              tabIndex={0}
+              onClick={() => setMenuOpen(false)}
+              onKeyDown={(e) => e.key === "Enter" && setMenuOpen(false)}
+              className="text-4xl font-light text-black hover:opacity-70 cursor-pointer"
+              aria-label="Close menu"
+            >
+              &times;
+            </div>
+          </div>
+
+          {/* Nav Links */}
+          <div className="flex flex-col items-center justify-center space-y-6">
+            <a
+              href="#necklaces"
+              className="text-2xl bebas metallic-text tracking-[0.3em] hover:opacity-70"
+            >
+              Necklaces
+            </a>
+            <a
+              href="#earrings"
+              className="text-2xl bebas metallic-text tracking-[0.3em] hover:opacity-70"
+            >
+              Earrings
+            </a>
+            <a
+              href="#rings"
+              className="text-2xl bebas metallic-text tracking-[0.3em] hover:opacity-70"
+            >
+              Rings
+            </a>
+            <a
+              href="#bracelets"
+              className="text-2xl bebas metallic-text tracking-[0.3em] hover:opacity-70"
+            >
+              Bracelets
+            </a>
+          </div>
+
+          {/* Wishlist */}
+          <div className="w-full px-6 pb-6">
+            <div className="border-t border-[#c9c9c9] mb-4 opacity-35" />
+            <a
+              href="#wishlist"
+              className="flex items-center justify-between text-[1rem]"
+            >
+              <span className="metallic-text bebas text-lg">Wishlist</span>
+              <img
+                src={SearchWhite}
+                alt="Wishlist"
+                className="w-5 h-5 hover:opacity-80"
+              />
+            </a>
+          </div>
+        </div>
+      </header>
+
+      {/* Desktop Header */}
+      <header className="hidden xl:flex fixed top-0 left-0 w-full z-50 py-7 px-8 flex items-center justify-between">
+        {/* Left nav */}
+        <nav className="flex-1 flex justify-end items-center space-x-8 -mt-8 avant uppercase cream-text text-[1.26rem] tracking-[0.3em]">
+          <a href="#necklaces" className="hover:opacity-60">
+            Necklaces
           </a>
-          <a href="#bracelets" className="hover:opacity-60">
-            Bracelets
+          <a href="#earrings" className="hover:opacity-60">
+            Earrings
           </a>
         </nav>
 
-        {/* Icons */}
-        <div className="absolute  right-8 flex space-x-4 -mt-8 items-center">
+        {/* Center logo */}
+        <div className="relative z-10 -top-7 bg-[#FFF7DC] w-[340px] md:w-[360px] h-[94px] clip-logo shadow-md flex items-center justify-center">
           <img
-            src={IconSearch}
-            alt="Search"
-            className="w-6 h-6 hover:opacity-80 cursor-pointer cream-text"
-          />
-          <img
-            src={IconUser}
-            alt="User"
-            className="w-6 h-6 hover:opacity-80 cursor-pointer cream-text"
-          />
-          <img
-            src={IconHeart}
-            alt="Heart"
-            className="w-6 h-6 hover:opacity-80 cursor-pointer cream-text"
-          />
-          <img
-            src={IconBag}
-            alt="Cart"
-            className="w-6 h-6 hover:opacity-80 cursor-pointer cream-text"
+            src={LogoImage}
+            alt="BURVON Logo"
+            className="h-[173px] w-auto object-contain mt-4"
           />
         </div>
-      </div>
-    </header>
+
+        {/* Right nav */}
+        <div className="flex-1 flex justify-start items-center space-x-8">
+          <nav className="flex space-x-8 avant uppercase cream-text -mt-8 text-[1.26rem] tracking-[0.3em]">
+            <a href="#rings" className="hover:opacity-60">
+              Rings
+            </a>
+            <a href="#bracelets" className="hover:opacity-60">
+              Bracelets
+            </a>
+          </nav>
+
+          {/* Icons */}
+          <div className="absolute right-8 flex space-x-4 -mt-8 items-center">
+            <img
+              src={IconSearch}
+              alt="Search"
+              className="w-6 h-6 hover:opacity-80 cursor-pointer cream-text"
+            />
+            <img
+              src={IconUser}
+              alt="User"
+              className="w-6 h-6 hover:opacity-80 cursor-pointer cream-text"
+            />
+            <img
+              src={IconHeart}
+              alt="Heart"
+              className="w-6 h-6 hover:opacity-80 cursor-pointer cream-text"
+            />
+            <img
+              src={IconBag}
+              alt="Cart"
+              className="w-6 h-6 hover:opacity-80 cursor-pointer cream-text"
+            />
+          </div>
+        </div>
+      </header>
+    </>
   );
 };
 
