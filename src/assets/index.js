@@ -1,10 +1,26 @@
+// assets/index.js
+
 // ICONS
-export { default as IconSearch } from '../assets/icons/search.svg';
-export { default as IconUser } from '../assets/icons/profile.svg';
-export { default as IconHeart } from '../assets/icons/heart.svg';
-export { default as IconBag } from '../assets/icons/cart.svg';
+import IconSearch from './icons/search.svg';
+import IconUser from './icons/profile.svg';
+import IconHeart from './icons/heart.svg';
+import IconBag from './icons/cart.svg';
+import SearchWhite from './icons/search-white.svg';
+import BagWhite from './icons/bag-white.svg';
+import Hamburger from './icons/menu.svg';
 
 // IMAGES
-export { default as LogoImage } from './logo/black_brv.png';
-export {default as WhiteLogo } from './logo/white_brv.png';
+import LogoImage from './logo/black_brv.png';
+import WhiteLogo from './logo/white_brv.png';
 
+export {
+  IconSearch,
+  IconUser,
+  IconHeart,
+  IconBag,
+  LogoImage,
+  WhiteLogo,
+  SearchWhite,
+  BagWhite,
+  Hamburger, 
+};
