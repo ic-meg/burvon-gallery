@@ -1,0 +1,49 @@
+:root {
+  --cream: #FFF7DC;
+  --metallic: #1F1F21; 
+}
+
+.cream-text {
+  color: var(--cream);
+}
+
+.cream-bg {
+  background-color: var(--cream);
+}
+
+.metallic-bg {
+  background-color: var(--metallic);
+}
+
+.metallic-text {
+  color: var(--metallic);
+}
+
+.clip-logo {
+  clip-path: polygon(0 0, 100% 0, 85% 100%, 15% 100%);
+}
+
+@font-face {
+  font-family: 'Bebas Neue';
+  src: url('/fonts/Bebas_Neue/BebasNeue-Regular.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Avant Garde';
+  src: url('/fonts/avant/AvantGardeBookBT.ttf') format('truetype');
+}
+
+.bebas {
+  font-family: 'Bebas Neue', sans-serif;
+}
+
+.avant {
+  font-family: 'Avant Garde', sans-serif;
+}
+a {
+  @apply text-[#FFF7DC] no-underline;
+}
+
+a:hover {
+  @apply text-[#FFF7DC];
+}
