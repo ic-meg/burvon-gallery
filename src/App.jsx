@@ -1,14 +1,13 @@
-import { useState } from "react";
-import "./App.css";
-import Header from "./components/header";
-
+import Template from './pages/Template'
+import { BrowserRouter as Router } from "react-router-dom";
 
 function App() {
   return (
-    <div className="mettalic-bg">
-    <Header />
-
-    </div>
+    <Router>
+      <div className="flex flex-col min-h-screen">
+      <Template />
+      </div>
+    </Router>
   );
 }
 
