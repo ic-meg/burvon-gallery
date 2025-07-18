@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
 //icons and logo
 import {
   IconSearch,
@@ -10,15 +11,53 @@ import {
   BagWhite,
   SearchWhite,
   Hamburger,
+  Heart,
+  User,
 } from "../assets/index";
+import SearchOverlay from "./SearchOverlay";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? "hidden" : "auto";
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [menuOpen]);
+
+  useEffect(() => {
+    if (menuOpen) {
+      document.body.classList.add("menu-open");
+    } else {
+      document.body.classList.remove("menu-open");
+    }
+
+    return () => document.body.classList.remove("menu-open");
+  }, [menuOpen]);
 
   return (
     <>
       {/* Mobile Header */}
-      <header className="xl:hidden fixed top-0 left-0 w-full z-50 h-[80px] px-4 py-4 flex items-center justify-between">
+      <header
+        className={`lg:hidden fixed top-0 left-0 w-full z-50 h-[80px] px-4 py-4 flex items-center justify-between transition-all duration-300 ${
+          isScrolled && !menuOpen
+            ? "bg-[#1e1e1e]/60 backdrop-blur-sm shadow-md"
+            : ""
+        }`}
+      >
         {/* Logo */}
         <img
           src={WhiteLogo}
@@ -27,11 +66,18 @@ const Header = () => {
         />
 
         {/*  White icons + Hamburger */}
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-3">
           <img
             src={SearchWhite}
             alt="Search"
-            className="w-6 h-6  cursor-pointer"
+            className="w-6 h-6 cursor-pointer"
+            onClick={() => setSearchOpen(true)}
+          />
+
+          {/* Show overlay */}
+          <SearchOverlay
+            isOpen={searchOpen}
+            onClose={() => setSearchOpen(false)}
           />
 
           <img src={BagWhite} alt="Cart" className="w-6 h-6 cursor-pointer" />
@@ -52,13 +98,12 @@ const Header = () => {
             menuOpen
               ? "translate-x-0 opacity-100"
               : "-translate-x-full opacity-0 pointer-events-none"
-          }
-`}
+          } mobile-menu-slide`}
         >
           {/* Profile icons */}
           <div className="w-full flex justify-between items-center px-6 pt-6">
             <img
-              src={IconUser}
+              src={User}
               alt="User"
               className="w-6 h-6 hover:opacity-80 cursor-pointer"
             />
@@ -76,30 +121,27 @@ const Header = () => {
 
           {/* Nav Links */}
           <div className="flex flex-col items-center justify-center space-y-6">
-            <a
-              href="#necklaces"
-              className="text-2xl bebas metallic-text tracking-[0.3em] hover:opacity-70"
-            >
-              Necklaces
-            </a>
-            <a
-              href="#earrings"
-              className="text-2xl bebas metallic-text tracking-[0.3em] hover:opacity-70"
-            >
-              Earrings
-            </a>
-            <a
-              href="#rings"
-              className="text-2xl bebas metallic-text tracking-[0.3em] hover:opacity-70"
-            >
-              Rings
-            </a>
-            <a
-              href="#bracelets"
-              className="text-2xl bebas metallic-text tracking-[0.3em] hover:opacity-70"
-            >
-              Bracelets
-            </a>
+            {[
+              { label: "Necklaces", href: "#necklaces" },
+              { label: "Earrings", href: "#earrings" },
+              { label: "Rings", href: "#rings" },
+              { label: "Bracelets", href: "#bracelets" },
+            ].map(({ label, href }) => (
+              <div
+                key={label}
+                role="link"
+                tabIndex={0}
+                onClick={() => (window.location.href = href)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    window.location.href = href;
+                  }
+                }}
+                className="text-2xl bebas metallic-text tracking-[0.3em] hover:opacity-70 cursor-pointer"
+              >
+                {label}
+              </div>
+            ))}
           </div>
 
           {/* Wishlist */}
@@ -111,7 +153,7 @@ const Header = () => {
             >
               <span className="metallic-text bebas text-lg">Wishlist</span>
               <img
-                src={SearchWhite}
+                src={Heart}
                 alt="Wishlist"
                 className="w-5 h-5 hover:opacity-80"
               />
@@ -121,7 +163,11 @@ const Header = () => {
       </header>
 
       {/* Desktop Header */}
-      <header className="hidden xl:flex fixed top-0 left-0 w-full z-50 py-7 px-8 flex items-center justify-between">
+      <header
+        className={`hidden lg:flex fixed top-0 left-0 w-full  z-50 py-7 px-8 flex items-center justify-between transition-all duration-300 ${
+          isScrolled ? "bg-[#1e1e1e]/60 backdrop-blur-sm shadow-md" : ""
+        }`}
+      >
         {/* Left nav */}
         <nav className="flex-1 flex justify-end items-center space-x-8 -mt-8 avant uppercase cream-text text-[1.26rem] tracking-[0.3em]">
           <a href="#necklaces" className="hover:opacity-60">
@@ -157,7 +203,14 @@ const Header = () => {
             <img
               src={IconSearch}
               alt="Search"
-              className="w-6 h-6 hover:opacity-80 cursor-pointer cream-text"
+              className="w-6 h-6 cursor-pointer"
+              onClick={() => setSearchOpen(true)}
+            />
+
+            {/* Show overlay */}
+            <SearchOverlay
+              isOpen={searchOpen}
+              onClose={() => setSearchOpen(false)}
             />
             <img
               src={IconUser}
