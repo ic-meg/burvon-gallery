@@ -15,6 +15,10 @@ import FacebookIcon from './icons/facebook.png';
 import TikTokIcon from './icons/tiktok.png';
 import InstagramIcon from './icons/instagram.png';
 import EmailIcon from './icons/email.png';
+import XIcon from './icons/X.png';
+import XWhite from './icons/x-white.png';
+import SentIcon from './icons/send.png';
+
 
 // IMAGES
 import LogoImage from './logo/black_brv.png';
@@ -36,6 +40,9 @@ export {
   FacebookIcon,
   TikTokIcon,
   InstagramIcon,
-  EmailIcon
+  EmailIcon,
+  XIcon,
+  XWhite,
+  SentIcon
 };
 
