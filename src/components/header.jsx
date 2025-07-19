@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 //icons and logo
 import {
@@ -21,6 +22,7 @@ const Header = () => {
   const [searchOpen, setSearchOpen] = useState(false);
 
   const [isScrolled, setIsScrolled] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -106,6 +108,7 @@ const Header = () => {
               src={User}
               alt="User"
               className="w-6 h-6 hover:opacity-80 cursor-pointer"
+              onClick={() => navigate('/login')}
             />
             <div
               role="button"
@@ -216,6 +219,7 @@ const Header = () => {
               src={IconUser}
               alt="User"
               className="w-6 h-6 hover:opacity-80 cursor-pointer cream-text"
+              onClick={() => navigate('/login')}
             />
             <img
               src={IconHeart}
