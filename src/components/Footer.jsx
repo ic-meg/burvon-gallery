@@ -15,7 +15,7 @@ const Footer = () => {
   return (
     <footer
       id="footer"
-      className="w-screen cream-bg metallic-text px-0 py-12 border-t border-black pt-4 md:pt-25 pb-5 md"
+      className="w- cream-bg metallic-text px-0 py-12 border-t border-black pt-4 md:pt-25 pb-5 md"
     >
       <div className="px-6 md:px-16">
         {/* Mobile Layout */}
