@@ -1,12 +1,15 @@
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Homepage from './pages/main/Homepage'
+import Login from './pages/main/Login/Login'
 import Template from './pages/Template'
-import { BrowserRouter as Router } from "react-router-dom";
-
 function App() {
   return (
     <Router>
-      <div className="flex flex-col min-h-screen">
-      <Template />
-      </div>
+      <Routes>
+        <Route path="/" element={<Homepage />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/template" element={<Template />} />
+      </Routes>
     </Router>
   );
 }

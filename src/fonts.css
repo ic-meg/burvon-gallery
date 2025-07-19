@@ -47,3 +47,13 @@ a {
 a:hover {
   @apply text-[#FFF7DC];
 }
+
+body {
+  background-color: var(--metallic);
+  overflow-x: hidden;
+}
+
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
