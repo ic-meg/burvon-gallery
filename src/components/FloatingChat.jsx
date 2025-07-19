@@ -9,6 +9,7 @@ const FloatingChatButton = () => {
   const [overFooter, setOverFooter] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
+  const [searchOverlayOpen, setSearchOverlayOpen] = useState(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -36,14 +37,22 @@ const FloatingChatButton = () => {
     };
   }, []);
 
-    useEffect(() => {
+  useEffect(() => {
     const checkMenu = () => {
       setMenuOpen(document.body.classList.contains("menu-open"));
     };
 
-    checkMenu(); 
+    const checkSearchOverlay = () => {
+      setSearchOverlayOpen(document.body.classList.contains("search-overlay-open"));
+    };
 
-    const observer = new MutationObserver(checkMenu);
+    checkMenu(); 
+    checkSearchOverlay();
+
+    const observer = new MutationObserver(() => {
+      checkMenu();
+      checkSearchOverlay();
+    });
     observer.observe(document.body, {
       attributes: true,
       attributeFilter: ["class"],
@@ -56,14 +65,15 @@ const FloatingChatButton = () => {
     console.log("Over footer state:", overFooter);
   }, [overFooter]);
 
-  if (menuOpen) return null;
+  // Hide floating chat when menu or search overlay is open
+  if (menuOpen || searchOverlayOpen) return null;
 
   return (
     <>
       <div
         role="button"
         tabIndex={0}
-        className={`fixed bottom-6 right-6 z-[1000] w-16 h-16 rounded-full cursor-pointer border-2 border-[#FFF7DC] shadow-md flex items-center justify-center hover:scale-110 hover:shadow-xl transition-all duration-300 ease-in-out ${
+        className={`fixed bottom-6 right-6 z-[1000] w-16 h-16 md:w-20 md:h-20 rounded-full cursor-pointer border-2 border-[#FFF7DC] shadow-md flex items-center justify-center hover:scale-110 hover:shadow-xl transition-all duration-300 ease-in-out ${
           overFooter ? "bg-black" : "cream-bg"
         }`}
         style={{
@@ -75,16 +85,16 @@ const FloatingChatButton = () => {
         <img
           src={chatOpen ? (overFooter ? XWhite : XIcon) : (overFooter ? whiteIcon : blackIcon)}
           alt={chatOpen ? "Close Chat" : "Chat Icon"}
-          className={`w-8 h-8 object-contain transition-all duration-500 ease-out ${chatOpen ? 'scale-110' : 'scale-100'}`}
+          className={`w-8 h-8 md:w-10 md:h-10 object-contain transition-all duration-500 ease-out ${chatOpen ? 'scale-110' : 'scale-100'}`}
         />
       </div>
 
       {/* Fixed Chat Panel */}
       <div 
-        className={`fixed bottom-24 right-6 h-[700px] w-106 cream-bg shadow-2xl z-[2000] flex flex-col rounded-lg transition-all duration-800 ease-out md:bottom-24 md:right-6 md:h-[700px] md:w-106 md:rounded-lg md:shadow-2xl ${
+        className={`fixed bottom-28 right-6 h-[500px] w-96 cream-bg shadow-2xl z-[2000] flex flex-col rounded-lg transition-all duration-800 ease-out overflow-hidden md:bottom-28 md:right-6 md:h-[500px] md:w-96 md:rounded-lg md:shadow-2xl ${
           chatOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-full pointer-events-none'
         } ${
-          chatOpen ? 'md:top-auto md:left-auto md:right-6 md:bottom-24 md:h-[700px] md:w-106 md:rounded-lg md:shadow-2xl top-0 left-0 right-0 bottom-0 h-screen w-screen rounded-none shadow-none transition-all duration-800 ease-out' : 'transition-none md:transition-all md:duration-500 md:ease-out'
+          chatOpen ? 'md:top-auto md:left-auto md:right-6 md:bottom-28 md:h-[500px] md:w-96 md:rounded-lg md:shadow-2xl top-0 left-0 right-0 bottom-0 h-screen w-screen rounded-none shadow-none transition-all duration-800 ease-out' : 'transition-none md:transition-all md:duration-500 md:ease-out'
         }`}
         style={{
           filter: "drop-shadow(0 0 8px rgba(255, 255, 255, 0.5))",
@@ -114,7 +124,7 @@ const FloatingChatButton = () => {
           </div>
 
           {/* Chat Messages */}
-          <div className="flex-1 p-4 space-y-4 overflow-y-auto">
+          <div className="flex-1 p-4 space-y-4 overflow-hidden">
             {/* Welcome Message */}
             <div className="flex justify-start">
               <div className="bg-[#4A4C46] rounded-2xl px-4 py-3 max-w-[80%]">
@@ -138,7 +148,7 @@ const FloatingChatButton = () => {
           </div>
 
           {/* Input Field */}
-          <div className="p-4">
+          <div className="p-4 overflow-hidden">
             {/* Recommended Action Buttons */}
             <div className="flex gap-2 mb-3">
               <button className="bg-[#4A4C46] text-white px-4 py-2 rounded-full text-xs avant whitespace-nowrap hover:bg-gray-700 transition-colors">
