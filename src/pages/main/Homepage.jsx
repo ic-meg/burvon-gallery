@@ -1,13 +1,11 @@
 import React from 'react'
-import Layout from '../../components/Layout'
+import Layout from '../../components/Layout' // Layout is where it calls the header, footer, and chat 
 
 const Homepage = () => {
   return (
-    <Layout>
+    <Layout> 
       {/* 
         START YOUR HOMEPAGE CONTENT HERE
-        
-  
       */}
        {/* pag gumana yung text-purple-500, means nagana yung tailwind css  */}
       <h1 className='text-purple-500'>Homepage</h1>
