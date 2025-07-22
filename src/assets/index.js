@@ -20,10 +20,13 @@ import XWhite from './icons/x-white.png';
 import SentIcon from './icons/send.png';
 
 
+
 // IMAGES
 import LogoImage from './logo/black_brv.png';
 import WhiteLogo from './logo/white_brv.png';
 
+
+{/* once, import lagay yung name sa export, then call it in the component */}
 export {
   IconSearch,
   IconUser,
