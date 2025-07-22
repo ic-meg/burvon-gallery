@@ -1,12 +1,35 @@
-# React + Vite
+# Burvon Jewelry Gallery
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**An Interactive 3D Virtual Jewelry Shopping Website with Try-On Features.**  
+This platform includes 3D product displays, a virtual try-on feature, wishlist, and e-commerce checkout.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+##  Tech Stack
 
-## Expanding the ESLint configuration
+- React + Vite
+- Tailwind CSS
+- Three.js (for 3D display)
+- Jeeliz / MediaPipe (for virtual try-on)
+- PHP Laravel (backend API)
+- MySQL (database)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+##  Getting Started
+
+### 1. Clone the Repository
+
+#### GitHub Desktop (Recommended for collaborators)
+1. Open GitHub Desktop.
+2. Go to `File > Clone Repository`.
+3. Select `burvon-gallery` from the list (must be added as collaborator).
+4. Choose a folder and click **Clone**.
+5. After cloning, open in **VS Code**.
+
+
+## Getting Started
+
+1. Clone the repository
+2. Run `npm install` or `npm i` to install dependencies
+3. Run `npm run dev` to start the Vite dev server
