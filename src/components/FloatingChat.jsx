@@ -150,13 +150,14 @@ const FloatingChatButton = () => {
           {/* Input Field */}
           <div className="p-4 overflow-hidden">
             {/* Recommended Action Buttons */}
-            <div className="flex gap-2 mb-3">
-              <button className="bg-[#4A4C46] text-white px-4 py-2 rounded-full text-xs avant whitespace-nowrap hover:bg-gray-700 transition-colors">
+            <div className="flex gap-2 mb-3 -mx-4 px-4 py-1 overflow-x-auto scrollbar-hide md:overflow-x-visible md:scrollbar-default" style={{ WebkitOverflowScrolling: 'touch' }}>
+              <button className="bg-[#4A4C46] text-white px-4 py-2 rounded-full text-xs avant whitespace-nowrap hover:bg-gray-700 transition-colors flex-shrink-0">
                 Chat with Live Agent
               </button>
-              <button className="bg-[#4A4C46] text-white px-4 py-2 rounded-full text-xs avant whitespace-nowrap hover:bg-gray-700 transition-colors">
+              <button className="bg-[#4A4C46] text-white px-4 py-2 rounded-full text-xs avant whitespace-nowrap hover:bg-gray-700 transition-colors flex-shrink-0">
                 Check Order Status
               </button>
+             
             </div>
             <div className="relative">
               <input
