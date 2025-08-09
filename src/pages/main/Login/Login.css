@@ -1,0 +1,18 @@
+.avant {
+  font-family: 'AvantGarde Bk BT', sans-serif;
+}
+
+input::placeholder {
+  color: #FFF7DC !important;
+  font-family: 'AvantGarde Bk BT', sans-serif;
+}
+
+.custom-btn-bg {
+  background-color: #FFF7DC !important;
+  color: black !important;
+  font-size: 17px;
+}
+
+.veri-gray {
+  background-color: #1F1F21 !important;
+}
