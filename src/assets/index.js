@@ -18,12 +18,16 @@ import EmailIcon from './icons/email.png';
 import XIcon from './icons/X.png';
 import XWhite from './icons/x-white.png';
 import SentIcon from './icons/send.png';
+import googleLoginIcon from './icons/googleLoginIcon.png';
+
 
 
 
 // IMAGES
 import LogoImage from './logo/black_brv.png';
 import WhiteLogo from './logo/white_brv.png';
+import loginBG from './images/loginBG.png';
+import loginVector from './images/loginVector.png';
 
 
 {/* once, import lagay yung name sa export, then call it in the component */}
@@ -46,6 +50,9 @@ export {
   EmailIcon,
   XIcon,
   XWhite,
-  SentIcon
+  SentIcon,
+  googleLoginIcon,
+  loginBG,
+  loginVector
 };
 
