@@ -3,7 +3,7 @@ import Layout from '../../components/Layout' // Layout is where it calls the hea
 
 const Homepage = () => {
   return (
-    <Layout> 
+    <Layout full> 
       {/* 
         START YOUR HOMEPAGE CONTENT HERE
       */}
