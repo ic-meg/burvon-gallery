@@ -19,7 +19,7 @@ const JewelryCare = () => {
         className="relative w-full bg-cover bg-center"
         style={{
           backgroundImage: `url(${jewelrycareBG})`,
-          minHeight: '750px', 
+          minHeight: '801px', 
           marginTop: '96px',
           
         }}
@@ -106,7 +106,7 @@ const JewelryCare = () => {
           style={{
             backgroundColor: 'rgba(126,123,123,0.22)', 
             marginRight: '16px',
-            minWidth: '780px',
+            minWidth: '820px',
             maxWidth: '760px',
             height: '800px',
             display: 'flex',
@@ -160,9 +160,9 @@ const JewelryCare = () => {
         <div
           className="flex-1 flex flex-col items-center justify-center px-0 py-16"
           style={{
-            marginLeft: '16px',
-            minWidth: '780px',
-            maxWidth: '760px',
+            
+            minWidth: '500px',
+            
             height: '800px',
             display: 'flex',
             flexDirection: 'column',
