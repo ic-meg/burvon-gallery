@@ -98,13 +98,16 @@ const FAQs = () => {
           <div
             className="w-1/2 bg-cover bg-center"
             style={{
-              backgroundImage: `url(${faqsBG})`, 
-              height: 'calc(190vh - 590px)',
+              backgroundImage: `url(${faqsBG})`,
+              height: '100%', // Responsive height
+              minHeight: '960px', // Ensures a minimum height for large screens
+              maxHeight: '100vh', // Prevents overflow on very large screens
+              objectFit: 'cover', // Ensures the image covers the area
             }}
           ></div>
 
           {/* right content */}
-          <div className="w-1/2 text-[#FFF7DC] px-8 py-12">
+          <div className="w-1/2 text-[#FFF7DC] px-8 py-25">
             <div className="max-w-4xl mx-auto text-center">
               <h1 className="faq-title bebas">
                 REBELS' FAQS
