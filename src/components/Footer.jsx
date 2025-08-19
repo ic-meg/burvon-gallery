@@ -7,11 +7,12 @@ import {
 } from "../assets/index";
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Footer = () => {
   const [aboutUsOpen, setAboutUsOpen] = useState(false);
   const [customerCareOpen, setCustomerCareOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <footer
@@ -28,8 +29,12 @@ const Footer = () => {
               alt="BURVON Logo"
               className="h-28 -mb-3 -ml-2"
             />
-            <h2 className="font-medium mb-1 avant text-lg text-black">Stay updated</h2>
-            <p className="text-gray-500 text-sm mb-6 avant">Be first to hear about new designs.</p>
+            <h2 className="font-medium mb-1 avant text-lg text-black">
+              Stay updated
+            </h2>
+            <p className="text-gray-500 text-sm mb-6 avant">
+              Be first to hear about new designs.
+            </p>
             <div className="flex gap-2 max-w-xs">
               <input
                 type="email"
@@ -47,13 +52,15 @@ const Footer = () => {
 
           {/* About Us - Collapsible */}
           <div className="border-b border-gray-300 pb-4">
-            <div 
+            <div
               className="flex justify-between items-center cursor-pointer"
               onClick={() => setAboutUsOpen(!aboutUsOpen)}
             >
-              <h2 className="tracking-widest bebas metallic-text text-base font-normal">ABOUT US</h2>
+              <h2 className="tracking-widest bebas metallic-text text-base font-normal">
+                ABOUT US
+              </h2>
               <span className="text-black text-xl font-light transition-transform duration-200">
-                {aboutUsOpen ? '−' : '+'}
+                {aboutUsOpen ? "−" : "+"}
               </span>
             </div>
             {aboutUsOpen && (
@@ -104,26 +111,34 @@ const Footer = () => {
             )}
           </div>
 
-          {/* Customer Care - Collapsible */}
+          {/* Customer Care - Collapsibleeee */}
           <div className="border-b border-gray-300 py-4">
-            <div 
+            <div
               className="flex justify-between items-center cursor-pointer"
               onClick={() => setCustomerCareOpen(!customerCareOpen)}
             >
-              <h2 className="tracking-widest bebas metallic-text text-base font-normal">CUSTOMER CARE</h2>
+              <h2 className="tracking-widest bebas metallic-text text-base font-normal">
+                CUSTOMER CARE
+              </h2>
               <span className="text-black text-xl font-light transition-transform duration-200">
-                {customerCareOpen ? '−' : '+'}
+                {customerCareOpen ? "−" : "+"}
               </span>
             </div>
             {customerCareOpen && (
               <ul className="space-y-1 text-sm mt-4">
                 <li>
-                  <Link
-                    to="/customer-care/faqs"
+                  <div
+                    role="link"
+                    tabIndex={0}
                     className="metallic-text avant text-black hover:text-black cursor-pointer"
+                    onClick={() => navigate("/customer-care/faqs")}
+                    onKeyDown={(e) =>
+                      (e.key === "Enter" || e.key === " ") &&
+                      navigate("/customer-care/faqs")
+                    }
                   >
                     FAQs
-                  </Link>
+                  </div>
                 </li>
                 <li>
                   <Link
@@ -193,14 +208,14 @@ const Footer = () => {
             )}
           </div>
 
-          {/* Social Media Icons */}
+          {/* Social Media Iconsss */}
           <div className="flex justify-start space-x-4 py-8">
             <img src={FacebookIcon} alt="Facebook" className="h-5 w-5" />
             <img src={TikTokIcon} alt="TikTok" className="h-5 w-5" />
             <img src={InstagramIcon} alt="Instagram" className="h-5 w-5" />
           </div>
 
-          {/* Divider */}
+          {/* Dividerrr */}
           <div className="border-t border-gray-300 mt-2 mb-4"></div>
         </div>
 
@@ -279,20 +294,32 @@ const Footer = () => {
             </h2>
             <ul className="space-y-1 text-lg">
               <li>
-                <Link
-                  to="/customer-care/faqs"
-                  className="metallic-text avant text-black cursor-pointer"
+                <div
+                  role="link"
+                  tabIndex={0}
+                  className="metallic-text avant text-black hover:text-black cursor-pointer"
+                  onClick={() => navigate("/customer-care/faqs")}
+                  onKeyDown={(e) =>
+                    (e.key === "Enter" || e.key === " ") &&
+                    navigate("/customer-care/faqs")
+                  }
                 >
                   FAQs
-                </Link>
+                </div>
               </li>
               <li>
-                <Link
-                  to="/customer-care/jewelry-care"
+                <div
+                  role="link"
+                  tabIndex={0}
                   className="metallic-text avant text-black hover:text-black cursor-pointer"
+                  onClick={() => navigate("/customer-care/jewelry-care")}
+                  onKeyDown={(e) =>
+                    (e.key === "Enter" || e.key === " ") &&
+                    navigate("/customer-care/jewelry-care")
+                  }
                 >
                   Jewelry Care
-                </Link>
+                </div>
               </li>
               <li>
                 <div
@@ -370,7 +397,7 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Bottom Bar */}
+        {/* Bottom Barr */}
         <div className="avant text-center mt-2 md:mt-26 md:border-t md:border-black pt-1 md:pt-4 flex flex-row justify-center items-center gap-3 md:gap-12 text-sm md:text-lg text-gray-600 md:text-black">
           <p>Terms of use</p>
           <p>© 2025 Burvon</p>
