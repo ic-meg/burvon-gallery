@@ -28,6 +28,9 @@ import LogoImage from './logo/black_brv.png';
 import WhiteLogo from './logo/white_brv.png';
 import loginBG from './images/loginBG.png';
 import loginVector from './images/loginVector.png';
+import faqsBG from './images/faqsBG.png';
+import faqsVector from './images/faqsVector.png';
+import faqsBG1 from './images/faqsBG1.png';
 
 
 {/* once, import lagay yung name sa export, then call it in the component */}
@@ -53,6 +56,9 @@ export {
   SentIcon,
   googleLoginIcon,
   loginBG,
-  loginVector
+  loginVector,
+  faqsBG,
+  faqsVector,
+  faqsBG1
 };
 

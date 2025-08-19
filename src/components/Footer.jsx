@@ -7,6 +7,7 @@ import {
 } from "../assets/index";
 
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   const [aboutUsOpen, setAboutUsOpen] = useState(false);
@@ -116,29 +117,84 @@ const Footer = () => {
             </div>
             {customerCareOpen && (
               <ul className="space-y-1 text-sm mt-4">
-                {[
-                  "FAQs",
-                  "Jewelry Care",
-                  "Size Guide",
-                  "Shipping",
-                  "Track your Order",
-                  "Return Policy",
-                ].map((item) => (
-                  <li key={item}>
-                    <div
-                      role="link"
-                      tabIndex={0}
-                      className="metallic-text avant text-black hover:text-black cursor-pointer"
-                      onClick={() => console.log(`Navigate to ${item}`)}
-                      onKeyDown={(e) =>
-                        (e.key === "Enter" || e.key === " ") &&
-                        console.log(`Navigate to ${item}`)
-                      }
-                    >
-                      {item}
-                    </div>
-                  </li>
-                ))}
+                <li>
+                  <Link
+                    to="/customer-care/faqs"
+                    className="metallic-text avant text-black hover:text-black cursor-pointer"
+                  >
+                    FAQs
+                  </Link>
+                </li>
+                <li>
+                  <div
+                    role="link"
+                    tabIndex={0}
+                    className="metallic-text avant text-black hover:text-black cursor-pointer"
+                    onClick={() => console.log("Navigate to Jewelry Care")}
+                    onKeyDown={(e) =>
+                      (e.key === "Enter" || e.key === " ") &&
+                      console.log("Navigate to Jewelry Care")
+                    }
+                  >
+                    Jewelry Care
+                  </div>
+                </li>
+                <li>
+                  <div
+                    role="link"
+                    tabIndex={0}
+                    className="metallic-text avant text-black hover:text-black cursor-pointer"
+                    onClick={() => console.log("Navigate to Size Guide")}
+                    onKeyDown={(e) =>
+                      (e.key === "Enter" || e.key === " ") &&
+                      console.log("Navigate to Size Guide")
+                    }
+                  >
+                    Size Guide
+                  </div>
+                </li>
+                <li>
+                  <div
+                    role="link"
+                    tabIndex={0}
+                    className="metallic-text avant text-black hover:text-black cursor-pointer"
+                    onClick={() => console.log("Navigate to Shipping")}
+                    onKeyDown={(e) =>
+                      (e.key === "Enter" || e.key === " ") &&
+                      console.log("Navigate to Shipping")
+                    }
+                  >
+                    Shipping
+                  </div>
+                </li>
+                <li>
+                  <div
+                    role="link"
+                    tabIndex={0}
+                    className="metallic-text avant text-black hover:text-black cursor-pointer"
+                    onClick={() => console.log("Navigate to Track your Order")}
+                    onKeyDown={(e) =>
+                      (e.key === "Enter" || e.key === " ") &&
+                      console.log("Navigate to Track your Order")
+                    }
+                  >
+                    Track your Order
+                  </div>
+                </li>
+                <li>
+                  <div
+                    role="link"
+                    tabIndex={0}
+                    className="metallic-text avant text-black hover:text-black cursor-pointer"
+                    onClick={() => console.log("Navigate to Return Policy")}
+                    onKeyDown={(e) =>
+                      (e.key === "Enter" || e.key === " ") &&
+                      console.log("Navigate to Return Policy")
+                    }
+                  >
+                    Return Policy
+                  </div>
+                </li>
               </ul>
             )}
           </div>
@@ -228,29 +284,84 @@ const Footer = () => {
               CUSTOMER CARE
             </h2>
             <ul className="space-y-1 text-lg">
-              {[
-                "FAQs",
-                "Jewelry Care",
-                "Size Guide",
-                "Shipping",
-                "Track your Order",
-                "Return Policy",
-              ].map((item) => (
-                <li key={item}>
-                  <div
-                    role="link"
-                    tabIndex={0}
-                    className="metallic-text avant text-black hover:text-black cursor-pointer"
-                    onClick={() => console.log(`Navigate to ${item}`)}
-                    onKeyDown={(e) =>
-                      (e.key === "Enter" || e.key === " ") &&
-                      console.log(`Navigate to ${item}`)
-                    }
-                  >
-                    {item}
-                  </div>
-                </li>
-              ))}
+              <li>
+                <Link
+                  to="/customer-care/faqs"
+                  className="metallic-text avant text-black cursor-pointer"
+                >
+                  FAQs
+                </Link>
+              </li>
+              <li>
+                <div
+                  role="link"
+                  tabIndex={0}
+                  className="metallic-text avant text-black hover:text-black cursor-pointer"
+                  onClick={() => console.log("Navigate to Jewelry Care")}
+                  onKeyDown={(e) =>
+                    (e.key === "Enter" || e.key === " ") &&
+                    console.log("Navigate to Jewelry Care")
+                  }
+                >
+                  Jewelry Care
+                </div>
+              </li>
+              <li>
+                <div
+                  role="link"
+                  tabIndex={0}
+                  className="metallic-text avant text-black hover:text-black cursor-pointer"
+                  onClick={() => console.log("Navigate to Size Guide")}
+                  onKeyDown={(e) =>
+                    (e.key === "Enter" || e.key === " ") &&
+                    console.log("Navigate to Size Guide")
+                  }
+                >
+                  Size Guide
+                </div>
+              </li>
+              <li>
+                <div
+                  role="link"
+                  tabIndex={0}
+                  className="metallic-text avant text-black hover:text-black cursor-pointer"
+                  onClick={() => console.log("Navigate to Shipping")}
+                  onKeyDown={(e) =>
+                    (e.key === "Enter" || e.key === " ") &&
+                    console.log("Navigate to Shipping")
+                  }
+                >
+                  Shipping
+                </div>
+              </li>
+              <li>
+                <div
+                  role="link"
+                  tabIndex={0}
+                  className="metallic-text avant text-black hover:text-black cursor-pointer"
+                  onClick={() => console.log("Navigate to Track your Order")}
+                  onKeyDown={(e) =>
+                    (e.key === "Enter" || e.key === " ") &&
+                    console.log("Navigate to Track your Order")
+                  }
+                >
+                  Track your Order
+                </div>
+              </li>
+              <li>
+                <div
+                  role="link"
+                  tabIndex={0}
+                  className="metallic-text avant text-black hover:text-black cursor-pointer"
+                  onClick={() => console.log("Navigate to Return Policy")}
+                  onKeyDown={(e) =>
+                    (e.key === "Enter" || e.key === " ") &&
+                    console.log("Navigate to Return Policy")
+                  }
+                >
+                  Return Policy
+                </div>
+              </li>
             </ul>
           </div>
 
