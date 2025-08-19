@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './FAQs.css';
 import Header from '../../components/header';
-import Footer from '../../components/Footer'; // Import Footer component
+import Footer from '../../components/Footer'; 
 import faqsBG from '../../assets/images/faqsBG.png';
 import faqsBG1 from '../../assets/images/faqsBG1.png'; 
 import dropdownIcon from '../../assets/icons/dropdown.png';
