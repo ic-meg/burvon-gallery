@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import './FAQs.css';
-import Header from '../../components/header';
-import Footer from '../../components/Footer'; 
+
+import Layout from '../../components/Layout';
+
 import faqsBG from '../../assets/images/faqsBG.png';
 import faqsBG1 from '../../assets/images/faqsBG1.png'; 
 import dropdownIcon from '../../assets/icons/dropdown.png';
@@ -33,11 +34,9 @@ const FAQs = () => {
   ];
 
   return (
-    <>
+    <Layout full>
       {/* Mobile FAQs */}
       <div className="block md:hidden min-h-screen flex flex-col">
-        <Header />
-
         {/* model image */}
         <div
           className="w-full h-64 bg-cover bg-center mt-23.5"
@@ -84,15 +83,10 @@ const FAQs = () => {
             ))}
           </div>
         </div>
-
-        {/* Footer */}
-        <Footer />
       </div>
 
       {/* Desktop FAQs */}
       <div className="hidden md:flex flex-col min-h-screen">
-        <Header />
-
         <div className="flex flex-1 mt-23.5">
           {/* model image */}
           <div
@@ -143,11 +137,8 @@ const FAQs = () => {
             </div>
           </div>
         </div>
-
-        {/* Footer */}
-        <Footer />
       </div>
-    </>
+    </Layout>
   );
 };
 

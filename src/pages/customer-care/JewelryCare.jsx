@@ -1,7 +1,8 @@
 import React from 'react';
 import './JewelryCare.css';
-import Header from '../../components/header';
-import Footer from '../../components/Footer';
+
+import Layout from '../../components/Layout';
+
 import jewelrycareBG from '../../assets/images/jewelrycareBG.png';
 import gentleCleanseIcon from '../../assets/icons/gentle-cleanse.png';
 import rinseOffIcon from '../../assets/icons/rinse-off.png';
@@ -11,8 +12,9 @@ import xIcon from '../../assets/icons/x-dont.png';
 
 const JewelryCare = () => {
   return (
+
+    <Layout full>
     <div className="flex flex-col min-h-screen">
-      <Header />
 
       {/* model image */}
       <div
@@ -212,8 +214,9 @@ const JewelryCare = () => {
         </div>
       </div>
 
-      <Footer />
+     
     </div>
+    </Layout>
   );
 };
 
