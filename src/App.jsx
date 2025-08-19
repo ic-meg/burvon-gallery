@@ -5,6 +5,7 @@ import Login from './pages/main/Login/Login'
 import Template from './pages/Template'
 import Verification from './pages/main/Login/Verification';
 import FAQs from './pages/customer-care/FAQs';
+import JewelryCare from './pages/customer-care/JewelryCare';
 
 const App = () => {
   return (
@@ -16,6 +17,7 @@ const App = () => {
           <Route path="/template" element={<Template />} />
           <Route path="/verification" element={<Verification />} />
           <Route path="/customer-care/faqs" element={<FAQs />} />
+          <Route path="/customer-care/jewelry-care" element={<JewelryCare />} />
         </Routes>
       </div>
     </Router>

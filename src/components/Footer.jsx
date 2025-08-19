@@ -126,18 +126,12 @@ const Footer = () => {
                   </Link>
                 </li>
                 <li>
-                  <div
-                    role="link"
-                    tabIndex={0}
+                  <Link
+                    to="/customer-care/jewelry-care"
                     className="metallic-text avant text-black hover:text-black cursor-pointer"
-                    onClick={() => console.log("Navigate to Jewelry Care")}
-                    onKeyDown={(e) =>
-                      (e.key === "Enter" || e.key === " ") &&
-                      console.log("Navigate to Jewelry Care")
-                    }
                   >
                     Jewelry Care
-                  </div>
+                  </Link>
                 </li>
                 <li>
                   <div
@@ -293,18 +287,12 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <div
-                  role="link"
-                  tabIndex={0}
+                <Link
+                  to="/customer-care/jewelry-care"
                   className="metallic-text avant text-black hover:text-black cursor-pointer"
-                  onClick={() => console.log("Navigate to Jewelry Care")}
-                  onKeyDown={(e) =>
-                    (e.key === "Enter" || e.key === " ") &&
-                    console.log("Navigate to Jewelry Care")
-                  }
                 >
                   Jewelry Care
-                </div>
+                </Link>
               </li>
               <li>
                 <div

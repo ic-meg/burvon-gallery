@@ -19,9 +19,11 @@ import XIcon from './icons/X.png';
 import XWhite from './icons/x-white.png';
 import SentIcon from './icons/send.png';
 import googleLoginIcon from './icons/googleLoginIcon.png';
-
-
-
+import gentleCleanseIcon from './icons/gentle-cleanse.png';
+import rinseOffIcon from './icons/rinse-off.png';
+import dryAirIcon from './icons/dry-air.png';
+import checkIcon from './icons/check-do.png';
+import xIcon from './icons/x-dont.png';
 
 // IMAGES
 import LogoImage from './logo/black_brv.png';
@@ -31,9 +33,10 @@ import loginVector from './images/loginVector.png';
 import faqsBG from './images/faqsBG.png';
 import faqsVector from './images/faqsVector.png';
 import faqsBG1 from './images/faqsBG1.png';
+import jewelrycareBG from './images/jewelrycareBG.png';
 
 
-{/* once, import lagay yung name sa export, then call it in the component */}
+// once, import lagay yung name sa export, then call it in the component 
 export {
   IconSearch,
   IconUser,
@@ -59,6 +62,12 @@ export {
   loginVector,
   faqsBG,
   faqsVector,
-  faqsBG1
+  faqsBG1,
+  gentleCleanseIcon,
+  rinseOffIcon,
+  dryAirIcon,
+  checkIcon,
+  xIcon,
+  jewelrycareBG
 };
 
