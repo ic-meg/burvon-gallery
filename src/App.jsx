@@ -6,10 +6,12 @@ import Template from './pages/Template'
 import Verification from './pages/main/Login/Verification';
 import FAQs from './pages/customer-care/FAQs';
 import JewelryCare from './pages/customer-care/JewelryCare';
+import ScrollToTop from './components/ScrollToTop';
 
 const App = () => {
   return (
     <Router>
+      <ScrollToTop />
       <div>
         <Routes>
           <Route path="/" element={<Homepage />} />
