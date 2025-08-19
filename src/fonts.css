@@ -30,7 +30,17 @@
 
 @font-face {
   font-family: 'Avant Garde';
-  src: url('/fonts/avant/AvantGardeBookBT.ttf') format('truetype');
+  src: url('/fonts/avant/AVGARDN.TTF') format('truetype'); 
+}
+
+@font-face {
+  font-family: 'AvantGarde Demi';
+  src: url('/fonts/avant/AvantGardeDemiBT.ttf') format('truetype'); 
+}
+
+@font-face {
+  font-family: 'AvantGarde Book';
+  src: url('/fonts/avant/AvantGardeBookBT.ttf') format('truetype'); 
 }
 
 .bebas {
@@ -40,6 +50,7 @@
 .avant {
   font-family: 'Avant Garde', sans-serif;
 }
+
 a {
   @apply text-[#FFF7DC] no-underline;
 }

@@ -122,7 +122,7 @@ const Login = () => {
           <div className="w-full max-w-140 px-6" style={{ marginTop: "-120px" }}>
             <div className="text-center mb-8">
               <img src={white_brv} alt="BURVON Logo" className="mx-auto mb-2 w-48" />
-              <p className="avant" style={{ color: "#ffffffff", marginTop: "-60px", marginBottom: "16px", fontSize: "20px" }}>
+              <p className="avant" style={{ color: "#ffffffff", marginTop: "-67px", marginBottom: "16px", fontSize: "20px" }}>
                 REVELED BY ALL
               </p>
             </div>
