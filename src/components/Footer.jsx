@@ -84,10 +84,10 @@ const Footer = () => {
                     role="link"
                     tabIndex={0}
                     className="metallic-text avant text-black hover:text-black cursor-pointer"
-                    onClick={() => console.log("Navigate to Contact Us")}
+                    onClick={() => navigate("/about/contact-us")}
                     onKeyDown={(e) =>
                       (e.key === "Enter" || e.key === " ") &&
-                      console.log("Navigate to Contact Us")
+                      navigate("/about/contact-us")
                     }
                   >
                     Contact Us
@@ -261,10 +261,10 @@ const Footer = () => {
                   role="link"
                   tabIndex={0}
                   className="metallic-text avant text-black hover:text-black cursor-pointer"
-                  onClick={() => console.log("Navigate to Contact Us")}
+                  onClick={() => navigate("/about/contact-us")}
                   onKeyDown={(e) =>
                     (e.key === "Enter" || e.key === " ") &&
-                    console.log("Navigate to Contact Us")
+                    navigate("/about/contact-us")
                   }
                 >
                   Contact Us

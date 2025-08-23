@@ -7,6 +7,7 @@ import Verification from './pages/main/Login/Verification';
 import FAQs from './pages/customer-care/FAQs';
 import JewelryCare from './pages/customer-care/JewelryCare';
 import ScrollToTop from './components/ScrollToTop';
+import ContactUs from './pages/about/ContactUs';  
 
 const App = () => {
   return (
@@ -20,6 +21,7 @@ const App = () => {
           <Route path="/verification" element={<Verification />} />
           <Route path="/customer-care/faqs" element={<FAQs />} />
           <Route path="/customer-care/jewelry-care" element={<JewelryCare />} />
+          <Route path="/about/contact-us" element={<ContactUs />} />
         </Routes>
       </div>
     </Router>
