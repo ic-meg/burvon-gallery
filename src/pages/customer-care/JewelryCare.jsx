@@ -233,12 +233,12 @@ const JewelryCare = () => {
               style={{
                 backgroundColor: 'rgba(24, 24, 24, 0.7)', 
                 borderRadius: '16px', 
-                width: '420px', // increased from 350px
-                height: '300px', // increased from 240px
+                width: '420px', 
+                height: '300px',
               }}
             >
-              <img src={gentleCleanseIcon} alt="Gentle Cleanse" className="h-16 w-16 mb-6" /> {/* increased icon size */}
-              <h3 className="text-2xl font-bold avant-demi mb-2">GENTLE CLEANSE</h3> {/* increased font size */}
+              <img src={gentleCleanseIcon} alt="Gentle Cleanse" className="h-16 w-16 mb-6" /> 
+              <h3 className="text-2xl font-bold avant-demi mb-2">GENTLE CLEANSE</h3> 
               <p className="text-lg avant mt-4">
                 Dip a <span style={{ textShadow: '0 0 5px #FFF7DC' }}>soft cloth</span> or <span style={{ textShadow: '0 0 5px #FFF7DC' }}>microfiber cloth</span> in <span style={{ textShadow: '0 0 5px #FFF7DC' }}>warm water</span> and <span style={{ textShadow: '0 0 5px #FFF7DC' }}>gentle soap</span> combination. Use this to clean your jewelry. Make sure to clean <span style={{ textShadow: '0 0 5px #FFF7DC' }}>all</span> sides.
               </p>
@@ -250,12 +250,12 @@ const JewelryCare = () => {
               style={{
                 backgroundColor: 'rgba(24, 24, 24, 0.7)', 
                 borderRadius: '16px', 
-                width: '420px', // increased from 350px
-                height: '300px', // increased from 240px
+                width: '420px',
+                height: '300px', 
               }}
             >
-              <img src={rinseOffIcon} alt="Rinse Off" className="h-16 w-16 mb-6" /> {/* increased icon size */}
-              <h3 className="text-2xl font-bold avant-demi mb-2">RINSE OFF</h3> {/* increased font size */}
+              <img src={rinseOffIcon} alt="Rinse Off" className="h-16 w-16 mb-6" /> 
+              <h3 className="text-2xl font-bold avant-demi mb-2">RINSE OFF</h3> 
               <p className="text-lg avant mt-4">
                 To rinse off, use <span style={{ textShadow: '0 0 5px #FFF7DC' }}>soft cloth</span> or <span style={{ textShadow: '0 0 5px #FFF7DC' }}>microfiber cloth</span> dipped in clean water. Wipe off any soap residue until jewelry is polished.
               </p>
@@ -267,12 +267,12 @@ const JewelryCare = () => {
               style={{
                 backgroundColor: 'rgba(24, 24, 24, 0.7)', 
                 borderRadius: '16px', 
-                width: '420px', // increased from 350px
-                height: '300px', // increased from 240px
+                width: '420px', 
+                height: '300px', 
               }}
             >
-              <img src={dryAirIcon} alt="Dry & Air" className="h-16 w-16 mb-6" /> {/* increased icon size */}
-              <h3 className="text-2xl font-bold avant-demi mb-2">DRY & AIR</h3> {/* increased font size */}
+              <img src={dryAirIcon} alt="Dry & Air" className="h-16 w-16 mb-6" /> 
+              <h3 className="text-2xl font-bold avant-demi mb-2">DRY & AIR</h3> 
               <p className="text-lg avant mt-4">
                 <span style={{ textShadow: '0 0 5px #FFF7DC' }}>Dry</span> jewelry with <span style={{ textShadow: '0 0 5px #FFF7DC' }}>soft cloth</span> or <span style={{ textShadow: '0 0 5px #FFF7DC' }}>microfiber cloth</span> and <span style={{ textShadow: '0 0 5px #FFF7DC' }}>leave</span> to <span style={{ textShadow: '0 0 5px #FFF7DC' }}>air dry</span> on a <span style={{ textShadow: '0 0 5px #FFF7DC' }}>cool dry place.</span>
               </p>

@@ -41,7 +41,14 @@ import jewelrycareBG from './images/jewelrycareBG.png';
 import jewelrycareBG1 from './images/jewelrycareBG.png';
 import contactBG from './images/contactBG.png';
 import contactBG1 from './images/contactBG1.png';
-
+import ourstoryFirst from './images/ourstory-first.png';
+import ourstorySecond from './images/ourstory-second.png';
+import ourstoryThird from './images/ourstory-third.png';
+import ourstoryFourth from './images/ourstory-fourth.png';
+import ourstoryFirstMobile from './images/ourstory-first1.png';
+import ourstorySecondMobile from './images/ourstory-second1.png';
+import ourstoryThirdMobile from './images/ourstory-third1.png';
+import ourstoryFourthMobile from './images/ourstory-fourth1.png';
 
 // once, import lagay yung name sa export, then call it in the component 
 export {
@@ -82,6 +89,14 @@ export {
   contactFB,
   contactTiktok,
   contactIG,
-  contactBG1
+  contactBG1,
+  ourstoryFirst,
+  ourstorySecond,
+  ourstoryThird,
+  ourstoryFourth,
+  ourstoryFirstMobile,
+  ourstorySecondMobile,
+  ourstoryThirdMobile,
+  ourstoryFourthMobile
 };
 

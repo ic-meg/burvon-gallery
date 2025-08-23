@@ -8,6 +8,7 @@ import FAQs from './pages/customer-care/FAQs';
 import JewelryCare from './pages/customer-care/JewelryCare';
 import ScrollToTop from './components/ScrollToTop';
 import ContactUs from './pages/about/ContactUs';  
+import OurStory from './pages/about/OurStory'; 
 
 const App = () => {
   return (
@@ -22,6 +23,7 @@ const App = () => {
           <Route path="/customer-care/faqs" element={<FAQs />} />
           <Route path="/customer-care/jewelry-care" element={<JewelryCare />} />
           <Route path="/about/contact-us" element={<ContactUs />} />
+          <Route path="/about/our-story" element={<OurStory />} />
         </Routes>
       </div>
     </Router>
