@@ -70,10 +70,10 @@ const Footer = () => {
                     role="link"
                     tabIndex={0}
                     className="metallic-text avant text-black hover:text-black cursor-pointer"
-                    onClick={() => console.log("Navigate to Our Story")}
+                    onClick={() => navigate("/about/our-story")}
                     onKeyDown={(e) =>
                       (e.key === "Enter" || e.key === " ") &&
-                      console.log("Navigate to Our Story")
+                      navigate("/about/our-story")
                     }
                   >
                     Our Story
@@ -247,10 +247,10 @@ const Footer = () => {
                   role="link"
                   tabIndex={0}
                   className="metallic-text avant text-black hover:text-black cursor-pointer"
-                  onClick={() => console.log("Navigate to Our Story")}
+                  onClick={() => navigate("/about/our-story")}
                   onKeyDown={(e) =>
                     (e.key === "Enter" || e.key === " ") &&
-                    console.log("Navigate to Our Story")
+                    navigate("/about/our-story")
                   }
                 >
                   Our Story
