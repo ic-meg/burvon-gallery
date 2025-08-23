@@ -24,6 +24,10 @@ import rinseOffIcon from './icons/rinse-off.png';
 import dryAirIcon from './icons/dry-air.png';
 import checkIcon from './icons/check-do.png';
 import xIcon from './icons/x-dont.png';
+import contactGmail from './icons/contactGmail.png';
+import contactFB from './icons/contactFB.png';
+import contactTiktok from './icons/contactTiktok.png';
+import contactIG from './icons/contactIG.png';
 
 // IMAGES
 import LogoImage from './logo/black_brv.png';
@@ -34,6 +38,9 @@ import faqsBG from './images/faqsBG.png';
 import faqsVector from './images/faqsVector.png';
 import faqsBG1 from './images/faqsBG1.png';
 import jewelrycareBG from './images/jewelrycareBG.png';
+import jewelrycareBG1 from './images/jewelrycareBG.png';
+import contactBG from './images/contactBG.png';
+import contactBG1 from './images/contactBG1.png';
 
 
 // once, import lagay yung name sa export, then call it in the component 
@@ -68,6 +75,13 @@ export {
   dryAirIcon,
   checkIcon,
   xIcon,
-  jewelrycareBG
+  jewelrycareBG,
+  jewelrycareBG1,
+  contactBG,
+  contactGmail,
+  contactFB,
+  contactTiktok,
+  contactIG,
+  contactBG1
 };
 

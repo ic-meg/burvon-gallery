@@ -94,7 +94,7 @@ const FAQs = () => {
             style={{
               backgroundImage: `url(${faqsBG})`,
               height: '100%', // Responsive height
-              minHeight: '960px', // Ensures a minimum height for large screens
+              minHeight: '955px', // Ensures a minimum height for large screens
               maxHeight: '100vh', // Prevents overflow on very large screens
               objectFit: 'cover', // Ensures the image covers the area
             }}
