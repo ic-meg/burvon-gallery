@@ -28,6 +28,10 @@ import contactGmail from './icons/contactGmail.png';
 import contactFB from './icons/contactFB.png';
 import contactTiktok from './icons/contactTiktok.png';
 import contactIG from './icons/contactIG.png';
+import TryOnIcon from './icons/Try_OnButton.png';
+import AddFavorite from './icons/Add_Favorites.png';
+import NextIcon from './icons/Next.png';
+import PrevIcon from './icons/Prev.png';
 
 // IMAGES
 import LogoImage from './logo/black_brv.png';
@@ -49,6 +53,17 @@ import ourstoryFirstMobile from './images/ourstory-first1.png';
 import ourstorySecondMobile from './images/ourstory-second1.png';
 import ourstoryThirdMobile from './images/ourstory-third1.png';
 import ourstoryFourthMobile from './images/ourstory-fourth1.png';
+
+//Hero Section
+import KidsCollectionBanner from './images/KidsCollection.png';
+import ClashCollectionBanner from './images/ClashCollection.png';
+
+//Homepage Items
+import LyricImage from './images/Lyric.png';
+import AgathaImage from './images/Agatha.png';
+import RiomImage from './images/Riom.png';
+import CelineImage from'./images/Celine.png';
+
 
 // once, import lagay yung name sa export, then call it in the component 
 export {
@@ -97,6 +112,16 @@ export {
   ourstoryFirstMobile,
   ourstorySecondMobile,
   ourstoryThirdMobile,
-  ourstoryFourthMobile
+  ourstoryFourthMobile,
+  NextIcon,
+  PrevIcon,
+  TryOnIcon,
+  AddFavorite,
+  KidsCollectionBanner,
+  ClashCollectionBanner,
+  LyricImage,
+  AgathaImage,
+  RiomImage,
+  CelineImage,
 };
 
