@@ -33,6 +33,7 @@ import AddFavorite from './icons/Add_Favorites.png';
 import NextIcon from './icons/Next.png';
 import PrevIcon from './icons/Prev.png';
 import AddBag from './icons/bag.png';
+import AddBagHover from './icons/bagHover.png';
 
 // IMAGES
 import LogoImage from './logo/black_brv.png';
@@ -118,6 +119,7 @@ export {
   PrevIcon,
   TryOnIcon,
   AddBag,
+  AddBagHover,
   AddFavorite,
   KidsCollectionBanner,
   ClashCollectionBanner,
@@ -125,6 +127,4 @@ export {
   AgathaImage,
   RiomImage,
   CelineImage,
-
 };
-
