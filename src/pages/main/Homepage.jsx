@@ -113,7 +113,6 @@ const Homepage = () => {
 
   const [openIndex, setOpenIndex] = useState(null);
 
-
   const slideRef = useRef(null);
 
   useEffect(() => {
@@ -145,9 +144,7 @@ const Homepage = () => {
 
   const visibleCards = [];
   for (let i = 0; i < HOMEPAGE_COLLECTION_VISIBLE; i++) {
-    visibleCards.push(
-      rebelsTopPicks[(startIndex + i) % rebelsTopPicks.length]
-    );
+    visibleCards.push(rebelsTopPicks[(startIndex + i) % rebelsTopPicks.length]);
   }
 
   const burvonShowPrev = burvonStartIndex > 0;
@@ -170,7 +167,7 @@ const Homepage = () => {
   return (
     <Layout full>
       {/* Hero Section */}
-      <section className="relative w-full h-[420px] lg:h-[650px] overflow-hidden bg-black flex items-center justify-center">
+      <section id="hero" className="relative w-full h-[450px] lg:h-[550px] xl:h-[730px] overflow-hidden bg-black flex items-center justify-center">
         <div
           ref={slideRef}
           className="flex h-full w-full transition-transform duration-700"
@@ -182,20 +179,20 @@ const Homepage = () => {
               key={index}
               src={src}
               alt={`Burvon homepage banner collection ${index + 1}`}
-              className="flex-shrink-0 w-full h-full object-cover"
+              className="flex-shrink-0 w-full h-full object-cover object-center"
               draggable={false}
             />
           ))}
         </div>
 
         {/* Pagination Dots */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-20">
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex space-x-1 z-20">
           {heroImages.map((_, index) => (
             <span
               key={index}
-              className={`w-3 h-3 rounded-full border border-[#e3c296] ${
+              className={`w-2 h-2 rounded-full border border-[#FFF7DC] ${
                 index === currentIndex
-                  ? "bg-[#e3c296]"
+                  ? "bg-[#FFF7DC]"
                   : "bg-gray-400 opacity-40"
               } transition-colors duration-300`}
               onClick={() => setCurrentIndex(index)}
@@ -298,7 +295,9 @@ const Homepage = () => {
                   <div className="relative w-full h-[300px] flex items-center justify-center">
                     <img
                       src={
-                        isHovered ? item.images[hoveredImageIndex] : item.images[0]
+                        isHovered
+                          ? item.images[hoveredImageIndex]
+                          : item.images[0]
                       }
                       alt={item.name}
                       className="object-cover w-full h-full rounded-none transition-all duration-300"
@@ -352,8 +351,11 @@ const Homepage = () => {
                     <button
                       style={{
                         backgroundColor:
-                          hoveredButtonId === item.id ? "#FFF7DC" : "transparent",
-                        color: hoveredButtonId === item.id ? "#1F1F21" : "#FFF7DC",
+                          hoveredButtonId === item.id
+                            ? "#FFF7DC"
+                            : "transparent",
+                        color:
+                          hoveredButtonId === item.id ? "#1F1F21" : "#FFF7DC",
                         outline: "2px solid #FFF7DC",
                         outlineOffset: "0px",
                         borderRadius: 0,
@@ -390,20 +392,34 @@ const Homepage = () => {
                 disabled={!burvonShowPrev}
                 aria-label="Previous Collection"
                 className={`flex items-center justify-center w-10 h-10 text-[#FFF7DC] cursor-pointer select-none transition-opacity duration-300 ${
-                  burvonShowPrev ? "opacity-100" : "opacity-30 cursor-not-allowed"
+                  burvonShowPrev
+                    ? "opacity-100"
+                    : "opacity-30 cursor-not-allowed"
                 }`}
               >
-                <img src={PrevIcon} alt="Prev" className="w-10 h-10" draggable={false} />
+                <img
+                  src={PrevIcon}
+                  alt="Prev"
+                  className="w-10 h-10"
+                  draggable={false}
+                />
               </button>
               <button
                 onClick={burvonNext}
                 disabled={!burvonShowNext}
                 aria-label="Next Collection"
                 className={`flex items-center justify-center w-10 h-10 text-[#FFF7DC] cursor-pointer select-none transition-opacity duration-300 ${
-                  burvonShowNext ? "opacity-100" : "opacity-30 cursor-not-allowed"
+                  burvonShowNext
+                    ? "opacity-100"
+                    : "opacity-30 cursor-not-allowed"
                 }`}
               >
-                <img src={NextIcon} alt="Next" className="w-10 h-10" draggable={false} />
+                <img
+                  src={NextIcon}
+                  alt="Next"
+                  className="w-10 h-10"
+                  draggable={false}
+                />
               </button>
             </div>
           </div>
@@ -440,152 +456,142 @@ const Homepage = () => {
         </div>
       </section>
 
+      {/* --- Style It On You Section --- */}
+      <section className="relative w-full bg-[#1F1F21] mt-16 md:mt-24 lg:mt-15">
+        {/* Full background image */}
+        <img
+          src={StyleItImg}
+          alt="Style It On You"
+          className="w-full h-[500px] md:h-[600px] lg:h-[650px] object-cover"
+          draggable={false}
+        />
 
-        {/* --- Style It On You Section --- */}
-        <section className="relative w-full bg-[#1F1F21] mt-16 md:mt-24 lg:mt-15">
-          {/* Full background image */}
-          <img
-            src={StyleItImg}
-            alt="Style It On You"
-            className="w-full h-[500px] md:h-[600px] lg:h-[650px] object-cover"
-            draggable={false}
-          />
+        {/* Dark gradient overlay for readability */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"></div>
 
-          {/* Dark gradient overlay for readability */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"></div>
-
-          {/* Overlay text */}
-          <div className="absolute inset-0 flex items-center">
-            <div className="max-w-7xl mx-auto w-full px-4 sm:px-10 md:px-10 lg:px-5">
-              <div className="flex flex-col items-center md:items-start text-center md:text-left max-w-md mx-auto md:mx-0">
-                <h2 className="font-bold text-2xl md:text-3xl lg:text-4xl mb-4 tracking-wide text-[#fff7dc] bebas">
-                  STYLE IT ON YOU
-                </h2>
-                <p className="mb-8 text-sm md:text-base lg:text-lg text-[#fff7dc] opacity-90 avant leading-snug">
-                  Experience our virtual try-on feature and see <br />how each piece looks on you.
-                </p>
-                <button
-                  style={{
-                    backgroundColor: hoveredButtonId === "try" ? "#FFF7DC" : "transparent",
-                    color: hoveredButtonId === "try" ? "#1F1F21" : "#FFF7DC",
-                    outline: "2px solid #FFF7DC",
-                    outlineOffset: "0px",
-                    borderRadius: 0,
-                  }}
-                  onMouseEnter={() => setHoveredButtonId("try")}
-                  onMouseLeave={() => setHoveredButtonId(null)}
-                  className="flex items-center justify-center gap-2 py-3 px-6 font-bold text-sm md:text-base tracking-wide transition-all duration-300 outline-none"
-                >
-                  TRY NOW
-                </button>
-              </div>
+        {/* Overlay text */}
+        <div className="absolute inset-0 flex items-center">
+          <div className="max-w-7xl mx-auto w-full px-4 sm:px-10 md:px-10 lg:px-5">
+            <div className="flex flex-col items-center md:items-start text-center md:text-left max-w-md mx-auto md:mx-0">
+              <h2 className="font-bold text-2xl md:text-3xl lg:text-4xl mb-4 tracking-wide text-[#fff7dc] bebas">
+                STYLE IT ON YOU
+              </h2>
+              <p className="mb-8 text-sm md:text-base lg:text-lg text-[#fff7dc] opacity-90 avant leading-snug">
+                Experience our virtual try-on feature and see <br />
+                how each piece looks on you.
+              </p>
+              <button
+                style={{
+                  backgroundColor:
+                    hoveredButtonId === "try" ? "#FFF7DC" : "transparent",
+                  color: hoveredButtonId === "try" ? "#1F1F21" : "#FFF7DC",
+                  outline: "2px solid #FFF7DC",
+                  outlineOffset: "0px",
+                  borderRadius: 5,
+                }}
+                onMouseEnter={() => setHoveredButtonId("try")}
+                onMouseLeave={() => setHoveredButtonId(null)}
+                className="flex items-center justify-center gap-2 py-3 px-10 w-36 avant text-md md:text-base tracking-wide transition-all duration-300 outline-none"
+              >
+                TRY NOW
+              </button>
             </div>
           </div>
-        </section>
-
-
-        <section className="bg-[#1F1F21] py-20 flex justify-center">
-          <div className="max-w-4xl w-full px-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
-              
-              {/* Fast Shipping */}
-              <div className="flex items-start space-x-4">
-                <img
-                  src={FastShipIcon}
-                  alt="Fast Shipping"
-                  className="w-10 h-10 flex-shrink-0"
-                />
-                <div>
-                  <h3 className="font-bold text-[#fff7dc] text-lg bebas">FAST SHIPPING</h3>
-                  <p className="text-sm text-gray-300 avant">Quick and reliable delivery.</p>
-                </div>
-              </div>
-
-              {/* Secure Payment */}
-              <div className="flex items-start space-x-4">
-                <img
-                  src={SecureIcon}
-                  alt="Secure Payment"
-                  className="w-10 h-10 flex-shrink-0"
-                />
-                <div>
-                  <h3 className="font-bold text-[#fff7dc] text-lg bebas">SECURE PAYMENT</h3>
-                  <p className="text-sm text-gray-300 avant">Safe and protected checkout.</p>
-                </div>
-              </div>
-
-              {/* Easy Returns */}
-              <div className="flex items-start space-x-4">
-                <img
-                  src={ReturnIcon}
-                  alt="Easy Returns"
-                  className="w-10 h-10 flex-shrink-0"
-                />
-                <div>
-                  <h3 className="font-bold text-[#fff7dc] text-lg bebas">EASY RETURNS</h3>
-                  <p className="text-sm text-gray-300 avant">Stress-free return process.</p>
-                </div>
-              </div>
-
-              {/* 24/7 Support */}
-              <div className="flex items-start space-x-4">
-                <img
-                  src={SupportIcon}
-                  alt="24/7 Support"
-                  className="w-10 h-10 flex-shrink-0"
-                />
-                <div>
-                  <h3 className="font-bold text-[#fff7dc] text-lg bebas">24/7 SUPPORT</h3>
-                  <p className="text-sm text-gray-300 avant">We’re here anytime you need.</p>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </section>
-
-
-{/* FAQ Section */}
-<section className="bg-transparent py-20">
-  <div className="max-w-4xl mx-auto px-0 sm:px-6">
-    <h2 className="text-center text-[#fff7dc] font-bold text-4xl mb-8 tracking-wide bebas">
-      BURVON JEWELRY FAQS
-    </h2>
-
-    <div className="border-t border-[#fff7dc]/40">
-      {faqs.map((faq, index) => (
-        <div key={index} className="border-b border-[#fff7dc]/40 bg-transparent">
-          <button
-            type="button"
-            className="w-full flex justify-between items-center text-left text-[#fff7dc] font-normal py-5 
-                       focus:outline-none bg-transparent border-0 shadow-none rounded-none appearance-none avant"
-            style={{ background: "transparent" }}
-            onClick={() => setOpenIndex(openIndex === index ? null : index)}
-          >
-            <span>{faq.question}</span>
-            <img
-              src={openIndex === index ? DropUp : DropDown}
-              alt="toggle"
-              className="w-4 h-4"
-            />
-          </button>
-
-          {openIndex === index && (
-            <div className="pb-5 bg-transparent">
-              <p className="text-[#fff7dc] font-normal avant">{faq.answer}</p>
-            </div>
-          )}
         </div>
-      ))}
-    </div>
-  </div>
-</section>
+      </section>
+      {/* --- Fast Shipping, Secure Payment, Easy Returns, 24/7 Support Section --- */}
+      <section className="bg-[#1F1F21] py-20 flex justify-center">
+        <div className="max-w-4xl w-full px-6 mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-10 justify-items-center justify-center max-w-3xl mx-auto sm:ml-auto sm:mr-0">
+            {/* Fast Shipping */}
+            <div className="w-80 sm:w-full mx-auto grid grid-cols-[3rem_1fr] items-center gap-4 text-left">
+              <div className="flex justify-center">
+                <img src={FastShipIcon} alt="Fast Shipping" className="w-10 h-10" />
+              </div>
+              <div>
+                <h3 className="font-bold text-[#fff7dc] text-lg bebas">FAST SHIPPING</h3>
+                <p className="text-sm text-gray-300 avant">Quick and reliable delivery.</p>
+              </div>
+            </div>
 
+            {/* Secure Payment */}
+            <div className="w-80 sm:w-full mx-auto grid grid-cols-[3rem_1fr] items-center gap-4 text-left">
+              <div className="flex justify-center">
+                <img src={SecureIcon} alt="Secure Payment" className="w-10 h-10" />
+              </div>
+              <div>
+                <h3 className="font-bold text-[#fff7dc] text-lg bebas">SECURE PAYMENT</h3>
+                <p className="text-sm text-gray-300 avant">Safe and protected checkout.</p>
+              </div>
+            </div>
 
+            {/* Easy Returns */}
+            <div className="w-80 sm:w-full mx-auto grid grid-cols-[3rem_1fr] items-center gap-4 text-left">
+              <div className="flex justify-center">
+                <img src={ReturnIcon} alt="Easy Returns" className="w-10 h-10" />
+              </div>
+              <div>
+                <h3 className="font-bold text-[#fff7dc] text-lg bebas">EASY RETURNS</h3>
+                <p className="text-sm text-gray-300 avant">Stress-free return process.</p>
+              </div>
+            </div>
 
+            {/* 24/7 Support */}
+            <div className="w-80 sm:w-full mx-auto grid grid-cols-[3rem_1fr] items-center gap-4 text-left">
+              <div className="flex justify-center">
+                <img src={SupportIcon} alt="24/7 Support" className="w-10 h-10" />
+              </div>
+              <div>
+                <h3 className="font-bold text-[#fff7dc] text-lg bebas">24/7 SUPPORT</h3>
+                <p className="text-sm text-gray-300 avant">We’re here anytime you need.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
+      {/* FAQ Section */}
+      <section className="bg-transparent pt-2 pb-20">
+        <div className="w-full max-w-3xl mx-auto px-6">
+          <h2 className="text-center text-[#fff7dc] font-bold text-4xl mb-8 tracking-wide bebas">
+            BURVON JEWELRY FAQS
+          </h2>
 
+          <div className="border-t border-[#fff7dc]/40 max-w-3xl mx-auto">
+            {faqs.map((faq, index) => (
+              <div
+                key={index}
+                className="border-b border-[#fff7dc]/40 bg-transparent"
+              >
+                <button
+                  type="button"
+                  className="w-full flex justify-between items-center text-left text-[#fff7dc] font-normal py-5 
+                       focus:outline-none bg-transparent border-0 shadow-none rounded-none appearance-none avant"
+                  style={{ background: "transparent" }}
+                  onClick={() =>
+                    setOpenIndex(openIndex === index ? null : index)
+                  }
+                >
+                  <span>{faq.question}</span>
+                  <img
+                    src={openIndex === index ? DropUp : DropDown}
+                    alt="toggle"
+                    className="w-4 h-4"
+                  />
+                </button>
 
+                {openIndex === index && (
+                  <div className="pb-5 bg-transparent">
+                    <p className="text-[#fff7dc] font-normal avant pl-5">
+                      {faq.answer}
+                    </p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
     </Layout>
   );
 };
