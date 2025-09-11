@@ -167,7 +167,10 @@ const Homepage = () => {
   return (
     <Layout full>
       {/* Hero Section */}
-      <section id="hero" className="relative w-full h-[450px] lg:h-[550px] xl:h-[730px] overflow-hidden bg-black flex items-center justify-center">
+      <section
+        id="hero"
+        className="relative w-full h-[450px] lg:h-[550px] xl:h-[730px] overflow-hidden bg-black flex items-center justify-center"
+      >
         <div
           ref={slideRef}
           className="flex h-full w-full transition-transform duration-700"
@@ -506,44 +509,76 @@ const Homepage = () => {
             {/* Fast Shipping */}
             <div className="w-80 sm:w-full mx-auto grid grid-cols-[3rem_1fr] items-center gap-4 text-left">
               <div className="flex justify-center">
-                <img src={FastShipIcon} alt="Fast Shipping" className="w-10 h-10" />
+                <img
+                  src={FastShipIcon}
+                  alt="Fast Shipping"
+                  className="w-10 h-10"
+                />
               </div>
               <div>
-                <h3 className="font-bold text-[#fff7dc] text-lg bebas">FAST SHIPPING</h3>
-                <p className="text-sm text-gray-300 avant">Quick and reliable delivery.</p>
+                <h3 className="font-bold text-[#fff7dc] text-lg bebas">
+                  FAST SHIPPING
+                </h3>
+                <p className="text-sm text-gray-300 avant">
+                  Quick and reliable delivery.
+                </p>
               </div>
             </div>
 
             {/* Secure Payment */}
             <div className="w-80 sm:w-full mx-auto grid grid-cols-[3rem_1fr] items-center gap-4 text-left">
               <div className="flex justify-center">
-                <img src={SecureIcon} alt="Secure Payment" className="w-10 h-10" />
+                <img
+                  src={SecureIcon}
+                  alt="Secure Payment"
+                  className="w-10 h-10"
+                />
               </div>
               <div>
-                <h3 className="font-bold text-[#fff7dc] text-lg bebas">SECURE PAYMENT</h3>
-                <p className="text-sm text-gray-300 avant">Safe and protected checkout.</p>
+                <h3 className="font-bold text-[#fff7dc] text-lg bebas">
+                  SECURE PAYMENT
+                </h3>
+                <p className="text-sm text-gray-300 avant">
+                  Safe and protected checkout.
+                </p>
               </div>
             </div>
 
             {/* Easy Returns */}
             <div className="w-80 sm:w-full mx-auto grid grid-cols-[3rem_1fr] items-center gap-4 text-left">
               <div className="flex justify-center">
-                <img src={ReturnIcon} alt="Easy Returns" className="w-10 h-10" />
+                <img
+                  src={ReturnIcon}
+                  alt="Easy Returns"
+                  className="w-10 h-10"
+                />
               </div>
               <div>
-                <h3 className="font-bold text-[#fff7dc] text-lg bebas">EASY RETURNS</h3>
-                <p className="text-sm text-gray-300 avant">Stress-free return process.</p>
+                <h3 className="font-bold text-[#fff7dc] text-lg bebas">
+                  EASY RETURNS
+                </h3>
+                <p className="text-sm text-gray-300 avant">
+                  Stress-free return process.
+                </p>
               </div>
             </div>
 
             {/* 24/7 Support */}
             <div className="w-80 sm:w-full mx-auto grid grid-cols-[3rem_1fr] items-center gap-4 text-left">
               <div className="flex justify-center">
-                <img src={SupportIcon} alt="24/7 Support" className="w-10 h-10" />
+                <img
+                  src={SupportIcon}
+                  alt="24/7 Support"
+                  className="w-10 h-10"
+                />
               </div>
               <div>
-                <h3 className="font-bold text-[#fff7dc] text-lg bebas">24/7 SUPPORT</h3>
-                <p className="text-sm text-gray-300 avant">We’re here anytime you need.</p>
+                <h3 className="font-bold text-[#fff7dc] text-lg bebas">
+                  24/7 SUPPORT
+                </h3>
+                <p className="text-sm text-gray-300 avant">
+                  We’re here anytime you need.
+                </p>
               </div>
             </div>
           </div>
