@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import './Login.css';
 import googleLoginIcon from "../../../assets/icons/googleLoginIcon.png";
 import loginBG from "../../../assets/images/loginBG.png";
@@ -31,7 +31,7 @@ const Login = () => {
           {/* form */}
           <div className="relative z-20 flex flex-col items-center justify-center h-full px-6">
             <div className="text-center mb-8 mt-12">
-              <img src={white_brv} alt="BURVON Logo" className="mx-auto mb-2 w-32" style={{ marginTop: "-60px" }} />
+              <Link to="/"><img src={white_brv} alt="BURVON Logo" className="mx-auto mb-2 w-32" style={{ marginTop: "-60px" }} /></Link>
               <p className="avant" style={{ color: "#ffffffff", marginTop: "-50px", marginBottom: "32px", fontSize: "15px" }}>
                 REVELED BY ALL
               </p>
@@ -111,17 +111,17 @@ const Login = () => {
         <div className="w-1/2 flex flex-col justify-center items-center relative ">
 
           {/* go back */}
-          <button
+          <Link to="/"> <button
             className="absolute top-8 right-8 flex items-center text-xs font-semibold tracking-wide avant"
             style={{ backgroundColor: "#FFF7DC", color: "black", borderRadius: "8px", padding: "8px 14px" }}
-          >
+          > 
             GO BACK <span className="ml-2">&#8594;</span>
-          </button>
+          </button> </Link>
 
           {/* form */}
           <div className="w-full max-w-140 px-6" style={{ marginTop: "-120px" }}>
             <div className="text-center mb-8">
-              <img src={white_brv} alt="BURVON Logo" className="mx-auto mb-2 w-48" />
+              <Link to="/"><img src={white_brv} alt="BURVON Logo" className="mx-auto mb-2 w-48" /></Link>
               <p className="avant" style={{ color: "#ffffffff", marginTop: "-67px", marginBottom: "16px", fontSize: "20px" }}>
                 REVELED BY ALL
               </p>
