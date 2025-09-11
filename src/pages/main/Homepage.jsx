@@ -152,18 +152,42 @@ const Homepage = () => {
     burvonStartIndex < burvonsCollections.length - HOMEPAGE_COLLECTION_VISIBLE;
 
   const burvonPrev = () => {
-    if (burvonShowPrev) setBurvonStartIndex(burvonStartIndex - 1);
+    setBurvonStartIndex(
+      (prev) =>
+        (prev - 1 + burvonsCollections.length) % burvonsCollections.length
+    );
   };
 
   const burvonNext = () => {
-    if (burvonShowNext) setBurvonStartIndex(burvonStartIndex + 1);
+    setBurvonStartIndex((prev) => (prev + 1) % burvonsCollections.length);
+  };
+  const visibleBurvonCards = [];
+  for (let i = 0; i < HOMEPAGE_COLLECTION_VISIBLE; i++) {
+    visibleBurvonCards.push(
+      burvonsCollections[(burvonStartIndex + i) % burvonsCollections.length]
+    );
+  }
+
+  const [collectionIndex, setCollectionIndex] = useState(0);
+
+  const showPrevCollection = () => {
+    setCollectionIndex(
+      (prev) =>
+        (prev - 1 + burvonsCollections.length) % burvonsCollections.length
+    );
   };
 
-  const visibleBurvonCards = burvonsCollections.slice(
-    burvonStartIndex,
-    burvonStartIndex + HOMEPAGE_COLLECTION_VISIBLE
-  );
+  const showNextCollection = () => {
+    setCollectionIndex((prev) => (prev + 1) % burvonsCollections.length);
+  };
 
+ 
+  const displayedCollections = [];
+  for (let i = 0; i < HOMEPAGE_COLLECTION_VISIBLE; i++) {
+    displayedCollections.push(
+      burvonsCollections[(collectionIndex + i) % burvonsCollections.length]
+    );
+  }
   return (
     <Layout full>
       {/* Hero Section */}
@@ -313,7 +337,7 @@ const Homepage = () => {
                             handleImageChange(item.id, "prev");
                           }}
                           src={PrevIcon}
-                          alt="Prev"
+                          alt="Previous"
                           className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 cursor-pointer hover:opacity-80"
                           draggable={false}
                         />
@@ -389,33 +413,34 @@ const Homepage = () => {
             <h2 className="font-bold bebas text-4xl lg:text-5xl tracking-wide text-[#FFF7DC]">
               BURVON’S COLLECTION
             </h2>
-            <div className="flex space-x-2">
-              <button
-                onClick={burvonPrev}
-                disabled={!burvonShowPrev}
+            <div className="flex space-x-4">
+              <div
+                onClick={showPrevCollection}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") prev();
+                }}
                 aria-label="Previous Collection"
-                className={`flex items-center justify-center w-10 h-10 text-[#FFF7DC] cursor-pointer select-none transition-opacity duration-300 ${
-                  burvonShowPrev
-                    ? "opacity-100"
-                    : "opacity-30 cursor-not-allowed"
-                }`}
+                className="flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 hover:text-[#222] transition select-none"
               >
                 <img
                   src={PrevIcon}
-                  alt="Prev"
+                  alt="Previous"
                   className="w-10 h-10"
                   draggable={false}
                 />
-              </button>
-              <button
-                onClick={burvonNext}
-                disabled={!burvonShowNext}
+              </div>
+
+              <div
+                onClick={showNextCollection}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") next();
+                }}
                 aria-label="Next Collection"
-                className={`flex items-center justify-center w-10 h-10 text-[#FFF7DC] cursor-pointer select-none transition-opacity duration-300 ${
-                  burvonShowNext
-                    ? "opacity-100"
-                    : "opacity-30 cursor-not-allowed"
-                }`}
+                className="flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 hover:text-[#222] transition select-none"
               >
                 <img
                   src={NextIcon}
@@ -423,7 +448,7 @@ const Homepage = () => {
                   className="w-10 h-10"
                   draggable={false}
                 />
-              </button>
+              </div>
             </div>
           </div>
 
