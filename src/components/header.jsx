@@ -66,6 +66,7 @@ const Header = () => {
           src={WhiteLogo}
           alt="BURVON Logo"
           className="max-h-[80px] w-auto object-contain"
+          onClick={() => navigate("/")}
         />
 
         {/*  White icons + Hamburger */}
@@ -83,7 +84,12 @@ const Header = () => {
             onClose={() => setSearchOpen(false)}
           />
 
-          <img src={BagWhite} alt="Cart" className="w-6 h-6 cursor-pointer" />
+          <img
+            src={BagWhite}
+            alt="Cart"
+            className="w-6 h-6 cursor-pointer"
+            onClick={() => navigate("/shopping-bag")}
+          />
           <div
             role="button"
             tabIndex={0}
