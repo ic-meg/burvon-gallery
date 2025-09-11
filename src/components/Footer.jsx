@@ -399,7 +399,7 @@ const Footer = () => {
 
         {/* Bottom Barr */}
         <div className="avant text-center mt-2 md:mt-26 md:border-t md:border-black pt-1 md:pt-4 flex flex-row justify-center items-center gap-3 md:gap-12 text-sm md:text-lg text-gray-600 md:text-black">
-          <p>Terms of use</p>
+          <p>Terms of Use</p>
           <p>© 2025 Burvon</p>
           <p>Privacy Policy</p>
         </div>
