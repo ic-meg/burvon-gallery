@@ -34,6 +34,16 @@ import NextIcon from './icons/Next.png';
 import PrevIcon from './icons/Prev.png';
 import AddBag from './icons/bag.png';
 import AddBagHover from './icons/bagHover.png';
+import FastShipIcon from './icons/FastIcon.png';
+import SecureIcon from './icons/PaymentIcon.png';
+import ReturnIcon from './icons/ReturnIcon.png';
+import SupportIcon from './icons/SupportIcon.png';
+import DropDown from './icons/dropdown.png';
+import DropUp from './icons/dropup.png';
+
+
+
+
 
 // IMAGES
 import LogoImage from './logo/black_brv.png';
@@ -55,6 +65,7 @@ import ourstoryFirstMobile from './images/ourstory-first1.png';
 import ourstorySecondMobile from './images/ourstory-second1.png';
 import ourstoryThirdMobile from './images/ourstory-third1.png';
 import ourstoryFourthMobile from './images/ourstory-fourth1.png';
+import StyleItImg from './images/StyleIt.png';
 
 //Hero Section
 import KidsCollectionBanner from './images/KidsCollection.png';
@@ -65,6 +76,15 @@ import LyricImage from './images/Lyric.png';
 import AgathaImage from './images/Agatha.png';
 import RiomImage from './images/Riom.png';
 import CelineImage from'./images/Celine.png';
+
+//Homepage Collection
+import ClassicCollectionImg from './images/ClassicColl.png';
+import RebellionCollectionImg from './images/RebellionColl.png';
+import LoveLanguageCollectionImg from './images/LoveLangColl.png';
+import PearlCollectionImg from './images/PearlColl.png';
+
+
+
 
 
 // once, import lagay yung name sa export, then call it in the component 
@@ -127,4 +147,15 @@ export {
   AgathaImage,
   RiomImage,
   CelineImage,
+  ClassicCollectionImg,
+  RebellionCollectionImg,
+  LoveLanguageCollectionImg,
+  PearlCollectionImg,
+  StyleItImg,
+  FastShipIcon,
+  SecureIcon,
+  ReturnIcon,
+  SupportIcon,
+  DropDown,
+  DropUp
 };
