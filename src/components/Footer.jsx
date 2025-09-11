@@ -98,10 +98,10 @@ const Footer = () => {
                     role="link"
                     tabIndex={0}
                     className="metallic-text avant text-black hover:text-black cursor-pointer"
-                    onClick={() => console.log("Navigate to Customer Reviews")}
+                    onClick={() => navigate("/about/customer-review")}
                     onKeyDown={(e) =>
                       (e.key === "Enter" || e.key === " ") &&
-                      console.log("Navigate to Customer Reviews")
+                      navigate("/about/customer-review")
                     }
                   >
                     Customer Reviews
@@ -141,22 +141,28 @@ const Footer = () => {
                   </div>
                 </li>
                 <li>
-                  <Link
-                    to="/customer-care/jewelry-care"
+                  <div
+                    role="link"
+                    tabIndex={0}
                     className="metallic-text avant text-black hover:text-black cursor-pointer"
+                    onClick={() => navigate("/customer-care/jewelry-care")}
+                    onKeyDown={(e) =>
+                      (e.key === "Enter" || e.key === " ") &&
+                      navigate("/customer-care/jewelry-care")
+                    }
                   >
-                    Jewelry Care
-                  </Link>
+                    Jewelry Care 
+                  </div>
                 </li>
                 <li>
                   <div
                     role="link"
                     tabIndex={0}
                     className="metallic-text avant text-black hover:text-black cursor-pointer"
-                    onClick={() => console.log("Navigate to Size Guide")}
+                    onClick={() => navigate("/customer-care/size-guide")}
                     onKeyDown={(e) =>
                       (e.key === "Enter" || e.key === " ") &&
-                      console.log("Navigate to Size Guide")
+                      navigate("/customer-care/size-guide")
                     }
                   >
                     Size Guide
@@ -167,10 +173,10 @@ const Footer = () => {
                     role="link"
                     tabIndex={0}
                     className="metallic-text avant text-black hover:text-black cursor-pointer"
-                    onClick={() => console.log("Navigate to Shipping")}
+                    onClick={() => navigate("/customer-care/shipping")}
                     onKeyDown={(e) =>
                       (e.key === "Enter" || e.key === " ") &&
-                      console.log("Navigate to Shipping")
+                      navigate("/customer-care/shipping")
                     }
                   >
                     Shipping
@@ -181,10 +187,10 @@ const Footer = () => {
                     role="link"
                     tabIndex={0}
                     className="metallic-text avant text-black hover:text-black cursor-pointer"
-                    onClick={() => console.log("Navigate to Track your Order")}
+                    onClick={() => navigate("/customer-care/track-order")}
                     onKeyDown={(e) =>
                       (e.key === "Enter" || e.key === " ") &&
-                      console.log("Navigate to Track your Order")
+                      navigate("/customer-care/track-order")
                     }
                   >
                     Track your Order
@@ -195,10 +201,10 @@ const Footer = () => {
                     role="link"
                     tabIndex={0}
                     className="metallic-text avant text-black hover:text-black cursor-pointer"
-                    onClick={() => console.log("Navigate to Return Policy")}
+                    onClick={() => navigate("/customer-care/return")}
                     onKeyDown={(e) =>
                       (e.key === "Enter" || e.key === " ") &&
-                      console.log("Navigate to Return Policy")
+                      navigate("/customer-care/return")
                     }
                   >
                     Return Policy
@@ -275,10 +281,10 @@ const Footer = () => {
                   role="link"
                   tabIndex={0}
                   className="metallic-text avant text-black hover:text-black cursor-pointer"
-                  onClick={() => console.log("Navigate to Customer Reviews")}
+                  onClick={() => navigate("/about/customer-review")}
                   onKeyDown={(e) =>
                     (e.key === "Enter" || e.key === " ") &&
-                    console.log("Navigate to Customer Reviews")
+                    navigate("/about/customer-review")
                   }
                 >
                   Customer Reviews
@@ -326,10 +332,10 @@ const Footer = () => {
                   role="link"
                   tabIndex={0}
                   className="metallic-text avant text-black hover:text-black cursor-pointer"
-                  onClick={() => console.log("Navigate to Size Guide")}
+                  onClick={() => navigate("/customer-care/size-guide")}
                   onKeyDown={(e) =>
                     (e.key === "Enter" || e.key === " ") &&
-                    console.log("Navigate to Size Guide")
+                    navigate("/customer-care/size-guide")
                   }
                 >
                   Size Guide
@@ -340,10 +346,10 @@ const Footer = () => {
                   role="link"
                   tabIndex={0}
                   className="metallic-text avant text-black hover:text-black cursor-pointer"
-                  onClick={() => console.log("Navigate to Shipping")}
+                  onClick={() => navigate("/customer-care/shipping")}
                   onKeyDown={(e) =>
                     (e.key === "Enter" || e.key === " ") &&
-                    console.log("Navigate to Shipping")
+                    navigate("/customer-care/shipping")
                   }
                 >
                   Shipping
@@ -354,10 +360,10 @@ const Footer = () => {
                   role="link"
                   tabIndex={0}
                   className="metallic-text avant text-black hover:text-black cursor-pointer"
-                  onClick={() => console.log("Navigate to Track your Order")}
+                  onClick={() => navigate("/customer-care/track-order")}
                   onKeyDown={(e) =>
                     (e.key === "Enter" || e.key === " ") &&
-                    console.log("Navigate to Track your Order")
+                    navigate("/customer-care/track-order")
                   }
                 >
                   Track your Order
@@ -368,10 +374,10 @@ const Footer = () => {
                   role="link"
                   tabIndex={0}
                   className="metallic-text avant text-black hover:text-black cursor-pointer"
-                  onClick={() => console.log("Navigate to Return Policy")}
+                  onClick={() => navigate("/customer-care/return")}
                   onKeyDown={(e) =>
                     (e.key === "Enter" || e.key === " ") &&
-                    console.log("Navigate to Return Policy")
+                    navigate("/customer-care/return")
                   }
                 >
                   Return Policy
