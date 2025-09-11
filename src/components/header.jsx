@@ -109,7 +109,7 @@ const Header = () => {
               src={User}
               alt="User"
               className="w-6 h-6 hover:opacity-80 cursor-pointer"
-              onClick={() => navigate('/login')}
+              onClick={() => navigate("/login")}
             />
             <div
               role="button"
@@ -126,19 +126,19 @@ const Header = () => {
           {/* Nav Links */}
           <div className="flex flex-col items-center justify-center space-y-6">
             {[
-              { label: "Necklaces", href: "#necklaces" },
-              { label: "Earrings", href: "#earrings" },
-              { label: "Rings", href: "#rings" },
-              { label: "Bracelets", href: "#bracelets" },
-            ].map(({ label, href }) => (
+              { label: "Necklaces", path: "/necklace" },
+              { label: "Earrings", path: "/earrings" },
+              { label: "Rings", path: "/rings" },
+              { label: "Bracelets", path: "/bracelet" },
+            ].map(({ label, path }) => (
               <div
                 key={label}
                 role="link"
                 tabIndex={0}
-                onClick={() => (window.location.href = href)}
+                onClick={() => navigate(path)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
-                    window.location.href = href;
+                    navigate = path;
                   }
                 }}
                 className="text-2xl bebas metallic-text tracking-[0.3em] hover:opacity-70 cursor-pointer"
@@ -152,7 +152,7 @@ const Header = () => {
           <div className="w-full px-6 pb-6">
             <div className="border-t border-[#c9c9c9] mb-4 opacity-35" />
             <a
-              href="#wishlist"
+              href="/wishlist"
               className="flex items-center justify-between text-[1rem]"
             >
               <span className="metallic-text bebas text-lg">Wishlist</span>
@@ -160,6 +160,7 @@ const Header = () => {
                 src={Heart}
                 alt="Wishlist"
                 className="w-5 h-5 hover:opacity-80"
+                onClick={() => navigate("/wishlist")}
               />
             </a>
           </div>
@@ -174,10 +175,10 @@ const Header = () => {
       >
         {/* Left nav */}
         <nav className="flex-1 flex justify-end items-center space-x-8 -mt-8 avant uppercase cream-text text-[1.26rem]">
-          <a href="#necklaces" className="hover:opacity-60">
+          <a href="/necklace" className="hover:opacity-60">
             Necklaces
           </a>
-          <a href="#earrings" className="hover:opacity-60">
+          <a href="/earrings" className="hover:opacity-60">
             Earrings
           </a>
         </nav>
@@ -188,10 +189,10 @@ const Header = () => {
           role="button"
           tabIndex={0}
           aria-label="Go to homepage"
-          onClick={() => navigate('/')}
+          onClick={() => navigate("/")}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
-              navigate('/homepage');
+              navigate("/homepage");
             }
           }}
         >
@@ -205,10 +206,10 @@ const Header = () => {
         {/* Right nav */}
         <div className="flex-1 flex justify-start items-center space-x-8">
           <nav className="flex space-x-8 avant uppercase cream-text -mt-8 text-[1.26rem]">
-            <a href="#rings" className="hover:opacity-60">
+            <a href="/rings" className="hover:opacity-60">
               Rings
             </a>
-            <a href="#bracelets" className="hover:opacity-60">
+            <a href="/bracelet" className="hover:opacity-60">
               Bracelets
             </a>
           </nav>
@@ -231,17 +232,19 @@ const Header = () => {
               src={IconUser}
               alt="User"
               className="w-6 h-6 hover:opacity-80 cursor-pointer cream-text"
-              onClick={() => navigate('/login')}
+              onClick={() => navigate("/login")}
             />
             <img
               src={IconHeart}
               alt="Heart"
               className="w-6 h-6 hover:opacity-80 cursor-pointer cream-text"
+              onClick={() => navigate("/wishlist")}
             />
             <img
               src={IconBag}
               alt="Cart"
               className="w-6 h-6 hover:opacity-80 cursor-pointer cream-text"
+              onClick={() => navigate("/shopping-bag")}
             />
           </div>
         </div>
