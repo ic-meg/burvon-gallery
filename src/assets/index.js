@@ -89,6 +89,10 @@ import RebellionCollectionImg from './images/RebellionColl.png';
 import LoveLanguageCollectionImg from './images/LoveLangColl.png';
 import PearlCollectionImg from './images/PearlColl.png';
 
+//Size Guide 
+import SizeGuideHero from './images/SizeGuideHero.png';
+import SizeGuideVid from './images/SizeGuideVid.mp4';
+
 
 
 
@@ -170,4 +174,6 @@ export {
   trackBG,
   trackVector,
   trackBGMobile,
+  SizeGuideHero,
+  SizeGuideVid,
 };
