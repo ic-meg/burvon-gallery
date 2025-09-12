@@ -11,22 +11,20 @@ const TrackOrder = () => {
     <Layout full>
       <div
         className="hidden md:flex flex-row min-h-screen"
-        style={{ padding: "2rem" }}
+        style={{ padding: "2rem", overflow: "hidden" }}
       >
         {/* desktop: left form */}
         <div
-          className="track-order-form"
+          className="track-order-form mt-[130px] flex justify-center"
           style={{
-            width: "100%",
+            width: "50%",
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
             alignItems: "center",
-            padding: 0,
+            padding: "0 2rem",
             maxWidth: "700px",
-            marginTop: "-300px",
-            margin: 0,
-            zIndex: 3, // ensure form is above decorative images
+            zIndex: 3, 
           }}
         >
           <h1
@@ -174,8 +172,8 @@ const TrackOrder = () => {
         <div
           className="flex-1 flex items-stretch justify-end m-0 p-0"
           style={{
-            width: "50%",
-            overflow: "hidden",
+            width: "60%",
+            overflow: "visible",
             position: "relative",
             alignItems: "flex-start",
             justifyContent: "flex-end",
@@ -188,15 +186,21 @@ const TrackOrder = () => {
           <img
             src={trackBG}
             alt="Track Order Background"
+            className="ml-100"
             style={{
-              width: "90%",
-              height: "auto",
+              width: "120%",
+              height: "100vh",
               objectFit: "cover",
               display: "block",
-              marginTop: "100px",
-              marginBottom: -100,
+              marginTop: 0,
+              marginLeft: "auto",
+              marginRight: "-20%",
+              marginBottom: 0,
               border: "none",
-              position: "relative",
+              position: "absolute",
+              bottom: "-50px",
+              right: 0,
+              top: 60,
               zIndex: 2,
               pointerEvents: 'none',
               boxShadow: "0 0 20px 10px rgba(0, 0, 0, 0.55)",
