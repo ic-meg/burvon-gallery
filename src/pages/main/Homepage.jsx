@@ -26,6 +26,18 @@ import {
   DropUp,
 } from "../../assets/index.js";
 
+// CSS to hide scrollbar
+const scrollbarHideStyle = `
+  .scrollbar-hide {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+  }
+`;
+
+
 const heroImages = [KidsCollectionBanner, ClashCollectionBanner];
 
 const rebelsTopPicks = [
@@ -78,10 +90,9 @@ const burvonsCollections = [
   { id: 4, image: PearlCollectionImg },
 ];
 
-const BASE_HEIGHT = 377;
-const EXPANDED_HEIGHT = 440;
+const BASE_HEIGHT = 378; // compact height for collapsed (mobile)
 const HOMEPAGE_COLLECTION_VISIBLE_DESKTOP = 4;
-const HOMEPAGE_COLLECTION_VISIBLE_MOBILE = 2;
+const HOMEPAGE_COLLECTION_VISIBLE_MOBILE = 1; // For one card per swipe on mobile
 
 const faqs = [
   {
@@ -101,6 +112,8 @@ const faqs = [
   },
 ];
 
+const SCROLL_STEP = 320; // Adjust for full card width per swipe
+
 const Homepage = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [startIndex, setStartIndex] = useState(0);
@@ -111,19 +124,25 @@ const Homepage = () => {
   const [hoveredButtonId, setHoveredButtonId] = useState(null);
   const [burvonHoveredId, setBurvonHoveredId] = useState(null);
   const [collectionIndex, setCollectionIndex] = useState(0);
-
-  const [mobileRebelStartIndex, setMobileRebelStartIndex] = useState(0);
-  const [mobileBurvonStartIndex, setMobileBurvonStartIndex] = useState(0);
+  const [mobileImageIndexes, setMobileImageIndexes] = useState({});
 
   const [isMobile, setIsMobile] = useState(false);
   const [openIndex, setOpenIndex] = useState(null);
 
+  const rebelsScrollRef = useRef(null);
+  const burvonScrollRef = useRef(null);
+
+  const isResettingScrollRef = useRef(false);
+  const scrollWidthRef = useRef(0);
+
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
+      setHoveredCardId(null);
+      setExpandedRebelCardId(null);
+      setExpandedBurvonCardId(null);
     };
     handleResize();
-
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -135,7 +154,23 @@ const Homepage = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleImageChange = (cardId, direction) => {
+  const handleImageChangeMobile = (cardId, direction) => {
+    const images = rebelsTopPicks.find((item) => item.id === cardId).images;
+    setMobileImageIndexes((prev) => {
+      let currentIndex = prev[cardId] || 0;
+      if (direction === "next") {
+        currentIndex = (currentIndex + 1) % images.length;
+      } else {
+        currentIndex = (currentIndex - 1 + images.length) % images.length;
+      }
+      return {
+        ...prev,
+        [cardId]: currentIndex,
+      };
+    });
+  };
+
+  const handleImageChangeDesktop = (cardId, direction) => {
     if (hoveredCardId !== cardId) return;
     const images = rebelsTopPicks.find((item) => item.id === cardId).images;
     setHoveredImageIndex((idx) =>
@@ -145,14 +180,40 @@ const Homepage = () => {
     );
   };
 
+  // Desktop navigation
   const nextRebelDesktop = () => {
     setStartIndex((prev) => (prev + 1) % rebelsTopPicks.length);
   };
 
   const prevRebelDesktop = () => {
-    setStartIndex((prev) => (prev === 0 ? rebelsTopPicks.length - 1 : prev - 1));
+    setStartIndex((prev) =>
+      prev === 0 ? rebelsTopPicks.length - 1 : prev - 1
+    );
   };
 
+  // Mobile navigation - scroll one full card width per swipe
+  const nextRebelMobile = () => {
+    if (rebelsScrollRef.current) {
+      const maxScrollLeft =
+        rebelsScrollRef.current.scrollWidth - rebelsScrollRef.current.clientWidth;
+      const nextScrollLeft = Math.min(
+        rebelsScrollRef.current.scrollLeft + SCROLL_STEP,
+        maxScrollLeft
+      );
+      rebelsScrollRef.current.scrollTo({ left: nextScrollLeft, behavior: "smooth" });
+    }
+  };
+  const prevRebelMobile = () => {
+    if (rebelsScrollRef.current) {
+      const prevScrollLeft = Math.max(
+        rebelsScrollRef.current.scrollLeft - SCROLL_STEP,
+        0
+      );
+      rebelsScrollRef.current.scrollTo({ left: prevScrollLeft, behavior: "smooth" });
+    }
+  };
+
+  // Desktop Burvon
   const showPrevCollection = () => {
     setCollectionIndex(
       (prev) => (prev - 1 + burvonsCollections.length) % burvonsCollections.length
@@ -163,12 +224,30 @@ const Homepage = () => {
     setCollectionIndex((prev) => (prev + 1) % burvonsCollections.length);
   };
 
+  // Mobile Burvon navigation
+  const nextBurvonMobile = () => {
+    if (burvonScrollRef.current) {
+      burvonScrollRef.current.scrollBy({
+        left: 320,
+        behavior: "smooth",
+      });
+    }
+  };
+  const prevBurvonMobile = () => {
+    if (burvonScrollRef.current) {
+      burvonScrollRef.current.scrollBy({
+        left: -320,
+        behavior: "smooth",
+      });
+    }
+  };
+
   const rebelsVisibleCards = () => {
     let visibleCount = isMobile
       ? HOMEPAGE_COLLECTION_VISIBLE_MOBILE
       : HOMEPAGE_COLLECTION_VISIBLE_DESKTOP;
     const visible = [];
-    const start = isMobile ? mobileRebelStartIndex : startIndex;
+    const start = isMobile ? 0 : startIndex; // mobile handled by scroll not index
     for (let i = 0; i < visibleCount; i++) {
       visible.push(rebelsTopPicks[(start + i) % rebelsTopPicks.length]);
     }
@@ -180,84 +259,64 @@ const Homepage = () => {
       ? HOMEPAGE_COLLECTION_VISIBLE_MOBILE
       : HOMEPAGE_COLLECTION_VISIBLE_DESKTOP;
     const visible = [];
-    const start = isMobile ? mobileBurvonStartIndex : collectionIndex;
+    const start = isMobile ? 0 : collectionIndex; // mobile controlled by scroll
     for (let i = 0; i < visibleCount; i++) {
       visible.push(burvonsCollections[(start + i) % burvonsCollections.length]);
     }
     return visible;
   };
 
-  const handleRebelSwipe = (direction) => {
-    setMobileRebelStartIndex((prev) => {
-      if (direction === "next") {
-        return (prev + 1) % rebelsTopPicks.length;
-      } else {
-        return (prev - 1 + rebelsTopPicks.length) % rebelsTopPicks.length;
-      }
-    });
-    setExpandedRebelCardId(null);
-  };
-
-  const handleBurvonSwipe = (direction) => {
-    setMobileBurvonStartIndex((prev) => {
-      if (direction === "next") {
-        return (prev + 1) % burvonsCollections.length;
-      } else {
-        return (prev - 1 + burvonsCollections.length) % burvonsCollections.length;
-      }
-    });
-    setExpandedBurvonCardId(null);
-  };
-
+  // Swipe logic for Rebels
   const touchStartXRebel = useRef(null);
   const touchEndXRebel = useRef(null);
 
   const onTouchStartRebel = (e) => {
     touchStartXRebel.current = e.touches[0].clientX;
   };
-
   const onTouchMoveRebel = (e) => {
     touchEndXRebel.current = e.touches[0].clientX;
   };
-
   const onTouchEndRebel = () => {
     if (!touchStartXRebel.current || !touchEndXRebel.current) return;
     const diff = touchStartXRebel.current - touchEndXRebel.current;
     if (diff > 50) {
-      handleRebelSwipe("next");
+      nextRebelMobile();
     } else if (diff < -50) {
-      handleRebelSwipe("prev");
+      prevRebelMobile();
     }
     touchStartXRebel.current = null;
     touchEndXRebel.current = null;
   };
 
+  // Swipe logic for Burvon
   const touchStartXBurvon = useRef(null);
   const touchEndXBurvon = useRef(null);
 
   const onTouchStartBurvon = (e) => {
     touchStartXBurvon.current = e.touches[0].clientX;
   };
-
   const onTouchMoveBurvon = (e) => {
     touchEndXBurvon.current = e.touches[0].clientX;
   };
-
   const onTouchEndBurvon = () => {
     if (!touchStartXBurvon.current || !touchEndXBurvon.current) return;
     const diff = touchStartXBurvon.current - touchEndXBurvon.current;
     if (diff > 50) {
-      handleBurvonSwipe("next");
+      nextBurvonMobile();
     } else if (diff < -50) {
-      handleBurvonSwipe("prev");
+      prevBurvonMobile();
     }
     touchStartXBurvon.current = null;
     touchEndXBurvon.current = null;
   };
 
+  // Infinite scroll effect for rebels top picks on mobile to loop left/right indefinitely
+  // Removed because we handle natural scroll snapping now.
+
   return (
     <Layout full>
-      {/* Hero Section - unchanged */}
+      <style>{scrollbarHideStyle}</style>
+      {/* Hero Section */}
       <section
         id="hero"
         className="relative w-full h-[450px] lg:h-[550px] xl:h-[730px] overflow-hidden bg-black flex items-center justify-center"
@@ -277,7 +336,6 @@ const Homepage = () => {
             />
           ))}
         </div>
-        {/* Pagination Dots */}
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex space-x-1 z-20">
           {heroImages.map((_, index) => (
             <span
@@ -301,19 +359,13 @@ const Homepage = () => {
 <section className="bg-[#1f1f21] py-14">
   <div className="max-w-7xl mx-auto px-5 relative">
     <div className="flex justify-between items-center pb-8">
-      <h2 className="font-bold bebas text-[50px] tracking-wide text-[#FFF7DC]">
-        REBEL’S TOP PICKS
-      </h2>
-      {/* Show prev/next buttons on desktop only */}
-      {!isMobile && (
+      <h2 className="font-bold bebas text-3xl tracking-wide text-[#FFF7DC]">REBEL’S TOP PICKS</h2>
+      {!isMobile ? (
         <div className="flex space-x-4">
           <div
             onClick={prevRebelDesktop}
             role="button"
             tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") prevRebelDesktop();
-            }}
             aria-label="Previous Picks"
             className="flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 hover:text-[#222] transition select-none"
           >
@@ -323,135 +375,71 @@ const Homepage = () => {
             onClick={nextRebelDesktop}
             role="button"
             tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") nextRebelDesktop();
-            }}
             aria-label="Next Picks"
             className="flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 hover:text-[#222] transition select-none"
           >
             <img src={NextIcon} alt="Next" className="w-10 h-10" draggable={false} />
           </div>
         </div>
-      )}
+      ) : null}
     </div>
 
-    {/* Cards container */}
     {isMobile ? (
-      // Mobile horizontal scrolling container, show ~1.3 cards per view for scroll hint
       <div
-        className="flex space-x-6 overflow-x-auto scrollbar-hide"
-        onTouchStart={onTouchStartRebel}
-        onTouchMove={onTouchMoveRebel}
-        onTouchEnd={onTouchEndRebel}
+        ref={rebelsScrollRef}
+        className="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory"
+        style={{
+          scrollBehavior: "smooth",
+          WebkitOverflowScrolling: "touch",
+        }}
+        // Removed custom touch event handlers for native swipe
+        // onTouchStart={onTouchStartRebel}
+        // onTouchMove={onTouchMoveRebel}
+        // onTouchEnd={onTouchEndRebel}
       >
-        {rebelsVisibleCards().map((item) => {
-          const isExpanded = expandedRebelCardId === item.id;
-          return (
+        {rebelsTopPicks.map((item) => (
+          <div
+            key={item.id}
+            onClick={() => {
+              // Replace with your navigation logic
+              console.log(`Clicked Rebel Top Pick card id: ${item.id}`);
+            }}
+            className="relative bg-[#222] rounded-none drop-shadow-[0_10px_15px_rgba(0,0,0,1)] cursor-pointer flex-shrink-0 transition-all duration-300 ease-in-out"
+            style={{
+              minHeight: BASE_HEIGHT,
+              height: BASE_HEIGHT,
+              width: "100vw",
+              scrollSnapAlign: "start",
+              flexBasis: "100%",
+            }}
+          >
+            <div className="relative w-full h-[300px] flex items-center justify-center overflow-hidden bg-black">
+              <img
+                src={item.images[0]}
+                alt={item.name}
+                className="object-cover w-full h-full rounded-none select-none"
+                draggable={false}
+              />
+            </div>
             <div
-              key={item.id}
-              onClick={() => setExpandedRebelCardId(isExpanded ? null : item.id)}
-              className={`relative bg-[#222] rounded-none drop-shadow-[0_10px_15px_rgba(0,0,0,1)] cursor-pointer transition-transform duration-300 ${
-                isExpanded ? "scale-105 z-10" : ""
-              }`}
               style={{
-                height: isExpanded ? EXPANDED_HEIGHT : BASE_HEIGHT,
-                flexBasis: "calc(70% - 1rem)", // approx 1.3 cards visible with spacing
-                flexShrink: 0,
-                minWidth: "auto",
+                background: "linear-gradient(90deg, #000000 46%, #666666 100%)",
               }}
+              className="relative py-2 px-2 text-center flex flex-col items-center rounded-none min-h-[75px]"
             >
-              {/* Overlay Buttons */}
-              <div className="w-full flex justify-between items-center px-6 pt-6 absolute top-0 left-0 z-10">
-                <img
-                  src={TryOnIcon}
-                  alt="Try On"
-                  className="w-6 h-6 cursor-pointer hover:opacity-80"
-                  draggable={false}
-                />
-                <img
-                  src={AddFavorite}
-                  alt="Favorite"
-                  className="w-6 h-6 cursor-pointer hover:opacity-80"
-                  draggable={false}
-                />
-              </div>
-
-              {/* Image container with next/prev buttons for mobile */}
-              <div className="relative w-full h-[300px] flex items-center justify-center overflow-hidden bg-black">
-                <img
-                  src={isExpanded ? item.images[hoveredImageIndex] : item.images[0]}
-                  alt={item.name}
-                  className="object-cover w-full h-full rounded-none transition-all duration-300"
-                />
-                {isExpanded && (
-                  <>
-                    <img
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleImageChange(item.id, "prev");
-                      }}
-                      src={PrevIcon}
-                      alt="Previous"
-                      className="absolute left-2 top-1/2 -translate-y-1/2 w-5 h-5 cursor-pointer hover:opacity-80"
-                      draggable={false}
-                    />
-                    <img
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleImageChange(item.id, "next");
-                      }}
-                      src={NextIcon}
-                      alt="Next"
-                      className="absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5 cursor-pointer hover:opacity-80"
-                      draggable={false}
-                    />
-                  </>
-                )}
-              </div>
-
-              {/* Details */}
-              <div
-                style={{
-                  background: "linear-gradient(90deg, #000000 46%, #666666 100%)",
-                }}
-                className="relative py-2 px-2 text-center flex flex-col items-center rounded-none min-h-[140px]"
-              >
-                <span className="uppercase text-[#FFF7DC] tracking-widest text-[13px] avantbold">
-                  {item.name}
-                </span>
-                <span className="text-[13px] tracking-widest text-[#FFF7DC] avant">
-                  {item.collection}
-                </span>
-                <div className="flex justify-center items-center gap-2 text-[14px] avantbold mb-10">
-                  <span className="line-through text-[#FFF7DC] opacity-50">{item.originalPrice}</span>
-                  <span className="text-[#FFF7DC]">{item.salePrice}</span>
-                </div>
-                <button
-                  style={{
-                    backgroundColor: hoveredButtonId === item.id ? "#FFF7DC" : "transparent",
-                    color: hoveredButtonId === item.id ? "#1F1F21" : "#FFF7DC",
-                    outline: "2px solid #FFF7DC",
-                    outlineOffset: "0px",
-                    borderRadius: 0,
-                  }}
-                  onMouseEnter={() => setHoveredButtonId(item.id)}
-                  onMouseLeave={() => setHoveredButtonId(null)}
-                  className="absolute bottom-4 left-4 right-4 flex items-center justify-center gap-2 border border-[#FFF7DC] py-2 px-4 font-bold text-md tracking-wide rounded-none transition-all duration-300 outline-none"
-                >
-                  <img
-                    src={hoveredButtonId === item.id ? AddBagHover : AddBag}
-                    alt="Bag Icon"
-                    className="w-4 h-4 transition-colors duration-300"
-                  />
-                  ADD TO BAG
-                </button>
+              <span className="uppercase text-[#FFF7DC] tracking-widest text-[13px] avantbold">
+                {item.name}
+              </span>
+              <span className="text-[13px] tracking-widest text-[#FFF7DC] avant">{item.collection}</span>
+              <div className="flex justify-center items-center gap-2 text-[14px] avantbold mb-2">
+                <span className="line-through text-[#FFF7DC] opacity-50">{item.originalPrice}</span>
+                <span className="text-[#FFF7DC]">{item.salePrice}</span>
               </div>
             </div>
-          );
-        })}
+          </div>
+        ))}
       </div>
     ) : (
-      /* Desktop grid with 4 cards */
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10">
         {rebelsVisibleCards().map((item) => {
           const isHovered = hoveredCardId === item.id;
@@ -469,7 +457,7 @@ const Homepage = () => {
                 isHovered ? "scale-105 z-10" : ""
               }`}
               style={{
-                height: isHovered ? EXPANDED_HEIGHT : BASE_HEIGHT,
+                height: isHovered ? "auto" : BASE_HEIGHT,
               }}
             >
               <div className="w-full flex justify-between items-center px-6 pt-6 absolute top-0 left-0 z-10">
@@ -486,20 +474,18 @@ const Homepage = () => {
                   draggable={false}
                 />
               </div>
-
-              {/* Image container with next/prev buttons for desktop */}
               <div className="relative w-full h-[300px] flex items-center justify-center overflow-hidden bg-black">
                 <img
                   src={isHovered ? item.images[hoveredImageIndex] : item.images[0]}
                   alt={item.name}
                   className="object-cover w-full h-full rounded-none transition-all duration-300"
                 />
-                {isHovered && (
+                {isHovered && item.images.length > 1 && (
                   <>
                     <img
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleImageChange(item.id, "prev");
+                        handleImageChangeDesktop(item.id, "prev");
                       }}
                       src={PrevIcon}
                       alt="Previous"
@@ -509,7 +495,7 @@ const Homepage = () => {
                     <img
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleImageChange(item.id, "next");
+                        handleImageChangeDesktop(item.id, "next");
                       }}
                       src={NextIcon}
                       alt="Next"
@@ -519,43 +505,39 @@ const Homepage = () => {
                   </>
                 )}
               </div>
-
-              {/* Details */}
               <div
                 style={{
                   background: "linear-gradient(90deg, #000000 46%, #666666 100%)",
                 }}
                 className="relative py-2 px-2 text-center flex flex-col items-center rounded-none min-h-[140px]"
               >
-                <span className="uppercase text-[#FFF7DC] tracking-widest text-[13px] avantbold">
-                  {item.name}
-                </span>
-                <span className="text-[13px] tracking-widest text-[#FFF7DC] avant">
-                  {item.collection}
-                </span>
+                <span className="uppercase text-[#FFF7DC] tracking-widest text-[13px] avantbold">{item.name}</span>
+                <span className="text-[13px] tracking-widest text-[#FFF7DC] avant">{item.collection}</span>
                 <div className="flex justify-center items-center gap-2 text-[14px] avantbold mb-10">
                   <span className="line-through text-[#FFF7DC] opacity-50">{item.originalPrice}</span>
                   <span className="text-[#FFF7DC]">{item.salePrice}</span>
                 </div>
-                <button
-                  style={{
-                    backgroundColor: hoveredButtonId === item.id ? "#FFF7DC" : "transparent",
-                    color: hoveredButtonId === item.id ? "#1F1F21" : "#FFF7DC",
-                    outline: "2px solid #FFF7DC",
-                    outlineOffset: "0px",
-                    borderRadius: 0,
-                  }}
-                  onMouseEnter={() => setHoveredButtonId(item.id)}
-                  onMouseLeave={() => setHoveredButtonId(null)}
-                  className="absolute bottom-4 left-4 right-4 flex items-center justify-center gap-2 border border-[#FFF7DC] py-2 px-4 font-bold text-md tracking-wide rounded-none transition-all duration-300 outline-none"
-                >
-                  <img
-                    src={hoveredButtonId === item.id ? AddBagHover : AddBag}
-                    alt="Bag Icon"
-                    className="w-4 h-4 transition-colors duration-300"
-                  />
-                  ADD TO BAG
-                </button>
+                {isHovered && (
+                  <button
+                    style={{
+                      backgroundColor: hoveredButtonId === item.id ? "#FFF7DC" : "transparent",
+                      color: hoveredButtonId === item.id ? "#1F1F21" : "#FFF7DC",
+                      outline: "2px solid #FFF7DC",
+                      outlineOffset: "0px",
+                      borderRadius: 0,
+                    }}
+                    onMouseEnter={() => setHoveredButtonId(item.id)}
+                    onMouseLeave={() => setHoveredButtonId(null)}
+                    className="absolute bottom-4 left-4 right-4 flex items-center justify-center gap-2 border border-[#FFF7DC] py-2 px-4 font-bold text-md tracking-wide rounded-none transition-all duration-300 outline-none"
+                  >
+                    <img
+                      src={hoveredButtonId === item.id ? AddBagHover : AddBag}
+                      alt="Bag Icon"
+                      className="w-4 h-4 transition-colors duration-300"
+                    />
+                    ADD TO BAG
+                  </button>
+                )}
               </div>
             </div>
           );
@@ -566,170 +548,157 @@ const Homepage = () => {
 </section>
 
 
-      {/* Burvon's Collection Section */}
-      <section className="w-full bg-black py-14">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex justify-between items-center mb-10">
-            <h2 className="font-bold bebas text-4xl lg:text-5xl tracking-wide text-[#FFF7DC]">
-              BURVON’S COLLECTION
-            </h2>
-            {!isMobile && (
-              <div className="flex space-x-4">
-                <div
-                  onClick={showPrevCollection}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") showPrevCollection();
-                  }}
-                  aria-label="Previous Collection"
-                  className="flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 hover:text-[#222] transition select-none"
-                >
-                  <img src={PrevIcon} alt="Previous" className="w-10 h-10" draggable={false} />
-                </div>
-                <div
-                  onClick={showNextCollection}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") showNextCollection();
-                  }}
-                  aria-label="Next Collection"
-                  className="flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 hover:text-[#222] transition select-none"
-                >
-                  <img src={NextIcon} alt="Next" className="w-10 h-10" draggable={false} />
-                </div>
-              </div>
-            )}
-          </div>
+{/* Burvons Collection Section */}
+<section className="w-full bg-black py-14">
+  <div className="max-w-7xl mx-auto px-6">
+    <div className="flex justify-between items-center mb-10">
+      <h2 className="font-bold bebas text-3xl lg:text-5xl tracking-wide text-[#FFF7DC]">
+        BURVON’S COLLECTION
+      </h2>
+      {!isMobile ? (
+        <div className="flex space-x-4">
+          <button
+            onClick={showPrevCollection}
+            aria-label="Previous Collection"
+            className="bg-transparent flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 hover:text-[#222] transition select-none"
+            style={{ background: "transparent", boxShadow: "none", border: "none" }}
+          >
+            <img src={PrevIcon} alt="Previous" className="w-10 h-10" draggable={false} />
+          </button>
+          <button
+            onClick={showNextCollection}
+            aria-label="Next Collection"
+            className="bg-transparent flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 hover:text-[#222] transition select-none"
+            style={{ background: "transparent", boxShadow: "none", border: "none" }}
+          >
+            <img src={NextIcon} alt="Next" className="w-10 h-10" draggable={false} />
+          </button>
+        </div>
+      ) : null}
+    </div>
 
-          {isMobile ? (
-            // Mobile horizontal scroll container with spacing between cards and natural image aspect ratio
+    {isMobile ? (
+      <div
+        ref={burvonScrollRef}
+        className="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory"
+        style={{
+          scrollBehavior: "smooth",
+          WebkitOverflowScrolling: "touch",
+          paddingRight: "1.5rem",
+        }}
+      >
+        {[...burvonsCollections, ...burvonsCollections, ...burvonsCollections].map((col, idx, arr) => (
+          <div
+            key={`${col.id}-${idx}`}
+            className="flex-shrink-0 overflow-hidden shadow-lg cursor-pointer transition-all duration-300"
+            style={{
+              width: window.innerWidth,
+              scrollSnapAlign: "start",
+              marginRight: idx !== arr.length - 1 ? "1.5rem" : "0",
+              borderRadius: 0,  // explicitly remove border radius
+            }}
+          >
+            <img
+              src={col.image}
+              alt={`Burvon ${col.id}`}
+              className="w-full h-auto object-cover select-none"
+              draggable={false}
+              style={{ borderRadius: 0 }} // reinforce no rounding on image
+            />
+          </div>
+        ))}
+      </div>
+    ) : (
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 justify-center">
+        {burvonVisibleCards().map((col) => {
+          const isHovered = burvonHoveredId === col.id;
+          return (
             <div
-              className="flex space-x-6 overflow-x-auto scrollbar-hide justify-center"
-              onTouchStart={onTouchStartBurvon}
-              onTouchMove={onTouchMoveBurvon}
-              onTouchEnd={onTouchEndBurvon}
+              key={col.id}
+              onMouseEnter={() => setBurvonHoveredId(col.id)}
+              onMouseLeave={() => setBurvonHoveredId(null)}
+              className={`overflow-hidden shadow-lg mx-auto transition-all duration-300 cursor-pointer
+                ${isHovered ? "scale-105 shadow-2xl z-30" : "shadow-lg"}
+              `}
+              style={{
+                maxWidth: 320,
+                boxShadow: isHovered
+                  ? "0 2px 6px rgba(255, 247, 220, 0.3)"
+                  : "0 1px 3px rgba(0,0,0,0.2)",
+                backgroundColor: "transparent",
+                transformOrigin: "center",
+                transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                transform: isHovered ? "scale(1.03)" : "scale(1)",
+                borderRadius: 0,  // explicitly remove border radius
+              }}
             >
-              {burvonVisibleCards().map((col) => {
-                const isExpanded = expandedBurvonCardId === col.id;
-                return (
-                  <div
-                    key={col.id}
-                    onClick={() => setExpandedBurvonCardId(isExpanded ? null : col.id)}
-                    className={`bg-[#111] rounded-none overflow-hidden shadow-lg mx-auto transition-all duration-300 cursor-pointer flex-shrink-0 ${
-                      isExpanded ? "scale-105 z-10" : ""
-                    }`}
-                    style={{
-                      height: isExpanded ? 460 : 380,
-                      flexBasis: "calc(50% - 1.5rem)", // half width minus spacing
-                      flexShrink: 0,
-                      minWidth: "auto",
-                      boxShadow: isExpanded
-                        ? "0 8px 32px 0 rgba(0,0,0,0.8)"
-                        : "0 4px 16px rgba(0,0,0,0.6)",
-                    }}
-                    onMouseEnter={() => !isMobile && setBurvonHoveredId(col.id)}
-                    onMouseLeave={() => !isMobile && setBurvonHoveredId(null)}
-                  >
-                    <img
-                      src={col.image}
-                      alt={`Burvon Collection ${col.id}`}
-                      className="max-w-full max-h-full object-contain select-none transition-transform duration-300"
-                      draggable={false}
-                      style={{
-                        height: "100%",
-                        width: "100%",
-                      }}
-                    />
-                  </div>
-                );
-              })}
+              <img
+                src={col.image}
+                alt={`Burvon Collection ${col.id}`}
+                className="w-full h-auto object-cover select-none transition-transform duration-300"
+                draggable={false}
+                style={{ display: "block", borderRadius: 3 }} // remove rounding on img
+              />
             </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 justify-center">
-              {burvonVisibleCards().map((col) => (
-                <div
-                  key={col.id}
-                  onMouseEnter={() => setBurvonHoveredId(col.id)}
-                  onMouseLeave={() => setBurvonHoveredId(null)}
-                  className={`bg-[#111] rounded-none overflow-hidden shadow-lg mx-auto transition-all duration-300 cursor-pointer`}
-                  style={{
-                    height: burvonHoveredId === col.id ? 460 : 380,
-                    maxWidth: 320,
-                    boxShadow:
-                      burvonHoveredId === col.id
-                        ? "0 8px 32px 0 rgba(0,0,0,0.8)"
-                        : "0 4px 16px rgba(0,0,0,0.6)",
-                  }}
-                >
-                  <img
-                    src={col.image}
-                    alt={`Burvon Collection ${col.id}`}
-                    className="w-full h-full object-cover select-none transition-transform duration-300"
-                    draggable={false}
-                    style={{
-                      height: "100%",
-                      width: "100%",
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
+          );
+        })}
+      </div>
+    )}
+  </div>
+</section>
 
-      {/* Style It On You Section */}
-      <section className="relative w-full bg-[#1F1F21] mt-16 md:mt-24 lg:mt-15">
-        <img
-          src={StyleItImg}
-          alt="Style It On You"
-          className={`w-full object-cover ${
-            isMobile ? "h-[400px]" : "h-[500px] md:h-[600px] lg:h-[650px]"
-          }`}
-          draggable={false}
-          style={{
-            objectPosition: isMobile ? "center bottom" : "center center",
-          }}
-        />
 
-        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"></div>
 
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="max-w-7xl mx-auto w-full px-4 sm:px-10 md:px-10 lg:px-5">
-            <div className="flex flex-col items-center text-center max-w-md mx-auto">
-              <h2 className="font-bold text-2xl md:text-3xl lg:text-4xl mb-4 tracking-wide text-[#fff7dc] bebas">
-                STYLE IT ON YOU
-              </h2>
-              <p className="mb-8 text-sm md:text-base lg:text-lg text-[#fff7dc] opacity-90 avant leading-snug">
-                Experience our virtual try-on feature and see <br />
-                how each piece looks on you.
-              </p>
-              <button
-                style={{
-                  backgroundColor: hoveredButtonId === "try" ? "#FFF7DC" : "transparent",
-                  color: hoveredButtonId === "try" ? "#1F1F21" : "#FFF7DC",
-                  outline: "2px solid #FFF7DC",
-                  outlineOffset: "0px",
-                  borderRadius: 5,
-                }}
-                onMouseEnter={() => setHoveredButtonId("try")}
-                onMouseLeave={() => setHoveredButtonId(null)}
-                className="flex items-center justify-center gap-2 py-3 px-10 w-36 avant text-md md:text-base tracking-wide transition-all duration-300 outline-none"
-              >
-                TRY NOW
-              </button>
-            </div>
+
+    {/* Style It On You Section */}
+    <section className="relative w-full bg-[#1F1F21] mt-16 md:mt-24 lg:mt-15">
+      <img
+        src={StyleItImg}
+        alt="Style It On You"
+        className={`w-full object-cover ${
+          isMobile ? "h-[400px]" : "h-[500px] md:h-[600px] lg:h-[650px]"
+        }`}
+        draggable={false}
+        style={{
+          objectPosition: isMobile ? "center bottom" : "center center",
+        }}
+      />
+
+      <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"></div>
+
+      <div className="absolute inset-0 flex items-center">
+        <div className="max-w-7xl mx-auto w-full px-4 sm:px-10 md:px-10 lg:px-5">
+          {/* Removed mx-auto to align left */}
+          <div className="flex flex-col items-center text-center max-w-md md:items-start md:text-left">
+            <h2 className="font-bold text-2xl md:text-3xl lg:text-4xl mb-4 tracking-wide text-[#fff7dc] bebas">
+              STYLE IT ON YOU
+            </h2>
+            <p className="mb-8 text-sm md:text-base lg:text-lg text-[#fff7dc] opacity-90 avant leading-snug">
+              Experience our virtual try-on feature and see <br />
+              how each piece looks on you.
+            </p>
+            <button
+              style={{
+                backgroundColor: hoveredButtonId === "try" ? "#FFF7DC" : "transparent",
+                color: hoveredButtonId === "try" ? "#1F1F21" : "#FFF7DC",
+                outline: "2px solid #FFF7DC",
+                borderRadius: 0,
+              }}
+              onMouseEnter={() => setHoveredButtonId("try")}
+              onMouseLeave={() => setHoveredButtonId(null)}
+              className="flex items-center justify-center gap-2 py-3 px-6 avant text-base tracking-wide transition-colors duration-300 outline-none cursor-pointer"
+            >
+              TRY NOW
+            </button>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      {/* Services Highlights Section - reverted to original one-row layout on mobile and desktop */}
+      {/* Services Highlights Section */}
       <section className="bg-[#1F1F21] py-20 flex justify-center">
         <div className="max-w-4xl w-full px-6 mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-10 justify-items-center justify-center max-w-3xl mx-auto sm:ml-auto sm:mr-0">
-            {/* Fast Shipping */}
             <div className="w-80 sm:w-full mx-auto grid grid-cols-[3rem_1fr] items-center gap-4 text-left">
               <div className="flex justify-center">
                 <img
@@ -739,16 +708,10 @@ const Homepage = () => {
                 />
               </div>
               <div>
-                <h3 className="font-bold text-[#fff7dc] text-lg bebas">
-                  FAST SHIPPING
-                </h3>
-                <p className="text-sm text-gray-300 avant">
-                  Quick and reliable delivery.
-                </p>
+                <h3 className="font-bold text-[#fff7dc] text-lg bebas">FAST SHIPPING</h3>
+                <p className="text-sm text-gray-300 avant">Quick and reliable delivery.</p>
               </div>
             </div>
-
-            {/* Secure Payment */}
             <div className="w-80 sm:w-full mx-auto grid grid-cols-[3rem_1fr] items-center gap-4 text-left">
               <div className="flex justify-center">
                 <img
@@ -758,16 +721,10 @@ const Homepage = () => {
                 />
               </div>
               <div>
-                <h3 className="font-bold text-[#fff7dc] text-lg bebas">
-                  SECURE PAYMENT
-                </h3>
-                <p className="text-sm text-gray-300 avant">
-                  Safe and protected checkout.
-                </p>
+                <h3 className="font-bold text-[#fff7dc] text-lg bebas">SECURE PAYMENT</h3>
+                <p className="text-sm text-gray-300 avant">Safe and protected checkout.</p>
               </div>
             </div>
-
-            {/* Easy Returns */}
             <div className="w-80 sm:w-full mx-auto grid grid-cols-[3rem_1fr] items-center gap-4 text-left">
               <div className="flex justify-center">
                 <img
@@ -777,16 +734,10 @@ const Homepage = () => {
                 />
               </div>
               <div>
-                <h3 className="font-bold text-[#fff7dc] text-lg bebas">
-                  EASY RETURNS
-                </h3>
-                <p className="text-sm text-gray-300 avant">
-                  Stress-free return process.
-                </p>
+                <h3 className="font-bold text-[#fff7dc] text-lg bebas">EASY RETURNS</h3>
+                <p className="text-sm text-gray-300 avant">Stress-free return process.</p>
               </div>
             </div>
-
-            {/* 24/7 Support */}
             <div className="w-80 sm:w-full mx-auto grid grid-cols-[3rem_1fr] items-center gap-4 text-left">
               <div className="flex justify-center">
                 <img
@@ -796,12 +747,8 @@ const Homepage = () => {
                 />
               </div>
               <div>
-                <h3 className="font-bold text-[#fff7dc] text-lg bebas">
-                  24/7 SUPPORT
-                </h3>
-                <p className="text-sm text-gray-300 avant">
-                  We’re here anytime you need.
-                </p>
+                <h3 className="font-bold text-[#fff7dc] text-lg bebas">24/7 SUPPORT</h3>
+                <p className="text-sm text-gray-300 avant">We’re here anytime you need.</p>
               </div>
             </div>
           </div>
@@ -814,21 +761,14 @@ const Homepage = () => {
           <h2 className="text-center text-[#fff7dc] font-bold text-4xl mb-8 tracking-wide bebas">
             BURVON JEWELRY FAQS
           </h2>
-
           <div className="border-t border-[#fff7dc]/40 max-w-3xl mx-auto">
             {faqs.map((faq, index) => (
-              <div
-                key={index}
-                className="border-b border-[#fff7dc]/40 bg-transparent"
-              >
+              <div key={index} className="border-b border-[#fff7dc]/40 bg-transparent">
                 <button
                   type="button"
-                  className="w-full flex justify-between items-center text-left text-[#fff7dc] font-normal py-5 
-                       focus:outline-none bg-transparent border-0 shadow-none rounded-none appearance-none avant"
+                  className="w-full flex justify-between items-center text-left text-[#fff7dc] font-normal py-5 focus:outline-none bg-transparent border-0 shadow-none rounded-none appearance-none avant cursor-pointer"
                   style={{ background: "transparent" }}
-                  onClick={() =>
-                    setOpenIndex(openIndex === index ? null : index)
-                  }
+                  onClick={() => setOpenIndex(openIndex === index ? null : index)}
                 >
                   <span>{faq.question}</span>
                   <img
@@ -837,12 +777,9 @@ const Homepage = () => {
                     className="w-4 h-4"
                   />
                 </button>
-
                 {openIndex === index && (
                   <div className="pb-5 bg-transparent">
-                    <p className="text-[#fff7dc] font-normal avant pl-5">
-                      {faq.answer}
-                    </p>
+                    <p className="text-[#fff7dc] font-normal avant pl-3">{faq.answer}</p>
                   </div>
                 )}
               </div>
