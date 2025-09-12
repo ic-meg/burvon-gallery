@@ -69,6 +69,9 @@ import StyleItImg from './images/StyleIt.png';
 import customerBG from './images/customerBG.png';
 import customerBGMobile from './images/customerBG-mobile.png';
 import customerProf from './images/customerProf.png';
+import trackBG from './images/trackBG.png';
+import trackVector from './images/trackVector.png';
+import trackBGMobile from './images/trackBG-mobile.png';
 
 //Hero Section
 import KidsCollectionBanner from './images/KidsCollection.png';
@@ -163,5 +166,8 @@ export {
   DropUp,
   customerBG,
   customerBGMobile,
-  customerProf
+  customerProf,
+  trackBG,
+  trackVector,
+  trackBGMobile,
 };
