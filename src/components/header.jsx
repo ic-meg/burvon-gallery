@@ -144,7 +144,7 @@ const Header = () => {
                 onClick={() => navigate(path)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
-                    navigate = path;
+                    navigate(path);
                   }
                 }}
                 className="text-2xl bebas metallic-text tracking-[0.3em] hover:opacity-70 cursor-pointer"
