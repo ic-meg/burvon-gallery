@@ -14,6 +14,7 @@ import CustomerReviews from "./pages/about/CustomerReviews";
 import SizeGuide from "./pages/customer-care/SizeGuide";
 import Shipping from "./pages/customer-care/Shipping";
 import TrackOrder from "./pages/customer-care/TrackOrder";
+import TrackOrder2 from "./pages/customer-care/TrackOrder2";
 import Return from "./pages/customer-care/ReturnPolicy";
 import FAQs from "./pages/customer-care/FAQs";
 import JewelryCare from "./pages/customer-care/JewelryCare";
@@ -45,6 +46,7 @@ const App = () => {
           <Route path="/customer-care/size-guide" element={<SizeGuide />} />
           <Route path="/customer-care/shipping" element={<Shipping />} />
           <Route path="/customer-care/track-order" element={<TrackOrder />} />
+          <Route path="/customer-care/track-order-2" element={<TrackOrder2 />} />
           <Route path="/customer-care/return" element={<Return />} />
 
           {/*About Footer */}
