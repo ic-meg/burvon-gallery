@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 //icons and logo
 import {
@@ -144,7 +144,8 @@ const Header = () => {
                 onClick={() => navigate(path)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
-                    navigate = path;
+                    e.preventDefault();
+                    navigate(path);
                   }
                 }}
                 className="text-2xl bebas metallic-text tracking-[0.3em] hover:opacity-70 cursor-pointer"
@@ -157,8 +158,8 @@ const Header = () => {
           {/* Wishlist */}
           <div className="w-full px-6 pb-6">
             <div className="border-t border-[#c9c9c9] mb-4 opacity-35" />
-            <a
-              href="/wishlist"
+            <Link
+              to="/wishlist"
               className="flex items-center justify-between text-[1rem]"
             >
               <span className="metallic-text bebas text-lg">Wishlist</span>
@@ -166,9 +167,8 @@ const Header = () => {
                 src={Heart}
                 alt="Wishlist"
                 className="w-5 h-5 hover:opacity-80"
-                onClick={() => navigate("/wishlist")}
               />
-            </a>
+            </Link>
           </div>
         </div>
       </header>
@@ -181,12 +181,12 @@ const Header = () => {
       >
         {/* Left nav */}
         <nav className="flex-1 flex justify-end items-center space-x-8 -mt-8 avant uppercase cream-text text-[1.26rem]">
-          <a href="/necklace" className="hover:opacity-60">
+          <Link to="/necklace" className="hover:opacity-60">
             Necklaces
-          </a>
-          <a href="/earrings" className="hover:opacity-60">
+          </Link>
+          <Link to="/earrings" className="hover:opacity-60">
             Earrings
-          </a>
+          </Link>
         </nav>
 
         {/* Center logo */}
@@ -212,12 +212,12 @@ const Header = () => {
         {/* Right nav */}
         <div className="flex-1 flex justify-start items-center space-x-8">
           <nav className="flex space-x-8 avant uppercase cream-text -mt-8 text-[1.26rem]">
-            <a href="/rings" className="hover:opacity-60">
+            <Link to="/rings" className="hover:opacity-60">
               Rings
-            </a>
-            <a href="/bracelet" className="hover:opacity-60">
+            </Link>
+            <Link to="/bracelet" className="hover:opacity-60">
               Bracelets
-            </a>
+            </Link>
           </nav>
 
           {/* Icons */}
