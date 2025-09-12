@@ -141,10 +141,14 @@ const Header = () => {
                 key={label}
                 role="link"
                 tabIndex={0}
-                onClick={() => navigate(path)}
+                onClick={() => {
+                  navigate(path);
+                  setMenuOpen(false);
+                }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
-                    navigate = path;
+                    navigate(path);
+                    setMenuOpen(false);
                   }
                 }}
                 className="text-2xl bebas metallic-text tracking-[0.3em] hover:opacity-70 cursor-pointer"
@@ -157,18 +161,20 @@ const Header = () => {
           {/* Wishlist */}
           <div className="w-full px-6 pb-6">
             <div className="border-t border-[#c9c9c9] mb-4 opacity-35" />
-            <a
-              href="/wishlist"
-              className="flex items-center justify-between text-[1rem]"
+            <div
+              onClick={() => {
+                navigate("/wishlist");
+                setMenuOpen(false);
+              }}
+              className="flex items-center justify-between text-[1rem] cursor-pointer hover:opacity-80"
             >
               <span className="metallic-text bebas text-lg">Wishlist</span>
               <img
                 src={Heart}
                 alt="Wishlist"
-                className="w-5 h-5 hover:opacity-80"
-                onClick={() => navigate("/wishlist")}
+                className="w-5 h-5"
               />
-            </a>
+            </div>
           </div>
         </div>
       </header>
@@ -181,12 +187,18 @@ const Header = () => {
       >
         {/* Left nav */}
         <nav className="flex-1 flex justify-end items-center space-x-8 -mt-8 avant uppercase cream-text text-[1.26rem]">
-          <a href="/necklace" className="hover:opacity-60">
+          <span 
+            onClick={() => navigate("/necklace")} 
+            className="hover:opacity-60 cursor-pointer"
+          >
             Necklaces
-          </a>
-          <a href="/earrings" className="hover:opacity-60">
+          </span>
+          <span 
+            onClick={() => navigate("/earrings")} 
+            className="hover:opacity-60 cursor-pointer"
+          >
             Earrings
-          </a>
+          </span>
         </nav>
 
         {/* Center logo */}
@@ -212,12 +224,18 @@ const Header = () => {
         {/* Right nav */}
         <div className="flex-1 flex justify-start items-center space-x-8">
           <nav className="flex space-x-8 avant uppercase cream-text -mt-8 text-[1.26rem]">
-            <a href="/rings" className="hover:opacity-60">
+            <span 
+              onClick={() => navigate("/rings")} 
+              className="hover:opacity-60 cursor-pointer"
+            >
               Rings
-            </a>
-            <a href="/bracelet" className="hover:opacity-60">
+            </span>
+            <span 
+              onClick={() => navigate("/bracelet")} 
+              className="hover:opacity-60 cursor-pointer"
+            >
               Bracelets
-            </a>
+            </span>
           </nav>
 
           {/* Icons */}
