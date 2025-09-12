@@ -359,7 +359,7 @@ const Homepage = () => {
 <section className="bg-[#1f1f21] py-14">
   <div className="max-w-7xl mx-auto px-5 relative">
     <div className="flex justify-between items-center pb-8">
-      <h2 className="font-bold bebas text-[50px] tracking-wide text-[#FFF7DC]">REBEL’S TOP PICKS</h2>
+      <h2 className="font-bold bebas text-3xl tracking-wide text-[#FFF7DC]">REBEL’S TOP PICKS</h2>
       {!isMobile ? (
         <div className="flex space-x-4">
           <div
@@ -552,7 +552,7 @@ const Homepage = () => {
 <section className="w-full bg-black py-14">
   <div className="max-w-7xl mx-auto px-6">
     <div className="flex justify-between items-center mb-10">
-      <h2 className="font-bold bebas text-4xl lg:text-5xl tracking-wide text-[#FFF7DC]">
+      <h2 className="font-bold bebas text-3xl lg:text-5xl tracking-wide text-[#FFF7DC]">
         BURVON’S COLLECTION
       </h2>
       {!isMobile ? (
@@ -686,7 +686,7 @@ const Homepage = () => {
               }}
               onMouseEnter={() => setHoveredButtonId("try")}
               onMouseLeave={() => setHoveredButtonId(null)}
-              className="flex items-center justify-center gap-2 py-3 px-6 avant text-base tracking-wide transition-colors duration-300 outline-none"
+              className="flex items-center justify-center gap-2 py-3 px-6 avant text-base tracking-wide transition-colors duration-300 outline-none cursor-pointer"
             >
               TRY NOW
             </button>
@@ -766,7 +766,7 @@ const Homepage = () => {
               <div key={index} className="border-b border-[#fff7dc]/40 bg-transparent">
                 <button
                   type="button"
-                  className="w-full flex justify-between items-center text-left text-[#fff7dc] font-normal py-5 focus:outline-none bg-transparent border-0 shadow-none rounded-none appearance-none avant"
+                  className="w-full flex justify-between items-center text-left text-[#fff7dc] font-normal py-5 focus:outline-none bg-transparent border-0 shadow-none rounded-none appearance-none avant cursor-pointer"
                   style={{ background: "transparent" }}
                   onClick={() => setOpenIndex(openIndex === index ? null : index)}
                 >
@@ -779,7 +779,7 @@ const Homepage = () => {
                 </button>
                 {openIndex === index && (
                   <div className="pb-5 bg-transparent">
-                    <p className="text-[#fff7dc] font-normal avant pl-5">{faq.answer}</p>
+                    <p className="text-[#fff7dc] font-normal avant pl-3">{faq.answer}</p>
                   </div>
                 )}
               </div>
