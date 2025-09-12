@@ -66,6 +66,9 @@ import ourstorySecondMobile from './images/ourstory-second1.png';
 import ourstoryThirdMobile from './images/ourstory-third1.png';
 import ourstoryFourthMobile from './images/ourstory-fourth1.png';
 import StyleItImg from './images/StyleIt.png';
+import customerBG from './images/customerBG.png';
+import customerBGMobile from './images/customerBG-mobile.png';
+import customerProf from './images/customerProf.png';
 
 //Hero Section
 import KidsCollectionBanner from './images/KidsCollection.png';
@@ -157,5 +160,8 @@ export {
   ReturnIcon,
   SupportIcon,
   DropDown,
-  DropUp
+  DropUp,
+  customerBG,
+  customerBGMobile,
+  customerProf
 };
