@@ -37,6 +37,7 @@ const scrollbarHideStyle = `
   }
 `;
 
+
 const heroImages = [KidsCollectionBanner, ClashCollectionBanner];
 
 const rebelsTopPicks = [
@@ -91,7 +92,7 @@ const burvonsCollections = [
 
 const BASE_HEIGHT = 378; // compact height for collapsed (mobile)
 const HOMEPAGE_COLLECTION_VISIBLE_DESKTOP = 4;
-const HOMEPAGE_COLLECTION_VISIBLE_MOBILE = 2;
+const HOMEPAGE_COLLECTION_VISIBLE_MOBILE = 1; // For one card per swipe on mobile
 
 const faqs = [
   {
@@ -111,7 +112,7 @@ const faqs = [
   },
 ];
 
-const SCROLL_STEP = 360; // Scroll step (px) for infinite loop left/right
+const SCROLL_STEP = 320; // Adjust for full card width per swipe
 
 const Homepage = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -190,21 +191,25 @@ const Homepage = () => {
     );
   };
 
-  // Mobile navigation (horizontal scroll increments of 360px)
+  // Mobile navigation - scroll one full card width per swipe
   const nextRebelMobile = () => {
     if (rebelsScrollRef.current) {
-      rebelsScrollRef.current.scrollBy({
-        left: SCROLL_STEP,
-        behavior: "smooth",
-      });
+      const maxScrollLeft =
+        rebelsScrollRef.current.scrollWidth - rebelsScrollRef.current.clientWidth;
+      const nextScrollLeft = Math.min(
+        rebelsScrollRef.current.scrollLeft + SCROLL_STEP,
+        maxScrollLeft
+      );
+      rebelsScrollRef.current.scrollTo({ left: nextScrollLeft, behavior: "smooth" });
     }
   };
   const prevRebelMobile = () => {
     if (rebelsScrollRef.current) {
-      rebelsScrollRef.current.scrollBy({
-        left: -SCROLL_STEP,
-        behavior: "smooth",
-      });
+      const prevScrollLeft = Math.max(
+        rebelsScrollRef.current.scrollLeft - SCROLL_STEP,
+        0
+      );
+      rebelsScrollRef.current.scrollTo({ left: prevScrollLeft, behavior: "smooth" });
     }
   };
 
@@ -306,53 +311,7 @@ const Homepage = () => {
   };
 
   // Infinite scroll effect for rebels top picks on mobile to loop left/right indefinitely
-  useEffect(() => {
-    if (!isMobile) return;
-
-    const scrollEl = rebelsScrollRef.current;
-    if (!scrollEl) return;
-
-    // 320 px width + 24 px margin (space-x-6)
-    const itemWidth = 320 + 24;
-    const itemCount = rebelsTopPicks.length;
-
-    // Full width of one set of items
-    const fullSetWidth = itemWidth * itemCount;
-
-    scrollWidthRef.current = fullSetWidth;
-
-    // Initially scroll to the start of the first set for seamless loop
-    scrollEl.scrollLeft = fullSetWidth;
-
-    const onScroll = () => {
-      if (isResettingScrollRef.current) return;
-
-      const scrollLeft = scrollEl.scrollLeft;
-
-      // When scrolling right past duplicated set, reset scroll left by one full set
-      if (scrollLeft >= fullSetWidth * 2) {
-        isResettingScrollRef.current = true;
-        scrollEl.scrollLeft = scrollLeft - fullSetWidth;
-        setTimeout(() => {
-          isResettingScrollRef.current = false;
-        }, 40);
-      }
-      // When scrolling left past start of duplicated set, reset scroll left forward by one full set
-      else if (scrollLeft <= 0) {
-        isResettingScrollRef.current = true;
-        scrollEl.scrollLeft = scrollLeft + fullSetWidth;
-        setTimeout(() => {
-          isResettingScrollRef.current = false;
-        }, 40);
-      }
-    };
-
-    scrollEl.addEventListener("scroll", onScroll);
-
-    return () => {
-      scrollEl.removeEventListener("scroll", onScroll);
-    };
-  }, [isMobile]);
+  // Removed because we handle natural scroll snapping now.
 
   return (
     <Layout full>
@@ -428,118 +387,57 @@ const Homepage = () => {
     {isMobile ? (
       <div
         ref={rebelsScrollRef}
-        className="flex space-x-6 overflow-x-auto scrollbar-hide"
-        style={{ scrollBehavior: "smooth", WebkitOverflowScrolling: "touch" }}
-        onTouchStart={onTouchStartRebel}
-        onTouchMove={onTouchMoveRebel}
-        onTouchEnd={onTouchEndRebel}
+        className="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory"
+        style={{
+          scrollBehavior: "smooth",
+          WebkitOverflowScrolling: "touch",
+        }}
+        // Removed custom touch event handlers for native swipe
+        // onTouchStart={onTouchStartRebel}
+        // onTouchMove={onTouchMoveRebel}
+        // onTouchEnd={onTouchEndRebel}
       >
-        {[...rebelsTopPicks, ...rebelsTopPicks, ...rebelsTopPicks].map((item, idx) => {
-          const key = `${item.id}-${idx}`;
-          const isExpanded = expandedRebelCardId === item.id;
-          const imageIndex = mobileImageIndexes[item.id] || 0;
-          return (
+        {rebelsTopPicks.map((item) => (
+          <div
+            key={item.id}
+            onClick={() => {
+              // Replace with your navigation logic
+              console.log(`Clicked Rebel Top Pick card id: ${item.id}`);
+            }}
+            className="relative bg-[#222] rounded-none drop-shadow-[0_10px_15px_rgba(0,0,0,1)] cursor-pointer flex-shrink-0 transition-all duration-300 ease-in-out"
+            style={{
+              minHeight: BASE_HEIGHT,
+              height: BASE_HEIGHT,
+              width: "100vw",
+              scrollSnapAlign: "start",
+              flexBasis: "100%",
+            }}
+          >
+            <div className="relative w-full h-[300px] flex items-center justify-center overflow-hidden bg-black">
+              <img
+                src={item.images[0]}
+                alt={item.name}
+                className="object-cover w-full h-full rounded-none select-none"
+                draggable={false}
+              />
+            </div>
             <div
-              key={key}
-              onClick={() => setExpandedRebelCardId(isExpanded ? null : item.id)}
-              className={`relative bg-[#222] rounded-none drop-shadow-[0_10px_15px_rgba(0,0,0,1)] cursor-pointer flex-shrink-0 transition-all duration-300 ease-in-out ${
-                isExpanded ? "scale-105 z-10" : ""
-              }`}
               style={{
-                minHeight: BASE_HEIGHT,
-                height: isExpanded ? "auto" : BASE_HEIGHT,
-                flexBasis: "calc(70% - 1rem)",
-                minWidth: "260px",
-                maxWidth: "320px",
+                background: "linear-gradient(90deg, #000000 46%, #666666 100%)",
               }}
+              className="relative py-2 px-2 text-center flex flex-col items-center rounded-none min-h-[75px]"
             >
-              <div className="w-full flex justify-between items-center px-6 pt-6 absolute top-0 left-0 z-10">
-                <img
-                  src={TryOnIcon}
-                  alt="Try On"
-                  className="w-6 h-6 cursor-pointer hover:opacity-80"
-                  draggable={false}
-                  onClick={(e) => e.stopPropagation()}
-                />
-                <img
-                  src={AddFavorite}
-                  alt="Favorite"
-                  className="w-6 h-6 cursor-pointer hover:opacity-80"
-                  draggable={false}
-                  onClick={(e) => e.stopPropagation()}
-                />
-              </div>
-
-              <div className="relative w-full h-[300px] flex items-center justify-center overflow-hidden bg-black transition-all duration-300 ease-in-out">
-                <img
-                  src={item.images[isExpanded ? imageIndex : 0]}
-                  alt={item.name}
-                  className="object-cover w-full h-full rounded-none select-none"
-                  draggable={false}
-                />
-                {isExpanded && item.images.length > 1 && (
-                  <>
-                    <img
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleImageChangeMobile(item.id, "prev");
-                      }}
-                      src={PrevIcon}
-                      alt="Previous"
-                      className="absolute left-2 top-1/2 -translate-y-1/2 w-6 h-6 cursor-pointer hover:opacity-80 select-none"
-                      draggable={false}
-                    />
-                    <img
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleImageChangeMobile(item.id, "next");
-                      }}
-                      src={NextIcon}
-                      alt="Next"
-                      className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 cursor-pointer hover:opacity-80 select-none"
-                      draggable={false}
-                    />
-                  </>
-                )}
-              </div>
-
-              <div
-                style={{
-                  background: "linear-gradient(90deg, #000000 46%, #666666 100%)",
-                }}
-                className="relative py-2 px-2 text-center flex flex-col items-center rounded-none min-h-[75px]"
-              >
-                <span className="uppercase text-[#FFF7DC] tracking-widest text-[13px] avantbold">{item.name}</span>
-                <span className="text-[13px] tracking-widest text-[#FFF7DC] avant">{item.collection}</span>
-                <div className="flex justify-center items-center gap-2 text-[14px] avantbold mb-2">
-                  <span className="line-through text-[#FFF7DC] opacity-50">{item.originalPrice}</span>
-                  <span className="text-[#FFF7DC]">{item.salePrice}</span>
-                </div>
-                {isExpanded && (
-                  <button
-                    style={{
-                      backgroundColor: hoveredButtonId === item.id ? "#FFF7DC" : "transparent",
-                      color: hoveredButtonId === item.id ? "#1F1F21" : "#FFF7DC",
-                      outline: "2px solid #FFF7DC",
-                      outlineOffset: "0px",
-                      borderRadius: 0,
-                    }}
-                    onMouseEnter={() => setHoveredButtonId(item.id)}
-                    onMouseLeave={() => setHoveredButtonId(null)}
-                    className="mt-2 flex items-center justify-center gap-2 border border-[#FFF7DC] py-2 px-4 font-bold text-md tracking-wide rounded-none transition-all duration-300 outline-none"
-                  >
-                    <img
-                      src={hoveredButtonId === item.id ? AddBagHover : AddBag}
-                      alt="Bag Icon"
-                      className="w-4 h-4 transition-colors duration-300"
-                    />
-                    ADD TO BAG
-                  </button>
-                )}
+              <span className="uppercase text-[#FFF7DC] tracking-widest text-[13px] avantbold">
+                {item.name}
+              </span>
+              <span className="text-[13px] tracking-widest text-[#FFF7DC] avant">{item.collection}</span>
+              <div className="flex justify-center items-center gap-2 text-[14px] avantbold mb-2">
+                <span className="line-through text-[#FFF7DC] opacity-50">{item.originalPrice}</span>
+                <span className="text-[#FFF7DC]">{item.salePrice}</span>
               </div>
             </div>
-          );
-        })}
+          </div>
+        ))}
       </div>
     ) : (
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10">
@@ -649,31 +547,32 @@ const Homepage = () => {
   </div>
 </section>
 
-{/* Burvon's Collection */}
+
+{/* Burvons Collection Section */}
 <section className="w-full bg-black py-14">
   <div className="max-w-7xl mx-auto px-6">
     <div className="flex justify-between items-center mb-10">
-      <h2 className="font-bold bebas text-4xl lg:text-5xl tracking-wide text-[#FFF7DC]">BURVON’S COLLECTION</h2>
+      <h2 className="font-bold bebas text-4xl lg:text-5xl tracking-wide text-[#FFF7DC]">
+        BURVON’S COLLECTION
+      </h2>
       {!isMobile ? (
         <div className="flex space-x-4">
-          <div
+          <button
             onClick={showPrevCollection}
-            role="button"
-            tabIndex={0}
             aria-label="Previous Collection"
-            className="flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 hover:text-[#222] transition select-none"
+            className="bg-transparent flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 hover:text-[#222] transition select-none"
+            style={{ background: "transparent", boxShadow: "none", border: "none" }}
           >
             <img src={PrevIcon} alt="Previous" className="w-10 h-10" draggable={false} />
-          </div>
-          <div
+          </button>
+          <button
             onClick={showNextCollection}
-            role="button"
-            tabIndex={0}
             aria-label="Next Collection"
-            className="flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 hover:text-[#222] transition select-none"
+            className="bg-transparent flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 hover:text-[#222] transition select-none"
+            style={{ background: "transparent", boxShadow: "none", border: "none" }}
           >
             <img src={NextIcon} alt="Next" className="w-10 h-10" draggable={false} />
-          </div>
+          </button>
         </div>
       ) : null}
     </div>
@@ -681,76 +580,76 @@ const Homepage = () => {
     {isMobile ? (
       <div
         ref={burvonScrollRef}
-        className="flex overflow-x-auto scrollbar-hide"
-        style={{ scrollBehavior: "smooth", WebkitOverflowScrolling: "touch" }}
-        onTouchStart={onTouchStartBurvon}
-        onTouchMove={onTouchMoveBurvon}
-        onTouchEnd={onTouchEndBurvon}
+        className="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory"
+        style={{
+          scrollBehavior: "smooth",
+          WebkitOverflowScrolling: "touch",
+          paddingRight: "1.5rem",
+        }}
       >
-        {[...burvonsCollections, ...burvonsCollections, ...burvonsCollections].map((col, idx, arr) => {
-          const isExpanded = expandedBurvonCardId === col.id;
-          const key = `${col.id}-${idx}`;
+        {[...burvonsCollections, ...burvonsCollections, ...burvonsCollections].map((col, idx, arr) => (
+          <div
+            key={`${col.id}-${idx}`}
+            className="flex-shrink-0 overflow-hidden shadow-lg cursor-pointer transition-all duration-300"
+            style={{
+              width: window.innerWidth,
+              scrollSnapAlign: "start",
+              marginRight: idx !== arr.length - 1 ? "1.5rem" : "0",
+              borderRadius: 0,  // explicitly remove border radius
+            }}
+          >
+            <img
+              src={col.image}
+              alt={`Burvon ${col.id}`}
+              className="w-full h-auto object-cover select-none"
+              draggable={false}
+              style={{ borderRadius: 0 }} // reinforce no rounding on image
+            />
+          </div>
+        ))}
+      </div>
+    ) : (
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 justify-center">
+        {burvonVisibleCards().map((col) => {
+          const isHovered = burvonHoveredId === col.id;
           return (
             <div
-              key={key}
-              onClick={() => setExpandedBurvonCardId(isExpanded ? null : col.id)}
-              className={`rounded-none overflow-hidden shadow-lg mx-auto transition-all duration-300 cursor-pointer flex-shrink-0 ${
-                isExpanded ? "scale-105 z-10" : ""
-              }`}
+              key={col.id}
+              onMouseEnter={() => setBurvonHoveredId(col.id)}
+              onMouseLeave={() => setBurvonHoveredId(null)}
+              className={`overflow-hidden shadow-lg mx-auto transition-all duration-300 cursor-pointer
+                ${isHovered ? "scale-105 shadow-2xl z-30" : "shadow-lg"}
+              `}
               style={{
-                flex: "0 0 auto",
-                width: 260,
-                boxShadow: isExpanded
-                  ? "0 8px 32px 0 rgba(0,0,0,0.8)"
-                  : "0 4px 16px rgba(0,0,0,0.6)",
+                maxWidth: 320,
+                boxShadow: isHovered
+                  ? "0 2px 6px rgba(255, 247, 220, 0.3)"
+                  : "0 1px 3px rgba(0,0,0,0.2)",
                 backgroundColor: "transparent",
-                marginRight: idx !== arr.length - 1 ? "1.5rem" : "0",
+                transformOrigin: "center",
+                transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                transform: isHovered ? "scale(1.03)" : "scale(1)",
+                borderRadius: 0,  // explicitly remove border radius
               }}
             >
               <img
                 src={col.image}
                 alt={`Burvon Collection ${col.id}`}
-                className="max-w-full w-full h-auto object-cover select-none transition-transform duration-300"
+                className="w-full h-auto object-cover select-none transition-transform duration-300"
                 draggable={false}
-                style={{ display: "block" }}
+                style={{ display: "block", borderRadius: 0 }} // remove rounding on img
               />
             </div>
           );
         })}
-      </div>
-    ) : (
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 justify-center">
-        {burvonVisibleCards().map((col) => (
-          <div
-            key={col.id}
-            onMouseEnter={() => setBurvonHoveredId(col.id)}
-            onMouseLeave={() => setBurvonHoveredId(null)}
-            className={`rounded-none overflow-hidden shadow-lg mx-auto transition-all duration-300 cursor-pointer`}
-            style={{
-              maxWidth: 320,
-              boxShadow:
-                burvonHoveredId === col.id
-                  ? "0 8px 32px 0 rgba(0,0,0,0.8)"
-                  : "0 4px 16px rgba(0,0,0,0.6)",
-              backgroundColor: "transparent",
-            }}
-          >
-            <img
-              src={col.image}
-              alt={`Burvon Collection ${col.id}`}
-              className="w-full h-auto object-cover select-none transition-transform duration-300"
-              draggable={false}
-              style={{ display: "block" }}
-            />
-          </div>
-        ))}
       </div>
     )}
   </div>
 </section>
 
 
-      {/* Style It On You Section */}
+
+
     {/* Style It On You Section */}
     <section className="relative w-full bg-[#1F1F21] mt-16 md:mt-24 lg:mt-15">
       <img
@@ -783,11 +682,11 @@ const Homepage = () => {
                 backgroundColor: hoveredButtonId === "try" ? "#FFF7DC" : "transparent",
                 color: hoveredButtonId === "try" ? "#1F1F21" : "#FFF7DC",
                 outline: "2px solid #FFF7DC",
-                borderRadius: 5,
+                borderRadius: 0,
               }}
               onMouseEnter={() => setHoveredButtonId("try")}
               onMouseLeave={() => setHoveredButtonId(null)}
-              className="flex items-center justify-center gap-2 py-3 px-10 w-36 avant text-md md:text-base tracking-wide transition-all duration-300 outline-none"
+              className="flex items-center justify-center gap-2 py-3 px-6 avant text-base tracking-wide transition-colors duration-300 outline-none"
             >
               TRY NOW
             </button>
