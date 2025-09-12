@@ -637,7 +637,7 @@ const Homepage = () => {
                 alt={`Burvon Collection ${col.id}`}
                 className="w-full h-auto object-cover select-none transition-transform duration-300"
                 draggable={false}
-                style={{ display: "block", borderRadius: 0 }} // remove rounding on img
+                style={{ display: "block", borderRadius: 3 }} // remove rounding on img
               />
             </div>
           );
