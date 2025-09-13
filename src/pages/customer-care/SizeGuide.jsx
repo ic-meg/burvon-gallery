@@ -7,7 +7,7 @@ import {
   SizeGuideHeroWebp,
   SizeGuideVid,
   SizeGuideVidWebm,
-  BurvonWhite,
+  WhiteLogo, 
 } from "../../assets/index.js";
 
 const ringSizes = [
@@ -169,9 +169,11 @@ const SizeGuide = () => {
         <div className="flex-1 flex items-stretch justify-end">
           <video
             controls
-            autoPlay
+            autoPlay={!isMobile}
             loop
             muted
+            playsInline
+            webkit-playsinline="true"
             className="h-full max-w-[450px] w-full object-cover object-right rounded-none"
           >
             <source src={SizeGuideVidWebm} type="video/webm" />
@@ -187,7 +189,7 @@ const SizeGuide = () => {
           <div className="max-w-3xl mx-auto flex flex-col items-center mb-4">
             {/* Logo centered on top */}
             <img
-              src={BurvonWhite}
+              src={WhiteLogo}
               alt="Burvon Logo"
               className="w-24 h-auto mb-[-20px]"
             />
