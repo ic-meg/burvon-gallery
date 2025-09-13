@@ -4,7 +4,9 @@ import {
   NextFacts,
   PrevFacts,
   SizeGuideHero,
+  SizeGuideHeroWebp,
   SizeGuideVid,
+  SizeGuideVidWebm,
   BurvonWhite
 } from "../../assets/index.js";
 
@@ -41,14 +43,17 @@ const SizeGuide = () => {
 
   return (
     <Layout>
-      {/* Hero Section */}
-      <section className="relative h-[300px] md:h-[400px] w-screen left-1/2 right-1/2 ml-[-50vw] mr-[-50vw] flex items-center justify-center">
-        <img
-          src={SizeGuideHero}
-          alt="Burvon rings hero background"
-          className="absolute w-full h-full object-cover object-center z-0"
-          draggable={false}
-        />
+        {/* Hero Section */}
+        <section className="relative h-[300px] md:h-[400px] w-screen left-1/2 right-1/2 ml-[-50vw] mr-[-50vw] flex items-center justify-center">
+          <picture className="absolute w-full h-full z-0">
+            <source srcSet={SizeGuideHeroWebp} type="image/webp" />
+            <img
+              src={SizeGuideHero}
+              alt="Burvon rings hero background"
+              className="w-full h-full object-cover object-center z-0"
+              draggable={false}
+            />
+          </picture>
         {/* Bottom shadow overlay */}
         <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-black to-transparent z-10 pointer-events-none" />
 
@@ -92,9 +97,15 @@ const SizeGuide = () => {
         <div className="flex-1 flex items-stretch justify-end">
           <video
             controls
-            src={SizeGuideVid}
+            autoPlay
+            loop
+            muted
             className="h-full max-w-[450px] w-full object-cover object-right rounded-none"
-          />
+          >
+            <source src={SizeGuideVidWebm} type="video/webm" />
+            <source src={SizeGuideVid} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
         </div>
       </section>
 
@@ -126,7 +137,7 @@ const SizeGuide = () => {
                     className={
                       [1, 3, 5].includes(index)
                         ? "bg-[#323232] text-[#fff7dc] text-center avant"
-                        : "bg-[#fff7dc] text-center avant"
+                        : "bg-[#fff7dc] text-center metallic-text avant"
                     }
                   >
                     <td className="py-1 px-3">{size}</td>
