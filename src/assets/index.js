@@ -46,6 +46,9 @@ import shippingProcessing from './icons/shippingProcess.png';
 import shippingDelivery from './icons/shippingDelivery.png';
 import shippingFees from './icons/shippingFees.png';
 import shippingRectangle from './icons/shippingRectangle.png';
+import returnGuidelines from './icons/returnGuidelines.png';
+import returnDamage from './icons/returnDamaged.png';
+import returnShipping from './icons/returnShipping.png';
 
 // IMAGES
 import LogoImage from './logo/black_brv.png';
@@ -214,4 +217,7 @@ export {
   shippingDelivery,
   shippingFees,
   shippingRectangle,
+  returnGuidelines,
+  returnDamage,
+  returnShipping,
 };
