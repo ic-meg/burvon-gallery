@@ -46,7 +46,7 @@ import DropUp from './icons/dropup.png';
 
 
 // IMAGES
-import LogoImage from './logo/black_brv.PNG';
+import LogoImage from './logo/black_brv.png';
 import WhiteLogo from './logo/white_brv.png';
 import loginBG from './images/loginBG.png';
 import loginVector from './images/loginVector.png';
