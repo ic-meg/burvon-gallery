@@ -202,7 +202,6 @@ export {
   SizeGuideHero,
   SizeGuideVid,
   SizeGuideVidWebm,
-  BurvonWhite,
   NextFacts,
   PrevFacts,
   SizeGuideHeroWebp,
