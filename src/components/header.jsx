@@ -130,7 +130,7 @@ const Header = () => {
           </div>
 
           {/* Nav Links */}
-          <div className="flex flex-col items-center justify-center space-y-6">
+          <div className="flex flex-col items-center justify-center space-y-6 cursor-pointer">
             {[
               { label: "Necklaces", path: "/necklace" },
               { label: "Earrings", path: "/earrings" },
@@ -180,10 +180,10 @@ const Header = () => {
       >
         {/* Left nav */}
         <nav className="flex-1 flex justify-end items-center space-x-8 -mt-8 avant uppercase cream-text text-[1.26rem]">
-          <span onClick={() => navigate("/necklace")} className="hover:opacity-60">
+          <span onClick={() => navigate("/necklace")} className="hover:opacity-60 cursor-pointer">
             Necklaces 
           </span>
-          <span onClick={() => navigate("/earrings")} className="hover:opacity-60">
+          <span onClick={() => navigate("/earrings")} className="hover:opacity-60 cursor-pointer">
             Earrings
           </span>
         </nav>
@@ -211,10 +211,10 @@ const Header = () => {
         {/* Right nav */}
         <div className="flex-1 flex justify-start items-center space-x-8">
           <nav className="flex space-x-8 avant uppercase cream-text -mt-8 text-[1.26rem]">
-            <span onClick={() => navigate("/rings")} className="hover:opacity-60">
+            <span onClick={() => navigate("/rings")} className="hover:opacity-60 cursor-pointer">
               Rings
             </span>
-            <span onClick={() => navigate("/bracelet")} className="hover:opacity-60">
+            <span onClick={() => navigate("/bracelet")} className="hover:opacity-60 cursor-pointer">
               Bracelets
             </span>
           </nav>
