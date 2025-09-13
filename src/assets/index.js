@@ -50,9 +50,13 @@ import LogoImage from './logo/black_brv.png';
 import WhiteLogo from './logo/white_brv.png';
 import loginBG from './images/loginBG.png';
 import loginVector from './images/loginVector.png';
+
 import faqsBG from './images/faqsBG.png';
+import faqsBGWebp from './webp/faqsBG.webp';
 import faqsVector from './images/faqsVector.png';
 import faqsBG1 from './images/faqsBG1.png';
+import faqsBG1Webp from './webp/faqsBG1.webp';
+
 import jewelrycareBG from './images/jewelrycareBG.png';
 import jewelrycareBG1 from './images/jewelrycareBG.png';
 import contactBG from './images/contactBG.png';
@@ -66,6 +70,7 @@ import ourstorySecondMobile from './images/ourstory-second1.png';
 import ourstoryThirdMobile from './images/ourstory-third1.png';
 import ourstoryFourthMobile from './images/ourstory-fourth1.png';
 import StyleItImg from './images/StyleIt.png';
+import StyleItWebP from './webp/StyleIt.webp';
 import customerBG from './images/customerBG.png';
 import customerBGMobile from './images/customerBG-mobile.png';
 import customerProf from './images/customerProf.png';
@@ -75,7 +80,9 @@ import trackBGMobile from './images/trackBG-mobile.png';
 
 //Hero Section
 import KidsCollectionBanner from './images/KidsCollection.png';
+import KidsCollectionWebp from './webp/KidsCollection.webp';
 import ClashCollectionBanner from './images/ClashCollection.png';
+import ClashCollectionWebp from './webp/ClashCollection.webp';
 
 //Homepage Items
 import LyricImage from './images/Lyric.png';
@@ -85,9 +92,14 @@ import CelineImage from'./images/Celine.png';
 
 //Homepage Collection
 import ClassicCollectionImg from './images/ClassicColl.png';
+import ClassicCollectionWebp from './webp/ClassicColl.webp';
 import RebellionCollectionImg from './images/RebellionColl.png';
+import RebellionCollectionWebp from './webp/RebellionColl.webp';
 import LoveLanguageCollectionImg from './images/LoveLangColl.png';
+import LoveLanguageCollectionWebp from './webp/LoveLangColl.webp';
 import PearlCollectionImg from './images/PearlColl.png';
+import PearlCollectionWebp from './webp/PearlColl.webp';
+  
 
 //Size Guide 
 import SizeGuideHero from './images/SizeGuideHero.png';
@@ -166,7 +178,16 @@ export {
   RebellionCollectionImg,
   LoveLanguageCollectionImg,
   PearlCollectionImg,
+  PearlCollectionWebp,
+  ClassicCollectionWebp,
+  RebellionCollectionWebp,
+  LoveLanguageCollectionWebp,
+  ClashCollectionWebp,
+  KidsCollectionWebp,
+  faqsBG1Webp,
+  faqsBGWebp,
   StyleItImg,
+  StyleItWebP,
   FastShipIcon,
   SecureIcon,
   ReturnIcon,
