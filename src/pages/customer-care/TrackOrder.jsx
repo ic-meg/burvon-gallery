@@ -57,14 +57,12 @@ const TrackOrder = () => {
           <form style={{ width: "100%", maxWidth: "500px" }}>
             <label
               className="bebas"
-              onClick={() => navigate('/customer-care/track-order-2')}
               style={{
                 color: "#fff7dc",
                 fontSize: "1.3rem",
                 marginBottom: "0.5rem",
                 display: "block",
                 letterSpacing: "1px",
-                cursor: 'pointer',
               }}
             >
               ORDER ID
@@ -89,14 +87,12 @@ const TrackOrder = () => {
             />
             <label
               className="bebas"
-              onClick={() => navigate('/customer-care/track-order-2')}
               style={{
                 color: "#fff7dc",
                 fontSize: "1.3rem",
                 marginBottom: "0.5rem",
                 display: "block",
                 letterSpacing: "1px",
-                cursor: 'pointer',
               }}
             >
               TRACKING NUMBER
@@ -291,7 +287,6 @@ const TrackOrder = () => {
           <form style={{ width: "100%", maxWidth: "400px" }}>
             <label
               className="bebas"
-              onClick={() => navigate('/customer-care/track-order-2')}
               style={{
                 color: "#fff7dc",
                 fontSize: "1.4rem",
@@ -323,7 +318,6 @@ const TrackOrder = () => {
             />
             <label
               className="bebas"
-              onClick={() => navigate('/customer-care/track-order-2')}
               style={{
                 color: "#fff7dc",
                 fontSize: "1.4rem",
