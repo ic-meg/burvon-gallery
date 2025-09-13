@@ -47,7 +47,7 @@ import shippingDelivery from './icons/shippingDelivery.png';
 import shippingFees from './icons/shippingFees.png';
 import shippingRectangle from './icons/shippingRectangle.png';
 import returnGuidelines from './icons/returnGuidelines.png';
-import returnDamage from './icons/returnDamaged.png';
+import returnDamage from './icons/returnDamage.png';
 import returnShipping from './icons/returnShipping.png';
 
 // IMAGES
