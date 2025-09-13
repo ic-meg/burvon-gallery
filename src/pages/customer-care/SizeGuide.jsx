@@ -169,9 +169,11 @@ const SizeGuide = () => {
         <div className="flex-1 flex items-stretch justify-end">
           <video
             controls
-            autoPlay
+            autoPlay={!isMobile}
             loop
             muted
+            playsInline
+            webkit-playsinline="true"
             className="h-full max-w-[450px] w-full object-cover object-right rounded-none"
           >
             <source src={SizeGuideVidWebm} type="video/webm" />
