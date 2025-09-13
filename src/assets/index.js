@@ -40,10 +40,12 @@ import ReturnIcon from './icons/ReturnIcon.png';
 import SupportIcon from './icons/SupportIcon.png';
 import DropDown from './icons/dropdown.png';
 import DropUp from './icons/dropup.png';
-
-
-
-
+import shippingCoverage from './icons/shippingPhil.png';
+import shippingMethods from './icons/shippingEstimated.png';
+import shippingProcessing from './icons/shippingProcess.png';
+import shippingDelivery from './icons/shippingDelivery.png';
+import shippingFees from './icons/shippingFees.png';
+import shippingRectangle from './icons/shippingRectangle.png';
 
 // IMAGES
 import LogoImage from './logo/black_brv.png';
@@ -72,6 +74,7 @@ import customerProf from './images/customerProf.png';
 import trackBG from './images/trackBG.png';
 import trackVector from './images/trackVector.png';
 import trackBGMobile from './images/trackBG-mobile.png';
+
 
 //Hero Section
 import KidsCollectionBanner from './images/KidsCollection.png';
@@ -186,4 +189,10 @@ export {
   NextFacts,
   PrevFacts,
   SizeGuideHeroWebp,
+  shippingCoverage,
+  shippingMethods,
+  shippingProcessing,
+  shippingDelivery,
+  shippingFees,
+  shippingRectangle,
 };
