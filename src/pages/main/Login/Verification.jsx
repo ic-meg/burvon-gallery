@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import './Login.css';
 import { useNavigate } from 'react-router-dom';
 import loginBG from "../../../assets/images/loginBG.png";
-import white_brv from "../../../assets/logo/white_brv.png";
+import white_brv from "../../../assets/logo/white_brv.PNG";
 import loginVector from "../../../assets/images/loginVector.png";
 
 const Verification = () => {
