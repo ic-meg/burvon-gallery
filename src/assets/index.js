@@ -91,7 +91,9 @@ import PearlCollectionImg from './images/PearlColl.png';
 
 //Size Guide 
 import SizeGuideHero from './images/SizeGuideHero.png';
-import SizeGuideVid from './images/SizeGuideVid.mp4';
+import SizeGuideHeroWebp from './webp/SizeGuideHero.webp';
+import SizeGuideVid from './videos/SizeGuideVid.mp4';
+import SizeGuideVidWebm from './webm/SizeGuideVid.webm';
 import BurvonWhite from './icons/Logo_white.png';
 import NextFacts from './icons/NextFacts.png';
 import PrevFacts from './icons/PrevFacts.png';
@@ -179,7 +181,9 @@ export {
   trackBGMobile,
   SizeGuideHero,
   SizeGuideVid,
+  SizeGuideVidWebm,
   BurvonWhite,
   NextFacts,
   PrevFacts,
+  SizeGuideHeroWebp,
 };
