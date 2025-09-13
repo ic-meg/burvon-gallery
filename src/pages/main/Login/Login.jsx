@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import './Login.css';
 import googleLoginIcon from "../../../assets/icons/googleLoginIcon.png";
 import loginBG from "../../../assets/images/loginBG.png";
-import white_brv from "../../../assets/logo/white_brv.PNG";
+import white_brv from "../../../assets/logo/white_brv.png";
 import loginVector from "../../../assets/images/loginVector.png";
 
 const Login = () => {
