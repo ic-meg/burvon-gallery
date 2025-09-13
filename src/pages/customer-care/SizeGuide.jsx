@@ -7,7 +7,7 @@ import {
   SizeGuideHeroWebp,
   SizeGuideVid,
   SizeGuideVidWebm,
-  BurvonWhite,
+  WhiteLogo, 
 } from "../../assets/index.js";
 
 const ringSizes = [
@@ -189,7 +189,7 @@ const SizeGuide = () => {
           <div className="max-w-3xl mx-auto flex flex-col items-center mb-4">
             {/* Logo centered on top */}
             <img
-              src={BurvonWhite}
+              src={WhiteLogo}
               alt="Burvon Logo"
               className="w-24 h-auto mb-[-20px]"
             />
