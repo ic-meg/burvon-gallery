@@ -444,7 +444,6 @@ const Homepage = () => {
             <div
               style={{
                 background: "linear-gradient(90deg, #000000 46%, #666666 100%)",
-                cursor: "pointer",
               }}
               className="relative py-2 px-2 text-center flex flex-col items-center rounded-none min-h-[75px]"
             >
@@ -535,7 +534,7 @@ const Homepage = () => {
                 style={{
                   background: "linear-gradient(90deg, #000000 46%, #666666 100%)",
                 }}
-                className="relative py-2 px-2 text-center flex flex-col items-center rounded-none min-h-[140px]"
+                className="relative py-2 px-2 text-center flex flex-col items-center rounded-none min-h-[140px] "
               >
                 <span className="uppercase text-[#FFF7DC] tracking-widest text-[13px] avantbold">{item.name}</span>
                 <span className="text-[13px] tracking-widest text-[#FFF7DC] avant">{item.collection}</span>
@@ -551,6 +550,7 @@ const Homepage = () => {
                       outline: "2px solid #FFF7DC",
                       outlineOffset: "0px",
                       borderRadius: 0,
+                      cursor: "pointer",
                     }}
                     onMouseEnter={() => setHoveredButtonId(item.id)}
                     onMouseLeave={() => setHoveredButtonId(null)}
