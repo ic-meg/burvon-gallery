@@ -35,9 +35,62 @@ const Header = () => {
   }, []);
 
   useEffect(() => {
-    document.body.style.overflow = menuOpen ? "hidden" : "auto";
-    return () => {
+    if (menuOpen) {
+      // Get current scroll position
+      const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+      
+      // Store scroll position
+      document.body.dataset.scrollY = scrollY.toString();
+      
+      // Apply fixed positioning to prevent scrolling
+      document.body.style.overflow = "hidden";
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.left = "0";
+      document.body.style.right = "0";
+      document.body.style.width = "100%";
+      
+      // Disable smooth scrolling
+      document.documentElement.style.scrollBehavior = "auto";
+      
+    } else {
+      // Get stored scroll position
+      const scrollY = parseInt(document.body.dataset.scrollY || '0');
+      
+      // Remove fixed positioning
       document.body.style.overflow = "auto";
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.left = "";
+      document.body.style.right = "";
+      document.body.style.width = "";
+      
+      // Clear stored position
+      delete document.body.dataset.scrollY;
+      
+      // Restore scroll behavior
+      document.documentElement.style.scrollBehavior = "";
+      
+      // Restore scroll position
+      if (scrollY > 0) {
+        window.scrollTo(0, scrollY);
+      }
+    }
+    
+    return () => {
+      // linis
+      const scrollY = parseInt(document.body.dataset.scrollY || '0');
+      document.body.style.overflow = "auto";
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.left = "";
+      document.body.style.right = "";
+      document.body.style.width = "";
+      document.documentElement.style.scrollBehavior = "";
+      delete document.body.dataset.scrollY;
+      if (scrollY > 0) {
+        window.scrollTo(0, scrollY);
+      }
     };
   }, [menuOpen]);
 
@@ -48,7 +101,18 @@ const Header = () => {
       document.body.classList.remove("menu-open");
     }
 
-    return () => document.body.classList.remove("menu-open");
+    return () => {
+      document.body.classList.remove("menu-open");
+      // Ensure cleanuoop of any preserved scroll position
+      if (document.body.dataset.scrollY) {
+        const scrollY = parseInt(document.body.dataset.scrollY);
+        document.body.style.top = "";
+        delete document.body.dataset.scrollY;
+        if (scrollY > 0) {
+          window.scrollTo(0, scrollY);
+        }
+      }
+    };
   }, [menuOpen]);
 
   return (
@@ -103,11 +167,17 @@ const Header = () => {
 
         {/* Slide Menu */}
         <div
-          className={`fixed inset-0 z-40 cream-bg flex flex-col justify-between text-center transition-all duration-1300 ease-in-out transform ${
+          className={`fixed inset-0 z-60 cream-bg flex flex-col justify-between text-center transition-all duration-1300 ease-in-out transform ${
             menuOpen
               ? "translate-x-0 opacity-100"
               : "-translate-x-full opacity-0 pointer-events-none"
           } mobile-menu-slide`}
+          style={{
+            // Use dynamic viewport height to avoid mobile browser UI clipping
+            minHeight: '100dvh',
+            height: '100dvh',
+            paddingBottom: 'env(safe-area-inset-bottom)'
+          }}
         >
           {/* Profile icons */}
           <div className="w-full flex justify-between items-center px-6 pt-6">
@@ -130,7 +200,7 @@ const Header = () => {
           </div>
 
           {/* Nav Links */}
-          <div className="flex flex-col items-center justify-center space-y-6">
+          <div className="flex-1 flex flex-col items-center justify-center space-y-2 cursor-pointer" style={{paddingTop: '2.5rem'}}>
             {[
               { label: "Necklaces", path: "/necklace" },
               { label: "Earrings", path: "/earrings" },
@@ -154,36 +224,50 @@ const Header = () => {
             ))}
           </div>
 
-          {/* Wishlist */}
-          <div className="w-full px-6 pb-6">
-            <div className="border-t border-[#c9c9c9] mb-4 opacity-35" />
-            <button
-              onClick={() => navigate("/wishlist")}
-              className="flex items-center justify-between text-[1rem] w-full"
-            >
-              <span className="metallic-text bebas text-lg">Wishlist</span>
-              <img
-                src={Heart}
-                alt="Wishlist"
-                className="w-5 h-5 hover:opacity-80 ml-auto"
-              />
-            </button>
+          {/* Wishlistt */}
+          <div style={{position: 'relative'}}>
+            <div style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              bottom: 0,
+              padding: '1rem',
+              // Ensure it's above home indicator / safe area sa browser
+              paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))',
+              background: 'transparent'
+            }}>
+              <div className="border-t border-[#c9c9c9] mb-4 opacity-35" />
+              <button
+                onClick={() => navigate("/wishlist")}
+                className="flex items-center justify-between text-[1rem] w-full"
+                style={{padding: '0.6rem 0.5rem'}}
+              >
+                <span className="metallic-text bebas text-lg">Wishlist</span>
+                <img
+                  src={Heart}
+                  alt="Wishlist"
+                  className="w-5 h-5 hover:opacity-80 ml-auto"
+                />
+              </button>
+            </div>
+            {/* spacer to ensure menu content above footer isn't hidden */}
+            <div style={{height: '10rem'}} aria-hidden="true" />
           </div>
         </div>
       </header>
 
       {/* Desktop Header */}
       <header
-        className={`hidden lg:flex fixed top-0 left-0 w-full  z-50 py-7 px-8 flex items-center justify-between transition-all duration-300 ${
+        className={`hidden lg:flex fixed top-0 left-0 w-full z-50 py-7 px-8 items-center justify-between transition-all duration-300 ${
           isScrolled ? "bg-[#1e1e1e]/60 backdrop-blur-sm shadow-md" : ""
         }`}
       >
         {/* Left nav */}
         <nav className="flex-1 flex justify-end items-center space-x-8 -mt-8 avant uppercase cream-text text-[1.26rem]">
-          <span onClick={() => navigate("/necklace")} className="hover:opacity-60">
+          <span onClick={() => navigate("/necklace")} className="hover:opacity-60 cursor-pointer">
             Necklaces 
           </span>
-          <span onClick={() => navigate("/earrings")} className="hover:opacity-60">
+          <span onClick={() => navigate("/earrings")} className="hover:opacity-60 cursor-pointer">
             Earrings
           </span>
         </nav>
@@ -211,10 +295,10 @@ const Header = () => {
         {/* Right nav */}
         <div className="flex-1 flex justify-start items-center space-x-8">
           <nav className="flex space-x-8 avant uppercase cream-text -mt-8 text-[1.26rem]">
-            <span onClick={() => navigate("/rings")} className="hover:opacity-60">
+            <span onClick={() => navigate("/rings")} className="hover:opacity-60 cursor-pointer">
               Rings
             </span>
-            <span onClick={() => navigate("/bracelet")} className="hover:opacity-60">
+            <span onClick={() => navigate("/bracelet")} className="hover:opacity-60 cursor-pointer">
               Bracelets
             </span>
           </nav>

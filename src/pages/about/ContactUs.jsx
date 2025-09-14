@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import './ContactUs.css'
 import Layout from '../../components/Layout';
-import contactBG from '../../assets/images/contactBG.png';
-import contactBG1 from '../../assets/images/contactBG1.png';
-import contactGmail from '../../assets/icons/contactGmail.png';
-import contactFB from '../../assets/icons/contactFB.png';
-import contactTiktok from '../../assets/icons/contactTiktok.png';
-import contactIG from '../../assets/icons/contactIG.png';
-import contactVector from '../../assets/images/contactVector.png';
+import {
+  contactBG,
+  contactBG1,
+  contactGmail,
+  contactFB,
+  contactTiktok,
+  contactIG,
+  contactVector,
+} from '../../assets/index.js';
 
 function CustomSelect({ options, placeholder, value, onChange }) {
   const [open, setOpen] = useState(false);
@@ -210,6 +212,7 @@ const ContactUs = () => {
         <div className="flex-1 flex items-stretch justify-end m-0 p-0" 
         style={{ 
             marginTop: 60,
+            marginLeft: '-55px',
             overflow: 'hidden',   // Prevent overflow into footer
             minHeight: '100%',    // Ensure the section is tall enough
             }}
@@ -233,16 +236,17 @@ const ContactUs = () => {
             src={contactBG}
             alt="Contact"
             style={{
-              width: '100%',
+              width: '120%',
               height: '120%',
               objectFit: 'cover',
-              objectPosition: 'top center',
+              objectPosition: 'top right',
               margin: 0,
               padding: 0,
               border: 'none',
               display: 'block',
               position: 'relative',
               zIndex: 2,
+              minHeight: 'calc(100vh - 6rem)',
             }}
           />
         </div>

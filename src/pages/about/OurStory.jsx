@@ -1,13 +1,15 @@
 import React, { useRef, useEffect } from "react";
 import Layout from "../../components/Layout";
-import ourstoryFirst from "../../assets/images/ourstory-first.png";
-import ourstorySecond from "../../assets/images/ourstory-second.png";
-import ourstoryThird from "../../assets/images/ourstory-third.png";
-import ourstoryFourth from "../../assets/images/ourstory-fourth.png";
-import ourstoryFirstMobile from "../../assets/images/ourstory-first1.png";
-import ourstorySecondMobile from "../../assets/images/ourstory-second1.png";
-import ourstoryThirdMobile from "../../assets/images/ourstory-third1.png";
-import ourstoryFourthMobile from "../../assets/images/ourstory-fourth1.png";
+import {
+  ourstoryFirst,
+  ourstorySecond,
+  ourstoryThird,
+  ourstoryFourth,
+  ourstoryFirstMobile,
+  ourstorySecondMobile,
+  ourstoryThirdMobile,
+  ourstoryFourthMobile,
+} from "../../assets/index.js";
 
 // Custom hook for scroll-based fade-in animation
 const useScrollFadeIn = (duration = 0.7, delay = 0) => {
@@ -127,7 +129,7 @@ const OurStoryTitleSectionMobile = () => { // nakahiwalay yung image at title sa
     <div
       style={{
         minHeight: "480px",
-        marginTop: "90px",
+        marginTop: "0",
         backgroundImage: `url(${ourstoryFirstMobile})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
@@ -226,7 +228,6 @@ const OurStoryTitleSectionDesktop = () => { //hiwalay na image at title sa ourst
     <div
       style={{
         minHeight: "820px",
-        marginTop: "150px",
         backgroundImage: `url(${ourstoryFirst})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
@@ -236,6 +237,8 @@ const OurStoryTitleSectionDesktop = () => { //hiwalay na image at title sa ourst
         position: 'relative',
         width: '100%',
         overflow: 'hidden',
+        marginTop: '0', // Remove top margin to allow expansion sa taas
+        
       }}
     >
       <div
@@ -366,7 +369,7 @@ export default function OurStory() {
               align="left"
               style={{ minHeight: "900px" }}
               idx={2}
-              marginLeft="60rem"
+              marginLeft="51rem"
               marginTop="-450px"
             />
             <SectionDesktop

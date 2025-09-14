@@ -8,16 +8,27 @@ import {
   TryOnIcon,
   AddFavorite,
   LyricImage,
+  LyricWebp,
   AgathaImage,
+  AgathaWebp,
   RiomImage,
+  RiomWebp,
   CelineImage,
+  CelineWebp,
   AddBag,
   AddBagHover,
   ClassicCollectionImg,
   RebellionCollectionImg,
   LoveLanguageCollectionImg,
   PearlCollectionImg,
+  PearlCollectionWebp,
+  ClassicCollectionWebp,
+  RebellionCollectionWebp,
+  LoveLanguageCollectionWebp,
+  ClashCollectionWebp,
+  KidsCollectionWebp,
   StyleItImg,
+  StyleItWebP,
   FastShipIcon,
   SecureIcon,
   ReturnIcon,
@@ -26,7 +37,7 @@ import {
   DropUp,
 } from "../../assets/index.js";
 
-// CSS to hide scrollbar
+// CSS to hide scrollbar and optimize images
 const scrollbarHideStyle = `
   .scrollbar-hide {
     -ms-overflow-style: none; /* IE and Edge */
@@ -35,15 +46,38 @@ const scrollbarHideStyle = `
   .scrollbar-hide::-webkit-scrollbar {
     display: none; /* Chrome, Safari and Opera */
   }
+  
+  /* Optimize images for mobile performance */
+  img {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+  }
+  
+  /* Improve loading animation */
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  
+  .animate-spin {
+    animation: spin 1s linear infinite;
+  }
 `;
 
 
-const heroImages = [KidsCollectionBanner, ClashCollectionBanner];
+const heroImages = [
+  { src: KidsCollectionBanner, webp: KidsCollectionWebp },
+  { src: ClashCollectionBanner, webp: ClashCollectionWebp }
+];
 
 const rebelsTopPicks = [
   {
     id: 1,
     images: [LyricImage, ClashCollectionBanner],
+    webpImages: [LyricWebp, ClashCollectionWebp],
     name: "LYRIC",
     collection: "LOVE LANGUAGE COLLECTION",
     originalPrice: "₱790.00",
@@ -52,6 +86,7 @@ const rebelsTopPicks = [
   {
     id: 2,
     images: [AgathaImage, KidsCollectionBanner],
+    webpImages: [AgathaWebp, KidsCollectionWebp],
     name: "AGATHA",
     collection: "CLASH COLLECTION",
     originalPrice: "₱790.00",
@@ -60,6 +95,7 @@ const rebelsTopPicks = [
   {
     id: 3,
     images: [RiomImage, ClashCollectionBanner],
+    webpImages: [RiomWebp, ClashCollectionWebp],
     name: "RIOM",
     collection: "THE REBELLION COLLECTION",
     originalPrice: "₱790.00",
@@ -68,6 +104,7 @@ const rebelsTopPicks = [
   {
     id: 4,
     images: [CelineImage, KidsCollectionBanner],
+    webpImages: [CelineWebp, KidsCollectionWebp],
     name: "CELINE",
     collection: "THE REBELLION COLLECTION",
     originalPrice: "₱790.00",
@@ -76,6 +113,7 @@ const rebelsTopPicks = [
   {
     id: 5,
     images: [LyricImage, ClashCollectionBanner],
+    webpImages: [LyricWebp, ClashCollectionWebp],
     name: "LYRIC 2",
     collection: "LOVE LANGUAGE COLLECTION",
     originalPrice: "₱790.00",
@@ -84,10 +122,10 @@ const rebelsTopPicks = [
 ];
 
 const burvonsCollections = [
-  { id: 1, image: ClassicCollectionImg },
-  { id: 2, image: RebellionCollectionImg },
-  { id: 3, image: LoveLanguageCollectionImg },
-  { id: 4, image: PearlCollectionImg },
+  { id: 1, image: ClassicCollectionImg, webp: ClassicCollectionWebp },
+  { id: 2, image: RebellionCollectionImg, webp: RebellionCollectionWebp },
+  { id: 3, image: LoveLanguageCollectionImg, webp: LoveLanguageCollectionWebp },
+  { id: 4, image: PearlCollectionImg, webp: PearlCollectionWebp },
 ];
 
 const BASE_HEIGHT = 378; // compact height for collapsed (mobile)
@@ -125,6 +163,8 @@ const Homepage = () => {
   const [burvonHoveredId, setBurvonHoveredId] = useState(null);
   const [collectionIndex, setCollectionIndex] = useState(0);
   const [mobileImageIndexes, setMobileImageIndexes] = useState({});
+  const [loadedImages, setLoadedImages] = useState(new Set());
+  const [imageLoadingStates, setImageLoadingStates] = useState({});
 
   const [isMobile, setIsMobile] = useState(false);
   const [openIndex, setOpenIndex] = useState(null);
@@ -153,6 +193,41 @@ const Homepage = () => {
     }, 4000);
     return () => clearInterval(interval);
   }, []);
+
+  // Preload critical images for better performance
+  useEffect(() => {
+    const preloadImages = () => {
+      const criticalImages = [
+        LyricImage, AgathaImage, RiomImage, CelineImage,
+        LyricWebp, AgathaWebp, RiomWebp, CelineWebp
+      ];
+      
+      criticalImages.forEach((src) => {
+        if (src) {
+          const img = new Image();
+          img.src = src;
+        }
+      });
+    };
+
+    // Preload after a short delay to not block initial render
+    const timer = setTimeout(preloadImages, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Handle image loading states
+  const handleImageLoad = (imageId) => {
+    setLoadedImages(prev => new Set([...prev, imageId]));
+    setImageLoadingStates(prev => ({ ...prev, [imageId]: 'loaded' }));
+  };
+
+  const handleImageError = (imageId) => {
+    setImageLoadingStates(prev => ({ ...prev, [imageId]: 'error' }));
+  };
+
+  const handleImageStart = (imageId) => {
+    setImageLoadingStates(prev => ({ ...prev, [imageId]: 'loading' }));
+  };
 
   const handleImageChangeMobile = (cardId, direction) => {
     const images = rebelsTopPicks.find((item) => item.id === cardId).images;
@@ -326,14 +401,16 @@ const Homepage = () => {
           style={{ transform: `translateX(-${currentIndex * 100}%)` }}
           aria-live="polite"
         >
-          {heroImages.map((src, index) => (
-            <img
-              key={index}
-              src={src}
-              alt={`Burvon homepage banner collection ${index + 1}`}
-              className="flex-shrink-0 w-full h-full object-cover object-center"
-              draggable={false}
-            />
+          {heroImages.map((image, index) => (
+            <picture key={index} className="flex-shrink-0 w-full h-full">
+              <source srcSet={image.webp} type="image/webp" />
+              <img
+                src={image.src}
+                alt={`Burvon homepage banner collection ${index + 1}`}
+                className="w-full h-full object-cover object-center"
+                draggable={false}
+              />
+            </picture>
           ))}
         </div>
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex space-x-1 z-20">
@@ -414,12 +491,26 @@ const Homepage = () => {
             }}
           >
             <div className="relative w-full h-[300px] flex items-center justify-center overflow-hidden bg-black">
-              <img
-                src={item.images[0]}
-                alt={item.name}
-                className="object-cover w-full h-full rounded-none select-none"
-                draggable={false}
-              />
+              {imageLoadingStates[`${item.id}-0`] === 'loading' && (
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
+                  <div className="w-8 h-8 border-2 border-[#FFF7DC] border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              )}
+              <picture className="w-full h-full">
+                {item.webpImages[0] && <source srcSet={item.webpImages[0]} type="image/webp" />}
+                <img
+                  src={item.images[0]}
+                  alt={item.name}
+                  className={`object-cover w-full h-full rounded-none select-none transition-opacity duration-300 ${
+                    loadedImages.has(`${item.id}-0`) ? 'opacity-100' : 'opacity-0'
+                  }`}
+                  draggable={false}
+                  loading="lazy"
+                  onLoad={() => handleImageLoad(`${item.id}-0`)}
+                  onError={() => handleImageError(`${item.id}-0`)}
+                  onLoadStart={() => handleImageStart(`${item.id}-0`)}
+                />
+              </picture>
             </div>
             <div
               style={{
@@ -475,11 +566,27 @@ const Homepage = () => {
                 />
               </div>
               <div className="relative w-full h-[300px] flex items-center justify-center overflow-hidden bg-black">
-                <img
-                  src={isHovered ? item.images[hoveredImageIndex] : item.images[0]}
-                  alt={item.name}
-                  className="object-cover w-full h-full rounded-none transition-all duration-300"
-                />
+                {imageLoadingStates[`${item.id}-${isHovered ? hoveredImageIndex : 0}`] === 'loading' && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-gray-800 z-10">
+                    <div className="w-8 h-8 border-2 border-[#FFF7DC] border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                )}
+                <picture className="w-full h-full">
+                  {item.webpImages[isHovered ? hoveredImageIndex : 0] && (
+                    <source srcSet={item.webpImages[isHovered ? hoveredImageIndex : 0]} type="image/webp" />
+                  )}
+                  <img
+                    src={isHovered ? item.images[hoveredImageIndex] : item.images[0]}
+                    alt={item.name}
+                    className={`object-cover w-full h-full rounded-none transition-all duration-300 ${
+                      loadedImages.has(`${item.id}-${isHovered ? hoveredImageIndex : 0}`) ? 'opacity-100' : 'opacity-0'
+                    }`}
+                    loading="lazy"
+                    onLoad={() => handleImageLoad(`${item.id}-${isHovered ? hoveredImageIndex : 0}`)}
+                    onError={() => handleImageError(`${item.id}-${isHovered ? hoveredImageIndex : 0}`)}
+                    onLoadStart={() => handleImageStart(`${item.id}-${isHovered ? hoveredImageIndex : 0}`)}
+                  />
+                </picture>
                 {isHovered && item.images.length > 1 && (
                   <>
                     <img
@@ -509,7 +616,7 @@ const Homepage = () => {
                 style={{
                   background: "linear-gradient(90deg, #000000 46%, #666666 100%)",
                 }}
-                className="relative py-2 px-2 text-center flex flex-col items-center rounded-none min-h-[140px]"
+                className="relative py-2 px-2 text-center flex flex-col items-center rounded-none min-h-[140px] "
               >
                 <span className="uppercase text-[#FFF7DC] tracking-widest text-[13px] avantbold">{item.name}</span>
                 <span className="text-[13px] tracking-widest text-[#FFF7DC] avant">{item.collection}</span>
@@ -525,6 +632,7 @@ const Homepage = () => {
                       outline: "2px solid #FFF7DC",
                       outlineOffset: "0px",
                       borderRadius: 0,
+                      cursor: "pointer",
                     }}
                     onMouseEnter={() => setHoveredButtonId(item.id)}
                     onMouseLeave={() => setHoveredButtonId(null)}
@@ -598,13 +706,16 @@ const Homepage = () => {
               borderRadius: 0,  // explicitly remove border radius
             }}
           >
-            <img
-              src={col.image}
-              alt={`Burvon ${col.id}`}
-              className="w-full h-auto object-cover select-none"
-              draggable={false}
-              style={{ borderRadius: 0 }} // reinforce no rounding on image
-            />
+            <picture className="w-full">
+              <source srcSet={col.webp} type="image/webp" />
+              <img
+                src={col.image}
+                alt={`Burvon ${col.id}`}
+                className="w-full h-auto object-cover select-none"
+                draggable={false}
+                style={{ borderRadius: 0 }} // reinforce no rounding on image
+              />
+            </picture>
           </div>
         ))}
       </div>
@@ -632,13 +743,16 @@ const Homepage = () => {
                 borderRadius: 0,  // explicitly remove border radius
               }}
             >
-              <img
-                src={col.image}
-                alt={`Burvon Collection ${col.id}`}
-                className="w-full h-auto object-cover select-none transition-transform duration-300"
-                draggable={false}
-                style={{ display: "block", borderRadius: 3 }} // remove rounding on img
-              />
+              <picture className="w-full">
+                <source srcSet={col.webp} type="image/webp" />
+                <img
+                  src={col.image}
+                  alt={`Burvon Collection ${col.id}`}
+                  className="w-full h-auto object-cover select-none transition-transform duration-300"
+                  draggable={false}
+                  style={{ display: "block", borderRadius: 3 }} // remove rounding on img
+                />
+              </picture>
             </div>
           );
         })}
@@ -652,17 +766,20 @@ const Homepage = () => {
 
     {/* Style It On You Section */}
     <section className="relative w-full bg-[#1F1F21] mt-16 md:mt-24 lg:mt-15">
-      <img
-        src={StyleItImg}
-        alt="Style It On You"
-        className={`w-full object-cover ${
-          isMobile ? "h-[400px]" : "h-[500px] md:h-[600px] lg:h-[650px]"
-        }`}
-        draggable={false}
-        style={{
-          objectPosition: isMobile ? "center bottom" : "center center",
-        }}
-      />
+      <picture className="w-full">
+        <source srcSet={StyleItWebP} type="image/webp" />
+        <img
+          src={StyleItImg}
+          alt="Style It On You"
+          className={`w-full object-cover ${
+            isMobile ? "h-[400px]" : "h-[500px] md:h-[600px] lg:h-[650px]"
+          }`}
+          draggable={false}
+          style={{
+            objectPosition: isMobile ? "center bottom" : "center center",
+          }}
+        />
+      </picture>
 
       <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"></div>
 
