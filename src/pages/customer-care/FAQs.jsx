@@ -3,9 +3,11 @@ import './FAQs.css';
 
 import Layout from '../../components/Layout';
 
-import faqsBG from '../../assets/images/faqsBG.png';
-import faqsBG1 from '../../assets/images/faqsBG1.png'; 
-import dropdownIcon from '../../assets/icons/dropdown.png';
+import {
+  faqsBG, 
+  faqsBG1,
+  dropdownIcon,
+} from '../../assets/index.js';
 
 const FAQs = () => {
   const [activeIndex, setActiveIndex] = useState(null);
