@@ -127,7 +127,7 @@ const OurStoryTitleSectionMobile = () => { // nakahiwalay yung image at title sa
     <div
       style={{
         minHeight: "480px",
-        marginTop: "90px",
+        marginTop: "0",
         backgroundImage: `url(${ourstoryFirstMobile})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
@@ -236,6 +236,8 @@ const OurStoryTitleSectionDesktop = () => { //hiwalay na image at title sa ourst
         position: 'relative',
         width: '100%',
         overflow: 'hidden',
+        marginTop: '0', // Remove top margin to allow expansion sa taas
+        
       }}
     >
       <div
@@ -366,7 +368,7 @@ export default function OurStory() {
               align="left"
               style={{ minHeight: "900px" }}
               idx={2}
-              marginLeft="60rem"
+              marginLeft="51rem"
               marginTop="-450px"
             />
             <SectionDesktop
