@@ -210,6 +210,7 @@ const ContactUs = () => {
         <div className="flex-1 flex items-stretch justify-end m-0 p-0" 
         style={{ 
             marginTop: 60,
+            marginLeft: '-55px',
             overflow: 'hidden',   // Prevent overflow into footer
             minHeight: '100%',    // Ensure the section is tall enough
             }}
@@ -233,16 +234,17 @@ const ContactUs = () => {
             src={contactBG}
             alt="Contact"
             style={{
-              width: '100%',
+              width: '120%',
               height: '120%',
               objectFit: 'cover',
-              objectPosition: 'top center',
+              objectPosition: 'top right',
               margin: 0,
               padding: 0,
               border: 'none',
               display: 'block',
               position: 'relative',
               zIndex: 2,
+              minHeight: 'calc(100vh - 6rem)',
             }}
           />
         </div>
