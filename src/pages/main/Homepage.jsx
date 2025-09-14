@@ -8,9 +8,13 @@ import {
   TryOnIcon,
   AddFavorite,
   LyricImage,
+  LyricWebp,
   AgathaImage,
+  AgathaWebp,
   RiomImage,
+  RiomWebp,
   CelineImage,
+  CelineWebp,
   AddBag,
   AddBagHover,
   ClassicCollectionImg,
@@ -33,7 +37,7 @@ import {
   DropUp,
 } from "../../assets/index.js";
 
-// CSS to hide scrollbar
+// CSS to hide scrollbar and optimize images
 const scrollbarHideStyle = `
   .scrollbar-hide {
     -ms-overflow-style: none; /* IE and Edge */
@@ -41,6 +45,25 @@ const scrollbarHideStyle = `
   }
   .scrollbar-hide::-webkit-scrollbar {
     display: none; /* Chrome, Safari and Opera */
+  }
+  
+  /* Optimize images for mobile performance */
+  img {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+  }
+  
+  /* Improve loading animation */
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  
+  .animate-spin {
+    animation: spin 1s linear infinite;
   }
 `;
 
@@ -54,7 +77,7 @@ const rebelsTopPicks = [
   {
     id: 1,
     images: [LyricImage, ClashCollectionBanner],
-    webpImages: [null, ClashCollectionWebp],
+    webpImages: [LyricWebp, ClashCollectionWebp],
     name: "LYRIC",
     collection: "LOVE LANGUAGE COLLECTION",
     originalPrice: "₱790.00",
@@ -63,7 +86,7 @@ const rebelsTopPicks = [
   {
     id: 2,
     images: [AgathaImage, KidsCollectionBanner],
-    webpImages: [null, KidsCollectionWebp],
+    webpImages: [AgathaWebp, KidsCollectionWebp],
     name: "AGATHA",
     collection: "CLASH COLLECTION",
     originalPrice: "₱790.00",
@@ -72,7 +95,7 @@ const rebelsTopPicks = [
   {
     id: 3,
     images: [RiomImage, ClashCollectionBanner],
-    webpImages: [null, ClashCollectionWebp],
+    webpImages: [RiomWebp, ClashCollectionWebp],
     name: "RIOM",
     collection: "THE REBELLION COLLECTION",
     originalPrice: "₱790.00",
@@ -81,7 +104,7 @@ const rebelsTopPicks = [
   {
     id: 4,
     images: [CelineImage, KidsCollectionBanner],
-    webpImages: [null, KidsCollectionWebp],
+    webpImages: [CelineWebp, KidsCollectionWebp],
     name: "CELINE",
     collection: "THE REBELLION COLLECTION",
     originalPrice: "₱790.00",
@@ -90,7 +113,7 @@ const rebelsTopPicks = [
   {
     id: 5,
     images: [LyricImage, ClashCollectionBanner],
-    webpImages: [null, ClashCollectionWebp],
+    webpImages: [LyricWebp, ClashCollectionWebp],
     name: "LYRIC 2",
     collection: "LOVE LANGUAGE COLLECTION",
     originalPrice: "₱790.00",
@@ -140,6 +163,8 @@ const Homepage = () => {
   const [burvonHoveredId, setBurvonHoveredId] = useState(null);
   const [collectionIndex, setCollectionIndex] = useState(0);
   const [mobileImageIndexes, setMobileImageIndexes] = useState({});
+  const [loadedImages, setLoadedImages] = useState(new Set());
+  const [imageLoadingStates, setImageLoadingStates] = useState({});
 
   const [isMobile, setIsMobile] = useState(false);
   const [openIndex, setOpenIndex] = useState(null);
@@ -168,6 +193,41 @@ const Homepage = () => {
     }, 4000);
     return () => clearInterval(interval);
   }, []);
+
+  // Preload critical images for better performance
+  useEffect(() => {
+    const preloadImages = () => {
+      const criticalImages = [
+        LyricImage, AgathaImage, RiomImage, CelineImage,
+        LyricWebp, AgathaWebp, RiomWebp, CelineWebp
+      ];
+      
+      criticalImages.forEach((src) => {
+        if (src) {
+          const img = new Image();
+          img.src = src;
+        }
+      });
+    };
+
+    // Preload after a short delay to not block initial render
+    const timer = setTimeout(preloadImages, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Handle image loading states
+  const handleImageLoad = (imageId) => {
+    setLoadedImages(prev => new Set([...prev, imageId]));
+    setImageLoadingStates(prev => ({ ...prev, [imageId]: 'loaded' }));
+  };
+
+  const handleImageError = (imageId) => {
+    setImageLoadingStates(prev => ({ ...prev, [imageId]: 'error' }));
+  };
+
+  const handleImageStart = (imageId) => {
+    setImageLoadingStates(prev => ({ ...prev, [imageId]: 'loading' }));
+  };
 
   const handleImageChangeMobile = (cardId, direction) => {
     const images = rebelsTopPicks.find((item) => item.id === cardId).images;
@@ -431,13 +491,24 @@ const Homepage = () => {
             }}
           >
             <div className="relative w-full h-[300px] flex items-center justify-center overflow-hidden bg-black">
+              {imageLoadingStates[`${item.id}-0`] === 'loading' && (
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
+                  <div className="w-8 h-8 border-2 border-[#FFF7DC] border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              )}
               <picture className="w-full h-full">
                 {item.webpImages[0] && <source srcSet={item.webpImages[0]} type="image/webp" />}
                 <img
                   src={item.images[0]}
                   alt={item.name}
-                  className="object-cover w-full h-full rounded-none select-none"
+                  className={`object-cover w-full h-full rounded-none select-none transition-opacity duration-300 ${
+                    loadedImages.has(`${item.id}-0`) ? 'opacity-100' : 'opacity-0'
+                  }`}
                   draggable={false}
+                  loading="lazy"
+                  onLoad={() => handleImageLoad(`${item.id}-0`)}
+                  onError={() => handleImageError(`${item.id}-0`)}
+                  onLoadStart={() => handleImageStart(`${item.id}-0`)}
                 />
               </picture>
             </div>
@@ -495,6 +566,11 @@ const Homepage = () => {
                 />
               </div>
               <div className="relative w-full h-[300px] flex items-center justify-center overflow-hidden bg-black">
+                {imageLoadingStates[`${item.id}-${isHovered ? hoveredImageIndex : 0}`] === 'loading' && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-gray-800 z-10">
+                    <div className="w-8 h-8 border-2 border-[#FFF7DC] border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                )}
                 <picture className="w-full h-full">
                   {item.webpImages[isHovered ? hoveredImageIndex : 0] && (
                     <source srcSet={item.webpImages[isHovered ? hoveredImageIndex : 0]} type="image/webp" />
@@ -502,7 +578,13 @@ const Homepage = () => {
                   <img
                     src={isHovered ? item.images[hoveredImageIndex] : item.images[0]}
                     alt={item.name}
-                    className="object-cover w-full h-full rounded-none transition-all duration-300"
+                    className={`object-cover w-full h-full rounded-none transition-all duration-300 ${
+                      loadedImages.has(`${item.id}-${isHovered ? hoveredImageIndex : 0}`) ? 'opacity-100' : 'opacity-0'
+                    }`}
+                    loading="lazy"
+                    onLoad={() => handleImageLoad(`${item.id}-${isHovered ? hoveredImageIndex : 0}`)}
+                    onError={() => handleImageError(`${item.id}-${isHovered ? hoveredImageIndex : 0}`)}
+                    onLoadStart={() => handleImageStart(`${item.id}-${isHovered ? hoveredImageIndex : 0}`)}
                   />
                 </picture>
                 {isHovered && item.images.length > 1 && (
