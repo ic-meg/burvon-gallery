@@ -1,8 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import Layout from "../../components/Layout";
-import trackBG from "../../assets/images/trackBG.png";
-import trackVector from "../../assets/images/trackVector.png";
-import trackBGMobile from "../../assets/images/trackBG-mobile.png";
+import {
+  trackBG, 
+  trackVector,
+  trackBGMobile,
+} from "../../assets/index.js";
+
 
 const TrackOrder = () => {
   const navigate = useNavigate();
