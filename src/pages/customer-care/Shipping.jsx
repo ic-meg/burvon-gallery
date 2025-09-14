@@ -1,12 +1,17 @@
 import React, { useEffect, useRef, useState } from "react";
 import Layout from "../../components/Layout";
 import "./Shipping.css";
-import shippingCoverage from "../../assets/icons/shippingPhil.png";
-import shippingMethods from "../../assets/icons/shippingEstimated.png";
-import shippingProcessing from "../../assets/icons/shippingProcess.png";
-import shippingDelivery from "../../assets/icons/shippingDelivery.png";
-import shippingFees from "../../assets/icons/shippingFees.png";
-import shippingRectangle from "../../assets/icons/shippingRectangle.png";
+
+import {
+  shippingCoverage,
+  shippingMethods,
+  shippingProcessing,
+  shippingDelivery,
+  shippingFees,
+  shippingRectangle,
+} from "../../assets/index.js";
+
+
 
 const boxData = [
   {
@@ -29,11 +34,11 @@ const boxData = [
     title: "ESTIMATED DELIVERY TIME",
     desc: (
       <>
-        Metro Manila: 2–4 business days
+        Metro Manila: 2-4 business days
         <br />
-        Luzon: 3–6 business days
+        Luzon: 3-6 business days
         <br />
-        Visayas & Mindanao: 5–10 business days
+        Visayas & Mindanao: 5-10 business days
       </>
     ),
   },
@@ -418,7 +423,7 @@ const Shipping = () => {
                   background: "#181818",
                   borderRadius: "18px",
                   boxShadow: "0 4px 24px 0 rgba(211, 240, 83, 0.05)",
-                  minWidth: "75vw",
+                  minWidth: "95vw",
                   maxWidth: "320px",
                   flex: "0 0 auto",
                   minHeight: "180px",
@@ -470,7 +475,7 @@ const Shipping = () => {
                   style={{
                     color: "#fff7dc",
                     fontSize: "1.2rem",
-                    marginTop: "24px",
+                    marginTop: "6px",
                     marginBottom: "0.7rem",
                     letterSpacing: "1px",
                     textAlign: "center",
@@ -488,6 +493,13 @@ const Shipping = () => {
                     fontWeight: "normal",
                     letterSpacing: "0.5px",
                     lineHeight: "1.2", // adjust lang if you don't like the bigger gap
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "flex-start",
+                    height: "86px",
+                    padding: "0 1rem 0 2rem",
+                    marginBottom: ".5rem",
+                    marginTop: "1rem",
                   }}
                 >
                   {box.desc}
