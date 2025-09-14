@@ -98,6 +98,17 @@ import BurvonWhite from './icons/Logo_white.png';
 import NextFacts from './icons/NextFacts.png';
 import PrevFacts from './icons/PrevFacts.png';
 
+//TrackOrder2
+import Received from './icons/Received.svg';
+import Processed from './icons/Processed.svg';
+import Shipped from './icons/Shipped.svg';
+import Arrived from './icons/Arrived.svg';
+import Received_Done from './icons/Received_Done.svg';
+import Processed_Done from './icons/Processed_Done.svg';
+import Shipped_Done from './icons/Shipped_Done.svg';
+import Arrived_Done from './icons/Arrived_Done.svg';
+
+
 
 
 
@@ -186,4 +197,12 @@ export {
   NextFacts,
   PrevFacts,
   SizeGuideHeroWebp,
+  Received,
+  Received_Done,
+  Processed,
+  Processed_Done,
+  Shipped,
+  Shipped_Done,
+  Arrived,
+  Arrived_Done,
 };
