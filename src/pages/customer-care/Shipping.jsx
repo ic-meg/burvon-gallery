@@ -157,7 +157,7 @@ const Shipping = () => {
                   key={box.title}
                   style={{
                     background: "#181818",
-                    borderRadius: "18px",
+                    borderRadius: "10px",
                     boxShadow: "0 4px 24px 0 rgba(211, 240, 83, 0.05)",
                     width: "390px",
                     minHeight: "180px",
