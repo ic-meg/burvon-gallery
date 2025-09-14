@@ -226,7 +226,6 @@ const OurStoryTitleSectionDesktop = () => { //hiwalay na image at title sa ourst
     <div
       style={{
         minHeight: "820px",
-        marginTop: "150px",
         backgroundImage: `url(${ourstoryFirst})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
