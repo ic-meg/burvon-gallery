@@ -81,10 +81,11 @@ const JewelryCare = () => {
           <div
             className="absolute left-0 w-full h-full bg-center"
             style={{
-              top: "20px",
-              minHeight: "200px",
+              top: "-96px",
+              minHeight: "536px",
               backgroundImage: `url(${jewelrycareBG1})`,
-              backgroundSize: "contain",
+              backgroundSize: "cover",
+              backgroundPosition: "center top",
               backgroundRepeat: "no-repeat",
               boxShadow: "0 8px 32px 0 rgba(0,0,0,0.45)",
             }}
