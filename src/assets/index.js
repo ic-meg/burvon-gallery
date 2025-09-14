@@ -24,6 +24,7 @@ import rinseOffIcon from './icons/rinse-off.svg';
 import dryAirIcon from './icons/dry-air.svg';
 import checkIcon from './icons/check-do.png';
 import xIcon from './icons/x-dont.png';
+import contactVector from './images/contactVector.png';
 import contactGmail from './icons/contactGmail.png';
 import contactFB from './icons/contactFB.png';
 import contactTiktok from './icons/contactTiktok.png';
@@ -114,10 +115,6 @@ import SizeGuideVid from './videos/SizeGuideVid.mp4';
 import SizeGuideVidWebm from './webm/SizeGuideVid.webm';
 import NextFacts from './icons/NextFacts.png';
 import PrevFacts from './icons/PrevFacts.png';
-
-
-
-
 
 // once, import lagay yung name sa export, then call it in the component 
 export {
@@ -220,4 +217,5 @@ export {
   returnGuidelines,
   returnDamage,
   returnShipping,
+  contactVector,
 };
