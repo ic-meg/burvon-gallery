@@ -167,14 +167,16 @@ const Header = () => {
 
         {/* Slide Menu */}
         <div
-          className={`fixed inset-0 z-40 cream-bg flex flex-col justify-between text-center transition-all duration-1300 ease-in-out transform ${
+          className={`fixed inset-0 z-60 cream-bg flex flex-col justify-between text-center transition-all duration-1300 ease-in-out transform ${
             menuOpen
               ? "translate-x-0 opacity-100"
               : "-translate-x-full opacity-0 pointer-events-none"
           } mobile-menu-slide`}
           style={{
-            minHeight: '100vh',
-            height: '100vh'
+            // Use dynamic viewport height to avoid mobile browser UI clipping
+            minHeight: '100dvh',
+            height: '100dvh',
+            paddingBottom: 'env(safe-area-inset-bottom)'
           }}
         >
           {/* Profile icons */}
@@ -198,7 +200,7 @@ const Header = () => {
           </div>
 
           {/* Nav Links */}
-          <div className="flex flex-col items-center justify-center space-y-2 cursor-pointer">
+          <div className="flex-1 flex flex-col items-center justify-center space-y-2 cursor-pointer" style={{paddingTop: '2.5rem'}}>
             {[
               { label: "Necklaces", path: "/necklace" },
               { label: "Earrings", path: "/earrings" },
@@ -222,27 +224,41 @@ const Header = () => {
             ))}
           </div>
 
-          {/* Wishlist */}
-          <div className="w-full px-6 pb-6">
-            <div className="border-t border-[#c9c9c9] mb-4 opacity-35" />
-            <button
-              onClick={() => navigate("/wishlist")}
-              className="flex items-center justify-between text-[1rem] w-full"
-            >
-              <span className="metallic-text bebas text-lg">Wishlist</span>
-              <img
-                src={Heart}
-                alt="Wishlist"
-                className="w-5 h-5 hover:opacity-80 ml-auto"
-              />
-            </button>
+          {/* Wishlistt */}
+          <div style={{position: 'relative'}}>
+            <div style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              bottom: 0,
+              padding: '1rem',
+              // Ensure it's above home indicator / safe area sa browser
+              paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))',
+              background: 'transparent'
+            }}>
+              <div className="border-t border-[#c9c9c9] mb-4 opacity-35" />
+              <button
+                onClick={() => navigate("/wishlist")}
+                className="flex items-center justify-between text-[1rem] w-full"
+                style={{padding: '0.6rem 0.5rem'}}
+              >
+                <span className="metallic-text bebas text-lg">Wishlist</span>
+                <img
+                  src={Heart}
+                  alt="Wishlist"
+                  className="w-5 h-5 hover:opacity-80 ml-auto"
+                />
+              </button>
+            </div>
+            {/* spacer to ensure menu content above footer isn't hidden */}
+            <div style={{height: '10rem'}} aria-hidden="true" />
           </div>
         </div>
       </header>
 
       {/* Desktop Header */}
       <header
-        className={`hidden lg:flex fixed top-0 left-0 w-full  z-50 py-7 px-8 flex items-center justify-between transition-all duration-300 ${
+        className={`hidden lg:flex fixed top-0 left-0 w-full z-50 py-7 px-8 items-center justify-between transition-all duration-300 ${
           isScrolled ? "bg-[#1e1e1e]/60 backdrop-blur-sm shadow-md" : ""
         }`}
       >
