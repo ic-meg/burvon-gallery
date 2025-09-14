@@ -1,9 +1,11 @@
 import React, { useRef, useState, useEffect } from "react";
 import './CustomerReviews.css'
 import Layout from "../../components/Layout";
-import customerBG from "../../assets/images/customerBG.png";
-import customerProf from "../../assets/images/customerProf.png";
-import customerBGMobile from "../../assets/images/customerBG-mobile.png";
+import {
+    customerBG,
+    customerBGMobile,
+    customerProf,
+} from '../../assets/index.js';
 
 const reviews = [
 	{
