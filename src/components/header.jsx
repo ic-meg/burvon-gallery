@@ -35,9 +35,62 @@ const Header = () => {
   }, []);
 
   useEffect(() => {
-    document.body.style.overflow = menuOpen ? "hidden" : "auto";
-    return () => {
+    if (menuOpen) {
+      // Get current scroll position
+      const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+      
+      // Store scroll position
+      document.body.dataset.scrollY = scrollY.toString();
+      
+      // Apply fixed positioning to prevent scrolling
+      document.body.style.overflow = "hidden";
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.left = "0";
+      document.body.style.right = "0";
+      document.body.style.width = "100%";
+      
+      // Disable smooth scrolling
+      document.documentElement.style.scrollBehavior = "auto";
+      
+    } else {
+      // Get stored scroll position
+      const scrollY = parseInt(document.body.dataset.scrollY || '0');
+      
+      // Remove fixed positioning
       document.body.style.overflow = "auto";
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.left = "";
+      document.body.style.right = "";
+      document.body.style.width = "";
+      
+      // Clear stored position
+      delete document.body.dataset.scrollY;
+      
+      // Restore scroll behavior
+      document.documentElement.style.scrollBehavior = "";
+      
+      // Restore scroll position
+      if (scrollY > 0) {
+        window.scrollTo(0, scrollY);
+      }
+    }
+    
+    return () => {
+      // linis
+      const scrollY = parseInt(document.body.dataset.scrollY || '0');
+      document.body.style.overflow = "auto";
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.left = "";
+      document.body.style.right = "";
+      document.body.style.width = "";
+      document.documentElement.style.scrollBehavior = "";
+      delete document.body.dataset.scrollY;
+      if (scrollY > 0) {
+        window.scrollTo(0, scrollY);
+      }
     };
   }, [menuOpen]);
 
@@ -48,7 +101,18 @@ const Header = () => {
       document.body.classList.remove("menu-open");
     }
 
-    return () => document.body.classList.remove("menu-open");
+    return () => {
+      document.body.classList.remove("menu-open");
+      // Ensure cleanuoop of any preserved scroll position
+      if (document.body.dataset.scrollY) {
+        const scrollY = parseInt(document.body.dataset.scrollY);
+        document.body.style.top = "";
+        delete document.body.dataset.scrollY;
+        if (scrollY > 0) {
+          window.scrollTo(0, scrollY);
+        }
+      }
+    };
   }, [menuOpen]);
 
   return (
@@ -108,6 +172,10 @@ const Header = () => {
               ? "translate-x-0 opacity-100"
               : "-translate-x-full opacity-0 pointer-events-none"
           } mobile-menu-slide`}
+          style={{
+            minHeight: '100vh',
+            height: '100vh'
+          }}
         >
           {/* Profile icons */}
           <div className="w-full flex justify-between items-center px-6 pt-6">
@@ -130,7 +198,7 @@ const Header = () => {
           </div>
 
           {/* Nav Links */}
-          <div className="flex flex-col items-center justify-center space-y-6 cursor-pointer">
+          <div className="flex flex-col items-center justify-center space-y-2 cursor-pointer">
             {[
               { label: "Necklaces", path: "/necklace" },
               { label: "Earrings", path: "/earrings" },
