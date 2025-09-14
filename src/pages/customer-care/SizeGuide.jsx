@@ -94,7 +94,7 @@ const SizeGuide = () => {
           <img
             src={SizeGuideHero}
             alt="Burvon rings hero background"
-            className="w-full h-full object-cover object-center z-0"
+            className="w-full h-full object-cover object-center z-0 md:opacity-100 opacity-60"
             draggable={false}
           />
         </picture>
