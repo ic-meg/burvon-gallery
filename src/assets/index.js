@@ -93,9 +93,13 @@ import ClashCollectionWebp from './webp/ClashCollection.webp';
 
 //Homepage Items
 import LyricImage from './images/Lyric.png';
+import LyricWebp from './webp/Lyric.webp';
 import AgathaImage from './images/Agatha.png';
+import AgathaWebp from './webp/Agatha.webp';
 import RiomImage from './images/Riom.png';
+import RiomWebp from './webp/Riom.webp';
 import CelineImage from'./images/Celine.png';
+import CelineWebp from './webp/Celine.webp';
 
 //Homepage Collection
 import ClassicCollectionImg from './images/ClassicColl.png';
@@ -218,4 +222,8 @@ export {
   returnDamage,
   returnShipping,
   contactVector,
+  LyricWebp,
+  AgathaWebp,
+  RiomWebp,
+  CelineWebp,
 };
