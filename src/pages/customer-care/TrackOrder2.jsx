@@ -1,6 +1,6 @@
 import React from "react";
 import Layout from "../../components/Layout";
-// Example icon imports; replace with real file paths
+
 import {
   Received,
   Received_Done,
@@ -46,42 +46,46 @@ const getDateColor = (status) => {
 
 const TrackOrder2 = () => (
   <Layout>
-    <div className="bg-none text-[#FFF7DC] min-h-screen relative">
+    <div className="bg-none text-[#FFF7DC] relative">
       {/* Header */}
-<header className="relative text-[#FFF7DC] pt-10">
-  {/* Title */}
-  <h1 className="font-bold text-4xl md:text-6xl bebas text-center">
-    TRACK YOUR ORDER
-  </h1>
+      <header className="relative text-[#FFF7DC] pt-12">
+        {/* Title */}
+        <h1 className="font-bold text-4xl md:text-6xl bebas text-center">
+          TRACK YOUR ORDER
+        </h1>
 
-  {/* Desktop: Order ID + Tracking ABOVE line */}
-  <div className="hidden md:flex justify-between items-center w-full px-6 mt-6 avan">
-    <div className="text-base md:text-lg font-semibold whitespace-nowrap">
-      Order ID : <span className="font-bold">#38940123</span>
-    </div>
-    <div className="text-base md:text-lg font-semibold whitespace-nowrap">
-      Tracking Number : <span className="ml-1">7421424523</span>
-    </div>
-  </div>
+        {/* Desktop: Order ID + Tracking ABOVE line */}
+        <div className="hidden md:flex justify-between items-center w-full px-6 mt-6 avan">
+          <div className="text-base md:text-lg font-semibold whitespace-nowrap">
+            Order ID : <span className="font-bold">#38940123</span>
+          </div>
+          <div className="text-base md:text-lg font-semibold whitespace-nowrap">
+            Tracking Number : <span className="ml-1">7421424523</span>
+          </div>
+        </div>
 
-  {/* Divider line full width */}
-  <div className="w-full h-[3px] bg-[#FFF7DC] mt-3" />
+        {/* Divider line full width */}
+        <div className="w-screen h-[3px] bg-[#FFF7DC] mt-3 relative left-1/2 -translate-x-1/2" />
 
-  {/* Mobile: Order ID + Tracking BELOW line */}
-  <div className="flex flex-col md:hidden w-full px-2 mt-4 avantbold">
-    <div className="text-base font-semibold whitespace-nowrap mb-[2px]">
-      Order ID : <span className="font-bold">#38940123</span>
-    </div>
-    <div className="text-base font-semibold whitespace-nowrap mb-[2px]">
-      Tracking Number : <span className="ml-1">7421424523</span>
-    </div>
-  </div>
-</header>
-
-
+        {/* Mobile: Order ID + Tracking BELOW line */}
+        <div className="flex flex-col md:hidden w-full px-2 mt-4 avantbold">
+          <div className="text-base font-semibold whitespace-nowrap mb-[2px]">
+            Order ID : <span className="font-bold">#38940123</span>
+          </div>
+          <div className="text-base font-semibold whitespace-nowrap mb-[2px]">
+            Tracking Number : <span className="ml-1">7421424523</span>
+          </div>
+        </div>
+      </header>
 
       {/* ==================== DESKTOP TIMELINE ==================== */}
-      <section className="hidden md:flex flex-col items-center px-6 md:px-16 max-w-[1280px] mx-auto relative z-10 mt-15">
+      <section className="hidden 
+      md:flex 
+      flex-col 
+      items-center 
+      justify-center
+      px-6
+      md:px-16 max-w-[1280px] mx-auto relative z-10 py-16">
         {/* Step Boxes */}
         <div className="grid grid-cols-4 gap-8 w-full max-w-[1000px] mb-5">
           {orderTimeline.map((step, idx) => {
@@ -138,7 +142,10 @@ const TrackOrder2 = () => (
                 : "bg-[#959595]";
 
             return (
-              <div key={idx} className="flex items-center justify-center relative">
+              <div
+                key={idx}
+                className="flex items-center justify-center relative"
+              >
                 {/* Circle */}
                 <div className="relative z-10">
                   {step.status === "done" && (
@@ -177,78 +184,72 @@ const TrackOrder2 = () => (
         </div>
       </section>
 
-{/* ==================== MOBILE TIMELINE ==================== */}
-<section className="block md:hidden w-full mt-10 px-6">
-  {orderTimeline.map((step, idx) => {
-    // Circle styles
-    let circleClass = "flex items-center justify-center rounded-full border-2";
-    let iconSize = "w-5 h-5";
+      {/* ==================== MOBILE TIMELINE ==================== */}
+      <section className="block md:hidden w-full mt-10 px-6">
+        {orderTimeline.map((step, idx) => {
+          // Circle styles
+          let circleClass =
+            "flex items-center justify-center rounded-full border-2";
+          let iconSize = "w-5 h-5";
 
-    if (step.status === "done") {
-      circleClass += " bg-[#FFF7DC] border-[#FFF7DC] w-10 h-10";
-    } else if (step.status === "ongoing") {
-      circleClass += " bg-[#FFF7DC] border-4 border-[#000000] w-14 h-14";
-      iconSize = "w-7 h-7";
-    } else {
-      circleClass += " bg-[#1F1F21] border-[#FFF7DC] w-10 h-10"; // outlined only
-    }
+          if (step.status === "done") {
+            circleClass += " bg-[#FFF7DC] border-[#FFF7DC] w-10 h-10";
+          } else if (step.status === "ongoing") {
+            circleClass += " bg-[#FFF7DC] border-4 border-[#000000] w-14 h-14";
+            iconSize = "w-7 h-7";
+          } else {
+            circleClass += " bg-[#1F1F21] border-[#FFF7DC] w-10 h-10"; // outlined only
+          }
 
-    // Text colors
-    const textColor =
-      step.status === "pending" ? "text-[#959595]" : "text-[#FFF7DC]";
-    const dateColor =
-      step.status === "pending" ? "text-[#959595]" : "text-[#FFF7DC]";
+          // Text colors
+          const textColor =
+            step.status === "pending" ? "text-[#959595]" : "text-[#FFF7DC]";
+          const dateColor =
+            step.status === "pending" ? "text-[#959595]" : "text-[#FFF7DC]";
 
-    // Line color logic
-    let nextLineColor = "bg-[#959595]";
-    if (step.status === "done") {
-      nextLineColor = "bg-[#FFF7DC]";
-    } else if (step.status === "ongoing") {
-      // force the line AFTER ongoing to be grey
-      nextLineColor = "bg-[#959595]";
-    }
+          // Line color logic
+          let nextLineColor = "bg-[#959595]";
+          if (step.status === "done") {
+            nextLineColor = "bg-[#FFF7DC]";
+          } else if (step.status === "ongoing") {
+            // force the line AFTER ongoing to be grey
+            nextLineColor = "bg-[#959595]";
+          }
 
-    return (
-      <div key={idx} className="flex items-start relative mb-8">
-        {/* Circle column */}
-        <div className="flex flex-col items-center w-14 mr-4 relative">
-          {/* Circle */}
-          <div className={circleClass}>
-            <img src={step.icon} alt={step.label} className={iconSize} />
-          </div>
+          return (
+            <div key={idx} className="flex items-start relative mb-8">
+              {/* Circle column */}
+              <div className="flex flex-col items-center w-14 mr-4 relative">
+                {/* Circle */}
+                <div className={circleClass}>
+                  <img src={step.icon} alt={step.label} className={iconSize} />
+                </div>
 
-          {/* Vertical line connecting to next circle */}
-          {idx < orderTimeline.length - 1 && (
-            <div
-              className={`absolute top-full left-1/2 -translate-x-1/2 w-1 h-[130%] ${nextLineColor}`}
-            />
-          )}
-        </div>
+                {/* Vertical line connecting to next circle */}
+                {idx < orderTimeline.length - 1 && (
+                  <div
+                    className={`absolute top-full left-1/2 -translate-x-1/2 w-1 h-[130%] ${nextLineColor}`}
+                  />
+                )}
+              </div>
 
-        {/* Label + Date group */}
-        <div className="flex flex-col justify-center">
-          <span className={`avant text-base leading-tight ${textColor}`}>
-            {step.label.split(" ")[0]}
-          </span>
-          <span className={`avantbold text-lg -mt-1 ${textColor}`}>
-            {step.label.split(" ")[1]}
-          </span>
-          {/* Date always gray (#959595) */}
-          <span className="text-sm -mt-1 text-[#959595]">
-            {step.date || "-"}
-          </span>
-        </div>
-
-      </div>
-    );
-  })}
-</section>
-
-
-
-
-
-
+              {/* Label + Date group */}
+              <div className="flex flex-col justify-center">
+                <span className={`avant text-base leading-tight ${textColor}`}>
+                  {step.label.split(" ")[0]}
+                </span>
+                <span className={`avantbold text-lg -mt-1 ${textColor}`}>
+                  {step.label.split(" ")[1]}
+                </span>
+                {/* Date always gray (#959595) */}
+                <span className="text-sm -mt-1 text-[#959595]">
+                  {step.date || "-"}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </section>
     </div>
   </Layout>
 );
