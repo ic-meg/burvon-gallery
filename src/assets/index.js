@@ -7,7 +7,7 @@ import IconHeart from './icons/heart.svg';
 import IconBag from './icons/cart.svg';
 import SearchWhite from './icons/search.png';
 import BagWhite from './icons/shopping-bag.png';
-import Hamburger from './icons/menu.svg';
+import Hamburger from './icons/hamburger-menu.svg';
 import Heart from './icons/heart.png';
 import User from './icons/avatar.png';
 import SearchBlack from './icons/search-black.png';
