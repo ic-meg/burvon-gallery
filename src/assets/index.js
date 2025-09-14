@@ -50,6 +50,7 @@ import shippingRectangle from './icons/shippingRectangle.png';
 import returnGuidelines from './icons/returnGuidelines.png';
 import returnDamage from './icons/returnDamage.png';
 import returnShipping from './icons/returnShipping.png';
+import CheckIcon from './icons/CheckIcon.svg';
 
 // IMAGES
 import LogoImage from './logo/black_brv.png';
@@ -249,4 +250,5 @@ export {
   AgathaWebp,
   RiomWebp,
   CelineWebp,
+  CheckIcon,
 };
