@@ -1,10 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react'
 import Layout from '../../components/Layout'
 import './Shipping.css'
-import returnGuidelines from '../../assets/icons/returnGuidelines.png'
-import returnDamage from '../../assets/icons/returnDamage.png'
-import returnShipping from '../../assets/icons/returnShipping.png'
-import shippingRectangle from '../../assets/icons/shippingRectangle.png'
+
+import {
+  returnGuidelines,
+  returnDamage,
+  returnShipping,
+  shippingRectangle,
+} from '../../assets/index.js';
+
 
 const boxData = [
   {
@@ -20,7 +24,7 @@ const boxData = [
   {
     icon: returnShipping,
     title: 'RETURN SHIPPING',
-    desc: 'Customers are responsible for return shipping fees, unless the item was received damaged or incorrect. We recommend using a trackable courier service.',
+    desc: 'Customers are responsible for return shipping fees, unless the item was received damaged or incorrect.',
   },
 ]
 
@@ -62,7 +66,7 @@ const ReturnPolicy = () => {
             className="bebas"
             style={{
               color: '#fff7dc',
-              fontSize: '6.5rem',
+              fontSize: '5.5rem',
               letterSpacing: '2px',
               marginBottom: '0.5rem',
             }}
@@ -73,7 +77,7 @@ const ReturnPolicy = () => {
             className="avant"
             style={{
               color: '#fff7dc',
-              fontSize: '1.7rem',
+              fontSize: '1.45rem',
               fontWeight: 'normal',
               letterSpacing: '1px',
               marginBottom: '0.5rem',
@@ -97,10 +101,11 @@ const ReturnPolicy = () => {
           {/* desktop: boxes container */}
           <div
             style={{
-              maxWidth: '1400px', // alter the width in "focus on 3 boxes only" if you change this
+              maxWidth: '1400px', // alter the width in "focus on 3 boxes only" 
               margin: '0 auto',
               position: 'relative',
               zIndex: 10,
+              
             }}
           >
             {/* desktop: 1st row of 3 boxes */}
@@ -117,7 +122,7 @@ const ReturnPolicy = () => {
                   key={box.title}
                   style={{
                     background: '#181818',
-                    borderRadius: '18px',
+                    borderRadius: '10px',
                     boxShadow: '0 4px 24px 0 rgba(211, 240, 83, 0.05)',
                     width: '520px', // alter the max width in "boxes container" if you change this
                     minHeight: '180px',
@@ -172,7 +177,14 @@ const ReturnPolicy = () => {
                       textAlign: 'center',
                       fontWeight: 'normal',
                       letterSpacing: '0.5px',
-                      lineHeight: '1.6',
+                      lineHeight: '1.2',
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "flex-start",
+                      height: "86px",
+                      padding: "0 1rem 0 2rem",
+                      marginBottom: ".5rem",
+                      marginTop: "0.5rem",
                     }}
                   >
                     {box.desc}
