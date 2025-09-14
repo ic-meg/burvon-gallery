@@ -87,16 +87,13 @@ const FAQs = () => {
 
       {/* Desktop FAQs */}
       <div className="hidden md:flex flex-col min-h-screen">
-        <div className="flex flex-1 mt-23.5">
+        <div className="flex flex-1 mt-23.5 h-full">
           {/* model image */}
           <div
             className="w-1/2 bg-cover bg-center"
             style={{
               backgroundImage: `url(${faqsBG})`,
-              height: '100%', // Responsive height
-              minHeight: '955px', // Ensures a minimum height for large screens
-              maxHeight: '100vh', // Prevents overflow on very large screens
-              objectFit: 'cover', // Ensures the image covers the area
+              minHeight: 'calc(100vh - 6rem)', // Full viewport height minus header
             }}
           ></div>
 
