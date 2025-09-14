@@ -1,13 +1,15 @@
 import React, { useRef, useEffect } from "react";
 import Layout from "../../components/Layout";
-import ourstoryFirst from "../../assets/images/ourstory-first.png";
-import ourstorySecond from "../../assets/images/ourstory-second.png";
-import ourstoryThird from "../../assets/images/ourstory-third.png";
-import ourstoryFourth from "../../assets/images/ourstory-fourth.png";
-import ourstoryFirstMobile from "../../assets/images/ourstory-first1.png";
-import ourstorySecondMobile from "../../assets/images/ourstory-second1.png";
-import ourstoryThirdMobile from "../../assets/images/ourstory-third1.png";
-import ourstoryFourthMobile from "../../assets/images/ourstory-fourth1.png";
+import {
+  ourstoryFirst,
+  ourstorySecond,
+  ourstoryThird,
+  ourstoryFourth,
+  ourstoryFirstMobile,
+  ourstorySecondMobile,
+  ourstoryThirdMobile,
+  ourstoryFourthMobile,
+} from "../../assets/index.js";
 
 // Custom hook for scroll-based fade-in animation
 const useScrollFadeIn = (duration = 0.7, delay = 0) => {
