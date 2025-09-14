@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import './ContactUs.css'
 import Layout from '../../components/Layout';
-import contactBG from '../../assets/images/contactBG.png';
-import contactBG1 from '../../assets/images/contactBG1.png';
-import contactGmail from '../../assets/icons/contactGmail.png';
-import contactFB from '../../assets/icons/contactFB.png';
-import contactTiktok from '../../assets/icons/contactTiktok.png';
-import contactIG from '../../assets/icons/contactIG.png';
-import contactVector from '../../assets/images/contactVector.png';
+import {
+  contactBG,
+  contactBG1,
+  contactGmail,
+  contactFB,
+  contactTiktok,
+  contactIG,
+  contactVector,
+} from '../../assets/index.js';
 
 function CustomSelect({ options, placeholder, value, onChange }) {
   const [open, setOpen] = useState(false);

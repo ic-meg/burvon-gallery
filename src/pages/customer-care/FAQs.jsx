@@ -4,9 +4,9 @@ import './FAQs.css';
 import Layout from '../../components/Layout';
 
 import {
-  faqsBG, 
+  faqsBG,
   faqsBG1,
-  dropdownIcon,
+  DropDown,
 } from '../../assets/index.js';
 
 const FAQs = () => {
@@ -71,7 +71,7 @@ const FAQs = () => {
                     {faq.question}
                   </h3>
                   <img
-                    src={dropdownIcon}
+                    src={DropDown}
                     alt="Dropdown Icon"
                     className={activeIndex === index ? 'rotate-180' : ''}
                   />
@@ -120,7 +120,7 @@ const FAQs = () => {
                         {faq.question}
                       </h3>
                       <img
-                        src={dropdownIcon}
+                        src={DropDown}
                         alt="Dropdown Icon"
                         className={activeIndex === index ? 'rotate-180' : ''}
                       />
