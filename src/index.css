@@ -68,3 +68,27 @@ button:focus-visible {
     height: 870px;
   }
 }
+
+/* Mobile scroll optimizations */
+@media (max-width: 767px) {
+  html {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: none;
+  }
+  
+  /* Ensure proper scroll behavior on mobile */
+  main {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Fix for iOS Safari scroll issues */
+  .scroll-container {
+    -webkit-overflow-scrolling: touch;
+    overflow-scrolling: touch;
+  }
+}
