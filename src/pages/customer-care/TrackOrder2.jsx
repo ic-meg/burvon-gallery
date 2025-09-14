@@ -55,17 +55,17 @@ const TrackOrder2 = () => (
   </h1>
 
   {/* Desktop: Order ID + Tracking ABOVE line */}
-  <div className="hidden md:flex justify-between items-center w-full px-6 mt-6 avantbold">
-    <div className="text-base md:text-xl font-semibold whitespace-nowrap">
+  <div className="hidden md:flex justify-between items-center w-full px-6 mt-6 avan">
+    <div className="text-base md:text-lg font-semibold whitespace-nowrap">
       Order ID : <span className="font-bold">#38940123</span>
     </div>
-    <div className="text-base md:text-xl font-semibold whitespace-nowrap">
+    <div className="text-base md:text-lg font-semibold whitespace-nowrap">
       Tracking Number : <span className="ml-1">7421424523</span>
     </div>
   </div>
 
   {/* Divider line full width */}
-  <div className="w-full h-[3px] bg-[#FFF7DC] mt-6" />
+  <div className="w-full h-[3px] bg-[#FFF7DC] mt-3" />
 
   {/* Mobile: Order ID + Tracking BELOW line */}
   <div className="flex flex-col md:hidden w-full px-2 mt-4 avantbold">
