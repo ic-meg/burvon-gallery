@@ -23,8 +23,7 @@ function CustomSelect({ options, placeholder, value, onChange }) {
       >
         <span
           style={{
-            color: '#FFF7DC',
-            opacity: value ? 1 : 0.9, //opacity for topic placeholder
+            color: '#959595',
           }}
         >
           {value ? options.find(opt => opt.value === value).label : placeholder}
@@ -164,6 +163,7 @@ const ContactUs = () => {
                   placeholder="Select a Topic"
                   value={topic}
                   onChange={setTopic}
+                  
                 />
               </div>
             </div> {/* desktop: email and topic */}

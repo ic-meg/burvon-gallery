@@ -464,15 +464,12 @@ const Homepage = () => {
     {isMobile ? (
       <div
         ref={rebelsScrollRef}
-        className="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory"
+        className="flex overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-mandatory flex-nowrap"
         style={{
           scrollBehavior: "smooth",
           WebkitOverflowScrolling: "touch",
+          whiteSpace: "nowrap", // prevent vertical wrap/scroll
         }}
-        // Removed custom touch event handlers for native swipe
-        // onTouchStart={onTouchStartRebel}
-        // onTouchMove={onTouchMoveRebel}
-        // onTouchEnd={onTouchEndRebel}
       >
         {rebelsTopPicks.map((item) => (
           <div
@@ -696,27 +693,27 @@ const Homepage = () => {
         }}
       >
         {[...burvonsCollections, ...burvonsCollections, ...burvonsCollections].map((col, idx, arr) => (
-          <div
-            key={`${col.id}-${idx}`}
-            className="flex-shrink-0 overflow-hidden shadow-lg cursor-pointer transition-all duration-300"
-            style={{
-              width: window.innerWidth,
-              scrollSnapAlign: "start",
-              marginRight: idx !== arr.length - 1 ? "1.5rem" : "0",
-              borderRadius: 0,  // explicitly remove border radius
-            }}
-          >
-            <picture className="w-full">
-              <source srcSet={col.webp} type="image/webp" />
-              <img
-                src={col.image}
-                alt={`Burvon ${col.id}`}
-                className="w-full h-auto object-cover select-none"
-                draggable={false}
-                style={{ borderRadius: 0 }} // reinforce no rounding on image
-              />
-            </picture>
-          </div>
+<div
+  key={`${col.id}-${idx}`}
+  className="flex-shrink-0 overflow-hidden shadow-lg cursor-pointer transition-all duration-300"
+  style={{
+    width: `calc(100vw - 24px)`, // subtract margin or padding to fit within viewport
+    scrollSnapAlign: "start",
+    marginRight: idx !== arr.length - 1 ? "1.5rem" : "0",
+    borderRadius: 0,
+  }}
+>
+  <picture className="w-full">
+    <source srcSet={col.webp} type="image/webp" />
+    <img
+      src={col.image}
+      alt={`Burvon ${col.id}`}
+      className="w-full h-auto object-cover select-none"
+      draggable={false}
+      style={{ borderRadius: 0 }}
+    />
+  </picture>
+</div>
         ))}
       </div>
     ) : (
@@ -887,11 +884,14 @@ const Homepage = () => {
                   style={{ background: "transparent" }}
                   onClick={() => setOpenIndex(openIndex === index ? null : index)}
                 >
-                  <span>{faq.question}</span>
+                  <span className="avantbold" style={{ textTransform: 'uppercase' }}>
+                  {faq.question}
+                  </span>
                   <img
                     src={openIndex === index ? DropUp : DropDown}
                     alt="toggle"
                     className="w-4 h-4"
+                    style={{ marginRight: '15px' }} // adjust spacing as needed
                   />
                 </button>
                 {openIndex === index && (

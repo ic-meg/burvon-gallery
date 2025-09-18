@@ -5,8 +5,7 @@
 input::placeholder,
 textarea::placeholder,
 select::placeholder {
-  color: #FFF7DC;
-  opacity: 0.9; 
+  color: #959595;
 }
 
 
