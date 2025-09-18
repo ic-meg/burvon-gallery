@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Layout from "../../components/Layout";
+
 import {
   NextFacts,
   PrevFacts,
@@ -71,11 +72,18 @@ const facts = [
 const SizeGuide = () => {
   const [factIndex, setFactIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [videoError, setVideoError] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener("resize", checkMobile);
+    
+    // Check if iOS device
+    const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    setIsIOS(iOS);
+    
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
@@ -167,19 +175,48 @@ const SizeGuide = () => {
         </div>
         {/* Video Always Visible */}
         <div className="flex-1 flex items-stretch justify-end">
-          <video
-            controls
-            autoPlay={!isMobile}
-            loop
-            muted
-            playsInline
-            webkit-playsinline="true"
-            className="h-full max-w-[450px] w-full object-cover object-right rounded-none"
-          >
-            <source src={SizeGuideVidWebm} type="video/webm" />
-            <source src={SizeGuideVid} type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
+          {!videoError ? (
+            <video
+              controls
+              autoPlay={false}
+              loop
+              muted
+              playsInline
+              preload="metadata"
+              onError={(e) => {
+                console.log('Video error on iPhone:', e);
+                setVideoError(true);
+              }}
+              onLoadStart={() => console.log('Video loading started')}
+              onCanPlay={() => console.log('Video can play')}
+              className="h-full max-w-[450px] w-full object-cover object-right rounded-none"
+            >
+              <source src={SizeGuideVid} type="video/mp4" />
+              <source src={SizeGuideVidWebm} type="video/webm" />
+            </video>
+          ) : (
+            <div className="h-full max-w-[450px] w-full bg-gray-800 flex items-center justify-center">
+              <div className="text-center p-6">
+                <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mb-4 mx-auto">
+                  <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                  </svg>
+                </div>
+                <h3 className="text-white text-lg bebas mb-2">Size Guide Tutorial</h3>
+                <p className="text-gray-300 text-sm avant mb-4">
+                  {isIOS 
+                    ? "Video not available on this device. Follow the steps below to measure your ring size."
+                    : "Video temporarily unavailable. Follow the steps below to measure your ring size."
+                  }
+                </p>
+                <div className="text-left text-white text-sm avant space-y-2">
+                  <p>1. Wrap a strip of paper around your finger</p>
+                  <p>2. Mark where the paper overlaps</p>
+                  <p>3. Measure the length against a ruler</p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
