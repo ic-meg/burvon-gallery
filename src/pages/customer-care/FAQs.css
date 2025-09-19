@@ -84,3 +84,26 @@
     transition: transform 0.3s ease;
   }
 }
+
+@media (min-width: 1280px) and (max-width: 1600px) {
+  .faq-flex-container {
+    display: flex;
+    align-items: stretch;
+    min-height: calc(140vh - 8.5rem);
+    max-height: calc(140vh - 8.5rem);
+    overflow: hidden;
+  }
+  .faq-model-image {
+    width: 50% !important;
+    min-width: 50% !important;
+    max-width: 50% !important;
+    margin-top: -2rem !important;
+  }
+  .faq-content-area {
+    width: 50%;
+    height: 50%;
+    transform: translateY(-10%);
+    padding: 6% 2% 0% 0%;
+  }
+
+}
