@@ -36,27 +36,23 @@ const Header = () => {
 
   useEffect(() => {
     if (menuOpen) {
-      // Get current scroll position
       const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-      
-      // Store scroll position
+
       document.body.dataset.scrollY = scrollY.toString();
-      
-      // Apply fixed positioning to prevent scrolling
+
       document.body.style.overflow = "hidden";
       document.body.style.position = "fixed";
       document.body.style.top = `-${scrollY}px`;
       document.body.style.left = "0";
       document.body.style.right = "0";
       document.body.style.width = "100%";
-      
-      // Disable smooth scrolling
+
+    
       document.documentElement.style.scrollBehavior = "auto";
-      
     } else {
-      // Get stored scroll position
-      const scrollY = parseInt(document.body.dataset.scrollY || '0');
-      
+   
+      const scrollY = parseInt(document.body.dataset.scrollY || "0");
+
       // Remove fixed positioning
       document.body.style.overflow = "auto";
       document.body.style.position = "";
@@ -64,22 +60,21 @@ const Header = () => {
       document.body.style.left = "";
       document.body.style.right = "";
       document.body.style.width = "";
-      
+
       // Clear stored position
       delete document.body.dataset.scrollY;
-      
-      // Restore scroll behavior
+
+      // Restore scroll behavio
       document.documentElement.style.scrollBehavior = "";
-      
-      // Restore scroll position
+
       if (scrollY > 0) {
         window.scrollTo(0, scrollY);
       }
     }
-    
+
     return () => {
       // linis
-      const scrollY = parseInt(document.body.dataset.scrollY || '0');
+      const scrollY = parseInt(document.body.dataset.scrollY || "0");
       document.body.style.overflow = "auto";
       document.body.style.position = "";
       document.body.style.top = "";
@@ -103,7 +98,7 @@ const Header = () => {
 
     return () => {
       document.body.classList.remove("menu-open");
-      // Ensure cleanuoop of any preserved scroll position
+      // Ensure cleanup of any preserved scroll position
       if (document.body.dataset.scrollY) {
         const scrollY = parseInt(document.body.dataset.scrollY);
         document.body.style.top = "";
@@ -133,7 +128,6 @@ const Header = () => {
           onClick={() => navigate("/")}
         />
 
-        {/*  White icons + Hamburger */}
         <div className="flex items-center space-x-3">
           <img
             src={SearchWhite}
@@ -141,8 +135,7 @@ const Header = () => {
             className="w-6 h-6 cursor-pointer"
             onClick={() => setSearchOpen(true)}
           />
-
-          {/* Show overlay */}
+        
           <SearchOverlay
             isOpen={searchOpen}
             onClose={() => setSearchOpen(false)}
@@ -165,7 +158,6 @@ const Header = () => {
           </div>
         </div>
 
-        {/* Slide Menu */}
         <div
           className={`fixed inset-0 z-60 cream-bg flex flex-col justify-between text-center transition-all duration-1300 ease-in-out transform ${
             menuOpen
@@ -173,13 +165,11 @@ const Header = () => {
               : "-translate-x-full opacity-0 pointer-events-none"
           } mobile-menu-slide`}
           style={{
-            // Use dynamic viewport height to avoid mobile browser UI clipping
-            minHeight: '100dvh',
-            height: '100dvh',
-            paddingBottom: 'env(safe-area-inset-bottom)'
+            minHeight: "100dvh",
+            height: "100dvh",
+            paddingBottom: "env(safe-area-inset-bottom)",
           }}
         >
-          {/* Profile icons */}
           <div className="w-full flex justify-between items-center px-6 pt-6">
             <img
               src={User}
@@ -200,47 +190,54 @@ const Header = () => {
           </div>
 
           {/* Nav Links */}
-          <div className="flex-1 flex flex-col items-center justify-center space-y-2 cursor-pointer" style={{paddingTop: '2.5rem'}}>
+          <div
+            className="flex-1 flex flex-col items-center justify-center space-y-2 cursor-pointer"
+            style={{ paddingTop: "2.5rem" }}
+          >
             {[
               { label: "Necklaces", path: "/necklace" },
               { label: "Earrings", path: "/earrings" },
               { label: "Rings", path: "/rings" },
               { label: "Bracelets", path: "/bracelet" },
-            ].map(({ label, path }) => (
-              <div
-                key={label}
-                role="link"
-                tabIndex={0}
-                onClick={() => navigate(path)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    navigate(path);
-                  }
-                }}
-                className="text-2xl bebas metallic-text tracking-[0.3em] hover:opacity-70 cursor-pointer"
-              >
-                {label}
+            ].map(({ label, path }, index) => (
+              <div key={label} className="flex flex-col items-center w-full">
+                <div
+                  role="link"
+                  tabIndex={0}
+                  onClick={() => navigate(path)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      navigate(path);
+                    }
+                  }}
+                  className="text-2xl bebas metallic-text hover:opacity-70 cursor-pointer"
+                >
+                  {label}
+                </div>
+                {index < 3 && <div className="w-20 h-px bg-[#1f1f21] mt-2" />}
               </div>
             ))}
           </div>
 
           {/* Wishlistt */}
-          <div style={{position: 'relative'}}>
-            <div style={{
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              bottom: 0,
-              padding: '1rem',
-              // Ensure it's above home indicator / safe area sa browser
-              paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))',
-              background: 'transparent'
-            }}>
+          <div style={{ position: "relative" }}>
+            <div
+              style={{
+                position: "absolute",
+                left: 0,
+                right: 0,
+                bottom: 0,
+                padding: "1rem",
+                // Ensure it's above home indicator / safe area sa browser
+                paddingBottom: "calc(1rem + env(safe-area-inset-bottom))",
+                background: "transparent",
+              }}
+            >
               <div className="border-t border-[#c9c9c9] mb-4 opacity-35" />
               <button
                 onClick={() => navigate("/wishlist")}
                 className="flex items-center justify-between text-[1rem] w-full"
-                style={{padding: '0.6rem 0.5rem'}}
+                style={{ padding: "0.6rem 0.5rem" }}
               >
                 <span className="metallic-text bebas text-lg">Wishlist</span>
                 <img
@@ -251,30 +248,44 @@ const Header = () => {
               </button>
             </div>
             {/* spacer to ensure menu content above footer isn't hidden */}
-            <div style={{height: '10rem'}} aria-hidden="true" />
+            <div style={{ height: "10rem" }} aria-hidden="true" />
           </div>
         </div>
       </header>
 
       {/* Desktop Header */}
       <header
-        className={`hidden lg:flex fixed top-0 left-0 w-full z-50 py-7 px-8 items-center justify-between transition-all duration-300 ${
-          isScrolled ? "bg-[#1e1e1e]/60 backdrop-blur-sm shadow-md" : ""
+        className={`hidden lg:flex fixed top-0 left-0 w-full z-50 px-8 items-center justify-between transition-all duration-300 ${
+          isScrolled
+            ? "py-0 bg-[#1e1e1e]/60 backdrop-blur-sm shadow-md"
+            : "py-7"
         }`}
       >
         {/* Left nav */}
-        <nav className="flex-1 flex justify-end items-center space-x-8 -mt-8 avant uppercase cream-text text-[1.26rem]">
-          <span onClick={() => navigate("/necklace")} className="hover:opacity-60 cursor-pointer">
-            Necklaces 
+        <nav
+          className={`flex-1 flex justify-end items-center space-x-8 avant uppercase cream-text text-[1.26rem] transition-all duration-300 ${
+            isScrolled ? "mt-2" : "-mt-8"
+          }`}
+        >
+          <span
+            onClick={() => navigate("/necklace")}
+            className="hover:opacity-60 cursor-pointer"
+          >
+            Necklaces
           </span>
-          <span onClick={() => navigate("/earrings")} className="hover:opacity-60 cursor-pointer">
+          <span
+            onClick={() => navigate("/earrings")}
+            className="hover:opacity-60 cursor-pointer"
+          >
             Earrings
           </span>
         </nav>
 
         {/* Center logo */}
         <div
-          className="relative z-10 -top-7 cream-bg w-[340px] md:w-[360px] h-[94px] clip-logo shadow-md flex items-center justify-center cursor-pointer"
+          className={`relative z-10 cream-bg w-[340px] md:w-[360px] h-[94px] clip-logo shadow-md flex items-center justify-center cursor-pointer transition-all duration-300 ${
+            isScrolled ? "-top-0" : "-top-7"
+          }`}
           role="button"
           tabIndex={0}
           aria-label="Go to homepage"
@@ -294,17 +305,31 @@ const Header = () => {
 
         {/* Right nav */}
         <div className="flex-1 flex justify-start items-center space-x-8">
-          <nav className="flex space-x-8 avant uppercase cream-text -mt-8 text-[1.26rem]">
-            <span onClick={() => navigate("/rings")} className="hover:opacity-60 cursor-pointer">
+          <nav
+            className={`flex space-x-8 avant uppercase cream-text text-[1.26rem] transition-all duration-300 ${
+              isScrolled ? "mt-2" : "-mt-8"
+            }`}
+          >
+            <span
+              onClick={() => navigate("/rings")}
+              className="hover:opacity-60 cursor-pointer"
+            >
               Rings
             </span>
-            <span onClick={() => navigate("/bracelet")} className="hover:opacity-60 cursor-pointer">
+            <span
+              onClick={() => navigate("/bracelet")}
+              className="hover:opacity-60 cursor-pointer"
+            >
               Bracelets
             </span>
           </nav>
 
           {/* Icons */}
-          <div className="absolute right-8 flex space-x-4 -mt-8 items-center">
+          <div
+            className={`absolute right-8 flex space-x-4 items-center transition-all duration-300 ${
+              isScrolled ? "mt-2" : "-mt-8"
+            }`}
+          >
             <img
               src={IconSearch}
               alt="Search"
