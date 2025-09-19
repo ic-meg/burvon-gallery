@@ -815,11 +815,12 @@ const Homepage = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-10 justify-items-center justify-center max-w-3xl mx-auto sm:ml-auto sm:mr-0">
             <div className="w-80 sm:w-full mx-auto grid grid-cols-[3rem_1fr] items-center gap-4 text-left">
               <div className="flex justify-center">
-                <img
-                  src={FastShipIcon}
-                  alt="Fast Shipping"
-                  className="w-10 h-10"
-                />
+              <img
+                src={FastShipIcon}
+                alt="Fast Shipping"
+                className="w-11 h-11 drop-shadow-[0_0_2px_#fff7dc]"
+              />
+
               </div>
               <div>
                 <h3 className="font-bold text-[#fff7dc] text-lg bebas">FAST SHIPPING</h3>
@@ -831,7 +832,7 @@ const Homepage = () => {
                 <img
                   src={SecureIcon}
                   alt="Secure Payment"
-                  className="w-10 h-10"
+                  className="w-10 h-10 drop-shadow-[0_0_2px_#fff7dc]"
                 />
               </div>
               <div>
@@ -844,7 +845,7 @@ const Homepage = () => {
                 <img
                   src={ReturnIcon}
                   alt="Easy Returns"
-                  className="w-10 h-10"
+                  className="w-10 h-10 drop-shadow-[0_0_2px_#fff7dc]"
                 />
               </div>
               <div>
@@ -857,7 +858,7 @@ const Homepage = () => {
                 <img
                   src={SupportIcon}
                   alt="24/7 Support"
-                  className="w-10 h-10"
+                  className="w-10 h-10 drop-shadow-[0_0_2px_#fff7dc]"
                 />
               </div>
               <div>
