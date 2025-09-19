@@ -106,7 +106,7 @@ const JewelryCare = () => {
               className="avant"
               style={{ fontSize: "0.80rem", marginTop: "-0.7rem" }}
             >
-              Even rebels know how to treat their treasures right.
+              Even Rebels know how to treat their treasures right.
             </p>
           </div>
         </div>
@@ -300,7 +300,7 @@ const JewelryCare = () => {
                 fontSize: "1.25rem",
               }}
             >
-              Even rebels know how to treat their treasures right.
+              Even Rebels know how to treat their treasures right.
             </p>
           </div>
 

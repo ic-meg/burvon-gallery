@@ -36,82 +36,6 @@ const useScrollFadeIn = (duration = 0.7, delay = 0) => {
   };
 };
 
-// sa desktop to na our story na large title style
-const fontTitleLarge = {
-  fontFamily: 'Bebas Neue, sans-serif',
-  color: '#FFF7DC',
-  fontSize: '6.5rem',
-  letterSpacing: '2px',
-  marginBottom: '0.5rem',
-  whiteSpace: 'nowrap',
-};
-
-// desktop title style
-const fontTitle = {
-  fontFamily: 'Bebas Neue, sans-serif',
-  color: '#FFF7DC',
-  fontSize: '3.5rem',
-  letterSpacing: '2px',
-  marginBottom: '-0.5rem', // babaan lang if gusto mo magkadikit yung desc tsaka title, taasan if gusto mo mejo hiwalay
-};
-
-// desktop description style
-const fontDesc = {
-  fontFamily: 'AvantGarde Bk BT, AvantGardeBookBT, AVGARDN, sans-serif',
-  color: '#FFF7DC',
-  fontSize: '1.5rem',
-  fontWeight: 300,
-  maxWidth: '700px',
-};
-
-// same lang sa taas pero mobile layout
-const mobileStyles = {
-  section: {
-    minHeight: "480px",
-    padding: "0",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-start",
-    justifyContent: "flex-end",
-    width: "100%",
-    position: "relative",
-    overflow: "hidden",
-  },
-  content: {
-    padding: "1.2rem 1.2rem 2.2rem 1.2rem",
-    textAlign: "left",
-    minWidth: "0",
-    maxWidth: "100%",
-    position: "relative",
-    zIndex: 2,
-    borderRadius: "18px",
-    margin: "0 1rem 1.5rem 1rem",
-  },
-  title: {
-    fontFamily: 'Bebas Neue, sans-serif',
-    color: '#FFF7DC',
-    fontSize: '1.6rem',
-    letterSpacing: '2px',
-    marginBottom: '0.15rem', // babaan lang if gusto mo magkadikit yung desc tsaka title, taasan if gusto mo mejo hiwalay
-  },
-  desc: {
-    fontFamily: 'AvantGarde Bk BT, AvantGardeBookBT, AVGARDN, sans-serif',
-    color: '#FFF7DC',
-    fontSize: '1rem',
-    fontWeight: 300,
-    lineHeight: '1.1',
-  },
-  largeTitle: {
-    fontFamily: 'Bebas Neue, sans-serif',
-    color: '#FFF7DC',
-    fontSize: '3.2rem',
-    letterSpacing: '2px',
-    marginBottom: '0.5rem',
-    whiteSpace: 'nowrap',
-    textAlign: 'center',
-  },
-};
-
 function useIsMobile() {
   const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 600);
   useEffect(() => {
@@ -123,85 +47,54 @@ function useIsMobile() {
 }
 
 // MOBILE LAYOUT COMPONENTS
-const OurStoryTitleSectionMobile = () => { // nakahiwalay yung image at title sa ourstory-first1 sa mobile
+const OurStoryTitleSectionMobile = () => {
   const fadeProps = useScrollFadeIn(0.7, 0);
   return (
     <div
-      style={{
-        minHeight: "480px",
-        marginTop: "0",
-        backgroundImage: `url(${ourstoryFirstMobile})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        position: 'relative',
-        width: '100%',
-        overflow: 'hidden',
-      }}
+      className="min-h-[480px] mt-0 bg-cover bg-center flex items-center justify-center relative w-full overflow-hidden"
+      style={{ backgroundImage: `url(${ourstoryFirstMobile})` }}
     >
       <div
         ref={fadeProps.ref}
-        style={{
-          ...fadeProps.style,
-          textAlign: 'center',
-          margin: "0",
-          position: 'relative',
-          zIndex: 2,
-          width: "100%",
-        }}
+        className="text-center m-0 relative z-[2] w-full"
+        style={fadeProps.style}
       >
-        <div style={mobileStyles.largeTitle}>OUR STORY</div>
+        <div className="bebas text-[#FFF7DC] text-[3.2rem] tracking-[2px] mb-2 whitespace-nowrap text-center">
+          OUR STORY
+        </div>
       </div>
     </div>
   );
 };
 
 const SectionMobile = ({ image, title, description, idx }) => {
-  // position ng image from ourstory second1-fourth1 in mobile
+  // alignment ng second to fourth image
   let bgPosition = 'center';
   if (idx === 1) bgPosition = 'right';
   else if (idx === 2) bgPosition = 'left';
   else if (idx === 3) bgPosition = 'right';
-
-  // content ng mga text from ourstory second1-fourth1, box box yan sila
-  let contentStyle = mobileStyles.content;
-  let sectionStyle = mobileStyles.section;
-
+  // title and description part (second to fourth)
+  let contentClass = "relative z-[2] rounded-[18px] m-[0_1rem_1.5rem_1rem] p-[1.2rem_1.2rem_2.2rem_1.2rem] text-left min-w-0 max-w-full";
+  let sectionClass = "min-h-[480px] p-0 flex flex-col items-start justify-end w-full relative overflow-hidden";
   if (idx === 1) {
-    sectionStyle = { ...mobileStyles.section, justifyContent: "flex-start" };
-    contentStyle = { 
-      ...mobileStyles.content, 
-      maxWidth: "70%", // taasaan lang if gusto mo i-widen yung buong content
-      marginTop: "8.5rem", // babaan lang if gusto mo i-angat yung buong content
-    };
+    sectionClass = "min-h-[480px] p-0 flex flex-col items-start justify-start w-full relative overflow-hidden leading-tight";
+    contentClass = "relative z-[2] rounded-[18px] m-[0_1rem_1.5rem_1rem] p-[1.2rem_1.2rem_2.2rem_1.2rem] text-left min-w-0 max-w-[50%] mt-[8.5rem]";
   }
   if (idx === 2) {
-    sectionStyle = { ...mobileStyles.section, justifyContent: "flex-end" };
-    contentStyle = {
-      ...mobileStyles.content,
-      maxWidth: "100%",
-      marginLeft: "11rem", // adjust lang pataas kung gusto i-left
-      marginBottom: "15.5rem", // taasan lang kung gusto pa i-angat
-    };
+    sectionClass = "min-h-[480px] p-0 flex flex-col items-start justify-end w-full relative overflow-hidden";
+    contentClass = "relative z-[2] rounded-[18px] p-[1.2rem_1.2rem_2.2rem_1.2rem] text-left min-w-0 max-w-full ml-[11rem] mb-[15.5rem]";
   }
   if (idx === 3) {
-    sectionStyle = { ...mobileStyles.section, justifyContent: "flex-end" };
-    contentStyle = {
-      ...mobileStyles.content,
-      maxWidth: "60%",
-      marginBottom: "15.5rem", // taasan lang kung gusto pa i-angat
-    };
+    sectionClass = "min-h-[480px] p-0 flex flex-col items-start justify-end w-full relative overflow-hidden";
+    contentClass = "relative z-[2] rounded-[18px] p-[1.2rem_1.2rem_2.2rem_1.2rem] text-left min-w-0 max-w-[45%] mb-[15.5rem]";
   }
 
-  // text animation with fade in sa mobile
   const fadeProps = useScrollFadeIn(0.7, idx * 0.2);
-
+  // main content sa lahat ng title and description and (second to fourth)
   return (
     <div
+      className={sectionClass}
       style={{
-        ...sectionStyle,
         backgroundImage: `url(${image})`,
         backgroundSize: 'cover',
         backgroundPosition: bgPosition,
@@ -209,58 +102,46 @@ const SectionMobile = ({ image, title, description, idx }) => {
     >
       <div
         ref={fadeProps.ref}
-        style={{
-          ...contentStyle,
-          ...fadeProps.style, // animation style applied to content box
-        }}
+        className={contentClass}
+        style={fadeProps.style}
       >
-        <div style={mobileStyles.title}>{title}</div>
-        {description && <div style={mobileStyles.desc}>{description}</div>}
+        <div className="bebas text-[#FFF7DC] text-[1.6rem] tracking-[2px] mb-[0.15rem]">
+          {title}
+        </div>
+        {description && (
+          <div className="avant text-[#FFF7DC] text-[0.9rem] font-light leading-[1.1]">
+            {description}
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
 // DESKTOP LAYOUT COMPONENTS
-const OurStoryTitleSectionDesktop = () => { //hiwalay na image at title sa ourstory-first1 sa desktop
+const OurStoryTitleSectionDesktop = () => {
   const fadeProps = useScrollFadeIn(0.7, 0);
   return (
     <div
-      style={{
-        minHeight: "820px",
-        backgroundImage: `url(${ourstoryFirst})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        position: 'relative',
-        width: '100%',
-        overflow: 'hidden',
-        marginTop: '0', // Remove top margin to allow expansion sa taas
-        
-      }}
+      className="min-h-[820px] bg-cover bg-center flex items-center justify-center relative w-full overflow-hidden mt-0"
+      style={{ backgroundImage: `url(${ourstoryFirst})` }}
     >
       <div
+        className="absolute top-0 left-0 w-full h-full"
         style={{
-          position: 'absolute',
-          top: 0, left: 0, width: '100%', height: '100%',
           background: 'rgba(0,0,0,0.11)',
-          zIndex: 1, pointerEvents: 'none',
+          zIndex: 1,
+          pointerEvents: 'none',
         }}
       />
       <div
         ref={fadeProps.ref}
-        style={{
-          ...fadeProps.style,
-          textAlign: 'center',
-          margin: "0 auto",
-          position: 'relative',
-          zIndex: 2,
-          width: "auto",
-        }}
+        className="text-center m-0 mx-auto relative z-[2] w-auto"
+        style={fadeProps.style}
       >
-        <div style={fontTitleLarge}>OUR STORY</div>
+        <div className="bebas text-[#FFF7DC] text-[6.5rem] tracking-[2px] mb-2 whitespace-nowrap">
+          OUR STORY
+        </div>
       </div>
     </div>
   );
@@ -270,52 +151,47 @@ const SectionDesktop = ({
   image, title, description, align, style, idx, marginLeft, marginTop,
 }) => {
   const fadeProps = useScrollFadeIn(0.7, idx * 0.2);
+  let overlayBg = 'rgba(0,0,0,0)';
+  if (idx === 1) overlayBg = 'rgba(0,0,0,0.61)';
+  else if (idx === 2) overlayBg = 'rgba(0,0,0,0.2)';
   return (
     <div
+      className={`bg-cover bg-center flex w-full relative overflow-hidden`}
       style={{
         ...style,
         backgroundImage: `url(${image})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        display: 'flex',
         alignItems: align === "top" ? "flex-start" : "center",
         justifyContent: align === 'center' ? 'center' : 'flex-start',
-        position: 'relative',
-        width: '100%',
-        overflow: 'hidden',
       }}
     >
-      {/* overlay na black bg sa image  */}
       <div
+        className="absolute top-0 left-0 w-full h-full"
         style={{
-          position: 'absolute',
-          top: 0, left: 0, width: '100%', height: '100%',
-          background: idx === 1
-            ? 'rgba(0,0,0,0.61)'
-            : idx === 2
-            ? 'rgba(0,0,0,0.2)'
-            : idx === 3
-            ? 'rgba(0,0,0,0)'
-            : 'rgba(0,0,0,0)',
-          zIndex: 1, pointerEvents: 'none',
+          background: overlayBg,
+          zIndex: 1,
+          pointerEvents: 'none',
         }}
       />
       <div
         ref={fadeProps.ref}
+        className={`relative z-[2] p-[1.5rem_2rem]`}
         style={{
           ...fadeProps.style,
-          padding: '1.5rem 2rem',
           textAlign: align === 'center' ? 'center' : 'left',
           marginLeft: marginLeft || (align === 'center' ? '0 auto' : '2.5rem'),
           marginTop: marginTop || (align === "top" ? "4.5rem" : align === "center" ? "150px" : "0"),
           minWidth: '620px',
           maxWidth: '420px',
-          position: 'relative',
-          zIndex: 2,
         }}
       >
-        <div style={fontTitle}>{title}</div>
-        {description && <div style={fontDesc}>{description}</div>}
+        <div className="bebas text-[#FFF7DC] text-[3.5rem] tracking-[2px] mb-[-0.5rem]">
+          {title}
+        </div>
+        {description && (
+          <div className="avant text-[#FFF7DC] text-[1.5rem] font-light max-w-[700px]">
+            {description}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -326,8 +202,7 @@ export default function OurStory() {
   const isMobile = useIsMobile();
   return (
     <Layout full>
-      <div style={{ width: "100%", minHeight: "100vh", background: "#1a1a1a" }}>
-        {/* MOBILE LAYOUT */}
+      <div className="w-full min-h-screen bg-[#1a1a1a]">
         {isMobile ? (
           <>
             <OurStoryTitleSectionMobile />
@@ -347,12 +222,12 @@ export default function OurStory() {
               image={ourstoryFourthMobile}
               title="VISION"
               description="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+              maxWidth="70%"
               idx={3}
             />
           </>
         ) : (
           <>
-            {/* DESKTOP LAYOUT */}
             <OurStoryTitleSectionDesktop />
             <SectionDesktop
               image={ourstorySecond}
@@ -369,7 +244,7 @@ export default function OurStory() {
               align="left"
               style={{ minHeight: "900px" }}
               idx={2}
-              marginLeft="51rem"
+              marginLeft="61rem"
               marginTop="-450px"
             />
             <SectionDesktop

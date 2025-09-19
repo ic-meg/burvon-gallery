@@ -423,8 +423,8 @@ const Shipping = () => {
                   background: "#181818",
                   borderRadius: "18px",
                   boxShadow: "0 4px 24px 0 rgba(211, 240, 83, 0.05)",
-                  minWidth: "95vw",
-                  maxWidth: "320px",
+                  minWidth: "65vw",
+                  maxWidth: "220px",
                   flex: "0 0 auto",
                   minHeight: "180px",
                   position: "relative",
@@ -488,7 +488,7 @@ const Shipping = () => {
                   className="avant"
                   style={{
                     color: "#fff7dc",
-                    fontSize: "1rem",
+                    fontSize: "0.78rem",
                     textAlign: "center",
                     fontWeight: "normal",
                     letterSpacing: "0.5px",
@@ -497,7 +497,7 @@ const Shipping = () => {
                     justifyContent: "center",
                     alignItems: "flex-start",
                     height: "86px",
-                    padding: "0 1rem 0 2rem",
+                    padding: "0 1rem 0 1rem",
                     marginBottom: ".5rem",
                     marginTop: "1rem",
                   }}
