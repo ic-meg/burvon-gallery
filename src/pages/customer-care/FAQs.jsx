@@ -89,10 +89,10 @@ const FAQs = () => {
 
       {/* Desktop FAQs */}
       <div className="hidden md:flex flex-col min-h-screen">
-        <div className="flex flex-1 mt-23.5 h-full">
+        <div className="flex flex-1 mt-23.5 h-full faq-flex-container">
           {/* model image */}
           <div
-            className="w-1/2 bg-cover bg-center"
+            className="w-1/2 bg-cover bg-center faq-model-image"
             style={{
               backgroundImage: `url(${faqsBG})`,
               minHeight: 'calc(100vh - 6rem)', // Full viewport height minus header
@@ -100,7 +100,7 @@ const FAQs = () => {
           ></div>
 
           {/* right content */}
-          <div className="w-1/2 text-[#FFF7DC] px-8 py-25">
+          <div className="w-1/2 text-[#FFF7DC] px-8 py-25 faq-content-area">
             <div className="max-w-4xl mx-auto text-center">
               <h1 className="faq-title bebas">
                 REBELS' FAQS
