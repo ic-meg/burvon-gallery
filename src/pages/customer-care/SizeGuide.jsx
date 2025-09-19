@@ -189,7 +189,8 @@ const SizeGuide = () => {
               }}
               onLoadStart={() => console.log('Video loading started')}
               onCanPlay={() => console.log('Video can play')}
-              className="h-full max-w-[450px] w-full object-cover object-right rounded-none"
+              className="h-full max-w-[450px] w-full object-cover object-right rounded-none drop-shadow-[0_10px_10px_rgba(255,247,220,0.09)]"
+
             >
               <source src={SizeGuideVid} type="video/mp4" />
               <source src={SizeGuideVidWebm} type="video/webm" />
