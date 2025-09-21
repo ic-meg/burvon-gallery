@@ -8,7 +8,7 @@ import {
   SizeGuideHeroWebp,
   SizeGuideVid,
   SizeGuideVidWebm,
-  WhiteLogo, 
+  WhiteLogo
 } from "../../assets/index.js";
 
 const ringSizes = [
@@ -17,56 +17,56 @@ const ringSizes = [
     diameter: "1.41",
     diameterMm: (1.41 * 25.4).toFixed(2),
     circumferenceIn: "4.43",
-    circumferenceMm: "44.2",
+    circumferenceMm: "44.2"
   },
   {
     size: 4,
     diameter: "1.46",
     diameterMm: (1.46 * 25.4).toFixed(2),
     circumferenceIn: "4.58",
-    circumferenceMm: "46.1",
+    circumferenceMm: "46.1"
   },
   {
     size: 5,
     diameter: "1.57",
     diameterMm: (1.57 * 25.4).toFixed(2),
     circumferenceIn: "4.92",
-    circumferenceMm: "49.32",
+    circumferenceMm: "49.32"
   },
   {
     size: 6,
     diameter: "1.65",
     diameterMm: (1.65 * 25.4).toFixed(2),
     circumferenceIn: "5.16",
-    circumferenceMm: "51.9",
+    circumferenceMm: "51.9"
   },
   {
     size: 7,
     diameter: "1.72",
     diameterMm: (1.72 * 25.4).toFixed(2),
     circumferenceIn: "5.4",
-    circumferenceMm: "54.4",
+    circumferenceMm: "54.4"
   },
   {
     size: 8,
     diameter: "1.81",
     diameterMm: (1.81 * 25.4).toFixed(2),
     circumferenceIn: "5.7",
-    circumferenceMm: "57",
+    circumferenceMm: "57"
   },
   {
     size: 9,
     diameter: "1.89",
     diameterMm: (1.89 * 25.4).toFixed(2),
     circumferenceIn: "5.95",
-    circumferenceMm: "59.6",
-  },
+    circumferenceMm: "59.6"
+  }
 ];
 
 const facts = [
   "Measure your fingers at the end of the day when they're at their largest.",
   "Cold weather can shrink your fingers so make sure they're warm.",
-  "Light alcohol and salt can make your fingers swell, so refrain from measuring them after cocktails and appetizers.",
+  "Light alcohol and salt can make your fingers swell, so refrain from measuring them after cocktails and appetizers."
 ];
 
 const SizeGuide = () => {
@@ -79,11 +79,11 @@ const SizeGuide = () => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener("resize", checkMobile);
-    
+
     // Check if iOS device
     const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     setIsIOS(iOS);
-    
+
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
@@ -126,54 +126,62 @@ const SizeGuide = () => {
         </div>
       </section>
 
-      {/* Measure Your Finger Section */}
+      {/* Measure Your Finger Section: always render section but hide text on mobile */}
       <section className="relative flex flex-col md:flex-row h-auto md:h-[600px] w-screen left-1/2 right-1/2 ml-[-50vw] mr-[-50vw] gap-0 bg-[#1F1F21]">
-        {/* Text hidden on mobile */}
-        <div
-          className="flex-1 hidden md:flex flex-col justify-center items-center text-center px-6 sm:px-12 lg:px-24"
-          style={{ color: "#fff7dc" }}
-        >
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold mb-8 bebas -ml-6 md:-ml-20">
-            Measure Your Finger
-          </h2>
-          <div className="space-y-6 sm:space-y-8 avant w-full max-w-md">
-            {/* Steps */}
-            <div className="flex items-center">
-              <span
-                className="flex justify-center items-center w-12 h-12 text-4xl sm:text-5xl font-bold bebas"
-                style={{ color: "#fff7dc" }}
-              >
-                1
-              </span>
-              <span className="text-base sm:text-lg leading-relaxed text-left flex-1">
-                Wrap a strip of paper around your finger.
-              </span>
-            </div>
-            <div className="flex items-center">
-              <span
-                className="flex justify-center items-center w-12 h-12 text-4xl sm:text-5xl font-bold bebas"
-                style={{ color: "#fff7dc" }}
-              >
-                2
-              </span>
-              <span className="text-base sm:text-lg leading-relaxed text-left flex-1">
-                Mark the point where the ring closes.
-              </span>
-            </div>
-            <div className="flex items-center">
-              <span
-                className="flex justify-center items-center w-12 h-12 text-4xl sm:text-5xl font-bold bebas"
-                style={{ color: "#fff7dc" }}
-              >
-                3
-              </span>
-              <span className="text-base sm:text-lg leading-relaxed text-left flex-1">
-                Measure the length of the paper against the ruler.
-              </span>
+        {/* Text Section: hidden on mobile */}
+        {!isMobile && (
+          <div
+            className="flex-1 flex flex-col justify-center items-center text-center px-6 sm:px-12 lg:px-65"
+            style={{ color: "#fff7dc" }}
+          >
+            {/* Wrapper for title + steps */}
+            <div className="flex flex-col items-center max-w-md w-full">
+              <h2 className="text-2xl sm:text-4xl md:text-5xl font-semibold mb-8 bebas pr-21 text-center whitespace-nowrap">
+                Measure Your Finger
+              </h2>
+              <div className="space-y-6 sm:space-y-8 avant w-full">
+                {/* Step 1 */}
+                <div className="flex items-center gap-4">
+                  <span
+                    className="flex justify-center items-center w-12 h-12 text-4xl sm:text-5xl font-bold bebas shrink-0"
+                    style={{ color: "#fff7dc" }}
+                  >
+                    1
+                  </span>
+                  <span className="text-base sm:text-lg leading-relaxed text-left">
+                    Wrap a strip of paper around your finger.
+                  </span>
+                </div>
+                {/* Step 2 */}
+                <div className="flex items-center gap-4">
+                  <span
+                    className="flex justify-center items-center w-12 h-12 text-4xl sm:text-5xl font-bold bebas shrink-0"
+                    style={{ color: "#fff7dc" }}
+                  >
+                    2
+                  </span>
+                  <span className="text-base sm:text-lg leading-relaxed text-left">
+                    Mark the point where the ring closes.
+                  </span>
+                </div>
+                {/* Step 3 */}
+                <div className="flex items-center gap-4">
+                  <span
+                    className="flex justify-center items-center w-12 h-12 text-4xl sm:text-5xl font-bold bebas shrink-0"
+                    style={{ color: "#fff7dc" }}
+                  >
+                    3
+                  </span>
+                  <span className="text-base sm:text-lg leading-relaxed text-left">
+                    Measure the length of the paper against the ruler.
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-        {/* Video Always Visible */}
+        )}
+
+        {/* Video Section: always visible */}
         <div className="flex-1 flex items-stretch justify-end">
           {!videoError ? (
             <video
@@ -184,37 +192,28 @@ const SizeGuide = () => {
               playsInline
               preload="metadata"
               onError={(e) => {
-                console.log('Video error on iPhone:', e);
+                console.log("Video error on iPhone:", e);
                 setVideoError(true);
               }}
-              onLoadStart={() => console.log('Video loading started')}
-              onCanPlay={() => console.log('Video can play')}
-              className="h-full max-w-[450px] w-full object-cover object-right rounded-none drop-shadow-[0_10px_10px_rgba(255,247,220,0.09)]"
-
+              onLoadStart={() => console.log("Video loading started")}
+              onCanPlay={() => console.log("Video can play")}
+              className="h-full max-w-[450px] w-full object-cover object-right drop-shadow-[0_10px_10px_rgba(255,247,220,0.09)]"
             >
               <source src={SizeGuideVid} type="video/mp4" />
               <source src={SizeGuideVidWebm} type="video/webm" />
             </video>
           ) : (
             <div className="h-full max-w-[450px] w-full bg-gray-800 flex items-center justify-center">
+              {/* Fallback text if video fails */}
               <div className="text-center p-6">
-                <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mb-4 mx-auto">
-                  <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                  </svg>
-                </div>
-                <h3 className="text-white text-lg bebas mb-2">Size Guide Tutorial</h3>
+                <h3 className="text-white text-lg bebas mb-2">
+                  Size Guide Tutorial
+                </h3>
                 <p className="text-gray-300 text-sm avant mb-4">
-                  {isIOS 
+                  {isIOS
                     ? "Video not available on this device. Follow the steps below to measure your ring size."
-                    : "Video temporarily unavailable. Follow the steps below to measure your ring size."
-                  }
+                    : "Video temporarily unavailable. Follow the steps below to measure your ring size."}
                 </p>
-                <div className="text-left text-white text-sm avant space-y-2">
-                  <p>1. Wrap a strip of paper around your finger</p>
-                  <p>2. Mark where the paper overlaps</p>
-                  <p>3. Measure the length against a ruler</p>
-                </div>
               </div>
             </div>
           )}
@@ -271,7 +270,7 @@ const SizeGuide = () => {
                       diameterMm,
                       diameter,
                       circumferenceMm,
-                      circumferenceIn,
+                      circumferenceIn
                     },
                     index
                   ) => (
