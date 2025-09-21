@@ -128,7 +128,7 @@ const burvonsCollections = [
   { id: 4, image: PearlCollectionImg, webp: PearlCollectionWebp },
 ];
 
-const BASE_HEIGHT = 378; // compact height for collapsed (mobile)
+const BASE_HEIGHT = 320; // compact height for collapsed (mobile)
 const HOMEPAGE_COLLECTION_VISIBLE_DESKTOP = 4;
 const HOMEPAGE_COLLECTION_VISIBLE_MOBILE = 1; // For one card per swipe on mobile
 
@@ -436,7 +436,9 @@ const Homepage = () => {
 <section className="bg-[#1f1f21] py-14">
   <div className="max-w-7xl mx-auto px-5 relative">
     <div className="flex justify-between items-center pb-8">
-      <h2 className="font-bold bebas text-3xl tracking-wide text-[#FFF7DC]">REBEL’S TOP PICKS</h2>
+      <h2 className="font-bold bebas text-3xl tracking-wide text-[#FFF7DC]">
+        REBEL’S TOP PICKS
+      </h2>
       {!isMobile ? (
         <div className="flex space-x-4">
           <div
@@ -444,23 +446,34 @@ const Homepage = () => {
             role="button"
             tabIndex={0}
             aria-label="Previous Picks"
-            className="flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 hover:text-[#222] transition select-none"
+            className="flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 transition select-none"
           >
-            <img src={PrevIcon} alt="Previous" className="w-10 h-10" draggable={false} />
+            <img
+              src={PrevIcon}
+              alt="Previous"
+              className="w-10 h-10"
+              draggable={false}
+            />
           </div>
           <div
             onClick={nextRebelDesktop}
             role="button"
             tabIndex={0}
             aria-label="Next Picks"
-            className="flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 hover:text-[#222] transition select-none"
+            className="flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 transition select-none"
           >
-            <img src={NextIcon} alt="Next" className="w-10 h-10" draggable={false} />
+            <img
+              src={NextIcon}
+              alt="Next"
+              className="w-10 h-10"
+              draggable={false}
+            />
           </div>
         </div>
       ) : null}
     </div>
 
+    {/* Mobile Scroll */}
     {isMobile ? (
       <div
         ref={rebelsScrollRef}
@@ -468,39 +481,38 @@ const Homepage = () => {
         style={{
           scrollBehavior: "smooth",
           WebkitOverflowScrolling: "touch",
-          whiteSpace: "nowrap", // prevent vertical wrap/scroll
+          paddingLeft: "16px",
         }}
       >
         {rebelsTopPicks.map((item) => (
           <div
             key={item.id}
-            onClick={() => {
-              // Replace with your navigation logic
-              console.log(`Clicked Rebel Top Pick card id: ${item.id}`);
-            }}
+            onClick={() =>
+              console.log(`Clicked Rebel Top Pick card id: ${item.id}`)
+            }
             className="relative bg-[#222] rounded-none drop-shadow-[0_10px_15px_rgba(0,0,0,1)] cursor-pointer flex-shrink-0 transition-all duration-300 ease-in-out"
             style={{
-              minHeight: BASE_HEIGHT,
-              height: BASE_HEIGHT,
-              width: "100vw",
+              width: "65vw",
+              marginRight: "16px",
               scrollSnapAlign: "start",
-              flexBasis: "100%",
+              flexShrink: 0,
             }}
           >
-            <div className="relative w-full h-[300px] flex items-center justify-center overflow-hidden bg-black">
-              {imageLoadingStates[`${item.id}-0`] === 'loading' && (
+            {/* Image */}
+            <div className="relative w-full min-h-[250px] flex items-center justify-center overflow-hidden bg-black">
+              {imageLoadingStates[`${item.id}-0`] === "loading" && (
                 <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
                   <div className="w-8 h-8 border-2 border-[#FFF7DC] border-t-transparent rounded-full animate-spin"></div>
                 </div>
               )}
               <picture className="w-full h-full">
-                {item.webpImages[0] && <source srcSet={item.webpImages[0]} type="image/webp" />}
+                {item.webpImages[0] && (
+                  <source srcSet={item.webpImages[0]} type="image/webp" />
+                )}
                 <img
                   src={item.images[0]}
                   alt={item.name}
-                  className={`object-cover w-full h-full rounded-none select-none transition-opacity duration-300 ${
-                    loadedImages.has(`${item.id}-0`) ? 'opacity-100' : 'opacity-0'
-                  }`}
+                  className="object-cover w-full h-full rounded-none select-none transition-opacity duration-300"
                   draggable={false}
                   loading="lazy"
                   onLoad={() => handleImageLoad(`${item.id}-0`)}
@@ -509,18 +521,24 @@ const Homepage = () => {
                 />
               </picture>
             </div>
+
+            {/* Text */}
             <div
               style={{
                 background: "linear-gradient(90deg, #000000 46%, #666666 100%)",
               }}
-              className="relative py-2 px-2 text-center flex flex-col items-center rounded-none min-h-[75px]"
+              className="w-full py-3 px-2 text-center flex flex-col items-center rounded-none"
             >
               <span className="uppercase text-[#FFF7DC] tracking-widest text-[13px] avantbold">
                 {item.name}
               </span>
-              <span className="text-[13px] tracking-widest text-[#FFF7DC] avant">{item.collection}</span>
-              <div className="flex justify-center items-center gap-2 text-[14px] avantbold mb-2">
-                <span className="line-through text-[#FFF7DC] opacity-50">{item.originalPrice}</span>
+              <span className="text-[13px] tracking-widest text-[#FFF7DC] avant text-center break-words">
+                {item.collection}
+              </span>
+              <div className="flex justify-center items-center gap-2 text-[14px] avantbold mt-1">
+                <span className="line-through text-[#FFF7DC] opacity-50">
+                  {item.originalPrice}
+                </span>
                 <span className="text-[#FFF7DC]">{item.salePrice}</span>
               </div>
             </div>
@@ -528,6 +546,7 @@ const Homepage = () => {
         ))}
       </div>
     ) : (
+      /* Desktop Grid */
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10">
         {rebelsVisibleCards().map((item) => {
           const isHovered = hoveredCardId === item.id;
@@ -541,13 +560,15 @@ const Homepage = () => {
               onMouseLeave={() => {
                 setHoveredCardId(null);
               }}
-              className={`relative bg-[#222] rounded-none overflow-hidden drop-shadow-[0_10px_15px_rgba(0,0,0,1)] group transition-transform duration-300 transform ${
+              className={`relative bg-[#222] rounded-none overflow-hidden drop-shadow-[0_10px_15px_rgba(0,0,0,1)] group transition-all transform ${
                 isHovered ? "scale-105 z-10" : ""
               }`}
               style={{
-                height: isHovered ? "auto" : BASE_HEIGHT,
+                height: isHovered ? "440px" : "375px",
+                transition: "height 0.3s ease, transform 0.3s ease",
               }}
             >
+              {/* Top icons */}
               <div className="w-full flex justify-between items-center px-6 pt-6 absolute top-0 left-0 z-10">
                 <img
                   src={TryOnIcon}
@@ -562,26 +583,55 @@ const Homepage = () => {
                   draggable={false}
                 />
               </div>
+
+              {/* Product Image */}
               <div className="relative w-full h-[300px] flex items-center justify-center overflow-hidden bg-black">
-                {imageLoadingStates[`${item.id}-${isHovered ? hoveredImageIndex : 0}`] === 'loading' && (
+                {imageLoadingStates[
+                  `${item.id}-${isHovered ? hoveredImageIndex : 0}`
+                ] === "loading" && (
                   <div className="absolute inset-0 flex items-center justify-center bg-gray-800 z-10">
                     <div className="w-8 h-8 border-2 border-[#FFF7DC] border-t-transparent rounded-full animate-spin"></div>
                   </div>
                 )}
                 <picture className="w-full h-full">
                   {item.webpImages[isHovered ? hoveredImageIndex : 0] && (
-                    <source srcSet={item.webpImages[isHovered ? hoveredImageIndex : 0]} type="image/webp" />
+                    <source
+                      srcSet={item.webpImages[isHovered ? hoveredImageIndex : 0]}
+                      type="image/webp"
+                    />
                   )}
                   <img
-                    src={isHovered ? item.images[hoveredImageIndex] : item.images[0]}
+                    src={
+                      isHovered
+                        ? item.images[hoveredImageIndex]
+                        : item.images[0]
+                    }
                     alt={item.name}
                     className={`object-cover w-full h-full rounded-none transition-all duration-300 ${
-                      loadedImages.has(`${item.id}-${isHovered ? hoveredImageIndex : 0}`) ? 'opacity-100' : 'opacity-0'
+                      loadedImages.has(
+                        `${item.id}-${
+                          isHovered ? hoveredImageIndex : 0
+                        }`
+                      )
+                        ? "opacity-100"
+                        : "opacity-0"
                     }`}
                     loading="lazy"
-                    onLoad={() => handleImageLoad(`${item.id}-${isHovered ? hoveredImageIndex : 0}`)}
-                    onError={() => handleImageError(`${item.id}-${isHovered ? hoveredImageIndex : 0}`)}
-                    onLoadStart={() => handleImageStart(`${item.id}-${isHovered ? hoveredImageIndex : 0}`)}
+                    onLoad={() =>
+                      handleImageLoad(
+                        `${item.id}-${isHovered ? hoveredImageIndex : 0}`
+                      )
+                    }
+                    onError={() =>
+                      handleImageError(
+                        `${item.id}-${isHovered ? hoveredImageIndex : 0}`
+                      )
+                    }
+                    onLoadStart={() =>
+                      handleImageStart(
+                        `${item.id}-${isHovered ? hoveredImageIndex : 0}`
+                      )
+                    }
                   />
                 </picture>
                 {isHovered && item.images.length > 1 && (
@@ -609,36 +659,48 @@ const Homepage = () => {
                   </>
                 )}
               </div>
+
+              {/* Text + Price + Button */}
               <div
                 style={{
                   background: "linear-gradient(90deg, #000000 46%, #666666 100%)",
                 }}
-                className="relative py-2 px-2 text-center flex flex-col items-center rounded-none min-h-[140px] "
+                className="relative py-2 px-2 text-center flex flex-col items-center rounded-none min-h-[140px]"
               >
-                <span className="uppercase text-[#FFF7DC] tracking-widest text-[13px] avantbold">{item.name}</span>
-                <span className="text-[13px] tracking-widest text-[#FFF7DC] avant">{item.collection}</span>
-                <div className="flex justify-center items-center gap-2 text-[14px] avantbold mb-10">
-                  <span className="line-through text-[#FFF7DC] opacity-50">{item.originalPrice}</span>
+                <span className="uppercase text-[#FFF7DC] tracking-widest text-[13px] avantbold">
+                  {item.name}
+                </span>
+                <span className="text-[13px] tracking-widest text-[#FFF7DC] avant">
+                  {item.collection}
+                </span>
+                <div className="flex justify-center items-center gap-2 text-[14px] avantbold mt-1">
+                  <span className="line-through text-[#FFF7DC] opacity-50">
+                    {item.originalPrice}
+                  </span>
                   <span className="text-[#FFF7DC]">{item.salePrice}</span>
                 </div>
+
+                {/* Add to Bag Button */}
                 {isHovered && (
                   <button
                     style={{
-                      backgroundColor: hoveredButtonId === item.id ? "#FFF7DC" : "transparent",
-                      color: hoveredButtonId === item.id ? "#1F1F21" : "#FFF7DC",
+                      backgroundColor:
+                        hoveredButtonId === item.id ? "#FFF7DC" : "transparent",
+                      color:
+                        hoveredButtonId === item.id ? "#1F1F21" : "#FFF7DC",
                       outline: "2px solid #FFF7DC",
-                      outlineOffset: "0px",
                       borderRadius: 0,
-                      cursor: "pointer",
                     }}
                     onMouseEnter={() => setHoveredButtonId(item.id)}
                     onMouseLeave={() => setHoveredButtonId(null)}
-                    className="absolute bottom-4 left-4 right-4 flex items-center justify-center gap-2 border border-[#FFF7DC] py-2 px-4 font-bold text-md tracking-wide rounded-none transition-all duration-300 outline-none"
+                    className="mt-4 w-full flex items-center justify-center gap-2 border border-[#FFF7DC] py-2 px-4 font-bold text-md tracking-wide rounded-none transition-all duration-300"
                   >
                     <img
-                      src={hoveredButtonId === item.id ? AddBagHover : AddBag}
+                      src={
+                        hoveredButtonId === item.id ? AddBagHover : AddBag
+                      }
                       alt="Bag Icon"
-                      className="w-4 h-4 transition-colors duration-300"
+                      className="w-4 h-4"
                     />
                     ADD TO BAG
                   </button>
@@ -651,6 +713,7 @@ const Homepage = () => {
     )}
   </div>
 </section>
+
 
 
 {/* Burvons Collection Section */}
