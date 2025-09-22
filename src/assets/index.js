@@ -51,6 +51,8 @@ import returnGuidelines from './icons/returnGuidelines.png';
 import returnDamage from './icons/returnDamage.png';
 import returnShipping from './icons/returnShipping.png';
 import CheckIcon from './icons/CheckIcon.svg';
+import DropDownIcon from './icons/DropDownIcon.svg';
+import DropUpIcon from './icons/DropUpIcon.svg';
 
 // IMAGES
 import LogoImage from './logo/black_brv.png';
@@ -130,6 +132,10 @@ import Received_Done from './icons/Received_Done.svg';
 import Processed_Done from './icons/Processed_Done.svg';
 import Shipped_Done from './icons/Shipped_Done.svg';
 import Arrived_Done from './icons/Arrived_Done.svg';
+
+//Necklace Page Hero Section
+import ClashCollHeroNeck from './images/ClashCollHeroNeck.png';
+import KidsCollHeroNeck from './images/KidsCollHeroNeck.png';
 
 
 
@@ -251,4 +257,8 @@ export {
   RiomWebp,
   CelineWebp,
   CheckIcon,
+  ClashCollHeroNeck,
+  KidsCollHeroNeck,
+  DropDownIcon,
+  DropUpIcon
 };
