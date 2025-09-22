@@ -436,7 +436,7 @@ const Homepage = () => {
 <section className="bg-[#1f1f21] py-14">
   <div className="max-w-7xl mx-auto px-5 relative">
     <div className="flex justify-between items-center pb-8">
-      <h2 className="font-bold bebas text-3xl tracking-wide text-[#FFF7DC]">
+      <h2 className="font-bold bebas text-3xl lg:text-5xl tracking-wide text-[#FFF7DC]">
         REBEL’S TOP PICKS
       </h2>
       {!isMobile ? (
@@ -746,39 +746,39 @@ const Homepage = () => {
     </div>
 
     {isMobile ? (
-      <div
-        ref={burvonScrollRef}
-        className="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory"
-        style={{
-          scrollBehavior: "smooth",
-          WebkitOverflowScrolling: "touch",
-          paddingRight: "1.5rem",
-        }}
-      >
-        {[...burvonsCollections, ...burvonsCollections, ...burvonsCollections].map((col, idx, arr) => (
 <div
-  key={`${col.id}-${idx}`}
-  className="flex-shrink-0 overflow-hidden shadow-lg cursor-pointer transition-all duration-300"
+  ref={burvonScrollRef}
+  className="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory flex-nowrap"
   style={{
-    width: `calc(100vw - 24px)`, // subtract margin or padding to fit within viewport
-    scrollSnapAlign: "start",
-    marginRight: idx !== arr.length - 1 ? "1.5rem" : "0",
-    borderRadius: 0,
+    scrollBehavior: "smooth",
+    WebkitOverflowScrolling: "touch",
+    paddingLeft: "16px", // Match Rebels
   }}
 >
-  <picture className="w-full">
-    <source srcSet={col.webp} type="image/webp" />
-    <img
-      src={col.image}
-      alt={`Burvon ${col.id}`}
-      className="w-full h-auto object-cover select-none"
-      draggable={false}
-      style={{ borderRadius: 0 }}
-    />
-  </picture>
+  {burvonsCollections.map((col, idx) => (
+      <div
+        key={col.id}
+        style={{
+          width: "65vw",
+          marginRight: "16px",
+          scrollSnapAlign: "start",
+          boxShadow: "0 4px 24px rgba(30,30,30,0.33), 0 1.5px 16px rgba(255,247,220,0.09)", // subtle cream
+          borderRadius: 0,
+        }}
+        className="flex-shrink-0 bg-[#222]"
+      >
+      <picture className="w-full">
+        <source srcSet={col.webp} type="image/webp" />
+        <img
+          src={col.image}
+          alt={`Burvon ${col.id}`}
+          className="w-full h-auto object-cover select-none"
+          draggable={false}
+        />
+      </picture>
+    </div>
+  ))}
 </div>
-        ))}
-      </div>
     ) : (
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 justify-center">
         {burvonVisibleCards().map((col) => {
