@@ -689,11 +689,11 @@ const Homepage = () => {
                       color:
                         hoveredButtonId === item.id ? "#1F1F21" : "#FFF7DC",
                       outline: "2px solid #FFF7DC",
-                      borderRadius: 0,
+                      borderRadius: 5,
                     }}
                     onMouseEnter={() => setHoveredButtonId(item.id)}
                     onMouseLeave={() => setHoveredButtonId(null)}
-                    className="mt-4 w-full flex items-center justify-center gap-2 border border-[#FFF7DC] py-2 px-4 font-bold text-md tracking-wide rounded-none transition-all duration-300"
+                    className="mt-4 w-full flex items-center justify-center gap-2 border border-[#FFF7DC] py-2 px-4 font-bold text-md tracking-wide rounded-5 transition-all duration-300"
                   >
                     <img
                       src={
@@ -859,7 +859,7 @@ const Homepage = () => {
                 backgroundColor: hoveredButtonId === "try" ? "#FFF7DC" : "transparent",
                 color: hoveredButtonId === "try" ? "#1F1F21" : "#FFF7DC",
                 outline: "2px solid #FFF7DC",
-                borderRadius: 0,
+                borderRadius: 5,
               }}
               onMouseEnter={() => setHoveredButtonId("try")}
               onMouseLeave={() => setHoveredButtonId(null)}
