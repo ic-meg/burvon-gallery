@@ -141,7 +141,7 @@ const Verification = () => {
         {/* Content */}
         <div className="relative z-20 flex flex-col items-center w-full">
           <img src={white_brv} alt="BURVON Logo" className="mb-8 w-32" style={{ marginTop: "-110px"}}/>
-          <p className="avant text-white text-lg mb-8 text-center" style={{ color: "#959595", marginTop: "-60px", marginBottom: "16px", whiteSpace: "nowrap" }}>
+          <p className="avant text-white text-sm sm:text-lg mb-8 text-center" style={{ color: "#959595", marginTop: "-60px", marginBottom: "16px", whiteSpace: "nowrap" }}>
             PLEASE READ AND ACCEPT THE TERMS TO CONTINUE
           </p>
           <div className="flex items-center mb-4">
