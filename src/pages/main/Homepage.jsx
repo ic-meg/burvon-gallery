@@ -475,25 +475,24 @@ const Homepage = () => {
 
     {/* Mobile Scroll */}
     {isMobile ? (
-        <div
-          ref={rebelsScrollRef}
-          className="flex overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-mandatory flex-nowrap md:grid md:grid-cols-4 md:gap-5 md:overflow-visible"
-          style={{
-            scrollBehavior: "smooth",
-            WebkitOverflowScrolling: "touch",
-            padding: "0 20vw", // 👈 applied only on mobile
-          }}
-        >
-        {rebelsTopPicks.map((item) => (
-          <div
-            key={item.id}
-            className="relative bg-[#222] drop-shadow-lg cursor-pointer flex-shrink-0 transition-all duration-300 ease-in-out md:flex-shrink md:w-auto"
-            style={{
-              width: "60vw", // 👈 mobile width
-              margin: "0 8px",
-              scrollSnapAlign: "center", // 👈 mobile center snap
-            }}
-          >
+<div
+  ref={rebelsScrollRef}
+  className="flex overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-mandatory flex-nowrap md:grid md:grid-cols-4 md:gap-5 md:overflow-visible"
+  style={{
+    scrollBehavior: "smooth",
+    WebkitOverflowScrolling: "touch",
+  }}
+>
+  {rebelsTopPicks.map((item) => (
+    <div
+      key={item.id}
+      className="relative bg-[#222] drop-shadow-lg cursor-pointer flex-shrink-0 transition-all duration-300 ease-in-out md:flex-shrink md:w-auto"
+      style={{
+        width: "70vw",          // 👈 unified size
+        margin: "0 8px",        // 👈 same margins
+        scrollSnapAlign: "center",
+      }}
+    >
             {/* Image */}
             <div className="relative w-full min-h-[250px] flex items-center justify-center overflow-hidden bg-black">
               {imageLoadingStates[`${item.id}-0`] === "loading" && (
@@ -742,25 +741,24 @@ const Homepage = () => {
     </div>
 
     {isMobile ? (
-    <div
-      ref={burvonScrollRef}
-      className="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory flex-nowrap md:grid md:grid-cols-2 md:gap-5 md:overflow-visible"
-      style={{
-        scrollBehavior: "smooth",
-        WebkitOverflowScrolling: "touch",
-        padding: "0 20vw", // 👈 only mobile
-      }}
-    >
+<div
+  ref={burvonScrollRef}
+  className="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory flex-nowrap md:grid md:grid-cols-2 md:gap-5 md:overflow-visible"
+  style={{
+    scrollBehavior: "smooth",
+    WebkitOverflowScrolling: "touch",
+  }}
+>
   {burvonsCollections.map((col) => (
     <div
       key={col.id}
       className="bg-[#111] drop-shadow-lg rounded-none flex-shrink-0 md:flex-shrink md:w-auto"
       style={{
-        width: "60vw", // 👈 mobile width
-        margin: "0 8px",
-        scrollSnapAlign: "center", // 👈 mobile only
+        width: "70vw",          // 👈 unified size
+        margin: "0 8px",        // 👈 same margins
+        scrollSnapAlign: "center",
       }}
-      >
+    >
       <picture>
         <source srcSet={col.webp} type="image/webp" />
         <img
