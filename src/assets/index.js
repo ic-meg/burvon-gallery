@@ -53,6 +53,10 @@ import returnShipping from './icons/returnShipping.png';
 import CheckIcon from './icons/CheckIcon.svg';
 import DropDownIcon from './icons/DropDownIcon.svg';
 import DropUpIcon from './icons/DropUpIcon.svg';
+import DropDownIconBlack from './icons/DropDownIconBlack.svg';
+import DropUpIconBlack from './icons/DropUpIconBlack.svg';
+import FilterIcon from './icons/FilterIcon.svg';
+
 
 // IMAGES
 import LogoImage from './logo/black_brv.png';
@@ -265,4 +269,7 @@ export {
   DropDownIcon,
   DropUpIcon,
   KidsCollHighNeck,
+  FilterIcon,
+  DropDownIconBlack,
+  DropUpIconBlack,
 };
