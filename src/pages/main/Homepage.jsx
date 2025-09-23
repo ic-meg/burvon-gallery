@@ -484,18 +484,17 @@ const Homepage = () => {
   }}
 >
   {rebelsTopPicks.map((item) => (
-    <div
-      key={item.id}
-      className="relative bg-[#222] drop-shadow-lg cursor-pointer flex-shrink-0 transition-all duration-300 ease-in-out md:flex-shrink md:w-auto"
-      style={{
-        width: "70vw",          // 👈 unified size
-        margin: "0 8px",        // 👈 same margins
-        scrollSnapAlign: "center",
-      }}
-    >
+<div
+  key={item.id}
+  className="relative bg-[#222] drop-shadow-lg cursor-pointer flex-shrink-0 transition-all duration-300 ease-in-out md:flex-shrink md:w-auto"
+  style={{
+    width: "65vw",             // 👈 slightly smaller on mobile
+    margin: "0 6px",
+    scrollSnapAlign: "center",
+  }}
+>
             {/* Image */}
-            <div className="relative w-full min-h-[250px] flex items-center justify-center overflow-hidden bg-black">
-              {imageLoadingStates[`${item.id}-0`] === "loading" && (
+  <div className="relative w-full min-h-[150px] sm:min-h-[200px] flex items-center justify-center overflow-hidden bg-black">              {imageLoadingStates[`${item.id}-0`] === "loading" && (
                 <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
                   <div className="w-8 h-8 border-2 border-[#FFF7DC] border-t-transparent rounded-full animate-spin"></div>
                 </div>
@@ -754,8 +753,8 @@ const Homepage = () => {
       key={col.id}
       className="bg-[#111] drop-shadow-lg rounded-none flex-shrink-0 md:flex-shrink md:w-auto"
       style={{
-        width: "70vw",          // 👈 unified size
-        margin: "0 8px",        // 👈 same margins
+        width: "65vw",          // 👈 unified size
+        margin: "0 6px",        // 👈 same margins
         scrollSnapAlign: "center",
       }}
     >
