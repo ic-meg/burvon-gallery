@@ -93,7 +93,7 @@ const SearchOverlay = ({ isOpen, onClose }) => {
           <div className="mt-6 w-full text-left px-6">
             <h3 className="font-bold mb-3 bebas text-1xl md:text-2xl lg:text-2xl">Popular searches</h3>
             <div className="flex flex-wrap gap-2 justify-start cream-text avant">
-              {["Love Language", "Rebellion", "Agatha", "Celine", "Clash"].map(
+              {["Love LANGUAGE", "Rebellion", "Agatha", "Celine", "Clash"].map(
                 (term, index) => (
                   <div key={index} className="inline-block">
                     <GlareHover
@@ -104,7 +104,7 @@ const SearchOverlay = ({ isOpen, onClose }) => {
                       transitionDuration={800}
                       playOnce={false}
                     >
-                      <button className="bg-transparent border border-transparent px-4 py-2 text-sm text-white rounded-md hover:border-white hover:text-white hover:shadow-[0_0_0_2px_rgba(255,255,255,0.4)] hover:backdrop-brightness-110 transition-all duration-300 ease-in-out">
+                      <button className="bg-transparent border border-transparent px-4 py-2 text-sm text-white rounded-md hover:border-white hover:text-white hover:shadow-[0_0_0_2px_rgba(255,255,255,0.4)] hover:backdrop-brightness-110 transition-all duration-300 ease-in-out uppercase">
                         {term}
                       </button>
                     </GlareHover>
