@@ -141,7 +141,7 @@ const Verification = () => {
         {/* Content */}
         <div className="relative z-20 flex flex-col items-center w-full">
           <img src={white_brv} alt="BURVON Logo" className="mb-8 w-32" style={{ marginTop: "-110px"}}/>
-          <p className="avant text-sm sm:text-lg mb-8 text-center cream-text" style={{ marginTop: "-60px", marginBottom: "16px", whiteSpace: "nowrap" }}>
+          <p className="avant text-sm sm:text-lg mb-8 text-center" style={{ color: "#ffffffff", marginTop: "-60px", marginBottom: "16px", whiteSpace: "nowrap" }}>
             PLEASE READ AND ACCEPT THE TERMS TO CONTINUE
           </p>
           <div className="flex items-center mb-4">
@@ -160,13 +160,12 @@ const Verification = () => {
                 backgroundColor: acceptedTerms ? "#FFF7DC" : "transparent",
               }}
             />
-            <label htmlFor="termsCheckbox" className="avant cream-text" style={{ fontSize: "13px", whiteSpace: "nowrap" }}>
+            <label htmlFor="termsCheckbox" className="avant" style={{ color: "#ffffffff", fontSize: "13px", whiteSpace: "nowrap" }}>
               I agree to the Terms of Service and Privacy Policy
             </label>
           </div>
           <button
-            className={`w-full py-3 font-semibold avant ${acceptedTerms ? 'custom-btn-bg' : 'bg-gray-500'}`}
-            style={{ borderRadius: "12px", marginTop: "-3px" }}
+            className={`w-full py-3 font-semibold avant rounded-[12px] mt-[-3px] ${acceptedTerms ? 'bg-[#FFF7DC] text-black' : 'bg-[#181818] text-[#FFF7DC] cursor-not-allowed opacity-90'}`}
             disabled={!acceptedTerms}
             onClick={() => navigate('/')}
           >
@@ -231,8 +230,7 @@ const Verification = () => {
             </div>
             
             <button
-              className={`w-full py-3 font-semibold avant text-lg ${acceptedTerms ? 'custom-btn-bg' : 'bg-gray-500'}`}
-              style={{ borderRadius: "12px", marginTop: "-2px" }} 
+              className={`w-full py-3 font-semibold avant text-lg rounded-[12px] mt-[-2px] ${acceptedTerms ? 'bg-[#FFF7DC] text-black' : 'bg-[#181818] text-[#FFF7DC] cursor-not-allowed opacity-90'}`}
               disabled={!acceptedTerms}
               onClick={() => navigate('/')}
             >
