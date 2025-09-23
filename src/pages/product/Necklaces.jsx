@@ -17,10 +17,11 @@ import {
   AddBagHover,
   NextIcon,
   PrevIcon,
+  KidsCollHighNeck
 } from "../../assets/index.js";
 
 // Product Data
-const rebelsTopPicks = [
+const allNecklaces = [
   {
     id: 1,
     name: "LYRIC",
@@ -53,7 +54,7 @@ const rebelsTopPicks = [
     price: "₱711.00",
     images: [CelineImage, ClashCollHeroNeck],
   },
-    {
+  {
     id: 5,
     name: "LYRIC",
     collection: "LOVE LANGUAGE COLLECTION",
@@ -86,8 +87,6 @@ const rebelsTopPicks = [
     images: [CelineImage, ClashCollHeroNeck],
   },
 ];
-
-
 
 const heroImages = [
   { src: KidsCollHeroNeck },
@@ -164,11 +163,8 @@ const Necklaces = () => {
   const [minPrice, setMinPrice] = useState(300);
   const [maxPrice, setMaxPrice] = useState(1200);
 
-  // Track hovered card and hovered button for styles
   const [hoveredCardId, setHoveredCardId] = useState(null);
   const [hoveredButtonId, setHoveredButtonId] = useState(null);
-
-  // Track hovered image index independently per card by id
   const [hoveredImageIndexes, setHoveredImageIndexes] = useState({});
 
   useEffect(() => {
@@ -189,7 +185,7 @@ const Necklaces = () => {
   }, []);
 
   const handleImageChange = (cardId, direction) => {
-    const card = rebelsTopPicks.find((item) => item.id === cardId);
+    const card = allNecklaces.find((item) => item.id === cardId);
     if (!card) return;
     const len = card.images.length;
     setHoveredImageIndexes((prev) => {
@@ -201,6 +197,21 @@ const Necklaces = () => {
       return { ...prev, [cardId]: currentIndex };
     });
   };
+
+const [carouselIndex, setCarouselIndex] = useState(0);
+const topPicks = allNecklaces.slice(0, 8); // or however many you want
+const maxVisible = 4;
+const canPrev = carouselIndex > 0;
+const canNext = carouselIndex < topPicks.length - maxVisible;
+const isMobile = window.innerWidth < 768; // Or however you set your mobile check
+
+const handlePrev = () => {
+  if (canPrev) setCarouselIndex(carouselIndex - 1);
+};
+const handleNext = () => {
+  if (canNext) setCarouselIndex(carouselIndex + 1);
+};
+
 
   return (
     <Layout full noPadding>
@@ -251,7 +262,7 @@ const Necklaces = () => {
           {/* Heading + Filters */}
           <div className="flex items-center gap-12 pb-10">
             <h2 className="text-6xl font-bold bebas tracking-wide whitespace-nowrap">
-              NECKLACES
+            NECKLACES
             </h2>
 
             {/* Filters */}
@@ -312,10 +323,10 @@ const Necklaces = () => {
                     type="range"
                     min="300"
                     max="1200"
-                    step="10"
+                    step="50"
                     value={minPrice}
                     onChange={(e) =>
-                      setMinPrice(Math.min(Number(e.target.value), maxPrice - 10))
+                      setMinPrice(Math.min(Number(e.target.value), maxPrice - 50))
                     }
                     className="absolute w-full appearance-none bg-transparent pointer-events-none
                       [&::-webkit-slider-thumb]:appearance-none 
@@ -334,10 +345,10 @@ const Necklaces = () => {
                     type="range"
                     min="300"
                     max="1200"
-                    step="10"
+                    step="50"
                     value={maxPrice}
                     onChange={(e) =>
-                      setMaxPrice(Math.max(Number(e.target.value), minPrice + 10))
+                      setMaxPrice(Math.max(Number(e.target.value), minPrice + 50))
                     }
                     className="absolute w-full appearance-none bg-transparent pointer-events-none
                       [&::-webkit-slider-thumb]:appearance-none 
@@ -360,16 +371,14 @@ const Necklaces = () => {
               </div>
             </div>
           </div>
-
-          {/* Note: Product Cards section removed per your request */}
         </div>
       </section>
 
-      {/* Rebels Top Picks Cards (no heading) */}
+      {/* All Necklaces Grid */}
       <section className="bg-[#1f1f21] pt-1 pb-14 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10">
-            {rebelsTopPicks.map((item) => {
+            {allNecklaces.map((item) => {
               const isHovered = hoveredCardId === item.id;
               const currentImageIndex = hoveredImageIndexes[item.id] ?? 0;
               return (
@@ -415,30 +424,30 @@ const Necklaces = () => {
                       className="object-cover w-full h-full rounded-none transition-all duration-300"
                       draggable={false}
                     />
-{isHovered && item.images.length > 1 && (
-  <>
-    <img
-      onClick={(e) => {
-        e.stopPropagation();
-        handleImageChange(item.id, "prev");
-      }}
-      src={PrevIcon}
-      alt="Previous"
-      className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 cursor-pointer hover:opacity-80"
-      draggable={false}
-    />
-    <img
-      onClick={(e) => {
-        e.stopPropagation();
-        handleImageChange(item.id, "next");
-      }}
-      src={NextIcon}
-      alt="Next"
-      className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 cursor-pointer hover:opacity-80"
-      draggable={false}
-    />
-  </>
-)}
+                    {isHovered && item.images.length > 1 && (
+                      <>
+                        <img
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleImageChange(item.id, "prev");
+                          }}
+                          src={PrevIcon}
+                          alt="Previous"
+                          className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 cursor-pointer hover:opacity-80"
+                          draggable={false}
+                        />
+                        <img
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleImageChange(item.id, "next");
+                          }}
+                          src={NextIcon}
+                          alt="Next"
+                          className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 cursor-pointer hover:opacity-80"
+                          draggable={false}
+                        />
+                      </>
+                    )}
                   </div>
 
                   {/* Text + Price + Button */}
@@ -490,6 +499,202 @@ const Necklaces = () => {
           </div>
         </div>
       </section>
+
+
+      {/* Product Highlights Section */}
+      <section className="bg-[#000000] py-16 px-6">
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12">
+          {/* Left - Image */}
+          <div className="flex-1">
+            <img
+              src={KidsCollHighNeck} // replace with your promo image
+              alt="Kids Collection Highlight"
+              className="w-full h-auto object-cover rounded-sm drop-shadow-[0_4px_20px_#FFF7DC66]"
+            />
+          </div>
+
+          {/* Right - Text */}
+          <div className="flex-1 text-[#FFF7DC] pl-8 md:pl-16 lg:pl-24">
+            <h2 className="text-2xl lg:text-5xl font-bold bebas tracking-wide mb-4">
+              KIDS COLLECTION
+            </h2>
+            <p className="text-sm md:text-base lg:text-lg text-[#fff7dc] opacity-90 avant leading-snug mb-6">
+              Burvon’s newest Kids’ Collection is here— <br />
+              featuring 7 charming necklaces, all made for <br />
+              our littlest dreamers.
+            </p>
+            <button
+              className="px-6 py-3 border border-[#FFF7DC] text-[#FFF7DC] 
+                         hover:bg-[#FFF7DC] hover:text-[#1f1f21] 
+                         avant tracking-wide rounded transition-all"
+            >
+              SHOP NOW
+            </button>
+          </div>
+        </div>
+      </section>
+
+
+{/* Top Picks Necklaces */}
+<section className="bg-[#1f1f21] py-14">
+  <div className="max-w-7xl mx-auto px-5 relative">
+    <div className="flex justify-between items-center pb-8">
+      <h2 className="font-bold bebas text-3xl lg:text-5xl tracking-wide text-[#FFF7DC]">
+        TOP PICKS NECKLACES
+      </h2>
+      {!isMobile ? (
+        <div className="flex space-x-4">
+          <div
+            onClick={handlePrev}
+            role="button"
+            tabIndex={0}
+            aria-label="Previous Picks"
+            className={`flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 transition select-none ${!canPrev ? 'opacity-30 cursor-not-allowed' : ''}`}
+          >
+            <img
+              src={PrevIcon}
+              alt="Previous"
+              className="w-10 h-10"
+              draggable={false}
+            />
+          </div>
+          <div
+            onClick={handleNext}
+            role="button"
+            tabIndex={0}
+            aria-label="Next Picks"
+            className={`flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 transition select-none ${!canNext ? 'opacity-30 cursor-not-allowed' : ''}`}
+          >
+            <img
+              src={NextIcon}
+              alt="Next"
+              className="w-10 h-10"
+              draggable={false}
+            />
+          </div>
+        </div>
+      ) : null}
+    </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10">
+      {topPicks.slice(carouselIndex, carouselIndex + maxVisible).map((item) => {
+        const isHovered = hoveredCardId === item.id;
+        const currentImageIndex = hoveredImageIndexes[item.id] ?? 0;
+        return (
+          <div
+            key={`top-pick-${item.id}`}
+            onMouseEnter={() => {
+              setHoveredCardId(item.id);
+              setHoveredImageIndexes((prev) => ({ ...prev, [item.id]: 0 }));
+            }}
+            onMouseLeave={() => {
+              setHoveredCardId(null);
+              setHoveredButtonId(null);
+            }}
+            className={`relative bg-[#222] rounded-none overflow-hidden drop-shadow-[0_10px_15px_rgba(0,0,0,1)] group transition-all transform ${isHovered ? "scale-105 z-10" : ""}`}
+            style={{
+              height: isHovered ? "440px" : "375px",
+              transition: "height 0.3s ease, transform 0.3s ease",
+            }}
+          >
+            {/* Top icons with padding */}
+            <div className="w-full flex justify-between items-center px-6 pt-3 absolute top-0 left-0 z-10">
+              <img
+                src={TryOnIcon}
+                alt="Try On"
+                className="w-6 h-6 cursor-pointer hover:opacity-80"
+                draggable={false}
+              />
+              <img
+                src={AddFavorite}
+                alt="Favorite"
+                className="w-6 h-6 cursor-pointer hover:opacity-80"
+                draggable={false}
+              />
+            </div>
+            {/* Product Image */}
+            <div className="relative w-full h-[300px] flex items-center justify-center overflow-hidden bg-black">
+              <img
+                src={isHovered ? item.images[currentImageIndex] : item.images[0]}
+                alt={item.name}
+                className="object-cover w-full h-full rounded-none transition-all duration-300"
+                draggable={false}
+              />
+              {isHovered && item.images.length > 1 && (
+                <>
+                  <img
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleImageChange(item.id, "prev");
+                    }}
+                    src={PrevIcon}
+                    alt="Previous"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 cursor-pointer hover:opacity-80"
+                    draggable={false}
+                  />
+                  <img
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleImageChange(item.id, "next");
+                    }}
+                    src={NextIcon}
+                    alt="Next"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 cursor-pointer hover:opacity-80"
+                    draggable={false}
+                  />
+                </>
+              )}
+            </div>
+            {/* Text + Price + Button */}
+            <div
+              style={{
+                background: "linear-gradient(90deg, #000000 46%, #666666 100%)",
+              }}
+              className="relative py-2 px-2 text-center flex flex-col items-center rounded-none min-h-[140px]"
+            >
+              <span className="uppercase text-[#FFF7DC] tracking-widest text-[13px] avantbold">
+                {item.name}
+              </span>
+              <span className="text-[13px] tracking-widest text-[#FFF7DC] avant">
+                {item.collection}
+              </span>
+              <div className="flex justify-center items-center gap-2 text-[14px] avantbold mt-1">
+                <span className="line-through text-[#FFF7DC] opacity-50">
+                  {item.oldPrice}
+                </span>
+                <span className="text-[#FFF7DC]">{item.price}</span>
+              </div>
+              {isHovered && (
+                <button
+                  style={{
+                    backgroundColor:
+                      hoveredButtonId === item.id ? "#FFF7DC" : "transparent",
+                    color:
+                      hoveredButtonId === item.id ? "#1F1F21" : "#FFF7DC",
+                    outline: "2px solid #FFF7DC",
+                    borderRadius: 5,
+                  }}
+                  onMouseEnter={() => setHoveredButtonId(item.id)}
+                  onMouseLeave={() => setHoveredButtonId(null)}
+                  className="mt-4 w-full flex items-center justify-center gap-2 border border-[#FFF7DC] py-2 px-4 font-bold text-md tracking-wide rounded-5 transition-all duration-300"
+                >
+                  <img
+                    src={hoveredButtonId === item.id ? AddBagHover : AddBag}
+                    alt="Bag Icon"
+                    className="w-4 h-4"
+                  />
+                  ADD TO BAG
+                </button>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+</section>
+
+
+
     </Layout>
   );
 };

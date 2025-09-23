@@ -138,6 +138,9 @@ import ClashCollHeroNeck from './images/ClashCollHeroNeck.png';
 import KidsCollHeroNeck from './images/KidsCollHeroNeck.png';
 
 
+//Necklace Page Highlights Section
+import KidsCollHighNeck from './images/KidsCollHighNeck.png';
+
 
 
 
@@ -260,5 +263,6 @@ export {
   ClashCollHeroNeck,
   KidsCollHeroNeck,
   DropDownIcon,
-  DropUpIcon
+  DropUpIcon,
+  KidsCollHighNeck,
 };
