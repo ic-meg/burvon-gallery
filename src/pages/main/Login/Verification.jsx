@@ -39,11 +39,11 @@ const Verification = () => {
           {/* Content */}
           <div className="relative z-20 flex flex-col items-center w-full">
             <img src={white_brv} alt="BURVON Logo" className="mb-4 w-40" style={{ marginTop: "-110px" }} />
-            <p className="avant text-white text-lg mb-2" style={{ marginTop: "-70px" }}>Discover Timeless Elegance</p>
-            <p className="avant text-gray-400 text-sm mb-1 text-center">
+            <p className="avant text-white text-base mb-2" style={{ marginTop: "-65px" }}>REVELED BY ALL</p>
+            <p className="avant text-sm text-white mb-1 text-center">
               Use the verification link sent to your email
             </p>
-            <p className="avant text-gray-400 text-sm mb-6 text-center">
+            <p className="avant text-white text-sm mb-6 text-center">
               youremail@gmail.com
             </p>
             <button
@@ -94,12 +94,12 @@ const Verification = () => {
               <div className="text-center mb-8">
                 <img src={white_brv} alt="BURVON Logo" className="mx-auto mb-2 w-55" />
                 <p className="avant" style={{ color: "#ffffffff", marginTop: "-79px", marginBottom: "16px", fontSize: "20px" }}>
-                  Discover Timeless Elegance
+                  REVELED BY ALL
                 </p>
-                <p className="avant" style={{ color: "#959595", fontSize: "20px", marginBottom: "8px", marginTop: "30px" }}>
+                <p className="avant" style={{ color: "#ffffffff", fontSize: "20px", marginBottom: "8px", marginTop: "30px" }}>
                     Use the verification link sent to your email
                 </p>
-                <p className="avant" style={{ color: "#959595", fontSize: "20px", marginBottom: "30px", marginTop: "-12px" }}>
+                <p className="avant" style={{ color: "#ffffffff", fontSize: "20px", marginBottom: "30px", marginTop: "-12px" }}>
                     youremail@gmail.com
                 </p>
                 <button
@@ -141,7 +141,7 @@ const Verification = () => {
         {/* Content */}
         <div className="relative z-20 flex flex-col items-center w-full">
           <img src={white_brv} alt="BURVON Logo" className="mb-8 w-32" style={{ marginTop: "-110px"}}/>
-          <p className="avant text-white text-sm sm:text-lg mb-8 text-center" style={{ color: "#959595", marginTop: "-60px", marginBottom: "16px", whiteSpace: "nowrap" }}>
+          <p className="avant text-sm sm:text-lg mb-8 text-center" style={{ color: "#ffffffff", marginTop: "-60px", marginBottom: "16px", whiteSpace: "nowrap" }}>
             PLEASE READ AND ACCEPT THE TERMS TO CONTINUE
           </p>
           <div className="flex items-center mb-4">
@@ -152,20 +152,20 @@ const Verification = () => {
               onChange={(e) => setAcceptedTerms(e.target.checked)}
               className="mr-3"
               style={{
-                width: "20px",
-                height: "20px",
+                width: "15px",
+                height: "15px",
                 borderRadius: "50%",
                 appearance: "none",
                 border: "2px solid #959595",
                 backgroundColor: acceptedTerms ? "#FFF7DC" : "transparent",
               }}
             />
-            <label htmlFor="termsCheckbox" className="avant text-white" style={{ color: "#959595", fontSize: "15px" }}>
+            <label htmlFor="termsCheckbox" className="avant" style={{ color: "#ffffffff", fontSize: "13px", whiteSpace: "nowrap" }}>
               I agree to the Terms of Service and Privacy Policy
             </label>
           </div>
           <button
-            className={`w-full py-3 font-semibold avant border border-black ${acceptedTerms ? 'custom-btn-bg' : 'bg-gray-500'}`}
+            className={`w-full py-3 font-semibold avant ${acceptedTerms ? 'custom-btn-bg' : 'bg-gray-500'}`}
             style={{ borderRadius: "12px", marginTop: "-3px" }}
             disabled={!acceptedTerms}
             onClick={() => navigate('/')}
@@ -204,7 +204,7 @@ const Verification = () => {
           <div className="w-full max-w-md">
             {/* logo */}
             <img src={white_brv} alt="BURVON Logo" className="mx-auto mb-20 w-40" style={{ marginTop: "-20px" }} />
-            <p className="avant text-white text-xl mb-10 text-center" style={{ color: "#959595", marginTop: "-120px", whiteSpace: "nowrap" }}>
+            <p className="avant text-white text-xl mb-10 text-center" style={{ color: "#ffffffff", marginTop: "-120px", whiteSpace: "nowrap" }}>
               PLEASE READ AND ACCEPT THE TERMS TO CONTINUE
 
             </p>
@@ -231,7 +231,7 @@ const Verification = () => {
             </div>
             
             <button
-              className={`w-full py-3 font-semibold avant border border-black text-lg ${acceptedTerms ? 'custom-btn-bg' : 'bg-gray-500'}`}
+              className={`w-full py-3 font-semibold avant text-lg ${acceptedTerms ? 'custom-btn-bg' : 'bg-gray-500'}`}
               style={{ borderRadius: "12px", marginTop: "-2px" }} 
               disabled={!acceptedTerms}
               onClick={() => navigate('/')}
