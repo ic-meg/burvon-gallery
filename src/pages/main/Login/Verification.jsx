@@ -165,8 +165,7 @@ const Verification = () => {
             </label>
           </div>
           <button
-            className={`w-full py-3 font-semibold avant ${acceptedTerms ? 'custom-btn-bg' : 'bg-gray-500'}`}
-            style={{ borderRadius: "12px", marginTop: "-3px" }}
+            className={`w-full py-3 font-semibold avant rounded-[12px] mt-[-3px] ${acceptedTerms ? 'bg-[#FFF7DC] text-black' : 'bg-[#181818] text-[#FFF7DC] cursor-not-allowed opacity-90'}`}
             disabled={!acceptedTerms}
             onClick={() => navigate('/')}
           >
@@ -231,8 +230,7 @@ const Verification = () => {
             </div>
             
             <button
-              className={`w-full py-3 font-semibold avant text-lg ${acceptedTerms ? 'custom-btn-bg' : 'bg-gray-500'}`}
-              style={{ borderRadius: "12px", marginTop: "-2px" }} 
+              className={`w-full py-3 font-semibold avant text-lg rounded-[12px] mt-[-2px] ${acceptedTerms ? 'bg-[#FFF7DC] text-black' : 'bg-[#181818] text-[#FFF7DC] cursor-not-allowed opacity-90'}`}
               disabled={!acceptedTerms}
               onClick={() => navigate('/')}
             >
