@@ -475,27 +475,23 @@ const Homepage = () => {
 
     {/* Mobile Scroll */}
     {isMobile ? (
-      <div
-        ref={rebelsScrollRef}
-        className="flex overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-mandatory flex-nowrap"
-        style={{
-          scrollBehavior: "smooth",
-          WebkitOverflowScrolling: "touch",
-          paddingLeft: "16px",
-        }}
-      >
+        <div
+          ref={rebelsScrollRef}
+          className="flex overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-mandatory flex-nowrap md:grid md:grid-cols-4 md:gap-5 md:overflow-visible"
+          style={{
+            scrollBehavior: "smooth",
+            WebkitOverflowScrolling: "touch",
+            padding: "0 20vw", // 👈 applied only on mobile
+          }}
+        >
         {rebelsTopPicks.map((item) => (
           <div
             key={item.id}
-            onClick={() =>
-              console.log(`Clicked Rebel Top Pick card id: ${item.id}`)
-            }
-            className="relative bg-[#222] rounded-none drop-shadow-[0_10px_15px_rgba(0,0,0,1)] cursor-pointer flex-shrink-0 transition-all duration-300 ease-in-out"
+            className="relative bg-[#222] drop-shadow-lg cursor-pointer flex-shrink-0 transition-all duration-300 ease-in-out md:flex-shrink md:w-auto"
             style={{
-              width: "65vw",
-              marginRight: "16px",
-              scrollSnapAlign: "start",
-              flexShrink: 0,
+              width: "60vw", // 👈 mobile width
+              margin: "0 8px",
+              scrollSnapAlign: "center", // 👈 mobile center snap
             }}
           >
             {/* Image */}
@@ -746,33 +742,31 @@ const Homepage = () => {
     </div>
 
     {isMobile ? (
-<div
-  ref={burvonScrollRef}
-  className="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory flex-nowrap"
-  style={{
-    scrollBehavior: "smooth",
-    WebkitOverflowScrolling: "touch",
-    paddingLeft: "16px", // Match Rebels
-  }}
->
-  {burvonsCollections.map((col, idx) => (
-      <div
-        key={col.id}
-        style={{
-          width: "65vw",
-          marginRight: "16px",
-          scrollSnapAlign: "start",
-          boxShadow: "0 4px 24px rgba(30,30,30,0.33), 0 1.5px 16px rgba(255,247,220,0.09)", // subtle cream
-          borderRadius: 0,
-        }}
-        className="flex-shrink-0 bg-[#222]"
+    <div
+      ref={burvonScrollRef}
+      className="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory flex-nowrap md:grid md:grid-cols-2 md:gap-5 md:overflow-visible"
+      style={{
+        scrollBehavior: "smooth",
+        WebkitOverflowScrolling: "touch",
+        padding: "0 20vw", // 👈 only mobile
+      }}
+    >
+  {burvonsCollections.map((col) => (
+    <div
+      key={col.id}
+      className="bg-[#111] drop-shadow-lg rounded-none flex-shrink-0 md:flex-shrink md:w-auto"
+      style={{
+        width: "60vw", // 👈 mobile width
+        margin: "0 8px",
+        scrollSnapAlign: "center", // 👈 mobile only
+      }}
       >
-      <picture className="w-full">
+      <picture>
         <source srcSet={col.webp} type="image/webp" />
         <img
           src={col.image}
-          alt={`Burvon ${col.id}`}
-          className="w-full h-auto object-cover select-none"
+          alt={`Burvon Collection ${col.id}`}
+          className="w-full h-full object-cover"
           draggable={false}
         />
       </picture>
