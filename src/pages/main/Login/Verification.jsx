@@ -141,7 +141,7 @@ const Verification = () => {
         {/* Content */}
         <div className="relative z-20 flex flex-col items-center w-full">
           <img src={white_brv} alt="BURVON Logo" className="mb-8 w-32" style={{ marginTop: "-110px"}}/>
-          <p className="avant text-sm sm:text-lg mb-8 text-center" style={{ color: "#ffffffff", marginTop: "-60px", marginBottom: "16px", whiteSpace: "nowrap" }}>
+          <p className="avant text-sm sm:text-lg mb-8 text-center cream-text" style={{ marginTop: "-60px", marginBottom: "16px", whiteSpace: "nowrap" }}>
             PLEASE READ AND ACCEPT THE TERMS TO CONTINUE
           </p>
           <div className="flex items-center mb-4">
@@ -160,7 +160,7 @@ const Verification = () => {
                 backgroundColor: acceptedTerms ? "#FFF7DC" : "transparent",
               }}
             />
-            <label htmlFor="termsCheckbox" className="avant" style={{ color: "#ffffffff", fontSize: "13px", whiteSpace: "nowrap" }}>
+            <label htmlFor="termsCheckbox" className="avant cream-text" style={{ fontSize: "13px", whiteSpace: "nowrap" }}>
               I agree to the Terms of Service and Privacy Policy
             </label>
           </div>
