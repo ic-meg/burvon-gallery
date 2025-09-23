@@ -119,6 +119,15 @@ const rebelsTopPicks = [
     originalPrice: "₱790.00",
     salePrice: "₱711.00",
   },
+    {
+    id: 6,
+    images: [CelineImage, KidsCollectionBanner],
+    webpImages: [CelineWebp, KidsCollectionWebp],
+    name: "CELINE",
+    collection: "THE REBELLION COLLECTION",
+    originalPrice: "₱790.00",
+    salePrice: "₱711.00",
+  },
 ];
 
 const burvonsCollections = [
@@ -126,6 +135,7 @@ const burvonsCollections = [
   { id: 2, image: RebellionCollectionImg, webp: RebellionCollectionWebp },
   { id: 3, image: LoveLanguageCollectionImg, webp: LoveLanguageCollectionWebp },
   { id: 4, image: PearlCollectionImg, webp: PearlCollectionWebp },
+  { id: 5, image: RebellionCollectionImg, webp: RebellionCollectionWebp },
 ];
 
 const BASE_HEIGHT = 320; // compact height for collapsed (mobile)
@@ -255,16 +265,17 @@ const Homepage = () => {
     );
   };
 
-  // Desktop navigation
-  const nextRebelDesktop = () => {
-    setStartIndex((prev) => (prev + 1) % rebelsTopPicks.length);
-  };
+const nextRebelDesktop = () => {
+  if (!atEndRebel) {
+    setStartIndex((prev) => Math.min(prev + 1, rebelsTopPicks.length - MAX_VISIBLE_REBELS));
+  }
+};
 
-  const prevRebelDesktop = () => {
-    setStartIndex((prev) =>
-      prev === 0 ? rebelsTopPicks.length - 1 : prev - 1
-    );
-  };
+const prevRebelDesktop = () => {
+  if (!atStartRebel) {
+    setStartIndex((prev) => Math.max(prev - 1, 0));
+  }
+};
 
   // Mobile navigation - scroll one full card width per swipe
   const nextRebelMobile = () => {
@@ -288,16 +299,17 @@ const Homepage = () => {
     }
   };
 
-  // Desktop Burvon
-  const showPrevCollection = () => {
-    setCollectionIndex(
-      (prev) => (prev - 1 + burvonsCollections.length) % burvonsCollections.length
-    );
-  };
+const showNextCollection = () => {
+  if (!atEndBurvon) {
+    setCollectionIndex((prev) => Math.min(prev + 1, burvonsCollections.length - MAX_VISIBLE_BURVON));
+  }
+};
 
-  const showNextCollection = () => {
-    setCollectionIndex((prev) => (prev + 1) % burvonsCollections.length);
-  };
+const showPrevCollection = () => {
+  if (!atStartBurvon) {
+    setCollectionIndex((prev) => Math.max(prev - 1, 0));
+  }
+};
 
   // Mobile Burvon navigation
   const nextBurvonMobile = () => {
@@ -388,6 +400,14 @@ const Homepage = () => {
   // Infinite scroll effect for rebels top picks on mobile to loop left/right indefinitely
   // Removed because we handle natural scroll snapping now.
 
+const MAX_VISIBLE_REBELS = HOMEPAGE_COLLECTION_VISIBLE_DESKTOP; // 4
+const atStartRebel = startIndex === 0;
+const atEndRebel = startIndex === rebelsTopPicks.length - MAX_VISIBLE_REBELS;
+
+const MAX_VISIBLE_BURVON = HOMEPAGE_COLLECTION_VISIBLE_DESKTOP; // 4
+const atStartBurvon = collectionIndex === 0;
+const atEndBurvon = collectionIndex === burvonsCollections.length - MAX_VISIBLE_BURVON;
+
   return (
     <Layout full>
       <style>{scrollbarHideStyle}</style>
@@ -441,34 +461,31 @@ const Homepage = () => {
       </h2>
       {!isMobile ? (
         <div className="flex space-x-4">
-          <div
-            onClick={prevRebelDesktop}
-            role="button"
-            tabIndex={0}
-            aria-label="Previous Picks"
-            className="flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 transition select-none"
-          >
-            <img
-              src={PrevIcon}
-              alt="Previous"
-              className="w-10 h-10"
-              draggable={false}
-            />
-          </div>
-          <div
-            onClick={nextRebelDesktop}
-            role="button"
-            tabIndex={0}
-            aria-label="Next Picks"
-            className="flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 transition select-none"
-          >
-            <img
-              src={NextIcon}
-              alt="Next"
-              className="w-10 h-10"
-              draggable={false}
-            />
-          </div>
+<div
+  onClick={prevRebelDesktop}
+  role="button"
+  tabIndex={0}
+  aria-label="Previous Picks"
+  className={`flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 transition select-none ${
+    atStartRebel ? "opacity-30 cursor-not-allowed" : ""
+  }`}
+  aria-disabled={atStartRebel}
+>
+  <img src={PrevIcon} alt="Previous" className="w-10 h-10" draggable={false} />
+</div>
+<div
+  onClick={nextRebelDesktop}
+  role="button"
+  tabIndex={0}
+  aria-label="Next Picks"
+  className={`flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 transition select-none ${
+    atEndRebel ? "opacity-30 cursor-not-allowed" : ""
+  }`}
+  aria-disabled={atEndRebel}
+>
+  <img src={NextIcon} alt="Next" className="w-10 h-10" draggable={false} />
+</div>
+
         </div>
       ) : null}
     </div>
@@ -719,22 +736,29 @@ const Homepage = () => {
       </h2>
       {!isMobile ? (
         <div className="flex space-x-4">
-          <button
-            onClick={showPrevCollection}
-            aria-label="Previous Collection"
-            className="bg-transparent flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 hover:text-[#222] transition select-none"
-            style={{ background: "transparent", boxShadow: "none", border: "none" }}
-          >
-            <img src={PrevIcon} alt="Previous" className="w-10 h-10" draggable={false} />
-          </button>
-          <button
-            onClick={showNextCollection}
-            aria-label="Next Collection"
-            className="bg-transparent flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 hover:text-[#222] transition select-none"
-            style={{ background: "transparent", boxShadow: "none", border: "none" }}
-          >
-            <img src={NextIcon} alt="Next" className="w-10 h-10" draggable={false} />
-          </button>
+<button
+  onClick={showPrevCollection}
+  aria-label="Previous Collection"
+  className={`bg-transparent flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 hover:text-[#222] transition select-none ${
+    atStartBurvon ? "opacity-30 cursor-not-allowed" : ""
+  }`}
+  style={{ background: "transparent", boxShadow: "none", border: "none" }}
+  disabled={atStartBurvon}
+>
+  <img src={PrevIcon} alt="Previous" className="w-10 h-10" draggable={false} />
+</button>
+<button
+  onClick={showNextCollection}
+  aria-label="Next Collection"
+  className={`bg-transparent flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 hover:text-[#222] transition select-none ${
+    atEndBurvon ? "opacity-30 cursor-not-allowed" : ""
+  }`}
+  style={{ background: "transparent", boxShadow: "none", border: "none" }}
+  disabled={atEndBurvon}
+>
+  <img src={NextIcon} alt="Next" className="w-10 h-10" draggable={false} />
+</button>
+
         </div>
       ) : null}
     </div>
