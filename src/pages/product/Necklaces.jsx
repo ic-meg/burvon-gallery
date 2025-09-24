@@ -580,7 +580,8 @@ const Necklaces = () => {
         {/* Card Info */}
         <div
           className="flex flex-col items-center py-1 px-1"
-          style={{ width: "175px", height: "50px" }} // aligned with new width
+          
+          style={{ width: "175px", height: "50px", background: "linear-gradient(90deg, #000000 46%, #666666 100%)" }} // aligned with new width
         >
           <span className="uppercase text-[#FFF7DC] tracking-widest text-[10px] avantbold leading-tight truncate">
             {item.name}
