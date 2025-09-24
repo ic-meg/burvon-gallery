@@ -31,6 +31,14 @@ import Earrings from "./pages/product/Earrings";
 import Bracelets from "./pages/product/Bracelets";
 import Rings from "./pages/product/Rings";
 
+//collections
+import Classic from "./pages/product/collections/Classic";
+import Clash from "./pages/product/collections/clash";
+import Rebellion from "./pages/product/collections/rebellion";
+import LoveLanguage from "./pages/product/collections/lovelanguage";
+import Pearl from "./pages/product/collections/pearl";
+import Kids from "./pages/product/collections/kids";
+
 const App = () => {
   return (
     <Router>
@@ -65,6 +73,14 @@ const App = () => {
           <Route path="/earrings" element={<Earrings />} />
           <Route path="/bracelet" element={<Bracelets />} />
           <Route path="/rings" element={<Rings />} />
+
+          {/*Collections */}
+          <Route path="/collections/classic" element={<Classic />} />
+          <Route path="/collections/clash" element={<Clash />} />
+          <Route path="/collections/rebellion" element={<Rebellion />} />
+          <Route path="/collections/love-language" element={<LoveLanguage />} />
+          <Route path="/collections/pearl" element={<Pearl />} />
+          <Route path="/collections/kids" element={<Kids />} />
         </Routes>
       </div>
     </Router>
