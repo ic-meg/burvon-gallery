@@ -32,7 +32,7 @@ import Bracelets from "./pages/product/Bracelets";
 import Rings from "./pages/product/Rings";
 
 //collections
-import Classic from "/src/pages/product/collections/Classic";
+import Classic from "/src/pages/product/collections/classic";
 import Clash from "/src/pages/product/collections/clash";
 import Rebellion from "/src/pages/product/collections/rebellion";
 import LoveLanguage from "/src/pages/product/collections/lovelanguage";
