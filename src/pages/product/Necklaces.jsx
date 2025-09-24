@@ -553,7 +553,8 @@ const Necklaces = () => {
 {/* All Necklaces Grid */}
 <section className="bg-[#1f1f21] pt-1 pb-14 px-6">
   <div className="max-w-7xl mx-auto">
-<div className="grid grid-cols-2 gap-5 md:hidden items-stretch">
+{/* Mobile Version - resized cards, increased gap between */}
+<div className="grid grid-cols-2 gap-3 md:hidden items-stretch justify-center">
   {allNecklaces.map((item) => {
     const mobileCollection = item.collection.replace(/ COLLECTION$/i, "");
 
@@ -563,16 +564,11 @@ const Necklaces = () => {
         onClick={() => {
           // navigate or open modal here
         }}
-        className="relative bg-[#222] rounded-none overflow-hidden drop-shadow-[0_10px_15px_rgba(0,0,0,1)] cursor-pointer flex flex-col"
-        // Remove fixed height: style={{ height: "350px" }}
+        className="relative bg-[#222] rounded-none overflow-hidden drop-shadow-[0_10px_15px_rgba(0,0,0,1)] cursor-pointer flex flex-col items-center"
+        style={{ maxWidth: "175px", width: "100%" }} // changed maxWidth to 150px
       >
-        {/* Top icons */}
-        <div className="w-full flex justify-between items-center px-4 pt-2 absolute top-0 left-0 z-10">
-          <img src={TryOnIcon} alt="Try On" className="w-4 h-4" draggable={false} />
-          <img src={AddFavorite} alt="Favorite" className="w-4 h-4" draggable={false} />
-        </div>
         {/* Product Image */}
-        <div className="relative w-full h-[160px] flex items-center justify-center overflow-hidden bg-black">
+        <div className="relative w-full h-[177px] flex items-center justify-center overflow-hidden bg-black">
           <img
             src={item.images[0]}
             alt={item.name}
@@ -580,25 +576,30 @@ const Necklaces = () => {
             draggable={false}
           />
         </div>
-        {/* Card Info - use mt-auto for bottom alignment */}
-        <div className="flex flex-col items-center py-1 px-1 mt-auto">
-          <span className="uppercase text-[#FFF7DC] tracking-widest text-[12px] avantbold">
+
+        {/* Card Info */}
+        <div
+          className="flex flex-col items-center py-1 px-1"
+          style={{ width: "175px", height: "50px" }} // aligned with new width
+        >
+          <span className="uppercase text-[#FFF7DC] tracking-widest text-[10px] avantbold leading-tight truncate">
             {item.name}
           </span>
-          <span className="text-[11px] tracking-widest text-[#FFF7DC] avant">
+          <span className="text-[9px] tracking-widest text-[#FFF7DC] avant truncate mt-[2px]">
             {mobileCollection}
           </span>
-          <div className="flex justify-center items-center gap-1 text-[12px] avantbold mt-1">
-            <span className="line-through text-[#FFF7DC] opacity-50">
+          <div className="flex justify-center items-center gap-1 text-[10px] avantbold mt-1">
+            <span className="line-through text-[#FFF7DC] opacity-50 truncate">
               {item.oldPrice}
             </span>
-            <span className="text-[#FFF7DC]">{item.price}</span>
+            <span className="text-[#FFF7DC] truncate">{item.price}</span>
           </div>
         </div>
       </div>
     );
   })}
 </div>
+
 
     {/* Desktop/Tablet Version (unchanged) */}
     <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10">
@@ -708,6 +709,7 @@ const Necklaces = () => {
     </div>
   </div>
 </section>
+
 
 
 
