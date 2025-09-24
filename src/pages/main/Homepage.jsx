@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Layout from "../../components/Layout";
+import { useNavigate } from "react-router-dom";
+
 import {
   KidsCollectionBanner,
   ClashCollectionBanner,
@@ -67,10 +69,9 @@ const scrollbarHideStyle = `
   }
 `;
 
-
 const heroImages = [
   { src: KidsCollectionBanner, webp: KidsCollectionWebp },
-  { src: ClashCollectionBanner, webp: ClashCollectionWebp }
+  { src: ClashCollectionBanner, webp: ClashCollectionWebp },
 ];
 
 const rebelsTopPicks = [
@@ -119,7 +120,7 @@ const rebelsTopPicks = [
     originalPrice: "₱790.00",
     salePrice: "₱711.00",
   },
-    {
+  {
     id: 6,
     images: [CelineImage, KidsCollectionBanner],
     webpImages: [CelineWebp, KidsCollectionWebp],
@@ -131,11 +132,11 @@ const rebelsTopPicks = [
 ];
 
 const burvonsCollections = [
-  { id: 1, image: ClassicCollectionImg, webp: ClassicCollectionWebp },
-  { id: 2, image: RebellionCollectionImg, webp: RebellionCollectionWebp },
-  { id: 3, image: LoveLanguageCollectionImg, webp: LoveLanguageCollectionWebp },
-  { id: 4, image: PearlCollectionImg, webp: PearlCollectionWebp },
-  { id: 5, image: RebellionCollectionImg, webp: RebellionCollectionWebp },
+  { id: 1, image: ClassicCollectionImg, webp: ClassicCollectionWebp, path: "/collections/classic" },
+  { id: 2, image: RebellionCollectionImg, webp: RebellionCollectionWebp, path: "/collections/rebellion" },
+  { id: 3, image: LoveLanguageCollectionImg, webp: LoveLanguageCollectionWebp, path: "/collections/love-language" },
+  { id: 4, image: PearlCollectionImg, webp: PearlCollectionWebp, path: "/collections/pearl" },
+  { id: 5, image: RebellionCollectionImg, webp: RebellionCollectionWebp, path: "/collections/rebellion" },
 ];
 
 const BASE_HEIGHT = 320; // compact height for collapsed (mobile)
@@ -163,6 +164,7 @@ const faqs = [
 const SCROLL_STEP = 320; // Adjust for full card width per swipe
 
 const Homepage = () => {
+  const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [startIndex, setStartIndex] = useState(0);
   const [expandedRebelCardId, setExpandedRebelCardId] = useState(null);
@@ -208,10 +210,16 @@ const Homepage = () => {
   useEffect(() => {
     const preloadImages = () => {
       const criticalImages = [
-        LyricImage, AgathaImage, RiomImage, CelineImage,
-        LyricWebp, AgathaWebp, RiomWebp, CelineWebp
+        LyricImage,
+        AgathaImage,
+        RiomImage,
+        CelineImage,
+        LyricWebp,
+        AgathaWebp,
+        RiomWebp,
+        CelineWebp,
       ];
-      
+
       criticalImages.forEach((src) => {
         if (src) {
           const img = new Image();
@@ -227,16 +235,16 @@ const Homepage = () => {
 
   // Handle image loading states
   const handleImageLoad = (imageId) => {
-    setLoadedImages(prev => new Set([...prev, imageId]));
-    setImageLoadingStates(prev => ({ ...prev, [imageId]: 'loaded' }));
+    setLoadedImages((prev) => new Set([...prev, imageId]));
+    setImageLoadingStates((prev) => ({ ...prev, [imageId]: "loaded" }));
   };
 
   const handleImageError = (imageId) => {
-    setImageLoadingStates(prev => ({ ...prev, [imageId]: 'error' }));
+    setImageLoadingStates((prev) => ({ ...prev, [imageId]: "error" }));
   };
 
   const handleImageStart = (imageId) => {
-    setImageLoadingStates(prev => ({ ...prev, [imageId]: 'loading' }));
+    setImageLoadingStates((prev) => ({ ...prev, [imageId]: "loading" }));
   };
 
   const handleImageChangeMobile = (cardId, direction) => {
@@ -265,28 +273,34 @@ const Homepage = () => {
     );
   };
 
-const nextRebelDesktop = () => {
-  if (!atEndRebel) {
-    setStartIndex((prev) => Math.min(prev + 1, rebelsTopPicks.length - MAX_VISIBLE_REBELS));
-  }
-};
+  const nextRebelDesktop = () => {
+    if (!atEndRebel) {
+      setStartIndex((prev) =>
+        Math.min(prev + 1, rebelsTopPicks.length - MAX_VISIBLE_REBELS)
+      );
+    }
+  };
 
-const prevRebelDesktop = () => {
-  if (!atStartRebel) {
-    setStartIndex((prev) => Math.max(prev - 1, 0));
-  }
-};
+  const prevRebelDesktop = () => {
+    if (!atStartRebel) {
+      setStartIndex((prev) => Math.max(prev - 1, 0));
+    }
+  };
 
   // Mobile navigation - scroll one full card width per swipe
   const nextRebelMobile = () => {
     if (rebelsScrollRef.current) {
       const maxScrollLeft =
-        rebelsScrollRef.current.scrollWidth - rebelsScrollRef.current.clientWidth;
+        rebelsScrollRef.current.scrollWidth -
+        rebelsScrollRef.current.clientWidth;
       const nextScrollLeft = Math.min(
         rebelsScrollRef.current.scrollLeft + SCROLL_STEP,
         maxScrollLeft
       );
-      rebelsScrollRef.current.scrollTo({ left: nextScrollLeft, behavior: "smooth" });
+      rebelsScrollRef.current.scrollTo({
+        left: nextScrollLeft,
+        behavior: "smooth",
+      });
     }
   };
   const prevRebelMobile = () => {
@@ -295,21 +309,26 @@ const prevRebelDesktop = () => {
         rebelsScrollRef.current.scrollLeft - SCROLL_STEP,
         0
       );
-      rebelsScrollRef.current.scrollTo({ left: prevScrollLeft, behavior: "smooth" });
+      rebelsScrollRef.current.scrollTo({
+        left: prevScrollLeft,
+        behavior: "smooth",
+      });
     }
   };
 
-const showNextCollection = () => {
-  if (!atEndBurvon) {
-    setCollectionIndex((prev) => Math.min(prev + 1, burvonsCollections.length - MAX_VISIBLE_BURVON));
-  }
-};
+  const showNextCollection = () => {
+    if (!atEndBurvon) {
+      setCollectionIndex((prev) =>
+        Math.min(prev + 1, burvonsCollections.length - MAX_VISIBLE_BURVON)
+      );
+    }
+  };
 
-const showPrevCollection = () => {
-  if (!atStartBurvon) {
-    setCollectionIndex((prev) => Math.max(prev - 1, 0));
-  }
-};
+  const showPrevCollection = () => {
+    if (!atStartBurvon) {
+      setCollectionIndex((prev) => Math.max(prev - 1, 0));
+    }
+  };
 
   // Mobile Burvon navigation
   const nextBurvonMobile = () => {
@@ -400,13 +419,14 @@ const showPrevCollection = () => {
   // Infinite scroll effect for rebels top picks on mobile to loop left/right indefinitely
   // Removed because we handle natural scroll snapping now.
 
-const MAX_VISIBLE_REBELS = HOMEPAGE_COLLECTION_VISIBLE_DESKTOP; // 4
-const atStartRebel = startIndex === 0;
-const atEndRebel = startIndex === rebelsTopPicks.length - MAX_VISIBLE_REBELS;
+  const MAX_VISIBLE_REBELS = HOMEPAGE_COLLECTION_VISIBLE_DESKTOP; // 4
+  const atStartRebel = startIndex === 0;
+  const atEndRebel = startIndex === rebelsTopPicks.length - MAX_VISIBLE_REBELS;
 
-const MAX_VISIBLE_BURVON = HOMEPAGE_COLLECTION_VISIBLE_DESKTOP; // 4
-const atStartBurvon = collectionIndex === 0;
-const atEndBurvon = collectionIndex === burvonsCollections.length - MAX_VISIBLE_BURVON;
+  const MAX_VISIBLE_BURVON = HOMEPAGE_COLLECTION_VISIBLE_DESKTOP; // 4
+  const atStartBurvon = collectionIndex === 0;
+  const atEndBurvon =
+    collectionIndex === burvonsCollections.length - MAX_VISIBLE_BURVON;
 
   return (
     <Layout full>
@@ -438,7 +458,9 @@ const atEndBurvon = collectionIndex === burvonsCollections.length - MAX_VISIBLE_
             <span
               key={index}
               className={`w-2 h-2 rounded-full border border-[#FFF7DC] ${
-                index === currentIndex ? "bg-[#FFF7DC]" : "bg-gray-400 opacity-40"
+                index === currentIndex
+                  ? "bg-[#FFF7DC]"
+                  : "bg-gray-400 opacity-40"
               } transition-colors duration-300`}
               onClick={() => setCurrentIndex(index)}
               aria-label={`Go to slide ${index + 1}`}
@@ -452,440 +474,472 @@ const atEndBurvon = collectionIndex === burvonsCollections.length - MAX_VISIBLE_
         </div>
       </section>
 
-{/* Rebels Top Picks */}
-<section className="bg-[#1f1f21] py-14">
-  <div className="max-w-7xl mx-auto px-5 relative">
-    <div className="flex justify-between items-center pb-8">
-      <h2 className="font-bold bebas text-3xl lg:text-5xl tracking-wide text-[#FFF7DC]">
-        REBEL’S TOP PICKS
-      </h2>
-      {!isMobile ? (
-        <div className="flex space-x-4">
-<div
-  onClick={prevRebelDesktop}
-  role="button"
-  tabIndex={0}
-  aria-label="Previous Picks"
-  className={`flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 transition select-none ${
-    atStartRebel ? "opacity-30 cursor-not-allowed" : ""
-  }`}
-  aria-disabled={atStartRebel}
->
-  <img src={PrevIcon} alt="Previous" className="w-10 h-10" draggable={false} />
-</div>
-<div
-  onClick={nextRebelDesktop}
-  role="button"
-  tabIndex={0}
-  aria-label="Next Picks"
-  className={`flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 transition select-none ${
-    atEndRebel ? "opacity-30 cursor-not-allowed" : ""
-  }`}
-  aria-disabled={atEndRebel}
->
-  <img src={NextIcon} alt="Next" className="w-10 h-10" draggable={false} />
-</div>
-
-        </div>
-      ) : null}
-    </div>
-
-    {/* Mobile Scroll */}
-    {isMobile ? (
-<div
-  ref={rebelsScrollRef}
-  className="flex overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-mandatory flex-nowrap md:grid md:grid-cols-4 md:gap-5 md:overflow-visible"
-  style={{
-    scrollBehavior: "smooth",
-    WebkitOverflowScrolling: "touch",
-  }}
->
-  {rebelsTopPicks.map((item) => (
-<div
-  key={item.id}
-  className="relative bg-[#222] drop-shadow-lg cursor-pointer flex-shrink-0 transition-all duration-300 ease-in-out md:flex-shrink md:w-auto"
-  style={{
-    width: "65vw",             // 👈 slightly smaller on mobile
-    margin: "0 6px",
-    scrollSnapAlign: "center",
-  }}
->
-            {/* Image */}
-  <div className="relative w-full min-h-[150px] sm:min-h-[200px] flex items-center justify-center overflow-hidden bg-black">              {imageLoadingStates[`${item.id}-0`] === "loading" && (
-                <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
-                  <div className="w-8 h-8 border-2 border-[#FFF7DC] border-t-transparent rounded-full animate-spin"></div>
-                </div>
-              )}
-              <picture className="w-full h-full">
-                {item.webpImages[0] && (
-                  <source srcSet={item.webpImages[0]} type="image/webp" />
-                )}
-                <img
-                  src={item.images[0]}
-                  alt={item.name}
-                  className="object-cover w-full h-full rounded-none select-none transition-opacity duration-300"
-                  draggable={false}
-                  loading="lazy"
-                  onLoad={() => handleImageLoad(`${item.id}-0`)}
-                  onError={() => handleImageError(`${item.id}-0`)}
-                  onLoadStart={() => handleImageStart(`${item.id}-0`)}
-                />
-              </picture>
-            </div>
-
-            {/* Text */}
-            <div
-              style={{
-                background: "linear-gradient(90deg, #000000 46%, #666666 100%)",
-              }}
-              className="w-full py-3 px-2 text-center flex flex-col items-center rounded-none"
-            >
-              <span className="uppercase text-[#FFF7DC] tracking-widest text-[13px] avantbold">
-                {item.name}
-              </span>
-              <span className="text-[13px] tracking-widest text-[#FFF7DC] avant text-center break-words">
-                {item.collection}
-              </span>
-              <div className="flex justify-center items-center gap-2 text-[14px] avantbold mt-1">
-                <span className="line-through text-[#FFF7DC] opacity-50">
-                  {item.originalPrice}
-                </span>
-                <span className="text-[#FFF7DC]">{item.salePrice}</span>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    ) : (
-      /* Desktop Grid */
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10">
-        {rebelsVisibleCards().map((item) => {
-          const isHovered = hoveredCardId === item.id;
-          return (
-            <div
-              key={item.id}
-              onMouseEnter={() => {
-                setHoveredCardId(item.id);
-                setHoveredImageIndex(0);
-              }}
-              onMouseLeave={() => {
-                setHoveredCardId(null);
-              }}
-              className={`relative bg-[#222] rounded-none overflow-hidden drop-shadow-[0_10px_15px_rgba(0,0,0,1)] group transition-all transform ${
-                isHovered ? "scale-105 z-10" : ""
-              }`}
-              style={{
-                height: isHovered ? "440px" : "375px",
-                transition: "height 0.3s ease, transform 0.3s ease",
-              }}
-            >
-              {/* Top icons */}
-              <div className="w-full flex justify-between items-center px-6 pt-6 absolute top-0 left-0 z-10">
-                <img
-                  src={TryOnIcon}
-                  alt="Try On"
-                  className="w-6 h-6 cursor-pointer hover:opacity-80"
-                  draggable={false}
-                />
-                <img
-                  src={AddFavorite}
-                  alt="Favorite"
-                  className="w-6 h-6 cursor-pointer hover:opacity-80"
-                  draggable={false}
-                />
-              </div>
-
-              {/* Product Image */}
-              <div className="relative w-full h-[300px] flex items-center justify-center overflow-hidden bg-black">
-                {imageLoadingStates[
-                  `${item.id}-${isHovered ? hoveredImageIndex : 0}`
-                ] === "loading" && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-gray-800 z-10">
-                    <div className="w-8 h-8 border-2 border-[#FFF7DC] border-t-transparent rounded-full animate-spin"></div>
-                  </div>
-                )}
-                <picture className="w-full h-full">
-                  {item.webpImages[isHovered ? hoveredImageIndex : 0] && (
-                    <source
-                      srcSet={item.webpImages[isHovered ? hoveredImageIndex : 0]}
-                      type="image/webp"
-                    />
-                  )}
+      {/* Rebels Top Picks */}
+      <section className="bg-[#1f1f21] py-14">
+        <div className="max-w-7xl mx-auto px-5 relative">
+          <div className="flex justify-between items-center pb-8">
+            <h2 className="font-bold bebas text-3xl lg:text-5xl tracking-wide text-[#FFF7DC]">
+              REBEL’S TOP PICKS
+            </h2>
+            {!isMobile ? (
+              <div className="flex space-x-4">
+                <div
+                  onClick={prevRebelDesktop}
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Previous Picks"
+                  className={`flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 transition select-none ${
+                    atStartRebel ? "opacity-30 cursor-not-allowed" : ""
+                  }`}
+                  aria-disabled={atStartRebel}
+                >
                   <img
-                    src={
-                      isHovered
-                        ? item.images[hoveredImageIndex]
-                        : item.images[0]
-                    }
-                    alt={item.name}
-                    className={`object-cover w-full h-full rounded-none transition-all duration-300 ${
-                      loadedImages.has(
-                        `${item.id}-${
-                          isHovered ? hoveredImageIndex : 0
-                        }`
-                      )
-                        ? "opacity-100"
-                        : "opacity-0"
-                    }`}
-                    loading="lazy"
-                    onLoad={() =>
-                      handleImageLoad(
-                        `${item.id}-${isHovered ? hoveredImageIndex : 0}`
-                      )
-                    }
-                    onError={() =>
-                      handleImageError(
-                        `${item.id}-${isHovered ? hoveredImageIndex : 0}`
-                      )
-                    }
-                    onLoadStart={() =>
-                      handleImageStart(
-                        `${item.id}-${isHovered ? hoveredImageIndex : 0}`
-                      )
-                    }
+                    src={PrevIcon}
+                    alt="Previous"
+                    className="w-10 h-10"
+                    draggable={false}
                   />
-                </picture>
-                {isHovered && item.images.length > 1 && (
-                  <>
-                    <img
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleImageChangeDesktop(item.id, "prev");
-                      }}
-                      src={PrevIcon}
-                      alt="Previous"
-                      className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 cursor-pointer hover:opacity-80"
-                      draggable={false}
-                    />
-                    <img
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleImageChangeDesktop(item.id, "next");
-                      }}
-                      src={NextIcon}
-                      alt="Next"
-                      className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 cursor-pointer hover:opacity-80"
-                      draggable={false}
-                    />
-                  </>
-                )}
-              </div>
-
-              {/* Text + Price + Button */}
-              <div
-                style={{
-                  background: "linear-gradient(90deg, #000000 46%, #666666 100%)",
-                }}
-                className="relative py-2 px-2 text-center flex flex-col items-center rounded-none min-h-[140px]"
-              >
-                <span className="uppercase text-[#FFF7DC] tracking-widest text-[13px] avantbold">
-                  {item.name}
-                </span>
-                <span className="text-[13px] tracking-widest text-[#FFF7DC] avant">
-                  {item.collection}
-                </span>
-                <div className="flex justify-center items-center gap-2 text-[14px] avantbold mt-1">
-                  <span className="line-through text-[#FFF7DC] opacity-50">
-                    {item.originalPrice}
-                  </span>
-                  <span className="text-[#FFF7DC]">{item.salePrice}</span>
                 </div>
-
-                {/* Add to Bag Button */}
-                {isHovered && (
-                  <button
-                    style={{
-                      backgroundColor:
-                        hoveredButtonId === item.id ? "#FFF7DC" : "transparent",
-                      color:
-                        hoveredButtonId === item.id ? "#1F1F21" : "#FFF7DC",
-                      outline: "2px solid #FFF7DC",
-                      borderRadius: 5,
-                    }}
-                    onMouseEnter={() => setHoveredButtonId(item.id)}
-                    onMouseLeave={() => setHoveredButtonId(null)}
-                    className="mt-4 w-full flex items-center justify-center gap-2 border border-[#FFF7DC] py-2 px-4 font-bold text-md tracking-wide rounded-5 transition-all duration-300"
-                  >
-                    <img
-                      src={
-                        hoveredButtonId === item.id ? AddBagHover : AddBag
-                      }
-                      alt="Bag Icon"
-                      className="w-4 h-4"
-                    />
-                    ADD TO BAG
-                  </button>
-                )}
+                <div
+                  onClick={nextRebelDesktop}
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Next Picks"
+                  className={`flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 transition select-none ${
+                    atEndRebel ? "opacity-30 cursor-not-allowed" : ""
+                  }`}
+                  aria-disabled={atEndRebel}
+                >
+                  <img
+                    src={NextIcon}
+                    alt="Next"
+                    className="w-10 h-10"
+                    draggable={false}
+                  />
+                </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
-    )}
-  </div>
-</section>
+            ) : null}
+          </div>
 
-
-
-{/* Burvons Collection Section */}
-<section className="w-full bg-black py-14">
-  <div className="max-w-7xl mx-auto px-6">
-    <div className="flex justify-between items-center mb-10">
-      <h2 className="font-bold bebas text-3xl lg:text-5xl tracking-wide text-[#FFF7DC]">
-        BURVON’S COLLECTION
-      </h2>
-      {!isMobile ? (
-        <div className="flex space-x-4">
-<button
-  onClick={showPrevCollection}
-  aria-label="Previous Collection"
-  className={`bg-transparent flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 hover:text-[#222] transition select-none ${
-    atStartBurvon ? "opacity-30 cursor-not-allowed" : ""
-  }`}
-  style={{ background: "transparent", boxShadow: "none", border: "none" }}
-  disabled={atStartBurvon}
->
-  <img src={PrevIcon} alt="Previous" className="w-10 h-10" draggable={false} />
-</button>
-<button
-  onClick={showNextCollection}
-  aria-label="Next Collection"
-  className={`bg-transparent flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 hover:text-[#222] transition select-none ${
-    atEndBurvon ? "opacity-30 cursor-not-allowed" : ""
-  }`}
-  style={{ background: "transparent", boxShadow: "none", border: "none" }}
-  disabled={atEndBurvon}
->
-  <img src={NextIcon} alt="Next" className="w-10 h-10" draggable={false} />
-</button>
-
-        </div>
-      ) : null}
-    </div>
-
-    {isMobile ? (
-<div
-  ref={burvonScrollRef}
-  className="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory flex-nowrap md:grid md:grid-cols-2 md:gap-5 md:overflow-visible"
-  style={{
-    scrollBehavior: "smooth",
-    WebkitOverflowScrolling: "touch",
-  }}
->
-  {burvonsCollections.map((col) => (
-    <div
-      key={col.id}
-      className="bg-[#111] drop-shadow-lg rounded-none flex-shrink-0 md:flex-shrink md:w-auto"
-      style={{
-        width: "65vw",          // 👈 unified size
-        margin: "0 6px",        // 👈 same margins
-        scrollSnapAlign: "center",
-      }}
-    >
-      <picture>
-        <source srcSet={col.webp} type="image/webp" />
-        <img
-          src={col.image}
-          alt={`Burvon Collection ${col.id}`}
-          className="w-full h-full object-cover"
-          draggable={false}
-        />
-      </picture>
-    </div>
-  ))}
-</div>
-    ) : (
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 justify-center">
-        {burvonVisibleCards().map((col) => {
-          const isHovered = burvonHoveredId === col.id;
-          return (
+          {/* Mobile Scroll */}
+          {isMobile ? (
             <div
-              key={col.id}
-              onMouseEnter={() => setBurvonHoveredId(col.id)}
-              onMouseLeave={() => setBurvonHoveredId(null)}
-              className={`overflow-hidden shadow-lg mx-auto transition-all duration-300 cursor-pointer
+              ref={rebelsScrollRef}
+              className="flex overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-mandatory flex-nowrap md:grid md:grid-cols-4 md:gap-5 md:overflow-visible"
+              style={{
+                scrollBehavior: "smooth",
+                WebkitOverflowScrolling: "touch",
+              }}
+            >
+              {rebelsTopPicks.map((item) => (
+                <div
+                  key={item.id}
+                  className="relative bg-[#222] drop-shadow-lg cursor-pointer flex-shrink-0 transition-all duration-300 ease-in-out md:flex-shrink md:w-auto"
+                  style={{
+                    width: "65vw", // 👈 slightly smaller on mobile
+                    margin: "0 6px",
+                    scrollSnapAlign: "center",
+                  }}
+                >
+                  {/* Image */}
+                  <div className="relative w-full min-h-[150px] sm:min-h-[200px] flex items-center justify-center overflow-hidden bg-black">
+                    {" "}
+                    {imageLoadingStates[`${item.id}-0`] === "loading" && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
+                        <div className="w-8 h-8 border-2 border-[#FFF7DC] border-t-transparent rounded-full animate-spin"></div>
+                      </div>
+                    )}
+                    <picture className="w-full h-full">
+                      {item.webpImages[0] && (
+                        <source srcSet={item.webpImages[0]} type="image/webp" />
+                      )}
+                      <img
+                        src={item.images[0]}
+                        alt={item.name}
+                        className="object-cover w-full h-full rounded-none select-none transition-opacity duration-300"
+                        draggable={false}
+                        loading="lazy"
+                        onLoad={() => handleImageLoad(`${item.id}-0`)}
+                        onError={() => handleImageError(`${item.id}-0`)}
+                        onLoadStart={() => handleImageStart(`${item.id}-0`)}
+                      />
+                    </picture>
+                  </div>
+
+                  {/* Text */}
+                  <div
+                    style={{
+                      background:
+                        "linear-gradient(90deg, #000000 46%, #666666 100%)",
+                    }}
+                    className="w-full py-3 px-2 text-center flex flex-col items-center rounded-none"
+                  >
+                    <span className="uppercase text-[#FFF7DC] tracking-widest text-[13px] avantbold">
+                      {item.name}
+                    </span>
+                    <span className="text-[13px] tracking-widest text-[#FFF7DC] avant text-center break-words">
+                      {item.collection}
+                    </span>
+                    <div className="flex justify-center items-center gap-2 text-[14px] avantbold mt-1">
+                      <span className="line-through text-[#FFF7DC] opacity-50">
+                        {item.originalPrice}
+                      </span>
+                      <span className="text-[#FFF7DC]">{item.salePrice}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            /* Desktop Grid */
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10">
+              {rebelsVisibleCards().map((item) => {
+                const isHovered = hoveredCardId === item.id;
+                return (
+                  <div
+                    key={item.id}
+                    onMouseEnter={() => {
+                      setHoveredCardId(item.id);
+                      setHoveredImageIndex(0);
+                    }}
+                    onMouseLeave={() => {
+                      setHoveredCardId(null);
+                    }}
+                    className={`relative bg-[#222] rounded-none overflow-hidden drop-shadow-[0_10px_15px_rgba(0,0,0,1)] group transition-all transform ${
+                      isHovered ? "scale-105 z-10" : ""
+                    }`}
+                    style={{
+                      height: isHovered ? "440px" : "375px",
+                      transition: "height 0.3s ease, transform 0.3s ease",
+                    }}
+                  >
+                    {/* Top icons */}
+                    <div className="w-full flex justify-between items-center px-6 pt-6 absolute top-0 left-0 z-10">
+                      <img
+                        src={TryOnIcon}
+                        alt="Try On"
+                        className="w-6 h-6 cursor-pointer hover:opacity-80"
+                        draggable={false}
+                      />
+                      <img
+                        src={AddFavorite}
+                        alt="Favorite"
+                        className="w-6 h-6 cursor-pointer hover:opacity-80"
+                        draggable={false}
+                      />
+                    </div>
+
+                    {/* Product Image */}
+                    <div className="relative w-full h-[300px] flex items-center justify-center overflow-hidden bg-black">
+                      {imageLoadingStates[
+                        `${item.id}-${isHovered ? hoveredImageIndex : 0}`
+                      ] === "loading" && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-gray-800 z-10">
+                          <div className="w-8 h-8 border-2 border-[#FFF7DC] border-t-transparent rounded-full animate-spin"></div>
+                        </div>
+                      )}
+                      <picture className="w-full h-full">
+                        {item.webpImages[isHovered ? hoveredImageIndex : 0] && (
+                          <source
+                            srcSet={
+                              item.webpImages[isHovered ? hoveredImageIndex : 0]
+                            }
+                            type="image/webp"
+                          />
+                        )}
+                        <img
+                          src={
+                            isHovered
+                              ? item.images[hoveredImageIndex]
+                              : item.images[0]
+                          }
+                          alt={item.name}
+                          className={`object-cover w-full h-full rounded-none transition-all duration-300 ${
+                            loadedImages.has(
+                              `${item.id}-${isHovered ? hoveredImageIndex : 0}`
+                            )
+                              ? "opacity-100"
+                              : "opacity-0"
+                          }`}
+                          loading="lazy"
+                          onLoad={() =>
+                            handleImageLoad(
+                              `${item.id}-${isHovered ? hoveredImageIndex : 0}`
+                            )
+                          }
+                          onError={() =>
+                            handleImageError(
+                              `${item.id}-${isHovered ? hoveredImageIndex : 0}`
+                            )
+                          }
+                          onLoadStart={() =>
+                            handleImageStart(
+                              `${item.id}-${isHovered ? hoveredImageIndex : 0}`
+                            )
+                          }
+                        />
+                      </picture>
+                      {isHovered && item.images.length > 1 && (
+                        <>
+                          <img
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleImageChangeDesktop(item.id, "prev");
+                            }}
+                            src={PrevIcon}
+                            alt="Previous"
+                            className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 cursor-pointer hover:opacity-80"
+                            draggable={false}
+                          />
+                          <img
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleImageChangeDesktop(item.id, "next");
+                            }}
+                            src={NextIcon}
+                            alt="Next"
+                            className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 cursor-pointer hover:opacity-80"
+                            draggable={false}
+                          />
+                        </>
+                      )}
+                    </div>
+
+                    {/* Text + Price + Button */}
+                    <div
+                      style={{
+                        background:
+                          "linear-gradient(90deg, #000000 46%, #666666 100%)",
+                      }}
+                      className="relative py-2 px-2 text-center flex flex-col items-center rounded-none min-h-[140px]"
+                    >
+                      <span className="uppercase text-[#FFF7DC] tracking-widest text-[13px] avantbold">
+                        {item.name}
+                      </span>
+                      <span className="text-[13px] tracking-widest text-[#FFF7DC] avant">
+                        {item.collection}
+                      </span>
+                      <div className="flex justify-center items-center gap-2 text-[14px] avantbold mt-1">
+                        <span className="line-through text-[#FFF7DC] opacity-50">
+                          {item.originalPrice}
+                        </span>
+                        <span className="text-[#FFF7DC]">{item.salePrice}</span>
+                      </div>
+
+                      {/* Add to Bag Button */}
+                      {isHovered && (
+                        <button
+                          style={{
+                            backgroundColor:
+                              hoveredButtonId === item.id
+                                ? "#FFF7DC"
+                                : "transparent",
+                            color:
+                              hoveredButtonId === item.id
+                                ? "#1F1F21"
+                                : "#FFF7DC",
+                            outline: "2px solid #FFF7DC",
+                            borderRadius: 5,
+                          }}
+                          onMouseEnter={() => setHoveredButtonId(item.id)}
+                          onMouseLeave={() => setHoveredButtonId(null)}
+                          className="mt-4 w-full flex items-center justify-center gap-2 border border-[#FFF7DC] py-2 px-4 font-bold text-md tracking-wide rounded-5 transition-all duration-300"
+                        >
+                          <img
+                            src={
+                              hoveredButtonId === item.id ? AddBagHover : AddBag
+                            }
+                            alt="Bag Icon"
+                            className="w-4 h-4"
+                          />
+                          ADD TO BAG
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Burvons Collection Section */}
+      <section className="w-full bg-black py-14">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex justify-between items-center mb-10">
+            <h2 className="font-bold bebas text-3xl lg:text-5xl tracking-wide text-[#FFF7DC]">
+              BURVON’S COLLECTION
+            </h2>
+            {!isMobile ? (
+              <div className="flex space-x-4">
+                <button
+                  onClick={showPrevCollection}
+                  aria-label="Previous Collection"
+                  className={`bg-transparent flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 hover:text-[#222] transition select-none ${
+                    atStartBurvon ? "opacity-30 cursor-not-allowed" : ""
+                  }`}
+                  style={{
+                    background: "transparent",
+                    boxShadow: "none",
+                    border: "none",
+                  }}
+                  disabled={atStartBurvon}
+                >
+                  <img
+                    src={PrevIcon}
+                    alt="Previous"
+                    className="w-10 h-10"
+                    draggable={false}
+                  />
+                </button>
+                <button
+                  onClick={showNextCollection}
+                  aria-label="Next Collection"
+                  className={`bg-transparent flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 hover:text-[#222] transition select-none ${
+                    atEndBurvon ? "opacity-30 cursor-not-allowed" : ""
+                  }`}
+                  style={{
+                    background: "transparent",
+                    boxShadow: "none",
+                    border: "none",
+                  }}
+                  disabled={atEndBurvon}
+                >
+                  <img
+                    src={NextIcon}
+                    alt="Next"
+                    className="w-10 h-10"
+                    draggable={false}
+                  />
+                </button>
+              </div>
+            ) : null}
+          </div>
+
+          {isMobile ? (
+            <div
+              ref={burvonScrollRef}
+              className="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory flex-nowrap md:grid md:grid-cols-2 md:gap-5 md:overflow-visible"
+              style={{
+                scrollBehavior: "smooth",
+                WebkitOverflowScrolling: "touch",
+              }}
+            >
+              {burvonsCollections.map((col) => (
+                <div
+                  key={col.id}
+                  className="bg-[#111] drop-shadow-lg rounded-none flex-shrink-0 md:flex-shrink md:w-auto cursor-pointer"
+                  style={{
+                    width: "65vw", // 👈 unified size
+                    margin: "0 6px", // 👈 same margins
+                    scrollSnapAlign: "center",
+                  }}
+                  onClick={() => navigate(col.path)}
+                >
+                  <picture>
+                    <source srcSet={col.webp} type="image/webp" />
+                    <img
+                      src={col.image}
+                      alt={`Burvon Collection ${col.id}`}
+                      className="w-full h-full object-cover"
+                      draggable={false}
+                    />
+                  </picture>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 justify-center">
+              {burvonVisibleCards().map((col) => {
+                const isHovered = burvonHoveredId === col.id;
+                return (
+                  <div
+                    key={col.id}
+                    onMouseEnter={() => setBurvonHoveredId(col.id)}
+                    onMouseLeave={() => setBurvonHoveredId(null)}
+                    onClick={() => navigate(col.path)}
+                    className={`overflow-hidden shadow-lg mx-auto transition-all duration-300 cursor-pointer
                 ${isHovered ? "scale-105 shadow-2xl z-30" : "shadow-lg"}
               `}
-              style={{
-                maxWidth: 320,
-                boxShadow: isHovered
-                  ? "0 2px 6px rgba(255, 247, 220, 0.3)"
-                  : "0 1px 3px rgba(0,0,0,0.2)",
-                backgroundColor: "transparent",
-                transformOrigin: "center",
-                transition: "transform 0.3s ease, box-shadow 0.3s ease",
-                transform: isHovered ? "scale(1.03)" : "scale(1)",
-                borderRadius: 0,  // explicitly remove border radius
-              }}
-            >
-              <picture className="w-full">
-                <source srcSet={col.webp} type="image/webp" />
-                <img
-                  src={col.image}
-                  alt={`Burvon Collection ${col.id}`}
-                  className="w-full h-auto object-cover select-none transition-transform duration-300"
-                  draggable={false}
-                  style={{ display: "block", borderRadius: 3 }} // remove rounding on img
-                />
-              </picture>
+                    style={{
+                      maxWidth: 320,
+                      boxShadow: isHovered
+                        ? "0 2px 6px rgba(255, 247, 220, 0.3)"
+                        : "0 1px 3px rgba(0,0,0,0.2)",
+                      backgroundColor: "transparent",
+                      transformOrigin: "center",
+                      transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                      transform: isHovered ? "scale(1.03)" : "scale(1)",
+                      borderRadius: 0, // explicitly remove border radius
+                    }}
+                  >
+                    <picture className="w-full">
+                      <source srcSet={col.webp} type="image/webp" />
+                      <img
+                        src={col.image}
+                        alt={`Burvon Collection ${col.id}`}
+                        className="w-full h-auto object-cover select-none transition-transform duration-300"
+                        draggable={false}
+                        style={{ display: "block", borderRadius: 3 }} // remove rounding on img
+                      />
+                    </picture>
+                  </div>
+                );
+              })}
             </div>
-          );
-        })}
-      </div>
-    )}
-  </div>
-</section>
+          )}
+        </div>
+      </section>
 
+      {/* Style It On You Section */}
+      <section className="relative w-full bg-[#1F1F21] mt-16 md:mt-24 lg:mt-15">
+        <picture className="w-full">
+          <source srcSet={StyleItWebP} type="image/webp" />
+          <img
+            src={StyleItImg}
+            alt="Style It On You"
+            className={`w-full object-cover ${
+              isMobile ? "h-[400px]" : "h-[500px] md:h-[600px] lg:h-[650px]"
+            }`}
+            draggable={false}
+            style={{
+              objectPosition: isMobile ? "center bottom" : "center center",
+            }}
+          />
+        </picture>
 
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"></div>
 
-
-    {/* Style It On You Section */}
-    <section className="relative w-full bg-[#1F1F21] mt-16 md:mt-24 lg:mt-15">
-      <picture className="w-full">
-        <source srcSet={StyleItWebP} type="image/webp" />
-        <img
-          src={StyleItImg}
-          alt="Style It On You"
-          className={`w-full object-cover ${
-            isMobile ? "h-[400px]" : "h-[500px] md:h-[600px] lg:h-[650px]"
-          }`}
-          draggable={false}
-          style={{
-            objectPosition: isMobile ? "center bottom" : "center center",
-          }}
-        />
-      </picture>
-
-      <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"></div>
-
-      <div className="absolute inset-0 flex items-center">
-        <div className="max-w-7xl mx-auto w-full px-4 sm:px-10 md:px-10 lg:px-5">
-          {/* Removed mx-auto to align left */}
-          <div className="flex flex-col items-center text-center max-w-md md:items-start md:text-left">
-            <h2 className="font-bold text-2xl md:text-3xl lg:text-4xl mb-4 tracking-wide text-[#fff7dc] bebas">
-              STYLE IT ON YOU
-            </h2>
-            <p className="mb-8 text-sm md:text-base lg:text-lg text-[#fff7dc] opacity-90 avant leading-snug">
-              Experience our virtual try-on feature and see <br />
-              how each piece looks on you.
-            </p>
-            <button
-              style={{
-                backgroundColor: hoveredButtonId === "try" ? "#FFF7DC" : "transparent",
-                color: hoveredButtonId === "try" ? "#1F1F21" : "#FFF7DC",
-                outline: "2px solid #FFF7DC",
-                borderRadius: 5,
-              }}
-              onMouseEnter={() => setHoveredButtonId("try")}
-              onMouseLeave={() => setHoveredButtonId(null)}
-              className="flex items-center justify-center gap-2 py-3 px-6 avant text-base tracking-wide transition-colors duration-300 outline-none cursor-pointer"
-            >
-              TRY NOW
-            </button>
+        <div className="absolute inset-0 flex items-center">
+          <div className="max-w-7xl mx-auto w-full px-4 sm:px-10 md:px-10 lg:px-5">
+            {/* Removed mx-auto to align left */}
+            <div className="flex flex-col items-center text-center max-w-md md:items-start md:text-left">
+              <h2 className="font-bold text-2xl md:text-3xl lg:text-4xl mb-4 tracking-wide text-[#fff7dc] bebas">
+                STYLE IT ON YOU
+              </h2>
+              <p className="mb-8 text-sm md:text-base lg:text-lg text-[#fff7dc] opacity-90 avant leading-snug">
+                Experience our virtual try-on feature and see <br />
+                how each piece looks on you.
+              </p>
+              <button
+                style={{
+                  backgroundColor:
+                    hoveredButtonId === "try" ? "#FFF7DC" : "transparent",
+                  color: hoveredButtonId === "try" ? "#1F1F21" : "#FFF7DC",
+                  outline: "2px solid #FFF7DC",
+                  borderRadius: 5,
+                }}
+                onMouseEnter={() => setHoveredButtonId("try")}
+                onMouseLeave={() => setHoveredButtonId(null)}
+                className="flex items-center justify-center gap-2 py-3 px-6 avant text-base tracking-wide transition-colors duration-300 outline-none cursor-pointer"
+              >
+                TRY NOW
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
       {/* Services Highlights Section */}
       <section className="bg-[#1F1F21] py-20 flex justify-center">
@@ -893,16 +947,19 @@ const atEndBurvon = collectionIndex === burvonsCollections.length - MAX_VISIBLE_
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-10 justify-items-center justify-center max-w-3xl mx-auto sm:ml-auto sm:mr-0">
             <div className="w-80 sm:w-full mx-auto grid grid-cols-[3rem_1fr] items-center gap-4 text-left">
               <div className="flex justify-center">
-              <img
-                src={FastShipIcon}
-                alt="Fast Shipping"
-                className="w-11 h-11 drop-shadow-[0_0_2px_#fff7dc]"
-              />
-
+                <img
+                  src={FastShipIcon}
+                  alt="Fast Shipping"
+                  className="w-11 h-11 drop-shadow-[0_0_2px_#fff7dc]"
+                />
               </div>
               <div>
-                <h3 className="font-bold text-[#fff7dc] text-lg bebas">FAST SHIPPING</h3>
-                <p className="text-sm text-gray-300 avant">Quick and reliable delivery.</p>
+                <h3 className="font-bold text-[#fff7dc] text-lg bebas">
+                  FAST SHIPPING
+                </h3>
+                <p className="text-sm text-gray-300 avant">
+                  Quick and reliable delivery.
+                </p>
               </div>
             </div>
             <div className="w-80 sm:w-full mx-auto grid grid-cols-[3rem_1fr] items-center gap-4 text-left">
@@ -914,8 +971,12 @@ const atEndBurvon = collectionIndex === burvonsCollections.length - MAX_VISIBLE_
                 />
               </div>
               <div>
-                <h3 className="font-bold text-[#fff7dc] text-lg bebas">SECURE PAYMENT</h3>
-                <p className="text-sm text-gray-300 avant">Safe and protected checkout.</p>
+                <h3 className="font-bold text-[#fff7dc] text-lg bebas">
+                  SECURE PAYMENT
+                </h3>
+                <p className="text-sm text-gray-300 avant">
+                  Safe and protected checkout.
+                </p>
               </div>
             </div>
             <div className="w-80 sm:w-full mx-auto grid grid-cols-[3rem_1fr] items-center gap-4 text-left">
@@ -927,8 +988,12 @@ const atEndBurvon = collectionIndex === burvonsCollections.length - MAX_VISIBLE_
                 />
               </div>
               <div>
-                <h3 className="font-bold text-[#fff7dc] text-lg bebas">EASY RETURNS</h3>
-                <p className="text-sm text-gray-300 avant">Stress-free return process.</p>
+                <h3 className="font-bold text-[#fff7dc] text-lg bebas">
+                  EASY RETURNS
+                </h3>
+                <p className="text-sm text-gray-300 avant">
+                  Stress-free return process.
+                </p>
               </div>
             </div>
             <div className="w-80 sm:w-full mx-auto grid grid-cols-[3rem_1fr] items-center gap-4 text-left">
@@ -940,8 +1005,12 @@ const atEndBurvon = collectionIndex === burvonsCollections.length - MAX_VISIBLE_
                 />
               </div>
               <div>
-                <h3 className="font-bold text-[#fff7dc] text-lg bebas">24/7 SUPPORT</h3>
-                <p className="text-sm text-gray-300 avant">We’re here anytime you need.</p>
+                <h3 className="font-bold text-[#fff7dc] text-lg bebas">
+                  24/7 SUPPORT
+                </h3>
+                <p className="text-sm text-gray-300 avant">
+                  We’re here anytime you need.
+                </p>
               </div>
             </div>
           </div>
@@ -956,26 +1025,36 @@ const atEndBurvon = collectionIndex === burvonsCollections.length - MAX_VISIBLE_
           </h2>
           <div className="border-t border-[#fff7dc]/40 max-w-3xl mx-auto">
             {faqs.map((faq, index) => (
-              <div key={index} className="border-b border-[#fff7dc]/40 bg-transparent">
+              <div
+                key={index}
+                className="border-b border-[#fff7dc]/40 bg-transparent"
+              >
                 <button
                   type="button"
                   className="w-full flex justify-between items-center text-left text-[#fff7dc] font-normal py-5 focus:outline-none bg-transparent border-0 shadow-none rounded-none appearance-none avant cursor-pointer"
                   style={{ background: "transparent" }}
-                  onClick={() => setOpenIndex(openIndex === index ? null : index)}
+                  onClick={() =>
+                    setOpenIndex(openIndex === index ? null : index)
+                  }
                 >
-                  <span className="avantbold" style={{ textTransform: 'uppercase' }}>
-                  {faq.question}
+                  <span
+                    className="avantbold"
+                    style={{ textTransform: "uppercase" }}
+                  >
+                    {faq.question}
                   </span>
                   <img
                     src={openIndex === index ? DropUp : DropDown}
                     alt="toggle"
                     className="w-4 h-4"
-                    style={{ marginRight: '15px' }} // adjust spacing as needed
+                    style={{ marginRight: "15px" }} // adjust spacing as needed
                   />
                 </button>
                 {openIndex === index && (
                   <div className="pb-5 bg-transparent">
-                    <p className="text-[#fff7dc] font-normal avant pl-3">{faq.answer}</p>
+                    <p className="text-[#fff7dc] font-normal avant pl-3">
+                      {faq.answer}
+                    </p>
                   </div>
                 )}
               </div>
