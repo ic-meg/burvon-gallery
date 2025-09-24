@@ -272,7 +272,7 @@ const Necklaces = () => {
 </section>
 
       {/* Necklaces Section */}
-      <section className="bg-[#1f1f21] text-[#FFF7DC] pt-8 pb-8 px-4 sm:px-6">
+      <section className="bg-[#1f1f21] text-[#FFF7DC] pt-8 pb-1 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
           {/* Heading + Filters */}
           <div className="flex items-center justify-between pb-6">
@@ -565,7 +565,7 @@ const Necklaces = () => {
             className="relative bg-[#222] rounded-none overflow-hidden drop-shadow-[0_10px_15px_rgba(0,0,0,1)] cursor-pointer flex flex-col items-center w-full"
           >
             {/* Product Image */}
-            <div className="relative w-full h-[177px] flex items-center justify-center overflow-hidden bg-black">
+            <div className="relative w-full h-[185px] flex items-center justify-center overflow-hidden bg-black">
               <img
                 src={item.images[0]}
                 alt={item.name}
