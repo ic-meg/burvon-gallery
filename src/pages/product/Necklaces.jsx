@@ -551,55 +551,57 @@ const Necklaces = () => {
       </section>
 
 {/* All Necklaces Grid */}
-<section className="bg-[#1f1f21] pt-1 pb-14 px-6">
-  <div className="max-w-7xl mx-auto">
-{/* Mobile Version - resized cards, increased gap between */}
-<div className="grid grid-cols-2 gap-3 md:hidden items-stretch justify-center">
-  {allNecklaces.map((item) => {
-    const mobileCollection = item.collection.replace(/ COLLECTION$/i, "");
-
-    return (
-      <div
-        key={item.id}
-        onClick={() => {
-          // navigate or open modal here
-        }}
-        className="relative bg-[#222] rounded-none overflow-hidden drop-shadow-[0_10px_15px_rgba(0,0,0,1)] cursor-pointer flex flex-col items-center"
-        style={{ maxWidth: "175px", width: "100%" }} // changed maxWidth to 150px
-      >
-        {/* Product Image */}
-        <div className="relative w-full h-[177px] flex items-center justify-center overflow-hidden bg-black">
-          <img
-            src={item.images[0]}
-            alt={item.name}
-            className="object-cover w-full h-full rounded-none"
-            draggable={false}
-          />
-        </div>
-
-        {/* Card Info */}
-        <div
-          className="flex flex-col items-center py-1 px-1"
-          
-          style={{ width: "175px", height: "50px", background: "linear-gradient(90deg, #000000 46%, #666666 100%)" }} // aligned with new width
-        >
-          <span className="uppercase text-[#FFF7DC] tracking-widest text-[10px] avantbold leading-tight truncate">
-            {item.name}
-          </span>
-          <span className="text-[10px] tracking-widest text-[#FFF7DC] avant truncate mt-[2px]">
-            {mobileCollection}
-          </span>
-          <div className="flex justify-center items-center gap-1 text-[10px] avantbold mt-1">
-            <span className="line-through text-[#FFF7DC] opacity-50 truncate">
-              {item.oldPrice}
-            </span>
-            <span className="text-[#FFF7DC] truncate">{item.price}</span>
+<section className="bg-[#1f1f21] pt-1 pb-14 px-4">
+  <div className="max-w-7xl mx-auto px-0">
+    <div className="grid grid-cols-2 gap-4 md:hidden items-stretch">
+      {allNecklaces.map((item) => {
+        const mobileCollection = item.collection.replace(/ COLLECTION$/i, "");
+        return (
+          <div
+            key={item.id}
+            onClick={() => {
+              // navigate or open modal here
+            }}
+            className="relative bg-[#222] rounded-none overflow-hidden drop-shadow-[0_10px_15px_rgba(0,0,0,1)] cursor-pointer flex flex-col items-center w-full"
+          >
+            {/* Product Image */}
+            <div className="relative w-full h-[177px] flex items-center justify-center overflow-hidden bg-black">
+              <img
+                src={item.images[0]}
+                alt={item.name}
+                className="object-cover w-full h-full rounded-none"
+                draggable={false}
+              />
+            </div>
+            {/* Card Info */}
+            <div
+              className="flex flex-col items-center py-1 px-1"
+              style={{
+                width: "100%",
+                height: "50px",
+                background:
+                  "linear-gradient(90deg, #000000 46%, #666666 100%)",
+              }}
+            >
+              <span className="uppercase text-[#FFF7DC] tracking-widest text-[10px] avantbold leading-tight truncate">
+                {item.name}
+              </span>
+              <span className="text-[10px] tracking-widest text-[#FFF7DC] avant truncate mt-[2px]">
+                {mobileCollection}
+              </span>
+              <div className="flex justify-center items-center gap-1 text-[10px] avantbold mt-1">
+                <span className="line-through text-[#FFF7DC] opacity-50 truncate">
+                  {item.oldPrice}
+                </span>
+                <span className="text-[#FFF7DC] truncate">{item.price}</span>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
     );
   })}
 </div>
+
+
 
 
     {/* Desktop/Tablet Version (unchanged) */}
