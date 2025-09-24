@@ -585,7 +585,7 @@ const Necklaces = () => {
           <span className="uppercase text-[#FFF7DC] tracking-widest text-[10px] avantbold leading-tight truncate">
             {item.name}
           </span>
-          <span className="text-[9px] tracking-widest text-[#FFF7DC] avant truncate mt-[2px]">
+          <span className="text-[10px] tracking-widest text-[#FFF7DC] avant truncate mt-[2px]">
             {mobileCollection}
           </span>
           <div className="flex justify-center items-center gap-1 text-[10px] avantbold mt-1">
