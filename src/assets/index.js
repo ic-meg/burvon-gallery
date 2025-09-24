@@ -143,7 +143,9 @@ import KidsCollHeroNeck from './images/KidsCollHeroNeck.png';
 
 
 //Necklace Page Highlights Section
+import KidsCollHighNeckCrop from './images/KidsCollNeckCrop.png';
 import KidsCollHighNeck from './images/KidsCollHighNeck.png';
+
 
 
 
@@ -272,4 +274,5 @@ export {
   FilterIcon,
   DropDownIconBlack,
   DropUpIconBlack,
+  KidsCollHighNeckCrop,
 };

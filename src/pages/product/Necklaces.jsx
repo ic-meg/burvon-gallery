@@ -20,6 +20,7 @@ import {
   NextIcon,
   PrevIcon,
   KidsCollHighNeck,
+  KidsCollHighNeckCrop,
   FilterIcon,
 } from "../../assets/index.js";
 
@@ -181,6 +182,8 @@ const Necklaces = () => {
   // NEW: Explicit toggles for each mobile modal dropdown:
   const [showMobileCollection, setShowMobileCollection] = useState(false);
   const [showMobileSort, setShowMobileSort] = useState(false);
+
+  const topScrollRef = React.useRef(null);
 
 
   useEffect(() => {
@@ -547,328 +550,450 @@ const Necklaces = () => {
         )}
       </section>
 
-      {/* All Necklaces Grid */}
-      <section className="bg-[#1f1f21] pt-1 pb-14 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10">
-            {allNecklaces.map((item) => {
-              const isHovered = hoveredCardId === item.id;
-              const currentImageIndex = hoveredImageIndexes[item.id] ?? 0;
-              return (
-                <div
-                  key={item.id}
-                  onMouseEnter={() => {
-                    setHoveredCardId(item.id);
-                    setHoveredImageIndexes((prev) => ({ ...prev, [item.id]: 0 }));
-                  }}
-                  onMouseLeave={() => {
-                    setHoveredCardId(null);
-                    setHoveredButtonId(null);
-                  }}
-                  className={`relative bg-[#222] rounded-none overflow-hidden drop-shadow-[0_10px_15px_rgba(0,0,0,1)] group transition-all transform ${
-                    isHovered ? "scale-105 z-10" : ""
-                  }`}
-                  style={{
-                    height: isHovered ? "440px" : "375px",
-                    transition: "height 0.3s ease, transform 0.3s ease",
-                  }}
-                >
-                  {/* Top icons with padding */}
-                  <div className="w-full flex justify-between items-center px-6 pt-3 absolute top-0 left-0 z-10">
-                    <img
-                      src={TryOnIcon}
-                      alt="Try On"
-                      className="w-6 h-6 cursor-pointer hover:opacity-80"
-                      draggable={false}
-                    />
-                    <img
-                      src={AddFavorite}
-                      alt="Favorite"
-                      className="w-6 h-6 cursor-pointer hover:opacity-80"
-                      draggable={false}
-                    />
-                  </div>
+{/* All Necklaces Grid */}
+<section className="bg-[#1f1f21] pt-1 pb-14 px-6">
+  <div className="max-w-7xl mx-auto">
+<div className="grid grid-cols-2 gap-5 md:hidden items-stretch">
+  {allNecklaces.map((item) => {
+    const mobileCollection = item.collection.replace(/ COLLECTION$/i, "");
 
-                  {/* Product Image */}
-                  <div className="relative w-full h-[300px] flex items-center justify-center overflow-hidden bg-black">
-                    <img
-                      src={isHovered ? item.images[currentImageIndex] : item.images[0]}
-                      alt={item.name}
-                      className="object-cover w-full h-full rounded-none transition-all duration-300"
-                      draggable={false}
-                    />
-                    {isHovered && item.images.length > 1 && (
-                      <>
-                        <img
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleImageChange(item.id, "prev");
-                          }}
-                          src={PrevIcon}
-                          alt="Previous"
-                          className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 cursor-pointer hover:opacity-80"
-                          draggable={false}
-                        />
-                        <img
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleImageChange(item.id, "next");
-                          }}
-                          src={NextIcon}
-                          alt="Next"
-                          className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 cursor-pointer hover:opacity-80"
-                          draggable={false}
-                        />
-                      </>
-                    )}
-                  </div>
-
-                  {/* Text + Price + Button */}
-                  <div
-                    style={{
-                      background: "linear-gradient(90deg, #000000 46%, #666666 100%)",
-                    }}
-                    className="relative py-2 px-2 text-center flex flex-col items-center rounded-none min-h-[140px]"
-                  >
-                    <span className="uppercase text-[#FFF7DC] tracking-widest text-[13px] avantbold">
-                      {item.name}
-                    </span>
-                    <span className="text-[13px] tracking-widest text-[#FFF7DC] avant">
-                      {item.collection}
-                    </span>
-                    <div className="flex justify-center items-center gap-2 text-[14px] avantbold mt-1">
-                      <span className="line-through text-[#FFF7DC] opacity-50">
-                        {item.oldPrice}
-                      </span>
-                      <span className="text-[#FFF7DC]">{item.price}</span>
-                    </div>
-
-                    {isHovered && (
-                      <button
-                        style={{
-                          backgroundColor:
-                            hoveredButtonId === item.id ? "#FFF7DC" : "transparent",
-                          color:
-                            hoveredButtonId === item.id ? "#1F1F21" : "#FFF7DC",
-                          outline: "2px solid #FFF7DC",
-                          borderRadius: 5,
-                        }}
-                        onMouseEnter={() => setHoveredButtonId(item.id)}
-                        onMouseLeave={() => setHoveredButtonId(null)}
-                        className="mt-4 w-full flex items-center justify-center gap-2 border border-[#FFF7DC] py-2 px-4 font-bold text-md tracking-wide rounded-5 transition-all duration-300"
-                      >
-                        <img
-                          src={hoveredButtonId === item.id ? AddBagHover : AddBag}
-                          alt="Bag Icon"
-                          className="w-4 h-4"
-                        />
-                        ADD TO BAG
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+    return (
+      <div
+        key={item.id}
+        onClick={() => {
+          // navigate or open modal here
+        }}
+        className="relative bg-[#222] rounded-none overflow-hidden drop-shadow-[0_10px_15px_rgba(0,0,0,1)] cursor-pointer flex flex-col"
+        // Remove fixed height: style={{ height: "350px" }}
+      >
+        {/* Top icons */}
+        <div className="w-full flex justify-between items-center px-4 pt-2 absolute top-0 left-0 z-10">
+          <img src={TryOnIcon} alt="Try On" className="w-4 h-4" draggable={false} />
+          <img src={AddFavorite} alt="Favorite" className="w-4 h-4" draggable={false} />
+        </div>
+        {/* Product Image */}
+        <div className="relative w-full h-[160px] flex items-center justify-center overflow-hidden bg-black">
+          <img
+            src={item.images[0]}
+            alt={item.name}
+            className="object-cover w-full h-full rounded-none"
+            draggable={false}
+          />
+        </div>
+        {/* Card Info - use mt-auto for bottom alignment */}
+        <div className="flex flex-col items-center py-1 px-1 mt-auto">
+          <span className="uppercase text-[#FFF7DC] tracking-widest text-[12px] avantbold">
+            {item.name}
+          </span>
+          <span className="text-[11px] tracking-widest text-[#FFF7DC] avant">
+            {mobileCollection}
+          </span>
+          <div className="flex justify-center items-center gap-1 text-[12px] avantbold mt-1">
+            <span className="line-through text-[#FFF7DC] opacity-50">
+              {item.oldPrice}
+            </span>
+            <span className="text-[#FFF7DC]">{item.price}</span>
           </div>
         </div>
-      </section>
+      </div>
+    );
+  })}
+</div>
 
-      {/* Product Highlights Section */}
-      <section className="bg-[#000000] py-16 px-6">
-        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12">
-          {/* Left - Image */}
-          <div className="flex-1">
-            <img
-              src={KidsCollHighNeck} // replace with your promo image
-              alt="Kids Collection Highlight"
-              className="w-full h-auto object-cover"
-            />
-          </div>
-
-          {/* Right - Text */}
-          <div className="flex-1 text-[#FFF7DC] pl-8 md:pl-16 lg:pl-24">
-            <h2 className="text-2xl lg:text-5xl font-bold bebas tracking-wide mb-4">
-              KIDS COLLECTION
-            </h2>
-            <p className="text-sm md:text-base lg:text-lg text-[#fff7dc] opacity-90 avant leading-snug mb-6">
-              Burvon’s newest Kids’ Collection is here— <br />
-              featuring 7 charming necklaces, all made for <br />
-              our littlest dreamers.
-            </p>
-            <button
-              className="px-6 py-3 border border-[#FFF7DC] text-[#FFF7DC] 
-                hover:bg-[#FFF7DC] hover:text-[#1f1f21] 
-                avant tracking-wide rounded transition-all"
-            >
-              SHOP NOW
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* Top Picks Necklaces */}
-      <section className="bg-[#1f1f21] py-14">
-        <div className="max-w-7xl mx-auto px-5 relative">
-          <div className="flex justify-between items-center pb-8">
-            <h2 className="font-bold bebas text-3xl lg:text-5xl tracking-wide text-[#FFF7DC]">
-              TOP PICKS NECKLACES
-            </h2>
-            {!isMobile ? (
-              <div className="flex space-x-4">
-                <div
-                  onClick={handlePrev}
-                  role="button"
-                  tabIndex={0}
-                  aria-label="Previous Picks"
-                  className={`flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 transition select-none ${
-                    !canPrev ? "opacity-30 cursor-not-allowed" : ""
-                  }`}
-                >
+    {/* Desktop/Tablet Version (unchanged) */}
+    <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10">
+      {allNecklaces.map((item) => {
+        const isHovered = hoveredCardId === item.id;
+        const currentImageIndex = hoveredImageIndexes[item.id] ?? 0;
+        return (
+          <div
+            key={item.id}
+            onMouseEnter={() => {
+              setHoveredCardId(item.id);
+              setHoveredImageIndexes((prev) => ({ ...prev, [item.id]: 0 }));
+            }}
+            onMouseLeave={() => {
+              setHoveredCardId(null);
+              setHoveredButtonId(null);
+            }}
+            className={`relative bg-[#222] rounded-none overflow-hidden drop-shadow-[0_10px_15px_rgba(0,0,0,1)] group transition-all transform ${
+              isHovered ? "scale-105 z-10" : ""
+            }`}
+            style={{
+              height: isHovered ? "440px" : "375px",
+              transition: "height 0.3s ease, transform 0.3s ease",
+            }}
+          >
+            {/* Top icons */}
+            <div className="w-full flex justify-between items-center px-6 pt-3 absolute top-0 left-0 z-10">
+              <img src={TryOnIcon} alt="Try On" className="w-6 h-6 cursor-pointer hover:opacity-80" draggable={false} />
+              <img src={AddFavorite} alt="Favorite" className="w-6 h-6 cursor-pointer hover:opacity-80" draggable={false} />
+            </div>
+            {/* Product Image */}
+            <div className="relative w-full h-[300px] flex items-center justify-center overflow-hidden bg-black">
+              <img
+                src={isHovered ? item.images[currentImageIndex] : item.images[0]}
+                alt={item.name}
+                className="object-cover w-full h-full rounded-none transition-all duration-300"
+                draggable={false}
+              />
+              {isHovered && item.images.length > 1 && (
+                <>
                   <img
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleImageChange(item.id, "prev");
+                    }}
                     src={PrevIcon}
                     alt="Previous"
-                    className="w-10 h-10"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 cursor-pointer hover:opacity-80"
                     draggable={false}
                   />
-                </div>
-                <div
-                  onClick={handleNext}
-                  role="button"
-                  tabIndex={0}
-                  aria-label="Next Picks"
-                  className={`flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 transition select-none ${
-                    !canNext ? "opacity-30 cursor-not-allowed" : ""
-                  }`}
-                >
                   <img
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleImageChange(item.id, "next");
+                    }}
                     src={NextIcon}
                     alt="Next"
-                    className="w-10 h-10"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 cursor-pointer hover:opacity-80"
                     draggable={false}
                   />
-                </div>
+                </>
+              )}
+            </div>
+            {/* Card Info + Button */}
+            <div
+              style={{
+                background: "linear-gradient(90deg, #000000 46%, #666666 100%)",
+              }}
+              className="relative py-2 px-2 text-center flex flex-col items-center rounded-none min-h-[140px]"
+            >
+              <span className="uppercase text-[#FFF7DC] tracking-widest text-[13px] avantbold">
+                {item.name}
+              </span>
+              <span className="text-[13px] tracking-widest text-[#FFF7DC] avant">
+                {item.collection}
+              </span>
+              <div className="flex justify-center items-center gap-2 text-[14px] avantbold mt-1">
+                <span className="line-through text-[#FFF7DC] opacity-50">
+                  {item.oldPrice}
+                </span>
+                <span className="text-[#FFF7DC]">{item.price}</span>
               </div>
-            ) : null}
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10">
-            {topPicks.slice(carouselIndex, carouselIndex + maxVisible).map((item) => {
-              const isHovered = hoveredCardId === item.id;
-              const currentImageIndex = hoveredImageIndexes[item.id] ?? 0;
-              return (
-                <div
-                  key={`top-pick-${item.id}`}
-                  onMouseEnter={() => {
-                    setHoveredCardId(item.id);
-                    setHoveredImageIndexes((prev) => ({ ...prev, [item.id]: 0 }));
-                  }}
-                  onMouseLeave={() => {
-                    setHoveredCardId(null);
-                    setHoveredButtonId(null);
-                  }}
-                  className={`relative bg-[#222] rounded-none overflow-hidden drop-shadow-[0_10px_15px_rgba(0,0,0,1)] group transition-all transform ${
-                    isHovered ? "scale-105 z-10" : ""
-                  }`}
+              {isHovered && (
+                <button
                   style={{
-                    height: isHovered ? "440px" : "375px",
-                    transition: "height 0.3s ease, transform 0.3s ease",
+                    backgroundColor: hoveredButtonId === item.id ? "#FFF7DC" : "transparent",
+                    color: hoveredButtonId === item.id ? "#1F1F21" : "#FFF7DC",
+                    outline: "2px solid #FFF7DC",
+                    borderRadius: 5,
                   }}
+                  onMouseEnter={() => setHoveredButtonId(item.id)}
+                  onMouseLeave={() => setHoveredButtonId(null)}
+                  className="mt-4 w-full flex items-center justify-center gap-2 border border-[#FFF7DC] py-2 px-4 font-bold text-md tracking-wide rounded-5 transition-all duration-300"
                 >
-                  {/* Top icons with padding */}
-                  <div className="w-full flex justify-between items-center px-6 pt-3 absolute top-0 left-0 z-10">
-                    <img
-                      src={TryOnIcon}
-                      alt="Try On"
-                      className="w-6 h-6 cursor-pointer hover:opacity-80"
-                      draggable={false}
-                    />
-                    <img
-                      src={AddFavorite}
-                      alt="Favorite"
-                      className="w-6 h-6 cursor-pointer hover:opacity-80"
-                      draggable={false}
-                    />
-                  </div>
-                  {/* Product Image */}
-                  <div className="relative w-full h-[300px] flex items-center justify-center overflow-hidden bg-black">
-                    <img
-                      src={isHovered ? item.images[currentImageIndex] : item.images[0]}
-                      alt={item.name}
-                      className="object-cover w-full h-full rounded-none transition-all duration-300"
-                      draggable={false}
-                    />
-                    {isHovered && item.images.length > 1 && (
-                      <>
-                        <img
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleImageChange(item.id, "prev");
-                          }}
-                          src={PrevIcon}
-                          alt="Previous"
-                          className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 cursor-pointer hover:opacity-80"
-                          draggable={false}
-                        />
-                        <img
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleImageChange(item.id, "next");
-                          }}
-                          src={NextIcon}
-                          alt="Next"
-                          className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 cursor-pointer hover:opacity-80"
-                          draggable={false}
-                        />
-                      </>
-                    )}
-                  </div>
-                  {/* Text + Price + Button */}
-                  <div
-                    style={{
-                      background: "linear-gradient(90deg, #000000 46%, #666666 100%)",
-                    }}
-                    className="relative py-2 px-2 text-center flex flex-col items-center rounded-none min-h-[140px]"
-                  >
-                    <span className="uppercase text-[#FFF7DC] tracking-widest text-[13px] avantbold">
-                      {item.name}
-                    </span>
-                    <span className="text-[13px] tracking-widest text-[#FFF7DC] avant">
-                      {item.collection}
-                    </span>
-                    <div className="flex justify-center items-center gap-2 text-[14px] avantbold mt-1">
-                      <span className="line-through text-[#FFF7DC] opacity-50">
-                        {item.oldPrice}
-                      </span>
-                      <span className="text-[#FFF7DC]">{item.price}</span>
-                    </div>
-                    {isHovered && (
-                      <button
-                        style={{
-                          backgroundColor:
-                            hoveredButtonId === item.id ? "#FFF7DC" : "transparent",
-                          color:
-                            hoveredButtonId === item.id ? "#1F1F21" : "#FFF7DC",
-                          outline: "2px solid #FFF7DC",
-                          borderRadius: 5,
-                        }}
-                        onMouseEnter={() => setHoveredButtonId(item.id)}
-                        onMouseLeave={() => setHoveredButtonId(null)}
-                        className="mt-4 w-full flex items-center justify-center gap-2 border border-[#FFF7DC] py-2 px-4 font-bold text-md tracking-wide rounded-5 transition-all duration-300"
-                      >
-                        <img
-                          src={hoveredButtonId === item.id ? AddBagHover : AddBag}
-                          alt="Bag Icon"
-                          className="w-4 h-4"
-                        />
-                        ADD TO BAG
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+                  <img
+                    src={hoveredButtonId === item.id ? AddBagHover : AddBag}
+                    alt="Bag Icon"
+                    className="w-4 h-4"
+                  />
+                  ADD TO BAG
+                </button>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+</section>
+
+
+
+{/* Product Highlights Section */}
+<section className="relative w-full min-h-[400px] bg-black">
+  {/* Desktop Version - unchanged */}
+  <div className="max-w-7xl mx-auto hidden lg:flex flex-col lg:flex-row items-center gap-12 px-6 py-16">
+    <div className="flex-1">
+      <img
+        src={KidsCollHighNeckCrop}
+        alt="Kids Collection Highlight"
+        className="w-full h-auto object-cover"
+      />
+    </div>
+    <div className="flex-1 text-[#FFF7DC] pl-8 md:pl-16 lg:pl-24">
+      <h2 className="text-2xl lg:text-5xl font-bold bebas tracking-wide mb-4">
+        KIDS COLLECTION
+      </h2>
+      <p className="text-sm md:text-base lg:text-lg text-[#fff7dc] opacity-90 avant leading-snug mb-6">
+        Burvon’s newest Kids’ Collection is here— <br />
+        featuring 7 charming necklaces, all made for <br />
+        our littlest dreamers.
+      </p>
+      <button
+        className="px-6 py-3 border border-[#FFF7DC] text-[#FFF7DC] 
+          hover:bg-[#FFF7DC] hover:text-[#1f1f21] 
+          avant tracking-wide rounded transition-all"
+      >
+        SHOP NOW
+      </button>
+    </div>
+  </div>
+
+  {/* Mobile Version - fully covers section */}
+  <div className="lg:hidden absolute inset-0 w-full h-full flex items-center justify-center overflow-hidden">
+    <img
+      src={KidsCollHighNeckCrop}
+      alt="Kids Collection Highlight"
+      className="absolute inset-0 w-full h-full object-cover"
+      style={{ objectPosition: "center top" }}
+    />
+    <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-[#FFF7DC] px-6">
+      <h2 className="text-3xl font-bold bebas tracking-wide mb-2 drop-shadow">
+        KIDS COLLECTION
+      </h2>
+      <p className="text-sm avant leading-snug mb-3 max-w-md drop-shadow">
+        Burvon’s newest Kids’ Collection is here— <br />
+        featuring 7 charming necklaces, all made for <br />
+        our littlest dreamers.
+      </p>
+      <button
+        className="px-6 py-3 border border-[#FFF7DC] text-[#FFF7DC] 
+          hover:bg-[#FFF7DC] hover:text-[#1f1f21] 
+          avant tracking-wide rounded transition-all"
+      >
+        SHOP NOW
+      </button>
+    </div>
+  </div>
+</section>
+
+
+
+
+{/* Top Picks Necklaces */}
+<section className="bg-[#1f1f21] py-14">
+  <div className="max-w-7xl mx-auto px-5 relative">
+    <div className="flex justify-between items-center pb-8">
+      <h2 className="font-bold bebas text-3xl lg:text-5xl tracking-wide text-[#FFF7DC]">
+        TOP PICKS NECKLACES
+      </h2>
+      {!isMobile ? (
+        <div className="flex space-x-4">
+          <div
+            onClick={handlePrev}
+            role="button"
+            tabIndex={0}
+            aria-label="Previous Picks"
+            className={`flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 transition select-none ${
+              !canPrev ? "opacity-30 cursor-not-allowed" : ""
+            }`}
+          >
+            <img
+              src={PrevIcon}
+              alt="Previous"
+              className="w-10 h-10"
+              draggable={false}
+            />
+          </div>
+          <div
+            onClick={handleNext}
+            role="button"
+            tabIndex={0}
+            aria-label="Next Picks"
+            className={`flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 transition select-none ${
+              !canNext ? "opacity-30 cursor-not-allowed" : ""
+            }`}
+          >
+            <img
+              src={NextIcon}
+              alt="Next"
+              className="w-10 h-10"
+              draggable={false}
+            />
           </div>
         </div>
-      </section>
+      ) : null}
+    </div>
+
+    {/* ✅ Mobile Carousel */}
+    {isMobile && (
+    <div
+      ref={topScrollRef}
+      className="flex overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-mandatory flex-nowrap md:grid md:grid-cols-4 md:gap-5 md:overflow-visible"
+      style={{
+        scrollBehavior: "smooth",
+        WebkitOverflowScrolling: "touch",
+      }}
+    >
+    {topPicks.map((item) => (
+      <div
+        key={`top-pick-${item.id}`}
+        className="relative bg-[#222] flex-shrink-0 transition-all duration-300 ease-in-out snap-center"
+        style={{
+          width: "65vw",   // 👈 narrower, more like your screenshot
+          margin: "0 6px",
+        }}
+      >
+        {/* Product Image */}
+        <div className="relative w-full h-[260px] flex items-center justify-center overflow-hidden bg-black">
+          <img
+            src={item.images[0]}
+            alt={item.name}
+            className="object-cover w-full h-full"
+            draggable={false}
+          />
+        </div>
+
+        {/* Text + Price */}
+        <div
+          style={{
+            background: "linear-gradient(90deg, #000000 46%, #666666 100%)",
+          }}
+          className="py-3 px-2 text-center flex flex-col items-center"
+        >
+          <span className="uppercase text-[#FFF7DC] tracking-widest text-sm avantbold">
+            {item.name}
+          </span>
+          <span className="text-xs tracking-widest text-[#FFF7DC] avant mt-1">
+            {item.collection}
+          </span>
+          <div className="flex justify-center items-center gap-2 text-sm avantbold mt-1">
+            <span className="line-through text-[#FFF7DC] opacity-50">
+              {item.oldPrice}
+            </span>
+            <span className="text-[#FFF7DC]">{item.price}</span>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+    )}
+
+    {/* ✅ Desktop Grid (your original untouched code) */}
+    {!isMobile && (
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10">
+        {topPicks.slice(carouselIndex, carouselIndex + maxVisible).map((item) => {
+          const isHovered = hoveredCardId === item.id;
+          const currentImageIndex = hoveredImageIndexes[item.id] ?? 0;
+          return (
+            <div
+              key={`top-pick-${item.id}`}
+              onMouseEnter={() => {
+                setHoveredCardId(item.id);
+                setHoveredImageIndexes((prev) => ({ ...prev, [item.id]: 0 }));
+              }}
+              onMouseLeave={() => {
+                setHoveredCardId(null);
+                setHoveredButtonId(null);
+              }}
+              className={`relative bg-[#222] rounded-none overflow-hidden drop-shadow-[0_10px_15px_rgba(0,0,0,1)] group transition-all transform ${
+                isHovered ? "scale-105 z-10" : ""
+              }`}
+              style={{
+                height: isHovered ? "440px" : "375px",
+                transition: "height 0.3s ease, transform 0.3s ease",
+              }}
+            >
+              {/* --- your full desktop card code remains here, unchanged --- */}
+              {/* Top icons with padding */}
+              <div className="w-full flex justify-between items-center px-6 pt-3 absolute top-0 left-0 z-10">
+                <img
+                  src={TryOnIcon}
+                  alt="Try On"
+                  className="w-6 h-6 cursor-pointer hover:opacity-80"
+                  draggable={false}
+                />
+                <img
+                  src={AddFavorite}
+                  alt="Favorite"
+                  className="w-6 h-6 cursor-pointer hover:opacity-80"
+                  draggable={false}
+                />
+              </div>
+              {/* Product Image */}
+              <div className="relative w-full h-[300px] flex items-center justify-center overflow-hidden bg-black">
+                <img
+                  src={isHovered ? item.images[currentImageIndex] : item.images[0]}
+                  alt={item.name}
+                  className="object-cover w-full h-full rounded-none transition-all duration-300"
+                  draggable={false}
+                />
+                {isHovered && item.images.length > 1 && (
+                  <>
+                    <img
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleImageChange(item.id, "prev");
+                      }}
+                      src={PrevIcon}
+                      alt="Previous"
+                      className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 cursor-pointer hover:opacity-80"
+                      draggable={false}
+                    />
+                    <img
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleImageChange(item.id, "next");
+                      }}
+                      src={NextIcon}
+                      alt="Next"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 cursor-pointer hover:opacity-80"
+                      draggable={false}
+                    />
+                  </>
+                )}
+              </div>
+              {/* Text + Price + Button */}
+              <div
+                style={{
+                  background: "linear-gradient(90deg, #000000 46%, #666666 100%)",
+                }}
+                className="relative py-2 px-2 text-center flex flex-col items-center rounded-none min-h-[140px]"
+              >
+                <span className="uppercase text-[#FFF7DC] tracking-widest text-[13px] avantbold">
+                  {item.name}
+                </span>
+                <span className="text-[13px] tracking-widest text-[#FFF7DC] avant">
+                  {item.collection}
+                </span>
+                <div className="flex justify-center items-center gap-2 text-[14px] avantbold mt-1">
+                  <span className="line-through text-[#FFF7DC] opacity-50">
+                    {item.oldPrice}
+                  </span>
+                  <span className="text-[#FFF7DC]">{item.price}</span>
+                </div>
+                {isHovered && (
+                  <button
+                    style={{
+                      backgroundColor:
+                        hoveredButtonId === item.id ? "#FFF7DC" : "transparent",
+                      color: hoveredButtonId === item.id ? "#1F1F21" : "#FFF7DC",
+                      outline: "2px solid #FFF7DC",
+                      borderRadius: 5,
+                    }}
+                    onMouseEnter={() => setHoveredButtonId(item.id)}
+                    onMouseLeave={() => setHoveredButtonId(null)}
+                    className="mt-4 w-full flex items-center justify-center gap-2 border border-[#FFF7DC] py-2 px-4 font-bold text-md tracking-wide rounded-5 transition-all duration-300"
+                  >
+                    <img
+                      src={hoveredButtonId === item.id ? AddBagHover : AddBag}
+                      alt="Bag Icon"
+                      className="w-4 h-4"
+                    />
+                    ADD TO BAG
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    )}
+  </div>
+</section>
+
     </Layout>
   );
 };
