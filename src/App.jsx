@@ -32,12 +32,12 @@ import Bracelets from "./pages/product/Bracelets";
 import Rings from "./pages/product/Rings";
 
 //collections
-import Classic from "./pages/product/collections/Classic";
-import Clash from "./pages/product/collections/clash";
-import Rebellion from "./pages/product/collections/rebellion";
-import LoveLanguage from "./pages/product/collections/lovelanguage";
-import Pearl from "./pages/product/collections/pearl";
-import Kids from "./pages/product/collections/kids";
+import Classic from "/src/pages/product/collections/Classic";
+import Clash from "/src/pages/product/collections/clash";
+import Rebellion from "/src/pages/product/collections/rebellion";
+import LoveLanguage from "/src/pages/product/collections/lovelanguage";
+import Pearl from "/src/pages/product/collections/pearl";
+import Kids from "/src/pages/product/collections/kids";
 
 const App = () => {
   return (
