@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Layout from "../../components/Layout";
 
 // Hero Images
@@ -101,6 +102,7 @@ const collectionOptions = [
   { label: "Select a Collection...", value: "none" },
   { label: "Kids Collection", value: "kids" },
   { label: "Clash Collection", value: "clash" },
+  { label: "Classic Collection", value: "classic" },
 ];
 
 const sortOptions = [
@@ -165,6 +167,7 @@ const CustomDropdown = ({
 };
 
 const Necklaces = () => {
+  const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [openDropdown, setOpenDropdown] = useState(null);
 
@@ -179,12 +182,10 @@ const Necklaces = () => {
   const [hoveredImageIndexes, setHoveredImageIndexes] = useState({});
 
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
-  // NEW: Explicit toggles for each mobile modal dropdown:
   const [showMobileCollection, setShowMobileCollection] = useState(false);
   const [showMobileSort, setShowMobileSort] = useState(false);
 
   const topScrollRef = React.useRef(null);
-
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -217,12 +218,20 @@ const Necklaces = () => {
     });
   };
 
+  // ROUTING LOGIC FOR COLLECTION NAME
+  const handleCollectionChange = (value) => {
+    setCollectionValue(value);
+    if (value === "classic") {
+      navigate("/collections/classic");
+    }
+  };
+
   const [carouselIndex, setCarouselIndex] = useState(0);
-  const topPicks = allNecklaces.slice(0, 8); // or however many you want
+  const topPicks = allNecklaces.slice(0, 8);
   const maxVisible = 4;
   const canPrev = carouselIndex > 0;
   const canNext = carouselIndex < topPicks.length - maxVisible;
-  const isMobile = window.innerWidth < 768; // Or however you set your mobile check
+  const isMobile = window.innerWidth < 768;
 
   const handlePrev = () => {
     if (canPrev) setCarouselIndex(carouselIndex - 1);
@@ -234,43 +243,42 @@ const Necklaces = () => {
   return (
     <Layout full noPadding>
       {/* Hero Section */}
-<section
-  id="hero"
-  className="relative w-full h-[380px] sm:h-[450px] lg:h-[550px] xl:h-[730px] overflow-hidden bg-black"
->
-  <div
-    className="flex h-full w-full transition-transform duration-700"
-    style={{ transform: `translateX(-${currentIndex * 100}%)` }}
-  >
-    {heroImages.map((image, index) => (
-      <picture key={index} className="flex-shrink-0 w-full h-full">
-        <img
-          src={image.src}
-          alt={`Burvon homepage banner collection ${index + 1}`}
-          className={`w-full h-full object-cover ${
-            image.src === ClashCollHeroNeck
-              ? "object-[70%_center] sm:object-[70%_center] object-center"
-              : "object-center"
-          }`}
-          draggable={false}
-        />
-      </picture>
-    ))}
-  </div>
-  {/* Dots navigation */}
-  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-1 z-20">
-    {heroImages.map((_, index) => (
-      <span
-        key={index}
-        className={`w-2 h-2 rounded-full border border-[#FFF7DC] ${
-          index === currentIndex ? "bg-[#FFF7DC]" : "bg-gray-400 opacity-40"
-        } transition-colors duration-300 cursor-pointer`}
-        onClick={() => setCurrentIndex(index)}
-      />
-    ))}
-  </div>
-</section>
-
+      <section
+        id="hero"
+        className="relative w-full h-[380px] sm:h-[450px] lg:h-[550px] xl:h-[730px] overflow-hidden bg-black"
+      >
+        <div
+          className="flex h-full w-full transition-transform duration-700"
+          style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+        >
+          {heroImages.map((image, index) => (
+            <picture key={index} className="flex-shrink-0 w-full h-full">
+              <img
+                src={image.src}
+                alt={`Burvon homepage banner collection ${index + 1}`}
+                className={`w-full h-full object-cover ${
+                  image.src === ClashCollHeroNeck
+                    ? "object-[70%_center] sm:object-[70%_center] object-center"
+                    : "object-center"
+                }`}
+                draggable={false}
+              />
+            </picture>
+          ))}
+        </div>
+        {/* Dots navigation */}
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-1 z-20">
+          {heroImages.map((_, index) => (
+            <span
+              key={index}
+              className={`w-2 h-2 rounded-full border border-[#FFF7DC] ${
+                index === currentIndex ? "bg-[#FFF7DC]" : "bg-gray-400 opacity-40"
+              } transition-colors duration-300 cursor-pointer`}
+              onClick={() => setCurrentIndex(index)}
+            />
+          ))}
+        </div>
+      </section>
       {/* Necklaces Section */}
       <section className="bg-[#1f1f21] text-[#FFF7DC] pt-8 pb-1 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
@@ -279,8 +287,7 @@ const Necklaces = () => {
             <h2 className="text-5xl sm:text-6xl font-bold bebas tracking-wide whitespace-nowrap">
               NECKLACES
             </h2>
-
-            {/* Desktop Filters - show from sm and up */}
+            {/* Desktop Filters */}
             <div className="hidden sm:flex flex-row flex-wrap items-center gap-8 flex-1 min-w-0">
               {/* Collection */}
               <div className="flex flex-col w-56 min-w-[14rem] ml-20">
@@ -290,7 +297,7 @@ const Necklaces = () => {
                 <CustomDropdown
                   options={collectionOptions}
                   value={collectionValue}
-                  onChange={setCollectionValue}
+                  onChange={handleCollectionChange}
                   placeholder="Select a Collection..."
                   isOpen={openDropdown === "collection"}
                   onToggle={() =>
@@ -298,7 +305,6 @@ const Necklaces = () => {
                   }
                 />
               </div>
-
               {/* Sort */}
               <div className="flex flex-col w-50 min-w-[12rem]">
                 <label className="text-xl bebas mb-1 uppercase tracking-wide">
@@ -314,14 +320,12 @@ const Necklaces = () => {
                   }
                 />
               </div>
-
               {/* Price Range */}
               <div className="flex flex-col w-full max-w-[200px]">
                 <label className="text-xl bebas -mb-1 uppercase tracking-wide">
                   Price
                 </label>
                 <div className="relative w-full h-8 flex items-center">
-                  {/* Track and sliders as before */}
                   <div className="absolute top-1/2 left-0 w-full h-[3px] bg-[#FFF7DC]/30 rounded-full -translate-y-1/2"></div>
                   <div
                     className="absolute top-1/2 h-[3px] bg-[#FFF7DC] rounded-full -translate-y-1/2"
@@ -377,8 +381,7 @@ const Necklaces = () => {
                 </div>
               </div>
             </div>
-
-            {/* Mobile Filter Button - visible below sm */}
+            {/* Mobile Filter Button */}
             <div className="flex sm:hidden">
               <button
                 onClick={() => setMobileFilterOpen(true)}
@@ -390,7 +393,6 @@ const Necklaces = () => {
             </div>
           </div>
         </div>
-
         {/* MOBILE FILTER MODAL */}
         {mobileFilterOpen && (
           <div
@@ -408,7 +410,6 @@ const Necklaces = () => {
             >
               &times;
             </button>
-
             {/* COLLECTION NAME (Dropdown-like) */}
             <div>
               <button
@@ -418,24 +419,25 @@ const Necklaces = () => {
                   setShowMobileSort(false);
                 }}
               >
-                <span className="text-2xl bebas uppercase tracking-wide" style={{textShadow: "0 2px 6px #0001"}}>
+                <span className="text-2xl bebas uppercase tracking-wide" style={{ textShadow: "0 2px 6px #0001" }}>
                   COLLECTION NAME
                 </span>
                 <img src={showMobileCollection ? DropUpIconBlack : DropDownIconBlack} alt="dropdown" className="ml-2 w-4 h-4" />
               </button>
               {showMobileCollection && (
                 <div className="mt-4 space-y-2">
-                  {collectionOptions.filter(x=>x.value!=="none").map((option) => (
+                  {collectionOptions.filter(x => x.value !== "none").map((option) => (
                     <div
                       key={option.value}
                       onClick={() => {
+                        if (option.value === "classic") {
+                          navigate("/collections/classic");
+                        }
                         setCollectionValue(option.value);
                         setShowMobileCollection(false);
                       }}
-                      className={`cursor-pointer avant text-[19px] tracking-wide ${
-                        collectionValue === option.value ? "font-bold underline" : ""
-                      }`}
-                      style={{color: "#232323"}}
+                      className={`cursor-pointer avant text-[19px] tracking-wide ${collectionValue === option.value ? "font-bold underline" : ""}`}
+                      style={{ color: "#232323" }}
                     >
                       {option.label}
                     </div>
@@ -443,8 +445,7 @@ const Necklaces = () => {
                 </div>
               )}
             </div>
-            <hr style={{borderColor: "#23232340"}} className="my-2" />
-
+            <hr style={{ borderColor: "#23232340" }} className="my-2" />
             {/* SORT (Dropdown-like) */}
             <div>
               <button
@@ -454,7 +455,7 @@ const Necklaces = () => {
                   setShowMobileCollection(false);
                 }}
               >
-                <span className="text-2xl bebas uppercase tracking-wide" style={{textShadow: "0 2px 6px #0001"}}>
+                <span className="text-2xl bebas uppercase tracking-wide" style={{ textShadow: "0 2px 6px #0001" }}>
                   SORT
                 </span>
                 <img src={showMobileSort ? DropUpIconBlack : DropDownIconBlack} alt="dropdown" className="ml-2 w-4 h-4" />
@@ -468,10 +469,8 @@ const Necklaces = () => {
                         setSortValue(option.value);
                         setShowMobileSort(false);
                       }}
-                      className={`cursor-pointer avant text-[19px] tracking-wide ${
-                        sortValue === option.value ? "font-bold underline" : ""
-                      }`}
-                      style={{color: "#232323"}}
+                      className={`cursor-pointer avant text-[19px] tracking-wide ${sortValue === option.value ? "font-bold underline" : ""}`}
+                      style={{ color: "#232323" }}
                     >
                       {option.label}
                     </div>
@@ -479,11 +478,10 @@ const Necklaces = () => {
                 </div>
               )}
             </div>
-            <hr style={{borderColor: "#23232340"}} className="my-2" />
-
+            <hr style={{ borderColor: "#23232340" }} className="my-2" />
             {/* PRICE (No Dropdown) */}
             <div>
-              <div className="text-2xl bebas uppercase tracking-wide mb-3" style={{color: "#232323", textShadow: "0 2px 6px #0001"}}>PRICE</div>
+              <div className="text-2xl bebas uppercase tracking-wide mb-3" style={{ color: "#232323", textShadow: "0 2px 6px #0001" }}>PRICE</div>
               <div className="relative w-full h-8 flex items-center">
                 <div className="absolute top-1/2 left-0 w-full h-[3px] bg-[#2323232a] rounded-full -translate-y-1/2"></div>
                 <div
@@ -523,14 +521,14 @@ const Necklaces = () => {
                     setMaxPrice(Math.max(Number(e.target.value), minPrice + 50))
                   }
                   className="absolute w-full appearance-none bg-transparent pointer-events-none
-                    [&::-webkit-slider-thumb]:appearance-none
-                    [&::-webkit-slider-thumb]:h-4
-                    [&::-webkit-slider-thumb]:w-4
-                    [&::-webkit-slider-thumb]:rounded-full
-                    [&::-webkit-slider-thumb]:bg-[#1F1F21]
-                    [&::-webkit-slider-thumb]:cursor-pointer
-                    [&::-webkit-slider-thumb]:relative
-                    [&::-webkit-slider-thumb]:z-30"
+                      [&::-webkit-slider-thumb]:appearance-none
+                      [&::-webkit-slider-thumb]:h-4
+                      [&::-webkit-slider-thumb]:w-4
+                      [&::-webkit-slider-thumb]:rounded-full
+                      [&::-webkit-slider-thumb]:bg-[#1F1F21]
+                      [&::-webkit-slider-thumb]:cursor-pointer
+                      [&::-webkit-slider-thumb]:relative
+                      [&::-webkit-slider-thumb]:z-30"
                   style={{ pointerEvents: "auto" }}
                 />
               </div>
@@ -539,7 +537,6 @@ const Necklaces = () => {
                 <span>₱{maxPrice}</span>
               </div>
             </div>
-
             <button
               className="-mt-2 w-full bg-[#1F1F21] text-[#FFF7DC] avantbold rounded-md py-2 text-lg tracking-wide "
               onClick={() => setMobileFilterOpen(false)}
