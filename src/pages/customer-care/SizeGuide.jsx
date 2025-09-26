@@ -199,8 +199,7 @@ const SizeGuide = () => {
               onCanPlay={() => console.log("Video can play")}
               className="h-full max-w-[450px] w-full object-cover object-right drop-shadow-[0_10px_10px_rgba(255,247,220,0.09)]"
             >
-              <source src={SizeGuideVid} type="video/mp4" />
-              <source src={SizeGuideVidWebm} type="video/webm" />
+              <source src="https://otbnwkrzjljwxfxgelvv.supabase.co/storage/v1/object/public/videos/SizeGuideVid.webm" type="video/webm" />
             </video>
           ) : (
             <div className="h-full max-w-[450px] w-full bg-gray-800 flex items-center justify-center">
