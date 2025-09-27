@@ -11,6 +11,11 @@ import {
   TryOnIcon, 
   AddFavorite,
   wishlistEmpty,
+  AgathaImage,
+  RiomImage,
+  CelineImage,
+  LyricImage,
+  ClashCollectionBanner
 } from "../../assets/index.js";
 
 // product for "you may also like"
@@ -20,8 +25,8 @@ const recommendedProducts = [
     name: 'LYRIC',
     collection: 'LOVE LANGUAGE COLLECTION',
     images: [
-      '/src/assets/images/Lyric.png',
-      '/src/assets/images/ClashCollection.png',
+      LyricImage,
+      ClashCollectionBanner
     ],
     priceOld: 790.00,
     priceNew: 711.00,
@@ -32,8 +37,8 @@ const recommendedProducts = [
     name: 'AGATHA',
     collection: 'CLASH COLLECTION',
     images: [
-      '/src/assets/images/Agatha.png',
-      '/src/assets/images/ClashCollection.png',
+      AgathaImage,
+      ClashCollectionBanner
     ],
     priceOld: 790.00,
     priceNew: 711.00,
@@ -44,8 +49,8 @@ const recommendedProducts = [
     name: 'RIOM',
     collection: 'THE REBELLION COLLECTION',
     images: [
-      '/src/assets/images/Riom.png',
-      '/src/assets/images/ClashCollection.png',
+      RiomImage,
+      ClashCollectionBanner
     ],
     priceOld: 790.00,
     priceNew: 711.00,
@@ -56,8 +61,8 @@ const recommendedProducts = [
     name: 'CELINE',
     collection: 'THE REBELLION COLLECTION',
     images: [
-      '/src/assets/images/Celine.png',
-      '/src/assets/images/ClashCollection.png',
+      CelineImage,
+      ClashCollectionBanner
     ],
     priceOld: 790.00,
     priceNew: 711.00,
