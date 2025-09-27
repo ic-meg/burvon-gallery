@@ -12,10 +12,15 @@ import {
   AddFavorite,
   wishlistEmpty,
   AgathaImage,
+  AgathaWebp,
   RiomImage,
+  RiomWebp,
   CelineImage,
+  CelineWebp,
   LyricImage,
-  ClashCollectionBanner
+  LyricWebp,
+  ClashCollectionBanner,
+  ClashCollectionWebp
 } from "../../assets/index.js";
 
 // product for "you may also like"
@@ -28,6 +33,7 @@ const recommendedProducts = [
       LyricImage,
       ClashCollectionBanner
     ],
+    webpImages: [LyricWebp, ClashCollectionWebp],
     priceOld: 790.00,
     priceNew: 711.00,
     type: 'necklaces',
@@ -40,6 +46,7 @@ const recommendedProducts = [
       AgathaImage,
       ClashCollectionBanner
     ],
+    webpImages: [AgathaWebp, ClashCollectionWebp],
     priceOld: 790.00,
     priceNew: 711.00,
     type: 'earrings',
@@ -52,6 +59,7 @@ const recommendedProducts = [
       RiomImage,
       ClashCollectionBanner
     ],
+    webpImages: [RiomWebp, ClashCollectionWebp],
     priceOld: 790.00,
     priceNew: 711.00,
     type: 'necklaces',
@@ -64,6 +72,7 @@ const recommendedProducts = [
       CelineImage,
       ClashCollectionBanner
     ],
+    webpImages: [CelineWebp, ClashCollectionWebp],
     priceOld: 790.00,
     priceNew: 711.00,
     type: 'bracelets',
@@ -73,9 +82,10 @@ const recommendedProducts = [
     name: 'LYRIC',
     collection: 'LOVE LANGUAGE COLLECTION',
     images: [
-      '/src/assets/images/Lyric.png',
-      '/src/assets/images/ClashCollection.png',
+      LyricImage,
+      ClashCollectionBanner
     ],
+    webpImages: [LyricWebp, ClashCollectionWebp],
     priceOld: 790.00,
     priceNew: 711.00,
     type: 'necklaces',
