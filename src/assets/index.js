@@ -31,6 +31,7 @@ import contactTiktok from './icons/contactTiktok.png';
 import contactIG from './icons/contactIG.png';
 import TryOnIcon from './icons/Try_OnButton.png';
 import AddFavorite from './icons/Add_Favorites.png';
+import AddedFavorites from './icons/Added_Favorites.png';
 import NextIcon from './icons/Next.svg';
 import PrevIcon from './icons/Prev.svg';
 import AddBag from './icons/bag.png';
@@ -56,7 +57,9 @@ import DropUpIcon from './icons/DropUpIcon.svg';
 import DropDownIconBlack from './icons/DropDownIconBlack.svg';
 import DropUpIconBlack from './icons/DropUpIconBlack.svg';
 import FilterIcon from './icons/FilterIcon.svg';
-
+import wishlistEmpty from './icons/wishlistEmpty.png';
+import trashBlack from './icons/trash-black.png';
+import trash from './icons/trash.png';
 
 // IMAGES
 import LogoImage from './logo/black_brv.png';
@@ -90,6 +93,7 @@ import customerProf from './images/customerProf.png';
 import trackBG from './images/trackBG.png';
 import trackVector from './images/trackVector.png';
 import trackBGMobile from './images/trackBG-mobile.png';
+import wishlistBG from './images/wishlistBG.png';
 
 
 //Hero Section
@@ -205,6 +209,7 @@ export {
   AddBag,
   AddBagHover,
   AddFavorite,
+  AddedFavorites,
   KidsCollectionBanner,
   ClashCollectionBanner,
   LyricImage,
@@ -275,4 +280,8 @@ export {
   DropDownIconBlack,
   DropUpIconBlack,
   KidsCollHighNeckCrop,
+  wishlistBG,
+  wishlistEmpty,
+  trashBlack,
+  trash
 };

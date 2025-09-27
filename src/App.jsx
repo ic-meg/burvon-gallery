@@ -21,6 +21,7 @@ import JewelryCare from "./pages/customer-care/JewelryCare";
 
 //main
 import Wishlist from "./pages/user/Wishlist";
+import WishlistEmpty from "./pages/user/Wishlist-Empty";
 import Login from "./pages/main/Login/Login";
 import ShoppingBag from "./pages/user/cart/ShoppingBag";
 import Verification from "./pages/main/Login/Verification";
@@ -81,6 +82,8 @@ const App = () => {
           <Route path="/collections/love-language" element={<LoveLanguage />} />
           <Route path="/collections/pearl" element={<Pearl />} />
           <Route path="/collections/kids" element={<Kids />} />
+
+          <Route path="/user/Wishlist-Empty" element={<WishlistEmpty />} />
         </Routes>
       </div>
     </Router>
