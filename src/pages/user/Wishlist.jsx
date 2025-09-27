@@ -13,9 +13,13 @@ import {
   trashBlack,
   trash,
   AgathaImage,
+  AgathaWebp,
   CelineImage,
+  CelineWebp,
   LyricImage,
-  ClashCollectionBanner
+  LyricWebp,
+  ClashCollectionBanner,
+  ClashCollectionWebp
 } from "../../assets/index.js";
 
 // product
@@ -28,6 +32,7 @@ const products = [
       LyricImage,
       ClashCollectionBanner
     ],
+    webpImages: [LyricWebp, ClashCollectionWebp],
     priceOld: 790.00,
     priceNew: 711.00,
     type: 'necklaces',
@@ -40,6 +45,7 @@ const products = [
       LyricImage,
       ClashCollectionBanner
     ],
+    webpImages: [LyricWebp, ClashCollectionWebp],
     priceOld: 790.00,
     priceNew: 711.00,
     type: 'necklaces',
@@ -52,6 +58,7 @@ const products = [
       AgathaImage,
       ClashCollectionBanner
     ],
+    webpImages: [AgathaWebp, ClashCollectionWebp],
     priceOld: 790.00,
     priceNew: 711.00,
     type: 'earrings',
@@ -64,6 +71,7 @@ const products = [
       CelineImage,
       ClashCollectionBanner
     ],
+    webpImages: [CelineWebp, ClashCollectionWebp],
     priceOld: 790.00,
     priceNew: 711.00,
     type: 'bracelets',
