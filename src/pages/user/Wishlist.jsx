@@ -12,6 +12,10 @@ import {
   AddedFavorites,
   trashBlack,
   trash,
+  AgathaImage,
+  CelineImage,
+  LyricImage,
+  ClashCollectionBanner
 } from "../../assets/index.js";
 
 // product
@@ -21,8 +25,8 @@ const products = [
     name: 'LYRIC',
     collection: 'LOVE LANGUAGE COLLECTION',
     images: [
-      '/src/assets/images/Lyric.png',
-      '/src/assets/images/ClashCollection.png',
+      LyricImage,
+      ClashCollectionBanner
     ],
     priceOld: 790.00,
     priceNew: 711.00,
@@ -33,8 +37,8 @@ const products = [
     name: 'LYRIC',
     collection: 'LOVE LANGUAGE COLLECTION',
     images: [
-      '/src/assets/images/Lyric.png',
-      '/src/assets/images/ClashCollection.png',
+      LyricImage,
+      ClashCollectionBanner
     ],
     priceOld: 790.00,
     priceNew: 711.00,
@@ -45,20 +49,20 @@ const products = [
     name: 'AGATHA',
     collection: 'CLASH COLLECTION',
     images: [
-      '/src/assets/images/Agatha.png',
-      '/src/assets/images/ClashCollection.png',
+      AgathaImage,
+      ClashCollectionBanner
     ],
     priceOld: 790.00,
     priceNew: 711.00,
     type: 'earrings',
   },
-    {
+  {
     id: 4,
     name: 'CELINE',
     collection: 'THE REBELLION COLLECTION',
     images: [
-      '/src/assets/images/Celine.png',
-      '/src/assets/images/ClashCollection.png',
+      CelineImage,
+      ClashCollectionBanner
     ],
     priceOld: 790.00,
     priceNew: 711.00,
