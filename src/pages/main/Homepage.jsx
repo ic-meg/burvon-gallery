@@ -738,7 +738,7 @@ const Homepage = () => {
                               hoveredButtonId === item.id
                                 ? "#1F1F21"
                                 : "#FFF7DC",
-                            outline: "2px solid #FFF7DC",
+                            outline: "1px solid #FFF7DC",
                             borderRadius: 5,
                           }}
                           onMouseEnter={() => setHoveredButtonId(item.id)}
