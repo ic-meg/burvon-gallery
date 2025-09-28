@@ -1,12 +1,12 @@
 import React from 'react'
 import Layout from '../../../components/Layout'
 
-const Profile = () => {
+const Refund = () => {
   return (
     <Layout>
-      Profile component page
+        Return/Refund component page 
     </Layout>
   )
 }
 
-export default Profile
+export default Refund
