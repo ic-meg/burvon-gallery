@@ -60,6 +60,7 @@ import FilterIcon from './icons/FilterIcon.svg';
 import wishlistEmpty from './icons/wishlistEmpty.png';
 import trashBlack from './icons/trash-black.png';
 import trash from './icons/trash.png';
+import shoppingEmpty from './icons/shoppingEmpty.png';
 
 // IMAGES
 import LogoImage from './logo/black_brv.png';
@@ -94,6 +95,8 @@ import trackBG from './images/trackBG.png';
 import trackVector from './images/trackVector.png';
 import trackBGMobile from './images/trackBG-mobile.png';
 import wishlistBG from './images/wishlistBG.png';
+import Odyssey from './images/Odyssey.jpg';
+import Friden from './images/Friden.jpg';
 
 
 //Hero Section
@@ -283,5 +286,8 @@ export {
   wishlistBG,
   wishlistEmpty,
   trashBlack,
-  trash
+  trash,
+  Odyssey,
+  Friden,
+  shoppingEmpty
 };
