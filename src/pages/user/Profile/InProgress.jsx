@@ -1,12 +1,12 @@
 import React from 'react'
 import Layout from '../../../components/Layout'
 
-const Profile = () => {
+const InProgress = () => {
   return (
     <Layout>
-      Profile component page
+      InProgress Component
     </Layout>
   )
 }
 
-export default Profile
+export default InProgress

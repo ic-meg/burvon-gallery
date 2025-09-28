@@ -1,12 +1,12 @@
 import React from 'react'
 import Layout from '../../../components/Layout'
 
-const Profile = () => {
+const Cancelled = () => {
   return (
     <Layout>
-      Profile component page
+      Cancelled component page
     </Layout>
   )
 }
 
-export default Profile
+export default Cancelled

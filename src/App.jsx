@@ -41,6 +41,13 @@ import LoveLanguage from "/src/pages/product/collections/lovelanguage";
 import Pearl from "/src/pages/product/collections/pearl";
 import Kids from "/src/pages/product/collections/kids";
 
+//Profile 
+import Profile from "./pages/user/Profile/Profile";
+import InProgress from "./pages/user/Profile/InProgress";
+import Delivered from "./pages/user/Profile/Delivered";
+import Cancelled from "./pages/user/Profile/Cancelled";
+import Refund from "./pages/user/Profile/Refund";
+
 const App = () => {
   return (
     <Router>
@@ -86,8 +93,13 @@ const App = () => {
           <Route path="/collections/pearl" element={<Pearl />} />
           <Route path="/collections/kids" element={<Kids />} />
 
+          {/*Profile */}
+          <Route path="/profile" element={<Profile />}/>
+          <Route path="/profile/inprogress" element={<InProgress />}/>
+          <Route path="/profile/delivered" element={<Delivered />}/>
+          <Route path="/profile/cancelled" element={<Cancelled />}/>
+          <Route path="/profile/refund" element={<Refund />}/>
 
-          
         </Routes>
       </div>
     </Router>
