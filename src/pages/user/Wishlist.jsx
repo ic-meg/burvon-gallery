@@ -19,7 +19,8 @@ import {
   LyricImage,
   LyricWebp,
   ClashCollectionBanner,
-  ClashCollectionWebp
+  ClashCollectionWebp,
+  DropDown
 } from "../../assets/index.js";
 
 // product
@@ -98,7 +99,7 @@ const CustomDropdown = ({ label, options, value, onChange }) => {
         >
           {options.find(o => o.value === value)?.label}
           <img
-            src="/src/assets/icons/dropdown.png"
+            src={DropDown}
             alt="Dropdown"
             className="w-5 h-5 ml-2"
           />
