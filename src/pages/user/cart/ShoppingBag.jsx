@@ -55,9 +55,11 @@ const ShoppingBagMobile = ({
 }) => (
   <div className="lg:hidden w-full min-h-screen bg-[#181818] px-5 pt-2 text-[#fff7dc]">
     {/* Title and subtitle */}
+    <Link to="/user/cart/ShoppingBag-Empty">
     <h1 className="text-center bebas tracking-wide mt-26 mb-2" style={{ fontSize: '55px' }}>
       SHOPPING BAG
     </h1>
+    </Link>
     <p className="text-center avant text-xs mb-20 mt-[-8px]">
       ALMOST YOURS, READY TO MAKE THEIR WAY TO YOU.
     </p>
