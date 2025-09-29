@@ -106,7 +106,7 @@ const WishlistEmpty = () => {
       <div className="block sm:hidden">
         {/* Header */}
         <div
-          className="relative w-full h-[220px] flex items-center "
+          className="relative w-full h-[260px] flex items-center "
           style={{
             backgroundImage: `url(${wishlistBGMobile})`,
             backgroundSize: 'cover',
