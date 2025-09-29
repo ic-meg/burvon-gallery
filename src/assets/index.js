@@ -97,6 +97,7 @@ import trackBGMobile from './images/trackBG-mobile.png';
 import wishlistBG from './images/wishlistBG.png';
 import Odyssey from './images/Odyssey.jpg';
 import Friden from './images/Friden.jpg';
+import wishlistBGMobile from './images/wishlistBG-mobile.png';
 
 
 //Hero Section
@@ -284,6 +285,7 @@ export {
   DropUpIconBlack,
   KidsCollHighNeckCrop,
   wishlistBG,
+  wishlistBGMobile,
   wishlistEmpty,
   trashBlack,
   trash,
