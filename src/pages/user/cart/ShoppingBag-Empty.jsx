@@ -22,7 +22,7 @@ import {
   ClashCollectionWebp
 } from "../../../assets/index.js";
 
-// product for "you may also like"
+// product 
 const recommendedProducts = [
   {
     id: 1,
@@ -98,160 +98,273 @@ const ShoppingBagEmpty = () => {
 
   return (
     <Layout full>
-      <div className="relative w-full h-[430px] flex items-center">
-        <div className="relative z-10 flex flex-col justify-center text-center pb-14 w-full">
-          <h1 className="bebas text-[#fff7dc] text-center mb-2 tracking-wide mt-36" style={{ fontSize: "80px" }}>
-            SHOPPING BAG
-          </h1>
-          <p className="avant text-center text-md mt-[-18px]">
-            ALMOST YOURS, READY TO MAKE THEIR WAY TO YOU.
+      {/* Desktop Layout: Empty Bag Section */}
+      <div className="hidden md:block">
+        <div className="relative w-full h-[430px] flex items-center">
+          <div className="relative z-10 flex flex-col justify-center text-center pb-14 w-full">
+            <h1 className="bebas text-[#fff7dc] text-center mb-2 tracking-wide mt-36" style={{ fontSize: "80px" }}>
+              SHOPPING BAG
+            </h1>
+            <p className="avant text-center text-md mt-[-18px]">
+              ALMOST YOURS, READY TO MAKE THEIR WAY TO YOU.
+            </p>
+          </div>
+        </div>
+        <div className="pb-30 px-4 flex flex-col items-center justify-center min-h-[300px]">
+          <img
+            src={shoppingEmpty}
+            alt="Empty Shopping Bag"
+            className="mx-auto mb-4"
+            style={{ width: 90, height: 90 }}
+          />
+          <p className="avant text-[#fff7dc] text-md mb-4 text-center">
+            Your bag is empty. Start adding now!
           </p>
+          <Link
+            to="/"
+            className="avantbold text-[#fff7dc] text-xl mb-2 hover:underline"
+            style={{ display: "inline-block" }}
+          >
+            Continue Shopping...
+          </Link>
         </div>
       </div>
 
-      {/* empty bag section, no background */}
-      <div className="pb-19 px-4 flex flex-col items-center justify-center min-h-[300px]">
-        <img
-          src={shoppingEmpty}
-          alt="Empty Shopping Bag"
-          className="mx-auto mb-4"
-          style={{ width: 90, height: 90 }}
-        />
-        <p className="avant text-[#fff7dc] text-md mb-4 text-center">
-          Your bag is empty. Start adding now!
-        </p>
-        <Link
-          to="/"
-          className="avantbold text-[#fff7dc] text-xl mb-2 hover:underline"
-          style={{ display: "inline-block" }}
-        >
-          Continue Shopping...
-        </Link>
+      {/* Mobile Layout: Empty Bag Section */}
+      <div className="md:hidden">
+        <div className="relative w-full h-[250px] flex items-center">
+          <div className="relative z-10 flex flex-col justify-center text-center pb-8 w-full">
+            <h1 className="bebas text-[#fff7dc] text-center mb-2 tracking-wide mt-16 text-4xl" style={{ fontSize: "55px" }}>
+              SHOPPING BAG
+            </h1>
+            <p className="avant text-[#fff7dc] text-center text-xs mt-[-8px]">
+              ALMOST YOURS, READY TO MAKE THEIR WAY TO YOU.
+            </p>
+          </div>
+        </div>
+        <div className="pb-16 px-4 flex flex-col items-center justify-center min-h-[180px]">
+          <img
+            src={shoppingEmpty}
+            alt="Empty Shopping Bag"
+            className="mx-auto mb-2"
+            style={{ width: 60, height: 60 }}
+          />
+          <p className="avant text-[#fff7dc] text-sm mb-2 text-center">
+            Your bag is empty. Start adding now!
+          </p>
+          <Link
+            to="/"
+            className="avantbold text-[#fff7dc] text-lg mb-2 hover:underline"
+            style={{ display: "inline-block" }}
+          >
+            Continue Shopping...
+          </Link>
+        </div>
       </div>
 
-      {/* you may also like text */}
-      <div className="px-12 py-15 pb-16">
-        <h2 className="bebas text-[#fff7dc] text-5xl mb-8">YOU MAY ALSO LIKE</h2>
-        
-        {/* reco products */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-8">
-          {recommendedProducts.map(product => {
-            const isHovered = hoveredCardId === product.id;
-            const currentImageIndex = imageIndex[product.id] || 0;
-            
-            return (
+    
+      <div className="bg-[#181818] px-4 md:px-12 pb-16 pt-15">
+        {/* Desktop Layout */}
+        <div className="hidden md:block">
+          <h2 className="bebas text-[#fff7dc] text-5xl mb-8">YOU MAY ALSO LIKE</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-10">
+            {recommendedProducts.map(product => {
+              const isHovered = hoveredCardId === product.id;
+              const currentImageIndex = imageIndex[product.id] || 0;
+
+              return (
+                <div
+                  key={product.id}
+                  onMouseEnter={() => {
+                    setHoveredCardId(product.id);
+                    setImageIndex({ ...imageIndex, [product.id]: 0 });
+                  }}
+                  onMouseLeave={() => setHoveredCardId(null)}
+                  className={`relative bg-[#222] rounded-none overflow-hidden drop-shadow-[0_10px_15px_rgba(0,0,0,1)] group transition-all transform ${
+                    isHovered ? "scale-105 z-10" : ""
+                  }`}
+                  style={{
+                    height: isHovered ? "440px" : "375px",
+                    transition: "height 0.3s ease, transform 0.3s ease",
+                  }}
+                >
+                  {/* Try-on and Heart Icons */}
+                  <div className="w-full flex justify-between items-center px-6 pt-6 absolute top-0 left-0 z-10">
+                    <img
+                      src={TryOnIcon}
+                      alt="Try On"
+                      className="w-6 h-6 cursor-pointer hover:opacity-80"
+                      draggable={false}
+                    />
+                    <img
+                      src={AddFavorite}
+                      alt="Favorite"
+                      className="w-6 h-6 cursor-pointer hover:opacity-80"
+                      draggable={false}
+                    />
+                  </div>
+                  {/* product image */}
+                  <div className="relative w-full h-[300px] flex items-center justify-center overflow-hidden bg-black">
+                    <picture className="w-full h-full">
+                      {product.webpImages[currentImageIndex] && (
+                        <source
+                          srcSet={product.webpImages[currentImageIndex]}
+                          type="image/webp"
+                        />
+                      )}
+                      <img
+                        src={product.images[currentImageIndex]}
+                        alt={product.name}
+                        className="object-cover w-full h-full rounded-none transition-all duration-300"
+                        loading="lazy"
+                      />
+                    </picture>
+                    {isHovered && product.images.length > 1 && (
+                      <>
+                        <img
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handlePrevImage(product.id, product.images);
+                          }}
+                          src={PrevIcon}
+                          alt="Previous"
+                          className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 cursor-pointer hover:opacity-80"
+                          draggable={false}
+                        />
+                        <img
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleNextImage(product.id, product.images);
+                          }}
+                          src={NextIcon}
+                          alt="Next"
+                          className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 cursor-pointer hover:opacity-80"
+                          draggable={false}
+                        />
+                      </>
+                    )}
+                  </div>
+                  {/* names + price + add to bag button */}
+                  <div
+                    style={{
+                      background: "linear-gradient(90deg, #000000 46%, #666666 100%)",
+                    }}
+                    className="relative py-2 px-2 text-center flex flex-col items-center rounded-none min-h-[140px]"
+                  >
+                    <span className="uppercase text-[#FFF7DC] tracking-widest text-[13px] avantbold">
+                      {product.name}
+                    </span>
+                    <span className="text-[13px] tracking-widest text-[#FFF7DC] avant">
+                      {product.collection}
+                    </span>
+                    <div className="flex justify-center items-center gap-2 text-[14px] avantbold mt-1">
+                      <span className="line-through text-[#FFF7DC] opacity-50">
+                        ₱{product.priceOld.toFixed(2)}
+                      </span>
+                      <span className="text-[#FFF7DC]">₱{product.priceNew.toFixed(2)}</span>
+                    </div>
+                    {/* Add to Bag Button */}
+                    {isHovered && (
+                      <button
+                        style={{
+                          backgroundColor:
+                            hoveredButtonId === product.id
+                              ? "#FFF7DC"
+                              : "transparent",
+                          color:
+                            hoveredButtonId === product.id
+                              ? "#1F1F21"
+                              : "#FFF7DC",
+                          outline: "1px solid #FFF7DC",
+                          borderRadius: 5,
+                        }}
+                        onMouseEnter={() => setHoveredButtonId(product.id)}
+                        onMouseLeave={() => setHoveredButtonId(null)}
+                        className="mt-4 w-full flex items-center justify-center gap-2 border border-[#FFF7DC] py-2 px-4 font-bold text-md tracking-wide rounded-5 transition-all duration-300"
+                      >
+                        <img
+                          src={
+                            hoveredButtonId === product.id ? AddBagHover : AddBag
+                          }
+                          alt="Bag Icon"
+                          className="w-4 h-4"
+                        />
+                        ADD TO BAG
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Mobile Layout */}
+        <div className="md:hidden">
+          <h2 className="bebas text-[#fff7dc] text-3xl mb-4">YOU MAY ALSO LIKE</h2>
+          <div className="flex overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-mandatory flex-nowrap pb-2" style={{ scrollBehavior: "smooth" }}>
+            {recommendedProducts.map(product => (
               <div
                 key={product.id}
-                onMouseEnter={() => setHoveredCardId(product.id)}
-                onMouseLeave={() => setHoveredCardId(null)}
-                className={`relative bg-[#222] rounded-none overflow-hidden drop-shadow-[0_10px_15px_rgba(0,0,0,1)] group transition-all transform ${
-                  isHovered ? "scale-105 z-10" : ""
-                }`}
+                className="relative bg-[#222] drop-shadow-lg cursor-pointer flex-shrink-0 transition-all duration-300 ease-in-out"
                 style={{
-                  height: isHovered ? "460px" : "410px",
-                  transition: "height 0.3s ease, transform 0.3s ease",
+                  width: "65vw",
+                  margin: "0 6px",
+                  scrollSnapAlign: "center"
                 }}
               >
-                {/* tryon and fav icons */}
-                <div className="w-full flex justify-between items-center px-6 pt-6 absolute top-0 left-0 z-10">
+                <div className="absolute top-4 left-2 right-2 flex justify-between items-center z-10">
                   <img
                     src={TryOnIcon}
                     alt="Try On"
-                    className="w-6 h-6 cursor-pointer hover:opacity-80"
+                    className="w-5 h-5"
                     draggable={false}
                   />
                   <img
                     src={AddFavorite}
                     alt="Favorite"
-                    className="w-6 h-6 cursor-pointer hover:opacity-80"
+                    className="w-5 h-5"
                     draggable={false}
                   />
                 </div>
-
-                {/* product image */}
-                <div className="relative w-full h-[300px] flex items-center justify-center overflow-hidden bg-black">
-                  <img
-                    src={product.images[currentImageIndex]}
-                    alt={product.name}
-                    className="object-cover w-full h-full rounded-none transition-all duration-300"
-                  />
-                  
-                  {/* arrows */}
-                  {isHovered && product.images.length > 1 && (
-                    <>
-                      <img
-                        onClick={e => {
-                          e.stopPropagation();
-                          handlePrevImage(product.id, product.images);
-                        }}
-                        src={PrevIcon}
-                        alt="Previous"
-                        className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 cursor-pointer hover:opacity-80"
-                        draggable={false}
-                      />
-                      <img
-                        onClick={e => {
-                          e.stopPropagation();
-                          handleNextImage(product.id, product.images);
-                        }}
-                        src={NextIcon}
-                        alt="Next"
-                        className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 cursor-pointer hover:opacity-80"
-                        draggable={false}
-                      />
-                    </>
-                  )}
+                <div className="relative w-full min-h-[150px] sm:min-h-[200px] flex items-center justify-center overflow-hidden bg-black">
+                  <picture className="w-full h-full">
+                    {product.webpImages[0] && (
+                      <source srcSet={product.webpImages[0]} type="image/webp" />
+                    )}
+                    <img
+                      src={product.images[0]}
+                      alt={product.name}
+                      className="object-cover w-full h-full rounded-none select-none transition-opacity duration-300"
+                      draggable={false}
+                      loading="lazy"
+                    />
+                  </picture>
                 </div>
-
-                {/* names + price + add to bag button */}
                 <div
+                  className="w-full py-3 px-2 text-center flex flex-col items-center rounded-none"
                   style={{
-                    background: "linear-gradient(90deg, #000000 46%, #666666 100%)",
+                    background: "linear-gradient(90deg, #000000 46%, #666666 100%)"
                   }}
-                  className="relative py-4 px-4 text-center flex flex-col items-center rounded-none"
                 >
-                  {/* product name */}
-                  <span className="uppercase text-[#FFF7DC] tracking-widest text-lg bebas mb-1">
+                  <span className="uppercase text-[#FFF7DC] tracking-widest text-[13px] avantbold">
                     {product.name}
                   </span>
-                  
-                  {/* collection name */}
-                  <span className="text-sm tracking-widest text-[#FFF7DC] avant mb-2">
+                  <span className="text-[13px] tracking-widest text-[#FFF7DC] avant text-center break-words">
                     {product.collection}
                   </span>
-                  
-                  {/* price */}
-                  <div className="flex justify-center items-center gap-2 text-base avantbold mb-3">
+                  <div className="flex justify-center items-center gap-2 text-[14px] avantbold mt-1">
                     <span className="line-through text-[#FFF7DC] opacity-50">
                       ₱{product.priceOld.toFixed(2)}
                     </span>
-                    <span className="text-[#FFF7DC]">₱{product.priceNew.toFixed(2)}</span>
+                    <span className="text-[#FFF7DC]">
+                      ₱{product.priceNew.toFixed(2)}
+                    </span>
                   </div>
-
-                  {/* add to bag */}
-                  <button
-                    style={{
-                      backgroundColor: hoveredButtonId === `${product.id}-bag` ? "#FFF7DC" : "transparent",
-                      color: hoveredButtonId === `${product.id}-bag` ? "#1F1F21" : "#FFF7DC",
-                      outline: "2px solid #FFF7DC",
-                      borderRadius: 5,
-                      whiteSpace: "nowrap",
-                    }}
-                    onMouseEnter={() => setHoveredButtonId(`${product.id}-bag`)}
-                    onMouseLeave={() => setHoveredButtonId(null)}
-                    className="w-full flex items-center justify-center gap-2 py-2 px-2 font-bold text-sm tracking-wide transition-all duration-300"
-                  >
-                    <img
-                      src={hoveredButtonId === `${product.id}-bag` ? AddBagHover : AddBag}
-                      alt="Bag Icon"
-                      className="w-4 h-4"
-                    />
-                    ADD TO BAG
-                  </button>
                 </div>
               </div>
-            );
-          })}
+            ))}
+          </div>
         </div>
       </div>
     </Layout>
