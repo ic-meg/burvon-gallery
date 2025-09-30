@@ -32,6 +32,7 @@ import Necklace from "./pages/product/Necklaces";
 import Earrings from "./pages/product/Earrings";
 import Bracelets from "./pages/product/Bracelets";
 import Rings from "./pages/product/Rings";
+import ProductDesc from "./pages/product/ProductDesc";
 
 //collections
 import Classic from "/src/pages/product/collections/classic";
@@ -84,6 +85,7 @@ const App = () => {
           <Route path="/earrings" element={<Earrings />} />
           <Route path="/bracelet" element={<Bracelets />} />
           <Route path="/rings" element={<Rings />} />
+          <Route path="/product-description" element={<ProductDesc/>} />
 
           {/*Collections */}
           <Route path="/collections/classic" element={<Classic />} />
