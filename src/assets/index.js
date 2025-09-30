@@ -30,8 +30,8 @@ import contactFB from './icons/contactFB.png';
 import contactTiktok from './icons/contactTiktok.png';
 import contactIG from './icons/contactIG.png';
 import TryOnIcon from './icons/Try_OnButton.svg';
-import AddFavorite from './icons/Add_Favorites.png';
-import AddedFavorites from './icons/Added_Favorites.png';
+import AddFavorite from './icons/Add_Favorites.svg';
+import AddedFavorites from './icons/Added_Favorites.svg';
 import NextIcon from './icons/Next.svg';
 import PrevIcon from './icons/Prev.svg';
 import AddBag from './icons/bag.png';
@@ -61,6 +61,8 @@ import wishlistEmpty from './icons/wishlistEmpty.png';
 import trashBlack from './icons/trash-black.png';
 import trash from './icons/trash.png';
 import shoppingEmpty from './icons/shoppingEmpty.png';
+import MinusIcon from './icons/minus.svg';
+import PlusIcon from './icons/plus.svg';
 
 // IMAGES
 import LogoImage from './logo/black_brv.png';
@@ -291,5 +293,7 @@ export {
   trash,
   Odyssey,
   Friden,
-  shoppingEmpty
+  shoppingEmpty,
+  MinusIcon,
+  PlusIcon
 };

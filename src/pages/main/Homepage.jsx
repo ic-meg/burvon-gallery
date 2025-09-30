@@ -9,6 +9,7 @@ import {
   PrevIcon,
   TryOnIcon,
   AddFavorite,
+  AddedFavorites,
   LyricImage,
   LyricWebp,
   AgathaImage,
