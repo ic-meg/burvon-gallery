@@ -563,6 +563,21 @@ const Necklaces = () => {
           >
             {/* Product Image */}
             <div className="relative w-full h-[185px] flex items-center justify-center overflow-hidden bg-black">
+              {/* Overlay Icons */}
+              <div className="absolute top-2 left-2 right-2 flex justify-between items-center z-10">
+                <img
+                  src={TryOnIcon}
+                  alt="Try On"
+                  className="w-4 h-4 cursor-pointer hover:opacity-80"
+                  draggable={false}
+                />
+                <img
+                  src={AddFavorite}
+                  alt="Favorite"
+                  className="w-4 h-4 cursor-pointer hover:opacity-80"
+                  draggable={false}
+                />
+              </div>
               <img
                 src={item.images[0]}
                 alt={item.name}
@@ -594,12 +609,9 @@ const Necklaces = () => {
               </div>
             </div>
           </div>
-    );
-  })}
-</div>
-
-
-
+        );
+      })}
+    </div>
 
     {/* Desktop/Tablet Version (unchanged) */}
     <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10">
@@ -626,9 +638,19 @@ const Necklaces = () => {
             }}
           >
             {/* Top icons */}
-            <div className="w-full flex justify-between items-center px-6 pt-3 absolute top-0 left-0 z-10">
-              <img src={TryOnIcon} alt="Try On" className="w-6 h-6 cursor-pointer hover:opacity-80" draggable={false} />
-              <img src={AddFavorite} alt="Favorite" className="w-6 h-6 cursor-pointer hover:opacity-80" draggable={false} />
+            <div className="w-full flex justify-between items-center px-6 pt-6 absolute top-0 left-0 z-10">
+              <img
+                src={TryOnIcon}
+                alt="Try On"
+                className="w-6 h-6 cursor-pointer hover:opacity-80"
+                draggable={false}
+              />
+              <img
+                src={AddFavorite}
+                alt="Favorite"
+                className="w-6 h-6 cursor-pointer hover:opacity-80"
+                draggable={false}
+              />
             </div>
             {/* Product Image */}
             <div className="relative w-full h-[300px] flex items-center justify-center overflow-hidden bg-black">
@@ -685,7 +707,8 @@ const Necklaces = () => {
               {isHovered && (
                 <button
                   style={{
-                    backgroundColor: hoveredButtonId === item.id ? "#FFF7DC" : "transparent",
+                    backgroundColor:
+                      hoveredButtonId === item.id ? "#FFF7DC" : "transparent",
                     color: hoveredButtonId === item.id ? "#1F1F21" : "#FFF7DC",
                     outline: "1px solid #FFF7DC",
                     borderRadius: 5,
@@ -709,6 +732,7 @@ const Necklaces = () => {
     </div>
   </div>
 </section>
+
 
 
 
@@ -819,27 +843,42 @@ const Necklaces = () => {
       ) : null}
     </div>
 
-    {/* ✅ Mobile Carousel */}
-    {isMobile && (
-    <div
-      ref={topScrollRef}
-      className="flex overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-mandatory flex-nowrap md:grid md:grid-cols-4 md:gap-5 md:overflow-visible"
-      style={{
-        scrollBehavior: "smooth",
-        WebkitOverflowScrolling: "touch",
-      }}
-    >
+{/* ✅ Mobile Carousel */}
+{isMobile && (
+  <div
+    ref={topScrollRef}
+    className="flex overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-mandatory flex-nowrap md:grid md:grid-cols-4 md:gap-5 md:overflow-visible"
+    style={{
+      scrollBehavior: "smooth",
+      WebkitOverflowScrolling: "touch",
+    }}
+  >
     {topPicks.map((item) => (
       <div
         key={`top-pick-${item.id}`}
         className="relative bg-[#222] flex-shrink-0 transition-all duration-300 ease-in-out snap-center"
         style={{
-          width: "65vw",   // 👈 narrower, more like your screenshot
+          width: "65vw",
           margin: "0 6px",
         }}
       >
         {/* Product Image */}
         <div className="relative w-full h-[260px] flex items-center justify-center overflow-hidden bg-black">
+          {/* Overlay Icons */}
+          <div className="absolute top-4 left-4 right-4 flex justify-between items-center z-10">
+            <img
+              src={TryOnIcon}
+              alt="Try On"
+              className="w-6 h-6 cursor-pointer hover:opacity-80"
+              draggable={false}
+            />
+            <img
+              src={AddFavorite}
+              alt="Favorite"
+              className="w-6 h-6 cursor-pointer hover:opacity-80"
+              draggable={false}
+            />
+          </div>
           <img
             src={item.images[0]}
             alt={item.name}
@@ -871,7 +910,7 @@ const Necklaces = () => {
       </div>
     ))}
   </div>
-    )}
+)}
 
     {/* ✅ Desktop Grid (your original untouched code) */}
     {!isMobile && (
