@@ -521,50 +521,64 @@ const Homepage = () => {
             ) : null}
           </div>
 
-          {/* Mobile Scroll */}
-          {isMobile ? (
-            <div
-              ref={rebelsScrollRef}
-              className="flex overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-mandatory flex-nowrap md:grid md:grid-cols-4 md:gap-5 md:overflow-visible"
-              style={{
-                scrollBehavior: "smooth",
-                WebkitOverflowScrolling: "touch",
-              }}
-            >
-              {rebelsTopPicks.map((item) => (
-                <div
-                  key={item.id}
-                  className="relative bg-[#222] drop-shadow-lg cursor-pointer flex-shrink-0 transition-all duration-300 ease-in-out md:flex-shrink md:w-auto"
-                  style={{
-                    width: "65vw", // 👈 slightly smaller on mobile
-                    margin: "0 6px",
-                    scrollSnapAlign: "center",
-                  }}
-                >
-                  {/* Image */}
-                  <div className="relative w-full min-h-[150px] sm:min-h-[200px] flex items-center justify-center overflow-hidden bg-black">
-                    {" "}
-                    {imageLoadingStates[`${item.id}-0`] === "loading" && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
-                        <div className="w-8 h-8 border-2 border-[#FFF7DC] border-t-transparent rounded-full animate-spin"></div>
-                      </div>
-                    )}
-                    <picture className="w-full h-full">
-                      {item.webpImages[0] && (
-                        <source srcSet={item.webpImages[0]} type="image/webp" />
-                      )}
-                      <img
-                        src={item.images[0]}
-                        alt={item.name}
-                        className="object-cover w-full h-full rounded-none select-none transition-opacity duration-300"
-                        draggable={false}
-                        loading="lazy"
-                        onLoad={() => handleImageLoad(`${item.id}-0`)}
-                        onError={() => handleImageError(`${item.id}-0`)}
-                        onLoadStart={() => handleImageStart(`${item.id}-0`)}
-                      />
-                    </picture>
-                  </div>
+    {/* Mobile Scroll */}
+    {isMobile ? (
+      <div
+        ref={rebelsScrollRef}
+        className="flex overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-mandatory flex-nowrap md:grid md:grid-cols-4 md:gap-5 md:overflow-visible"
+        style={{
+          scrollBehavior: "smooth",
+          WebkitOverflowScrolling: "touch",
+        }}
+      >
+        {rebelsTopPicks.map((item) => (
+          <div
+            key={item.id}
+            className="relative bg-[#222] drop-shadow-lg cursor-pointer flex-shrink-0 transition-all duration-300 ease-in-out md:flex-shrink md:w-auto"
+            style={{
+              width: "65vw", // slightly smaller on mobile
+              margin: "0 6px",
+              scrollSnapAlign: "center",
+            }}
+          >
+            {/* Image */}
+            <div className="relative w-full min-h-[150px] sm:min-h-[200px] flex items-center justify-center overflow-hidden bg-black">
+              {/* Overlay Icons */}
+              <div className="absolute top-4 left-4 right-4 flex justify-between items-center z-10">
+                <img
+                  src={TryOnIcon}
+                  alt="Try On"
+                  className="w-6 h-6 cursor-pointer hover:opacity-80"
+                  draggable={false}
+                />
+                <img
+                  src={AddFavorite}
+                  alt="Favorite"
+                  className="w-6 h-6 cursor-pointer hover:opacity-80"
+                  draggable={false}
+                />
+              </div>
+              {imageLoadingStates[`${item.id}-0`] === "loading" && (
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
+                  <div className="w-8 h-8 border-2 border-[#FFF7DC] border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              )}
+              <picture className="w-full h-full">
+                {item.webpImages[0] && (
+                  <source srcSet={item.webpImages[0]} type="image/webp" />
+                )}
+                <img
+                  src={item.images[0]}
+                  alt={item.name}
+                  className="object-cover w-full h-full rounded-none select-none transition-opacity duration-300"
+                  draggable={false}
+                  loading="lazy"
+                  onLoad={() => handleImageLoad(`${item.id}-0`)}
+                  onError={() => handleImageError(`${item.id}-0`)}
+                  onLoadStart={() => handleImageStart(`${item.id}-0`)}
+                />
+              </picture>
+            </div>
 
                   {/* Text */}
                   <div

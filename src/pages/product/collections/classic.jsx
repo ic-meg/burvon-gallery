@@ -591,50 +591,66 @@ const Classic = () => {
       <section className="bg-[#1f1f21] pt-1 pb-14 px-4">
         <div className="max-w-7xl mx-auto px-0">
           {/* MOBILE Version */}
-          <div className="grid grid-cols-2 gap-4 md:hidden items-stretch">
-            {allClassics.map((item) => {
-              const mobileCollection = item.collection.replace(/ COLLECTION$/i, "");
-              return (
-                <div
-                  key={item.id}
-                  className="relative bg-[#222] rounded-none overflow-hidden drop-shadow-[0_10px_15px_rgba(0,0,0,1)] cursor-pointer flex flex-col items-center w-full"
-                >
-                  {/* Product Image */}
-                  <div className="relative w-full h-[185px] flex items-center justify-center overflow-hidden bg-black">
-                    <img
-                      src={item.images[0]}
-                      alt={item.name}
-                      className="object-cover w-full h-full rounded-none"
-                      draggable={false}
-                    />
-                  </div>
-                  {/* Card Info */}
-                  <div
-                    className="flex flex-col items-center py-1 px-1"
-                    style={{
-                      width: "100%",
-                      height: "50px",
-                      background:
-                        "linear-gradient(90deg, #000000 46%, #666666 100%)",
-                    }}
-                  >
-                    <span className="uppercase text-[#FFF7DC] tracking-widest text-[10px] avantbold leading-tight truncate">
-                      {item.name}
-                    </span>
-                    <span className="text-[10px] tracking-widest text-[#FFF7DC] avant truncate mt-[2px]">
-                      {mobileCollection}
-                    </span>
-                    <div className="flex justify-center items-center gap-1 text-[10px] avantbold mt-1">
-                      <span className="line-through text-[#FFF7DC] opacity-50 truncate">
-                        {item.oldPrice}
-                      </span>
-                      <span className="text-[#FFF7DC] truncate">{item.price}</span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+<div className="grid grid-cols-2 gap-4 md:hidden items-stretch">
+  {allClassics.map((item) => {
+    const mobileCollection = item.collection.replace(/ COLLECTION$/i, "");
+    return (
+      <div
+        key={item.id}
+        className="relative bg-[#222] rounded-none overflow-hidden drop-shadow-[0_10px_15px_rgba(0,0,0,1)] cursor-pointer flex flex-col items-center w-full"
+      >
+        {/* Product Image */}
+        <div className="relative w-full h-[185px] flex items-center justify-center overflow-hidden bg-black">
+          {/* Overlay Icons */}
+          <div className="absolute top-2 left-2 right-2 flex justify-between items-center z-10">
+            <img
+              src={TryOnIcon}
+              alt="Try On"
+              className="w-4 h-4 cursor-pointer hover:opacity-80"
+              draggable={false}
+            />
+            <img
+              src={AddFavorite}
+              alt="Favorite"
+              className="w-4 h-4 cursor-pointer hover:opacity-80"
+              draggable={false}
+            />
           </div>
+          <img
+            src={item.images[0]}
+            alt={item.name}
+            className="object-cover w-full h-full rounded-none"
+            draggable={false}
+          />
+        </div>
+        {/* Card Info */}
+        <div
+          className="flex flex-col items-center py-1 px-1"
+          style={{
+            width: "100%",
+            height: "50px",
+            background:
+              "linear-gradient(90deg, #000000 46%, #666666 100%)",
+          }}
+        >
+          <span className="uppercase text-[#FFF7DC] tracking-widest text-[10px] avantbold leading-tight truncate">
+            {item.name}
+          </span>
+          <span className="text-[10px] tracking-widest text-[#FFF7DC] avant truncate mt-[2px]">
+            {mobileCollection}
+          </span>
+          <div className="flex justify-center items-center gap-1 text-[10px] avantbold mt-1">
+            <span className="line-through text-[#FFF7DC] opacity-50 truncate">
+              {item.oldPrice}
+            </span>
+            <span className="text-[#FFF7DC] truncate">{item.price}</span>
+          </div>
+        </div>
+      </div>
+    );
+  })}
+</div>
+
           {/* DESKTOP/TABLET Version */}
           <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10">
             {allClassics.map((item) => {
@@ -845,58 +861,74 @@ const Classic = () => {
             ) : null}
           </div>
 
-          {/* MOBILE Carousel */}
-          {isMobile && (
-            <div
-              ref={topScrollRef}
-              className="flex overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-mandatory flex-nowrap md:grid md:grid-cols-4 md:gap-5 md:overflow-visible"
-              style={{
-                scrollBehavior: "smooth",
-                WebkitOverflowScrolling: "touch",
-              }}
-            >
-              {topPicksClassics.map((item) => (
-                <div
-                  key={`top-pick-classic-${item.id}`}
-                  className="relative bg-[#222] flex-shrink-0 transition-all duration-300 ease-in-out snap-center"
-                  style={{
-                    width: "65vw",
-                    margin: "0 6px",
-                  }}
-                >
-                  {/* Product Image */}
-                  <div className="relative w-full h-[260px] flex items-center justify-center overflow-hidden bg-black">
-                    <img
-                      src={item.images[0]}
-                      alt={item.name}
-                      className="object-cover w-full h-full"
-                      draggable={false}
-                    />
-                  </div>
-                  {/* Text + Price */}
-                  <div
-                    style={{
-                      background: "linear-gradient(90deg, #000000 46%, #666666 100%)",
-                    }}
-                    className="py-3 px-2 text-center flex flex-col items-center"
-                  >
-                    <span className="uppercase text-[#FFF7DC] tracking-widest text-sm avantbold">
-                      {item.name}
-                    </span>
-                    <span className="text-xs tracking-widest text-[#FFF7DC] avant mt-1">
-                      {item.collection}
-                    </span>
-                    <div className="flex justify-center items-center gap-2 text-sm avantbold mt-1">
-                      <span className="line-through text-[#FFF7DC] opacity-50">
-                        {item.oldPrice}
-                      </span>
-                      <span className="text-[#FFF7DC]">{item.price}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+{/* MOBILE Carousel */}
+{isMobile && (
+  <div
+    ref={topScrollRef}
+    className="flex overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-mandatory flex-nowrap md:grid md:grid-cols-4 md:gap-5 md:overflow-visible"
+    style={{
+      scrollBehavior: "smooth",
+      WebkitOverflowScrolling: "touch",
+    }}
+  >
+    {topPicksClassics.map((item) => (
+      <div
+        key={`top-pick-classic-${item.id}`}
+        className="relative bg-[#222] flex-shrink-0 transition-all duration-300 ease-in-out snap-center"
+        style={{
+          width: "65vw",
+          margin: "0 6px",
+        }}
+      >
+        {/* Product Image */}
+        <div className="relative w-full h-[260px] flex items-center justify-center overflow-hidden bg-black">
+          {/* Overlay Icons */}
+          <div className="absolute top-4 left-4 right-4 flex justify-between items-center z-10">
+            <img
+              src={TryOnIcon}
+              alt="Try On"
+              className="w-6 h-6 cursor-pointer hover:opacity-80"
+              draggable={false}
+            />
+            <img
+              src={AddFavorite}
+              alt="Favorite"
+              className="w-6 h-6 cursor-pointer hover:opacity-80"
+              draggable={false}
+            />
+          </div>
+          <img
+            src={item.images[0]}
+            alt={item.name}
+            className="object-cover w-full h-full"
+            draggable={false}
+          />
+        </div>
+        {/* Text + Price */}
+        <div
+          style={{
+            background: "linear-gradient(90deg, #000000 46%, #666666 100%)",
+          }}
+          className="py-3 px-2 text-center flex flex-col items-center"
+        >
+          <span className="uppercase text-[#FFF7DC] tracking-widest text-sm avantbold">
+            {item.name}
+          </span>
+          <span className="text-xs tracking-widest text-[#FFF7DC] avant mt-1">
+            {item.collection}
+          </span>
+          <div className="flex justify-center items-center gap-2 text-sm avantbold mt-1">
+            <span className="line-through text-[#FFF7DC] opacity-50">
+              {item.oldPrice}
+            </span>
+            <span className="text-[#FFF7DC]">{item.price}</span>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+)}
+
 
           {/* DESKTOP GRID */}
           {!isMobile && (
