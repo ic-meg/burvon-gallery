@@ -29,7 +29,7 @@ import contactGmail from './icons/contactGmail.png';
 import contactFB from './icons/contactFB.png';
 import contactTiktok from './icons/contactTiktok.png';
 import contactIG from './icons/contactIG.png';
-import TryOnIcon from './icons/Try_OnButton.png';
+import TryOnIcon from './icons/Try_OnButton.svg';
 import AddFavorite from './icons/Add_Favorites.png';
 import AddedFavorites from './icons/Added_Favorites.png';
 import NextIcon from './icons/Next.svg';
@@ -97,6 +97,7 @@ import trackBGMobile from './images/trackBG-mobile.png';
 import wishlistBG from './images/wishlistBG.png';
 import Odyssey from './images/Odyssey.jpg';
 import Friden from './images/Friden.jpg';
+import wishlistBGMobile from './images/wishlistBG-mobile.png';
 
 
 //Hero Section
@@ -284,6 +285,7 @@ export {
   DropUpIconBlack,
   KidsCollHighNeckCrop,
   wishlistBG,
+  wishlistBGMobile,
   wishlistEmpty,
   trashBlack,
   trash,
