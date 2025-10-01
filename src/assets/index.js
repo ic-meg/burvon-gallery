@@ -34,8 +34,8 @@ import AddFavorite from './icons/Add_Favorites.svg';
 import AddedFavorites from './icons/Added_Favorites.svg';
 import NextIcon from './icons/Next.svg';
 import PrevIcon from './icons/Prev.svg';
-import AddBag from './icons/bag.png';
-import AddBagHover from './icons/bagHover.png';
+import AddBag from './icons/bag.svg';
+import AddBagHover from './icons/baghover.svg';
 import FastShipIcon from './icons/FastIcon.png';
 import SecureIcon from './icons/PaymentIcon.png';
 import ReturnIcon from './icons/ReturnIcon.png';
@@ -63,7 +63,10 @@ import trash from './icons/trash.png';
 import shoppingEmpty from './icons/shoppingEmpty.png';
 import MinusIcon from './icons/minus.svg';
 import PlusIcon from './icons/plus.svg';
-
+import StarFilled from './icons/star-filled.svg';
+import StarEmpty from './icons/star.svg';
+import Ruler from './icons/Ruler.svg';
+ 
 // IMAGES
 import LogoImage from './logo/black_brv.png';
 import WhiteLogo from './logo/white_brv.png';
@@ -295,5 +298,8 @@ export {
   Friden,
   shoppingEmpty,
   MinusIcon,
-  PlusIcon
+  PlusIcon,
+  StarFilled,
+  StarEmpty,
+  Ruler
 };

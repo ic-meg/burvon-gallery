@@ -261,11 +261,11 @@ const Classic = () => {
 <section className="bg-[#1f1f21] text-[#FFF7DC] pt-8 pb-10 px-4 sm:px-6">
   <div className="max-w-7xl mx-auto flex items-center justify-between gap-6">
     {/* Heading */}
-    <h2 className="text-4xl sm:text-4xl font-bold bebas tracking-wide whitespace-nowrap mb-0 flex-shrink-0">
+    <h2 className="text-4xl sm:text-5xl font-bold bebas mb-0 flex-shrink-0">
       CLASSIC COLLECTION
     </h2>
     {/* Filters container */}
-      <div className="hidden sm:flex flex-row flex-wrap items-center gap-8 flex-1 min-w-0 justify-end">
+      <div className="hidden sm:flex flex-row flex-wrap items-center gap-3 flex-1 min-w-0 justify-end">
         {/* Collection */}
       <div className="flex flex-col w-56 min-w-[14rem] ml-20">
           <label className="text-xl bebas mb-1 uppercase tracking-wide">
