@@ -468,7 +468,7 @@ const ProductDesc = () => {
         <button
           key={size}
           onClick={() => handleSizeSelect(size)}
-          className={`w-10 h-10 rounded-md border-2 transition-all duration-200 flex items-center justify-center text-sm avantbold ${
+          className={`w-10 h-10 rounded-md border-2 transition-all duration-200 flex items-center justify-center text-lg avantbold ${
             selectedSize === size 
               ? "bg-[#FFF7DC] text-[#1f1f21] border-[#FFF7DC]" 
               : "bg-transparent text-[#FFF7DC] border-[#959595] hover:border-[#FFF7DC]"
