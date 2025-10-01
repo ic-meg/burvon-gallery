@@ -284,7 +284,7 @@ const Necklaces = () => {
         <div className="max-w-7xl mx-auto">
           {/* Heading + Filters */}
           <div className="flex items-center justify-between pb-6">
-            <h2 className="text-5xl sm:text-6xl font-bold bebas tracking-wide whitespace-nowrap">
+            <h2 className="text-5xl sm:text-6xl bebas tracking-wide whitespace-nowrap">
               NECKLACES
             </h2>
             {/* Desktop Filters */}
@@ -1011,7 +1011,7 @@ const Necklaces = () => {
                       backgroundColor:
                         hoveredButtonId === item.id ? "#FFF7DC" : "transparent",
                       color: hoveredButtonId === item.id ? "#1F1F21" : "#FFF7DC",
-                      outline: "2px solid #FFF7DC",
+                      outline: "1px solid #FFF7DC",
                       borderRadius: 5,
                     }}
                     onMouseEnter={() => setHoveredButtonId(item.id)}
