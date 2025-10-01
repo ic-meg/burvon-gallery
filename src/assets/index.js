@@ -29,13 +29,13 @@ import contactGmail from './icons/contactGmail.png';
 import contactFB from './icons/contactFB.png';
 import contactTiktok from './icons/contactTiktok.png';
 import contactIG from './icons/contactIG.png';
-import TryOnIcon from './icons/Try_OnButton.svg';
-import AddFavorite from './icons/Add_Favorites.svg';
+import TryOnIcon from './icons/Try_OnButton.png';
+import AddFavorite from './icons/Add_Favorites.png';
 import AddedFavorites from './icons/Added_Favorites.svg';
 import NextIcon from './icons/Next.svg';
 import PrevIcon from './icons/Prev.svg';
-import AddBag from './icons/bag.svg';
-import AddBagHover from './icons/baghover.svg';
+import AddBag from './icons/bag.png';
+import AddBagHover from './icons/bagHover.png';
 import FastShipIcon from './icons/FastIcon.png';
 import SecureIcon from './icons/PaymentIcon.png';
 import ReturnIcon from './icons/ReturnIcon.png';
@@ -65,7 +65,7 @@ import MinusIcon from './icons/minus.svg';
 import PlusIcon from './icons/plus.svg';
 import StarFilled from './icons/star-filled.svg';
 import StarEmpty from './icons/star.svg';
-import Ruler from './icons/Ruler.svg';
+import Ruler from './icons/Ruler.png';
  
 // IMAGES
 import LogoImage from './logo/black_brv.png';
