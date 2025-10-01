@@ -63,8 +63,8 @@ import trash from './icons/trash.png';
 import shoppingEmpty from './icons/shoppingEmpty.png';
 import MinusIcon from './icons/minus.svg';
 import PlusIcon from './icons/plus.svg';
-import StarFilled from './icons/star-filled.svg';
-import StarEmpty from './icons/star.svg';
+import StarFilled from './icons/star-filled.png';
+import StarEmpty from './icons/star.png';
 import Ruler from './icons/Ruler.png';
  
 // IMAGES
