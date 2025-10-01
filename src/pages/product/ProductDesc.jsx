@@ -350,10 +350,10 @@ const ProductDesc = () => {
   };
 
   return (
-    <Layout full noPadding>
-      <div className="bg-[#1f1f21] text-[#FFF7DC] min-h-screen">
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
+ <Layout full noPadding>
+   <div className="bg-[#1f1f21] text-[#FFF7DC] min-h-screen">
+     <div className="max-w-7xl mx-auto px-4 pt-20 pb-8">
+       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
             {/* MOBILE LAYOUT - Visible only on mobile */}
             <div className="block lg:hidden">
               {/* Mobile Image Section with Thumbnails */}
