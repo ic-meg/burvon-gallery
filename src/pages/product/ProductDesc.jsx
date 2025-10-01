@@ -521,7 +521,7 @@ const ProductDesc = () => {
 
             {/* DESKTOP LAYOUT - Hidden on mobile, visible on lg+ */}
             {/* Left Side: Images */}
-            <div className="hidden lg:block space-y-4">
+            <div className="hidden lg:block space-y-4 pt-10">
               {/* Product Images */}
               <div 
                 ref={imageRef}
@@ -565,7 +565,7 @@ const ProductDesc = () => {
             </div>
 
             {/* Right Side - Product Info (Sticky) - Desktop Only */}
-            <div className="hidden lg:block lg:sticky lg:top-8 lg:self-start space-y-6">
+            <div className="hidden lg:block lg:sticky lg:top-8 lg:self-start space-y-6 pt-10">
               {/* Header with Collection and Product Name */}
               <div className="flex items-start justify-between">
                 <h2 className="text-3xl tracking-wide uppercase avantbold leading-none">
