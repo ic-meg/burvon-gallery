@@ -44,6 +44,7 @@ const products = [
   },
 ]
 
+{/* Mobile Layout */}
 const ShoppingBagMobile = ({
   products,
   subtotal,
@@ -190,15 +191,15 @@ const ShoppingBag = () => {
         {/* subtitle */}
         <p className="text-center avant text-md mb-30 mt-[-18px] ml-[-18px]">ALMOST YOURS, READY TO MAKE THEIR WAY TO YOU.</p>
 
-        <div className="w-full max-w-[1600px] mx-auto flex gap-2 px-12">
+        <div className="w-full max-w-[1600px] mx-auto flex gap-2 px-12"> {/* kung gusto iwiden yung buong content jan sa left side, adjust mo lang yung max-w, gap, px depende kung gano kasakto sa laptop */}
           {/* left: scrollable products */}
           <div className="flex-[2.2] overflow-y-auto custom-scrollbar ml-2" style={{ maxHeight: '370px', background: 'rgba(24,24,24,0.98)' }}>
             {/* product title */}
             <div className="grid grid-cols-4 avant text-xl border-b border-[#fff7dc]/30 pb-2 mb-2 sticky top-0 bg-[#181818] z-10">
               <div className="pl-2">Item/s</div>
-              <div className="pl-53">Price</div>
-              <div className="pl-36">Quantity</div>
-              <div className="text-center">Subtotal</div>
+              <div className="pl-53">Price</div> {/* dito meg start ka dito pero title lang mauusog hindi buong column */}
+              <div className="pl-36">Quantity</div> {/* adjust mo na lang mga pl */}
+              <div className="text-center">Subtotal</div> {/* dito kung gusto mo rin gawing pl, pl mo na rin */}
             </div>
             {products.map((p, i) => (
               <div key={p.id} className="grid grid-cols-4 items-center border-b border-[#fff7dc]/10 py-6 hover:bg-[#232323] transition-all duration-200">
@@ -229,13 +230,13 @@ const ShoppingBag = () => {
                     </div>
                   </div>
                 </div>
-                <div className="avantbold text-lg pl-50 text-nowrap">₱ {p.price.toFixed(2)}</div> {/* price content */}
-                <div className="text-center avantbold flex items-center justify-center pl-35">
+                <div className="avantbold text-lg pl-50 text-nowrap">₱ {p.price.toFixed(2)}</div> {/* price content */} {/* dito na yung buong price mauusog, pl lang din galawin mo */}
+                <div className="text-center avantbold flex items-center justify-center pl-35"> {/* quantity content */} {/* adjust mo lang pl */}
                   <span className="text-2xl cursor-pointer select-none px-2 py-1 rounded hover:bg-[#fff7dc]/10 transition">−</span>
                   <span className="text-lg">{p.quantity}</span> {/* number in quantity */}
                   <span className="text-2xl cursor-pointer select-none px-2 py-1 rounded hover:bg-[#fff7dc]/10 transition">+</span>
                 </div>
-                {/* subtotal */}
+                {/* subtotal content */} {/* dito kung need din ng pl, lagyan mo na lang din */}
                 <div className="text-center avantbold text-lg">₱ {(p.price * p.quantity).toFixed(2)}</div>
               </div>
             ))}
