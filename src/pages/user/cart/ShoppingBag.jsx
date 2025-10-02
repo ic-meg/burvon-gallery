@@ -54,19 +54,22 @@ const ShoppingBagMobile = ({
   openModal,
   closeModal,
 }) => (
-  <div className="lg:hidden w-full min-h-screen bg-[#181818] px-5 pt-2 text-[#fff7dc]">
+  <div className="lg:hidden w-full min-h-screen bg-[#181818] px-5 pt-2 text-[#fff7dc] relative">
     {/* Title and subtitle */}
     <Link to="/user/cart/ShoppingBag-Empty">
-    <h1 className="text-center bebas tracking-wide mt-26 mb-2" style={{ fontSize: '55px' }}>
-      SHOPPING BAG
-    </h1>
+      <h1 className="text-center bebas tracking-wide mt-26 mb-2" style={{ fontSize: '55px' }}>
+        SHOPPING BAG
+      </h1>
     </Link>
-    <p className="text-center avant text-xs mb-20 mt-[-8px]">
+    <p className="text-center avant text-xs mb-10 mt-[-8px]">
       ALMOST YOURS, READY TO MAKE THEIR WAY TO YOU.
     </p>
     {/* Products scrollable */}
-    <div className="w-full max-w-md mx-auto">
-      <div className="flex flex-col overflow-y-auto" style={{ maxHeight: '340px' }}>
+    <div className="w-full max-w-md mx-auto relative">
+      <div
+        className="flex flex-col overflow-y-auto"
+        style={{ maxHeight: '440px' }} 
+      >
         {products.map((p, i) => (
           <div key={p.id}>
             <div className="flex gap-3 items-start py-4 px-4 text-nowrap relative">
@@ -81,7 +84,7 @@ const ShoppingBagMobile = ({
               <div className="flex-1 pl-2">
                 <div className="avantbold text-xs whitespace-normal leading-tight">
                   Clash Collection Necklaces<br />
-                <span>(Elegant Pendant Jewelry)</span>
+                  <span>(Elegant Pendant Jewelry)</span>
                 </div>
                 <div className="flex items-center justify-between mt-1">
                   <span className="bebas text-xs tracking-wide">{p.variant}</span>
@@ -112,28 +115,28 @@ const ShoppingBagMobile = ({
           </div>
         ))}
       </div>
-      {/* info and actions */}
-      <div className="w-full max-w-md mx-auto bg-[#181818] p-4 pt-20">
-        <div className="flex justify-between mb-2 avantbold text-base">
+      {/* sticky checkout content */}
+      <div className="sticky w-full bg-[#181818] p-6 z-30 mt-[-220px]  mx-auto">
+        <div className="flex justify-between mb-2 avantbold text-sm">
           <span>Subtotal ( {itemCount} items )</span>
           <span>₱ {subtotal.toFixed(2)}</span>
         </div>
-        <div className="flex justify-between mb-2 avantbold text-base">
+        <div className="flex justify-between mb-2 avantbold text-sm">
           <span>Discount</span>
           <span>-</span>
         </div>
-        <div className="flex justify-between mb-2 avantbold text-base">
+        <div className="flex justify-between mb-2 avantbold text-sm">
           <span>Shipping Fee</span>
           <span>-</span>
         </div>
         <hr className="my-4 border-[#fff7dc]/30" />
-        <button className="w-full py-3 rounded bg-[#fff7dc] text-[#181818] avantbold text-base tracking-wide shadow hover:bg-[#ffe9b3] transition">
+        <button className="w-full py-3 rounded bg-[#fff7dc] text-[#181818] avantbold text-sm tracking-wide shadow hover:bg-[#ffe9b3] transition">
           PROCEED TO CHECKOUT
         </button>
-        <div className="text-center mt-4 avantbold text-base text-[#fff7dc]">
+        <div className="text-center mt-4 avantbold text-sm text-[#fff7dc]">
           CONTINUE SHOPPING...
         </div>
-        <div className="text-center text-[#fff7dc] mt-8 mb-5 avant text-xs">
+        <div className="text-center text-[#fff7dc] mt-8 avant text-xs">
           Shipping and discounts are calculated at checkout.
         </div>
       </div>
