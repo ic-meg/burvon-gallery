@@ -10,9 +10,9 @@ This platform includes 3D product displays, a virtual try-on feature, wishlist, 
 - React + Vite (Frontend)
 - Tailwind CSS (Styling)
 - Three.js (for 3D display)
-- Jeeliz / MediaPipe (for virtual try-on)
-- Laravel (Backend API)
-- MySQL (Database)
+- MediaPipe (for virtual try-on)
+- Node + NestJS (Backend API)
+- PostGreSQL on Supabase (Database)
 
 ---
 
