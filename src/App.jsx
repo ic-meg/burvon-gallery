@@ -49,6 +49,14 @@ import Delivered from "./pages/user/Profile/Delivered";
 import Cancelled from "./pages/user/Profile/Cancelled";
 import Refund from "./pages/user/Profile/Refund";
 
+//admin 
+import AdminDashboard from "./admin/pages/AdminDashboard";
+import AdminOrders from "./admin/pages/AdminOrders";
+import AdminProducts from "./admin/pages/AdminProducts";
+import CollectionManagement from "./admin/pages/CollectionManagement"; 
+import LiveChat from "./admin/pages/LiveChat";
+import ContentManagement from "./admin/pages/ContentManagement";
+
 const App = () => {
   return (
     <Router>
@@ -102,6 +110,13 @@ const App = () => {
           <Route path="/profile/cancelled" element={<Cancelled />}/>
           <Route path="/profile/refund" element={<Refund />}/>
 
+          {/*Admin */}
+          <Route path="/admin/dashboard" element={<AdminDashboard />}/>
+          <Route path="/admin/orders" element={<AdminOrders />}/>
+          <Route path="/admin/products" element={<AdminProducts />}/> 
+          <Route path="/admin/collection" element={<CollectionManagement />}/>
+          <Route path="/admin/live-chat" element={<LiveChat />}/>
+          <Route path="/admin/content" element={<ContentManagement />}/>
         </Routes>
       </div>
     </Router>
