@@ -55,6 +55,10 @@
   font-family: 'AvantGarde Demi', sans-serif;
 }
 
+.avant-book {
+  font-family: 'AvantGarde Book', sans-serif;
+}
+
 a {
   @apply text-[#FFF7DC] no-underline;
 }
