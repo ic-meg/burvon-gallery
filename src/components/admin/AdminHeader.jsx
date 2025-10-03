@@ -109,7 +109,7 @@ const AdminHeader = () => {
       >
         {/* Left nav - Admin Content Management */}
         <nav
-          className={`flex-1 flex justify-end items-center space-x-4 avant uppercase  text-[1rem] transition-all duration-300 mr-4`}
+          className={`flex-1 flex justify-end items-center space-x-4 avant uppercase text-white text-[1rem] transition-all duration-300 mr-4`}
         >
           <span
             onClick={() => navigate("/admin/dashboard")}
@@ -154,7 +154,7 @@ const AdminHeader = () => {
         {/* Right nav */}
         <div className="flex-1 flex justify-start items-center space-x-4 ml-4">
           <nav
-            className={`flex space-x-4 avant uppercase  text-[1rem] transition-all duration-300`}
+            className={`flex space-x-4 avant uppercase text-white text-[1rem] transition-all duration-300`}
           >
             <span
               onClick={() => navigate("/admin/collection")}
