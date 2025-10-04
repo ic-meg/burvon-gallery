@@ -35,7 +35,8 @@ const AdminProducts = () => {
     name: '',
     collection: '',
     category: '',
-    price: '',
+    originalPrice: '',
+    currentPrice: '',
     sizes: [],
     images: [null, null, null, null, null],
     description: ''
@@ -45,7 +46,8 @@ const AdminProducts = () => {
     name: '',
     collection: '',
     category: '',
-    price: '',
+    originalPrice: '',
+    currentPrice: '',
     sizes: [],
     images: [null, null, null, null, null],
     description: ''
@@ -224,13 +226,22 @@ const AdminProducts = () => {
 
   // Handle add product
   const handleAddProduct = () => {
-    console.log('Adding product:', newProduct);
+    console.log('Adding product:', {
+      ...newProduct,
+      id: Date.now(), // Simple ID generation
+      price: newProduct.originalPrice,
+      soldPrice: newProduct.currentPrice,
+      stock: 0,
+      status: "New Product",
+      image: null
+    });
     setShowAddProductModal(false);
     setNewProduct({
       name: '',
       collection: '',
       category: '',
-      price: '',
+      originalPrice: '',
+      currentPrice: '',
       sizes: [],
       images: [null, null, null, null, null],
       description: ''
@@ -251,7 +262,8 @@ const AdminProducts = () => {
       name: product.name,
       collection: collectionValue,
       category: categoryValue,
-      price: product.price,
+      originalPrice: product.price,
+      currentPrice: product.soldPrice,
       sizes: [],
       images: [null, null, null, null, null],
       description: ''
@@ -261,18 +273,30 @@ const AdminProducts = () => {
 
   // Handle update product
   const handleUpdateProduct = () => {
-    console.log('Updating product:', editProduct);
+    console.log('Updating product:', {
+      ...editProduct,
+      price: editProduct.originalPrice,
+      soldPrice: editProduct.currentPrice
+    });
     setShowEditProductModal(false);
     setEditProduct({
       id: null,
       name: '',
       collection: '',
       category: '',
-      price: '',
+      originalPrice: '',
+      currentPrice: '',
       sizes: [],
       images: [null, null, null, null, null],
       description: ''
     });
+  };
+
+  // Handle save stock changes
+  const handleSaveStockChanges = () => {
+    console.log('Updating stock for product:', selectedProduct.id, stockData);
+    // Update the product stock in your data structure here
+    setShowStockModal(false);
   };
 
   // Sample products data - adding some rings for testing
@@ -815,10 +839,19 @@ const AdminProducts = () => {
                     <div className="p-4">
                       <h3 className="avantbold text-sm text-black mb-1">{product.name}</h3>
                       <p className="avant text-xs text-gray-600 mb-2">{product.collection}</p>
-                      <div className="flex items-center space-x-2 mb-3">
-                        <span className="avant text-sm text-gray-500 line-through">{product.price}</span>
-                        <span className="avantbold text-sm text-black">{product.soldPrice}</span>
+                      
+                      {/* Updated Pricing Section with Labels */}
+                      <div className="mb-3">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="avant text-xs text-gray-500">Original Price:</span>
+                          <span className="avant text-sm text-gray-500 line-through">{product.price}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="avant text-xs text-black font-medium">Current Price:</span>
+                          <span className="avantbold text-sm text-black">{product.soldPrice}</span>
+                        </div>
                       </div>
+                      
                       <p className="avant text-xs text-gray-600 mb-3">{product.stock} STOCKS</p>
 
                       {/* Action Buttons */}
@@ -1057,10 +1090,7 @@ const AdminProducts = () => {
                   CANCEL
                 </button>
                 <button
-                  onClick={() => {
-                    console.log('Updating stock for product:', selectedProduct.id, stockData);
-                    setShowStockModal(false);
-                  }}
+                  onClick={handleSaveStockChanges}
                   className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors avant text-sm font-medium"
                 >
                   SAVE CHANGES
@@ -1080,7 +1110,7 @@ const AdminProducts = () => {
             backdropFilter: 'blur(5px)'
           }}
         >
-          <div className="bg-white rounded-2xl border-2 border-black w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto shadow-2xl">
+          <div className="bg-white rounded-2xl border-2 border-black w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto shadow-2xl">
             {/* Modal Header */}
             <div className="flex justify-between items-center p-6 border-b border-gray-200">
               <h2 className="text-xl avantbold text-black">Add New Product</h2>
@@ -1095,7 +1125,7 @@ const AdminProducts = () => {
             {/* Modal Content */}
             <div className="p-6 space-y-6">
               {/* Row 1: Product Name and Collection */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm avantbold text-black mb-2">PRODUCT NAME</label>
                   <input
@@ -1146,15 +1176,25 @@ const AdminProducts = () => {
                 </div>
               </div>
 
-              {/* Row 2: Price and Category */}
-              <div className="grid grid-cols-2 gap-4">
+              {/* Row 2: Pricing and Category */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm avantbold text-black mb-2">PRICE</label>
+                  <label className="block text-sm avantbold text-black mb-2">ORIGINAL PRICE</label>
                   <input
                     type="text"
-                    placeholder="P0.00"
-                    value={newProduct.price}
-                    onChange={(e) => handleProductChange('price', e.target.value)}
+                    placeholder="₱0.00"
+                    value={newProduct.originalPrice}
+                    onChange={(e) => handleProductChange('originalPrice', e.target.value)}
+                    className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm text-black placeholder:text-gray-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm avantbold text-black mb-2">CURRENT PRICE</label>
+                  <input
+                    type="text"
+                    placeholder="₱0.00"
+                    value={newProduct.currentPrice}
+                    onChange={(e) => handleProductChange('currentPrice', e.target.value)}
                     className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm text-black placeholder:text-gray-400"
                   />
                 </div>
@@ -1199,7 +1239,7 @@ const AdminProducts = () => {
               </div>
 
               {/* Row 3: Conditional Sizes and Images */}
-              <div className="grid grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Sizes - Only visible for rings */}
                 {newProduct.category === 'rings' && (
                   <div>
@@ -1224,9 +1264,9 @@ const AdminProducts = () => {
                 )}
 
                 {/* Images - Takes full width if no sizes */}
-                <div className={newProduct.category !== 'rings' ? 'col-span-2' : ''}>
+                <div className={newProduct.category !== 'rings' ? 'lg:col-span-2' : ''}>
                   <label className="block text-sm avantbold text-black mb-3">IMAGES</label>
-                  <div className="grid grid-cols-4 gap-2">
+                  <div className="grid grid-cols-5 gap-2">
                     {newProduct.images.map((image, index) => (
                       <label key={index} className="cursor-pointer">
                         <div className="w-16 h-16 border-2 border-dashed border-black rounded-lg flex items-center justify-center bg-white hover:bg-gray-50 transition-colors">
@@ -1277,7 +1317,7 @@ const AdminProducts = () => {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex justify-end space-x-4 pt-4">
+              <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-4">
                 <button
                   onClick={() => setShowAddProductModal(false)}
                   className="px-6 py-2 bg-transparent border-2 border-black text-black rounded-lg hover:bg-black hover:text-white transition-colors avant text-sm font-medium"
@@ -1305,7 +1345,7 @@ const AdminProducts = () => {
             backdropFilter: 'blur(5px)'
           }}
         >
-          <div className="bg-white rounded-2xl border-2 border-black w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto shadow-2xl">
+          <div className="bg-white rounded-2xl border-2 border-black w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto shadow-2xl">
             {/* Modal Header */}
             <div className="flex justify-between items-center p-6 border-b border-gray-200">
               <h2 className="text-xl avantbold text-black">Edit Product</h2>
@@ -1320,7 +1360,7 @@ const AdminProducts = () => {
             {/* Modal Content */}
             <div className="p-6 space-y-6">
               {/* Row 1: Product Name and Collection */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm avantbold text-black mb-2">PRODUCT NAME</label>
                   <input
@@ -1371,15 +1411,25 @@ const AdminProducts = () => {
                 </div>
               </div>
 
-              {/* Row 2: Price and Category */}
-              <div className="grid grid-cols-2 gap-4">
+              {/* Row 2: Pricing and Category */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm avantbold text-black mb-2">PRICE</label>
+                  <label className="block text-sm avantbold text-black mb-2">ORIGINAL PRICE</label>
                   <input
                     type="text"
-                    placeholder="P0.00"
-                    value={editProduct.price}
-                    onChange={(e) => handleEditProductChange('price', e.target.value)}
+                    value={editProduct.originalPrice}
+                    readOnly
+                    className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg bg-gray-100 avant text-sm text-gray-600 cursor-not-allowed"
+                  />
+                  <p className="text-xs text-gray-500 mt-1 avant">Original price cannot be edited</p>
+                </div>
+                <div>
+                  <label className="block text-sm avantbold text-black mb-2">CURRENT PRICE</label>
+                  <input
+                    type="text"
+                    placeholder="₱0.00"
+                    value={editProduct.currentPrice}
+                    onChange={(e) => handleEditProductChange('currentPrice', e.target.value)}
                     className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm text-black placeholder:text-gray-400"
                   />
                 </div>
@@ -1424,7 +1474,7 @@ const AdminProducts = () => {
               </div>
 
               {/* Row 3: Conditional Sizes and Images */}
-              <div className="grid grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Sizes - Only visible for rings */}
                 {editProduct.category === 'rings' && (
                   <div>
@@ -1449,9 +1499,9 @@ const AdminProducts = () => {
                 )}
 
                 {/* Images - Takes full width if no sizes */}
-                <div className={editProduct.category !== 'rings' ? 'col-span-2' : ''}>
+                <div className={editProduct.category !== 'rings' ? 'lg:col-span-2' : ''}>
                   <label className="block text-sm avantbold text-black mb-3">IMAGES</label>
-                  <div className="grid grid-cols-4 gap-2">
+                  <div className="grid grid-cols-5 gap-2">
                     {editProduct.images.map((image, index) => (
                       <label key={index} className="cursor-pointer">
                         <div className="w-16 h-16 border-2 border-dashed border-black rounded-lg flex items-center justify-center bg-white hover:bg-gray-50 transition-colors">
@@ -1502,7 +1552,7 @@ const AdminProducts = () => {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex justify-end space-x-4 pt-4">
+              <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-4">
                 <button
                   onClick={() => setShowEditProductModal(false)}
                   className="px-6 py-2 bg-transparent border-2 border-black text-black rounded-lg hover:bg-black hover:text-white transition-colors avant text-sm font-medium"
