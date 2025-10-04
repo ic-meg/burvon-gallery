@@ -37,6 +37,7 @@ const AdminProducts = () => {
     category: '',
     originalPrice: '',
     currentPrice: '',
+    stock: '',
     sizes: [],
     images: [null, null, null, null, null],
     description: ''
@@ -55,15 +56,15 @@ const AdminProducts = () => {
   const [stockData, setStockData] = useState({
     totalStock: 0,
     sizes: {
-      'Size 3': { stock: 0, reserved: 0 },
-      'Size 4': { stock: 0, reserved: 0 },
-      'Size 5': { stock: 0, reserved: 0 },
-      'Size 6': { stock: 0, reserved: 0 },
-      'Size 7': { stock: 0, reserved: 0 },
-      'Size 8': { stock: 0, reserved: 0 },
-      'Size 9': { stock: 0, reserved: 0 }
+      'Size 3': { stock: 0 },
+      'Size 4': { stock: 0 },
+      'Size 5': { stock: 0 },
+      'Size 6': { stock: 0 },
+      'Size 7': { stock: 0 },
+      'Size 8': { stock: 0 },
+      'Size 9': { stock: 0 }
     },
-    general: { stock: 0, reserved: 0 }
+    general: { stock: 0 }
   });
   const [showModalCollectionDropdown, setShowModalCollectionDropdown] = useState(false);
   const [showModalCategoryDropdown, setShowModalCategoryDropdown] = useState(false);
@@ -183,20 +184,19 @@ const AdminProducts = () => {
       const initialSizesStock = {};
       sizeOptions.forEach(size => {
         initialSizesStock[size] = { 
-          stock: Math.floor(Math.random() * 20), 
-          reserved: Math.floor(Math.random() * 5) 
+          stock: Math.floor(Math.random() * 20)
         };
       });
       setStockData({
         totalStock: product.stock,
         sizes: initialSizesStock,
-        general: { stock: 0, reserved: 0 }
+        general: { stock: 0 }
       });
     } else {
       setStockData({
         totalStock: product.stock,
         sizes: {},
-        general: { stock: product.stock, reserved: Math.floor(Math.random() * 5) }
+        general: { stock: product.stock }
       });
     }
     
@@ -231,7 +231,7 @@ const AdminProducts = () => {
       id: Date.now(), // Simple ID generation
       price: newProduct.originalPrice,
       soldPrice: newProduct.currentPrice,
-      stock: 0,
+      stock: parseInt(newProduct.stock) || 0,
       status: "New Product",
       image: null
     });
@@ -242,6 +242,7 @@ const AdminProducts = () => {
       category: '',
       originalPrice: '',
       currentPrice: '',
+      stock: '',
       sizes: [],
       images: [null, null, null, null, null],
       description: ''
@@ -940,7 +941,7 @@ const AdminProducts = () => {
             backdropFilter: 'blur(5px)'
           }}
         >
-          <div className="bg-white rounded-2xl border-2 border-black w-full max-w-3xl mx-4 max-h-[90vh] overflow-y-auto shadow-2xl">
+          <div className="bg-white rounded-2xl border-2 border-black w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto shadow-2xl">
             {/* Modal Header */}
             <div className="flex justify-between items-center p-6 border-b border-gray-200">
               <div>
@@ -957,40 +958,22 @@ const AdminProducts = () => {
 
             {/* Modal Content */}
             <div className="p-6">
-              {/* Stock Overview */}
-              <div className="grid grid-cols-3 gap-4 mb-6">
-                <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-4 text-center">
-                  <div className="text-sm avantbold text-gray-600 mb-1">TOTAL STOCK</div>
-                  <div className="text-2xl bebas text-black">{stockData.totalStock}</div>
-                </div>
-                <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-4 text-center">
-                  <div className="text-sm avantbold text-gray-600 mb-1">AVAILABLE</div>
-                  <div className="text-2xl bebas text-green-600">
-                    {selectedProduct.category.toLowerCase() === 'rings' 
-                      ? Object.values(stockData.sizes).reduce((total, item) => total + (item.stock - item.reserved), 0)
-                      : (stockData.general.stock - stockData.general.reserved)
-                    }
-                  </div>
-                </div>
-                <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-4 text-center">
-                  <div className="text-sm avantbold text-gray-600 mb-1">RESERVED</div>
-                  <div className="text-2xl bebas text-orange-600">
-                    {selectedProduct.category.toLowerCase() === 'rings' 
-                      ? Object.values(stockData.sizes).reduce((total, item) => total + item.reserved, 0)
-                      : stockData.general.reserved
-                    }
-                  </div>
+              {/* Stock Overview - simplified to just total stock */}
+              <div className="mb-6">
+                <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-6 text-center">
+                  <div className="text-sm avantbold text-gray-600 mb-2">TOTAL STOCK</div>
+                  <div className="text-3xl bebas text-black">{stockData.totalStock}</div>
                 </div>
               </div>
 
               {/* Stock Details */}
               {selectedProduct.category.toLowerCase() === 'rings' ? (
-                // Ring sizes inventory
+                // Ring sizes inventory - simplified
                 <div>
                   <h3 className="text-lg avantbold text-black mb-4">Size Inventory</h3>
                   <div className="space-y-3">
                     {sizeOptions.map((size) => (
-                      <div key={size} className="grid grid-cols-4 gap-4 items-center p-3 bg-gray-50 rounded-lg">
+                      <div key={size} className="grid grid-cols-2 gap-4 items-center p-3 bg-gray-50 rounded-lg">
                         <div className="avantbold text-black">{size}</div>
                         <div>
                           <label className="block text-xs avant text-gray-600 mb-1">Stock</label>
@@ -998,88 +981,32 @@ const AdminProducts = () => {
                             type="number"
                             value={stockData.sizes[size]?.stock || 0}
                             onChange={(e) => handleStockUpdate('size', size, 'stock', e.target.value)}
-                            className="w-full px-3 py-1 border border-gray-300 rounded text-sm avant focus:outline-none focus:border-black text-black"
+                            className="w-full px-3 py-2 border border-gray-300 rounded text-sm avant focus:outline-none focus:border-black text-black"
                             min="0"
                           />
-                        </div>
-                        <div>
-                          <label className="block text-xs avant text-gray-600 mb-1">Reserved</label>
-                          <input
-                            type="number"
-                            value={stockData.sizes[size]?.reserved || 0}
-                            onChange={(e) => handleStockUpdate('size', size, 'reserved', e.target.value)}
-                            className="w-full px-3 py-1 border border-gray-300 rounded text-sm avant focus:outline-none focus:border-black text-black"
-                            min="0"
-                            max={stockData.sizes[size]?.stock || 0}
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs avant text-gray-600 mb-1">Available</label>
-                          <div className="px-3 py-1 bg-white border border-gray-200 rounded text-sm avant text-green-600 font-medium">
-                            {(stockData.sizes[size]?.stock || 0) - (stockData.sizes[size]?.reserved || 0)}
-                          </div>
                         </div>
                       </div>
                     ))}
                   </div>
                 </div>
               ) : (
-                // General inventory for other categories
+                // General inventory - simplified
                 <div>
-                  <h3 className="text-lg avantbold text-black mb-4">General Inventory</h3>
-                  <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
-                    <div>
-                      <label className="block text-sm avantbold text-black mb-2">Total Stock</label>
+                  <h3 className="text-lg avantbold text-black mb-4">Inventory Management</h3>
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <div className="max-w-sm mx-auto">
+                      <label className="block text-sm avantbold text-black mb-2">Stock Quantity</label>
                       <input
                         type="number"
                         value={stockData.general.stock}
                         onChange={(e) => handleStockUpdate('general', null, 'stock', e.target.value)}
-                        className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg avant focus:outline-none focus:border-black text-black"
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg avant focus:outline-none focus:border-black text-black text-center text-lg"
                         min="0"
                       />
-                    </div>
-                    <div>
-                      <label className="block text-sm avantbold text-black mb-2">Reserved</label>
-                      <input
-                        type="number"
-                        value={stockData.general.reserved}
-                        onChange={(e) => handleStockUpdate('general', null, 'reserved', e.target.value)}
-                        className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg avant focus:outline-none focus:border-black text-black"
-                        min="0"
-                        max={stockData.general.stock}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm avantbold text-black mb-2">Available</label>
-                      <div className="w-full px-3 py-2 bg-white border-2 border-gray-200 rounded-lg avant text-green-600 font-medium">
-                        {stockData.general.stock - stockData.general.reserved}
-                      </div>
                     </div>
                   </div>
                 </div>
               )}
-
-              {/* Recent Stock Movements */}
-              <div className="mt-6">
-                <h3 className="text-lg avantbold text-black mb-4">Recent Stock Movements</h3>
-                <div className="space-y-2 max-h-32 overflow-y-auto">
-                  <div className="flex justify-between items-center p-2 bg-gray-50 rounded text-sm">
-                    <span className="avant text-black">Stock added</span>
-                    <span className="avant text-gray-600">+10 units</span>
-                    <span className="avant text-gray-500">2 hours ago</span>
-                  </div>
-                  <div className="flex justify-between items-center p-2 bg-gray-50 rounded text-sm">
-                    <span className="avant text-black">Sale</span>
-                    <span className="avant text-gray-600">-2 units</span>
-                    <span className="avant text-gray-500">5 hours ago</span>
-                  </div>
-                  <div className="flex justify-between items-center p-2 bg-gray-50 rounded text-sm">
-                    <span className="avant text-black">Reserved for order #1234</span>
-                    <span className="avant text-gray-600">Reserved 3 units</span>
-                    <span className="avant text-gray-500">1 day ago</span>
-                  </div>
-                </div>
-              </div>
 
               {/* Action Buttons */}
               <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200 mt-6">
@@ -1176,8 +1103,8 @@ const AdminProducts = () => {
                 </div>
               </div>
 
-              {/* Row 2: Pricing and Category */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Row 2: Pricing, Category and Stock */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                   <label className="block text-sm avantbold text-black mb-2">ORIGINAL PRICE</label>
                   <input
@@ -1196,6 +1123,17 @@ const AdminProducts = () => {
                     value={newProduct.currentPrice}
                     onChange={(e) => handleProductChange('currentPrice', e.target.value)}
                     className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm text-black placeholder:text-gray-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm avantbold text-black mb-2">STOCK</label>
+                  <input
+                    type="number"
+                    placeholder="0"
+                    value={newProduct.stock}
+                    onChange={(e) => handleProductChange('stock', e.target.value)}
+                    className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm text-black placeholder:text-gray-400"
+                    min="0"
                   />
                 </div>
                 <div className="relative dropdown-container">
