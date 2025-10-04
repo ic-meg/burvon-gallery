@@ -534,7 +534,7 @@ const AdminProducts = () => {
                 placeholder="Search Products"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-80 px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant"
+                className="w-80 px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-black"
               />
             </div>
           </div>
@@ -552,7 +552,7 @@ const AdminProducts = () => {
                   }}
                   className="flex items-center justify-between px-4 py-2 border-2 border-gray-300 rounded-lg bg-white focus:outline-none focus:border-black avant text-sm select-none w-40"
                 >
-                  <span>{categoryOptions.find(cat => cat.value === selectedCategory)?.label}</span>
+                  <span className="text-black">{categoryOptions.find(cat => cat.value === selectedCategory)?.label}</span>
                   <img
                     src={showCategoryDropdown ? DropUpIconBlack : DropDownIconBlack}
                     alt="dropdown"
@@ -568,7 +568,7 @@ const AdminProducts = () => {
                           setSelectedCategory(option.value);
                           setShowCategoryDropdown(false);
                         }}
-                        className={`w-full px-4 py-2 text-left text-sm avant transition-colors ${
+                        className={`w-full px-4 py-2 text-left text-sm avant transition-colors text-black ${
                           selectedCategory === option.value ? "bg-gray-100 font-medium" : ""
                         } ${
                           index === 0 ? "rounded-t-lg" : ""
@@ -584,7 +584,7 @@ const AdminProducts = () => {
                         onMouseLeave={(e) => {
                           if (selectedCategory !== option.value) {
                             e.target.style.backgroundColor = 'transparent';
-                            e.target.style.color = '';
+                            e.target.style.color = 'black';
                           }
                         }}
                         type="button"
@@ -606,7 +606,7 @@ const AdminProducts = () => {
                   }}
                   className="flex items-center justify-between px-4 py-2 border-2 border-gray-300 rounded-lg bg-white focus:outline-none focus:border-black avant text-sm select-none w-48"
                 >
-                  <span>{collectionOptions.find(col => col.value === selectedCollection)?.label}</span>
+                  <span className="text-black">{collectionOptions.find(col => col.value === selectedCollection)?.label}</span>
                   <img
                     src={showCollectionDropdown ? DropUpIconBlack : DropDownIconBlack}
                     alt="dropdown"
@@ -622,7 +622,7 @@ const AdminProducts = () => {
                           setSelectedCollection(option.value);
                           setShowCollectionDropdown(false);
                         }}
-                        className={`w-full px-4 py-2 text-left text-sm avant transition-colors ${
+                        className={`w-full px-4 py-2 text-left text-sm avant transition-colors text-black ${
                           selectedCollection === option.value ? "bg-gray-100 font-medium" : ""
                         } ${
                           index === 0 ? "rounded-t-lg" : ""
@@ -638,7 +638,7 @@ const AdminProducts = () => {
                         onMouseLeave={(e) => {
                           if (selectedCollection !== option.value) {
                             e.target.style.backgroundColor = 'transparent';
-                            e.target.style.color = '';
+                            e.target.style.color = 'black';
                           }
                         }}
                         type="button"
@@ -660,7 +660,7 @@ const AdminProducts = () => {
                   }}
                   className="flex items-center justify-between px-4 py-2 border-2 border-gray-300 rounded-lg bg-white focus:outline-none focus:border-black avant text-sm select-none w-44"
                 >
-                  <span>{stockOptions.find(stock => stock.value === selectedStockLevel)?.label}</span>
+                  <span className="text-black">{stockOptions.find(stock => stock.value === selectedStockLevel)?.label}</span>
                   <img
                     src={showStockDropdown ? DropUpIconBlack : DropDownIconBlack}
                     alt="dropdown"
@@ -676,7 +676,7 @@ const AdminProducts = () => {
                           setSelectedStockLevel(option.value);
                           setShowStockDropdown(false);
                         }}
-                        className={`w-full px-4 py-2 text-left text-sm avant transition-colors ${
+                        className={`w-full px-4 py-2 text-left text-sm avant transition-colors text-black ${
                           selectedStockLevel === option.value ? "bg-gray-100 font-medium" : ""
                         } ${
                           index === 0 ? "rounded-t-lg" : ""
@@ -692,7 +692,7 @@ const AdminProducts = () => {
                         onMouseLeave={(e) => {
                           if (selectedStockLevel !== option.value) {
                             e.target.style.backgroundColor = 'transparent';
-                            e.target.style.color = '';
+                            e.target.style.color = 'black';
                           }
                         }}
                         type="button"
@@ -714,7 +714,7 @@ const AdminProducts = () => {
                   }}
                   className="flex items-center justify-between px-4 py-2 border-2 border-gray-300 rounded-lg bg-white focus:outline-none focus:border-black avant text-sm select-none w-48"
                 >
-                  <span>{sellingStatusOptions.find(status => status.value === selectedSellingStatus)?.label}</span>
+                  <span className="text-black">{sellingStatusOptions.find(status => status.value === selectedSellingStatus)?.label}</span>
                   <img
                     src={showSellingDropdown ? DropUpIconBlack : DropDownIconBlack}
                     alt="dropdown"
@@ -730,7 +730,7 @@ const AdminProducts = () => {
                           setSelectedSellingStatus(option.value);
                           setShowSellingDropdown(false);
                         }}
-                        className={`w-full px-4 py-2 text-left text-sm avant transition-colors ${
+                        className={`w-full px-4 py-2 text-left text-sm avant transition-colors text-black ${
                           selectedSellingStatus === option.value ? "bg-gray-100 font-medium" : ""
                         } ${
                           index === 0 ? "rounded-t-lg" : ""
@@ -746,7 +746,7 @@ const AdminProducts = () => {
                         onMouseLeave={(e) => {
                           if (selectedSellingStatus !== option.value) {
                             e.target.style.backgroundColor = 'transparent';
-                            e.target.style.color = '';
+                            e.target.style.color = 'black';
                           }
                         }}
                         type="button"
@@ -900,8 +900,14 @@ const AdminProducts = () => {
 
       {/* Stock Management Modal */}
       {showStockModal && selectedProduct && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl border-2 border-black w-full max-w-3xl mx-4 max-h-[90vh] overflow-y-auto">
+        <div 
+          className="fixed inset-0 flex items-center justify-center z-50"
+          style={{ 
+            backgroundColor: 'rgba(255, 255, 255, 0.65)',
+            backdropFilter: 'blur(5px)'
+          }}
+        >
+          <div className="bg-white rounded-2xl border-2 border-black w-full max-w-3xl mx-4 max-h-[90vh] overflow-y-auto shadow-2xl">
             {/* Modal Header */}
             <div className="flex justify-between items-center p-6 border-b border-gray-200">
               <div>
@@ -959,7 +965,7 @@ const AdminProducts = () => {
                             type="number"
                             value={stockData.sizes[size]?.stock || 0}
                             onChange={(e) => handleStockUpdate('size', size, 'stock', e.target.value)}
-                            className="w-full px-3 py-1 border border-gray-300 rounded text-sm avant focus:outline-none focus:border-black"
+                            className="w-full px-3 py-1 border border-gray-300 rounded text-sm avant focus:outline-none focus:border-black text-black"
                             min="0"
                           />
                         </div>
@@ -969,7 +975,7 @@ const AdminProducts = () => {
                             type="number"
                             value={stockData.sizes[size]?.reserved || 0}
                             onChange={(e) => handleStockUpdate('size', size, 'reserved', e.target.value)}
-                            className="w-full px-3 py-1 border border-gray-300 rounded text-sm avant focus:outline-none focus:border-black"
+                            className="w-full px-3 py-1 border border-gray-300 rounded text-sm avant focus:outline-none focus:border-black text-black"
                             min="0"
                             max={stockData.sizes[size]?.stock || 0}
                           />
@@ -995,7 +1001,7 @@ const AdminProducts = () => {
                         type="number"
                         value={stockData.general.stock}
                         onChange={(e) => handleStockUpdate('general', null, 'stock', e.target.value)}
-                        className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg avant focus:outline-none focus:border-black"
+                        className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg avant focus:outline-none focus:border-black text-black"
                         min="0"
                       />
                     </div>
@@ -1005,7 +1011,7 @@ const AdminProducts = () => {
                         type="number"
                         value={stockData.general.reserved}
                         onChange={(e) => handleStockUpdate('general', null, 'reserved', e.target.value)}
-                        className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg avant focus:outline-none focus:border-black"
+                        className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg avant focus:outline-none focus:border-black text-black"
                         min="0"
                         max={stockData.general.stock}
                       />
@@ -1025,17 +1031,17 @@ const AdminProducts = () => {
                 <h3 className="text-lg avantbold text-black mb-4">Recent Stock Movements</h3>
                 <div className="space-y-2 max-h-32 overflow-y-auto">
                   <div className="flex justify-between items-center p-2 bg-gray-50 rounded text-sm">
-                    <span className="avant">Stock added</span>
+                    <span className="avant text-black">Stock added</span>
                     <span className="avant text-gray-600">+10 units</span>
                     <span className="avant text-gray-500">2 hours ago</span>
                   </div>
                   <div className="flex justify-between items-center p-2 bg-gray-50 rounded text-sm">
-                    <span className="avant">Sale</span>
+                    <span className="avant text-black">Sale</span>
                     <span className="avant text-gray-600">-2 units</span>
                     <span className="avant text-gray-500">5 hours ago</span>
                   </div>
                   <div className="flex justify-between items-center p-2 bg-gray-50 rounded text-sm">
-                    <span className="avant">Reserved for order #1234</span>
+                    <span className="avant text-black">Reserved for order #1234</span>
                     <span className="avant text-gray-600">Reserved 3 units</span>
                     <span className="avant text-gray-500">1 day ago</span>
                   </div>
@@ -1053,7 +1059,6 @@ const AdminProducts = () => {
                 <button
                   onClick={() => {
                     console.log('Updating stock for product:', selectedProduct.id, stockData);
-                    // Here you would typically update the product stock in your database
                     setShowStockModal(false);
                   }}
                   className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors avant text-sm font-medium"
@@ -1068,8 +1073,14 @@ const AdminProducts = () => {
 
       {/* Add New Product Modal */}
       {showAddProductModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl border-2 border-black w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+        <div 
+          className="fixed inset-0 flex items-center justify-center z-50"
+          style={{ 
+            backgroundColor: 'rgba(255, 255, 255, 0.65)',
+            backdropFilter: 'blur(5px)'
+          }}
+        >
+          <div className="bg-white rounded-2xl border-2 border-black w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto shadow-2xl">
             {/* Modal Header */}
             <div className="flex justify-between items-center p-6 border-b border-gray-200">
               <h2 className="text-xl avantbold text-black">Add New Product</h2>
@@ -1092,7 +1103,7 @@ const AdminProducts = () => {
                     placeholder="Enter Product Name"
                     value={newProduct.name}
                     onChange={(e) => handleProductChange('name', e.target.value)}
-                    className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm"
+                    className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm text-black placeholder:text-gray-400"
                   />
                 </div>
                 <div className="relative dropdown-container">
@@ -1120,7 +1131,7 @@ const AdminProducts = () => {
                             handleProductChange('collection', option.value);
                             setShowModalCollectionDropdown(false);
                           }}
-                          className={`w-full px-4 py-2 text-left text-sm avant transition-colors hover:bg-gray-100 ${
+                          className={`w-full px-4 py-2 text-left text-sm avant transition-colors hover:bg-gray-100 text-black ${
                             index === 0 ? "rounded-t-lg" : ""
                           } ${
                             index === modalCollectionOptions.length - 2 ? "rounded-b-lg" : ""
@@ -1144,7 +1155,7 @@ const AdminProducts = () => {
                     placeholder="P0.00"
                     value={newProduct.price}
                     onChange={(e) => handleProductChange('price', e.target.value)}
-                    className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm"
+                    className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm text-black placeholder:text-gray-400"
                   />
                 </div>
                 <div className="relative dropdown-container">
@@ -1172,7 +1183,7 @@ const AdminProducts = () => {
                             handleProductChange('category', option.value);
                             setShowModalCategoryDropdown(false);
                           }}
-                          className={`w-full px-4 py-2 text-left text-sm avant transition-colors hover:bg-gray-100 ${
+                          className={`w-full px-4 py-2 text-left text-sm avant transition-colors hover:bg-gray-100 text-black ${
                             index === 0 ? "rounded-t-lg" : ""
                           } ${
                             index === modalCategoryOptions.length - 2 ? "rounded-b-lg" : ""
@@ -1261,7 +1272,7 @@ const AdminProducts = () => {
                   value={newProduct.description}
                   onChange={(e) => handleProductChange('description', e.target.value)}
                   rows={4}
-                  className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm resize-none"
+                  className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm resize-none text-black placeholder:text-gray-400"
                 />
               </div>
 
@@ -1287,8 +1298,14 @@ const AdminProducts = () => {
 
       {/* Edit Product Modal */}
       {showEditProductModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl border-2 border-black w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+        <div 
+          className="fixed inset-0 flex items-center justify-center z-50"
+          style={{ 
+            backgroundColor: 'rgba(255, 255, 255, 0.65)',
+            backdropFilter: 'blur(5px)'
+          }}
+        >
+          <div className="bg-white rounded-2xl border-2 border-black w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto shadow-2xl">
             {/* Modal Header */}
             <div className="flex justify-between items-center p-6 border-b border-gray-200">
               <h2 className="text-xl avantbold text-black">Edit Product</h2>
@@ -1311,7 +1328,7 @@ const AdminProducts = () => {
                     placeholder="Enter Product Name"
                     value={editProduct.name}
                     onChange={(e) => handleEditProductChange('name', e.target.value)}
-                    className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm"
+                    className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm text-black placeholder:text-gray-400"
                   />
                 </div>
                 <div className="relative dropdown-container">
@@ -1339,7 +1356,7 @@ const AdminProducts = () => {
                             handleEditProductChange('collection', option.value);
                             setShowEditModalCollectionDropdown(false);
                           }}
-                          className={`w-full px-4 py-2 text-left text-sm avant transition-colors hover:bg-gray-100 ${
+                          className={`w-full px-4 py-2 text-left text-sm avant transition-colors hover:bg-gray-100 text-black ${
                             index === 0 ? "rounded-t-lg" : ""
                           } ${
                             index === modalCollectionOptions.length - 2 ? "rounded-b-lg" : ""
@@ -1363,7 +1380,7 @@ const AdminProducts = () => {
                     placeholder="P0.00"
                     value={editProduct.price}
                     onChange={(e) => handleEditProductChange('price', e.target.value)}
-                    className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm"
+                    className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm text-black placeholder:text-gray-400"
                   />
                 </div>
                 <div className="relative dropdown-container">
@@ -1391,7 +1408,7 @@ const AdminProducts = () => {
                             handleEditProductChange('category', option.value);
                             setShowEditModalCategoryDropdown(false);
                           }}
-                          className={`w-full px-4 py-2 text-left text-sm avant transition-colors hover:bg-gray-100 ${
+                          className={`w-full px-4 py-2 text-left text-sm avant transition-colors hover:bg-gray-100 text-black ${
                             index === 0 ? "rounded-t-lg" : ""
                           } ${
                             index === modalCategoryOptions.length - 2 ? "rounded-b-lg" : ""
@@ -1480,7 +1497,7 @@ const AdminProducts = () => {
                   value={editProduct.description}
                   onChange={(e) => handleEditProductChange('description', e.target.value)}
                   rows={4}
-                  className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm resize-none"
+                  className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm resize-none text-black placeholder:text-gray-400"
                 />
               </div>
 
