@@ -66,6 +66,12 @@ import PlusIcon from './icons/plus.svg';
 import StarFilled from './icons/star-filled.png';
 import StarEmpty from './icons/star.png';
 import Ruler from './icons/Ruler.png';
+import PesoSign from './icons/peso.png';
+import ReturnCustomers from './icons/customers.png';
+import TopSelling from './icons/top-selling.png';
+import Revenue from './icons/revenue.png';
+import IncreaseIcon from './icons/increase.png';
+import DecreaseIcon from './icons/decrease.png';
  
 // IMAGES
 import LogoImage from './logo/black_brv.png';
@@ -301,5 +307,11 @@ export {
   PlusIcon,
   StarFilled,
   StarEmpty,
-  Ruler
+  Ruler,
+  PesoSign,
+  ReturnCustomers,
+  TopSelling,
+  Revenue,
+  IncreaseIcon,
+  DecreaseIcon
 };
