@@ -2,13 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 //icons and logo
-import {
-  WhiteLogo,
-  
-  User,
-} from "../../assets/index";
-
-
+import { WhiteLogo, User } from "../../assets/index";
 
 const AdminHeader = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -78,7 +72,6 @@ const AdminHeader = () => {
     };
   }, [menuOpen]);
 
-
   return (
     <>
       {/* Mobile Header */}
@@ -96,7 +89,6 @@ const AdminHeader = () => {
           className="max-h-[80px] w-auto object-contain"
           onClick={() => navigate("/admin/dashboard")}
         />
-
       </header>
 
       {/* Desktop Header */}
@@ -112,12 +104,6 @@ const AdminHeader = () => {
           className={`flex-1 flex justify-end items-center space-x-4 avant uppercase text-white text-[1rem] transition-all duration-300 mr-4`}
         >
           <span
-            onClick={() => navigate("/admin/dashboard")}
-            className="hover:opacity-60 cursor-pointer"
-          >
-            Dashboard
-          </span>
-          <span
             onClick={() => navigate("/admin/orders")}
             className="hover:opacity-60 cursor-pointer"
           >
@@ -128,6 +114,12 @@ const AdminHeader = () => {
             className="hover:opacity-60 cursor-pointer"
           >
             Products
+          </span>
+          <span
+            onClick={() => navigate("/admin/user")}
+            className="hover:opacity-60 cursor-pointer"
+          >
+            User
           </span>
         </nav>
 
