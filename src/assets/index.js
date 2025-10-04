@@ -74,6 +74,8 @@ import IncreaseIcon from './icons/increase.png';
 import DecreaseIcon from './icons/decrease.png';
 import NextIConBlack from './icons/NextIconBlack.svg';
 import PrevIConBlack from './icons/PrevIconBlack.svg';
+import AddImage from './icons/AddImage.svg';
+import Remove from './icons/Remove.svg';
  
 // IMAGES
 import LogoImage from './logo/black_brv.png';
@@ -317,5 +319,7 @@ export {
   IncreaseIcon,
   DecreaseIcon,
   NextIConBlack,
-  PrevIConBlack
+  PrevIConBlack,
+  AddImage,
+  Remove
 };
