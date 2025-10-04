@@ -42,20 +42,34 @@ import LoveLanguage from "/src/pages/product/collections/lovelanguage";
 import Pearl from "/src/pages/product/collections/pearl";
 import Kids from "/src/pages/product/collections/kids";
 
-//Profile 
+//Profile
 import Profile from "./pages/user/Profile/Profile";
 import InProgress from "./pages/user/Profile/InProgress";
 import Delivered from "./pages/user/Profile/Delivered";
 import Cancelled from "./pages/user/Profile/Cancelled";
 import Refund from "./pages/user/Profile/Refund";
 
-//admin 
+//admin
 import AdminDashboard from "./admin/pages/AdminDashboard";
 import AdminOrders from "./admin/pages/AdminOrders";
 import AdminProducts from "./admin/pages/AdminProducts";
-import CollectionManagement from "./admin/pages/CollectionManagement"; 
+import CollectionManagement from "./admin/pages/CollectionManagement";
 import LiveChat from "./admin/pages/LiveChat";
 import ContentManagement from "./admin/pages/ContentManagement";
+import UserManagement from "./admin/pages/UserManagement";
+
+//admin content management
+import HomepageContent from "./admin/Contents/Homepage";
+import NecklacesContent from "./admin/Contents/Categories/Necklaces";
+import BraceletsContent from "./admin/Contents/Categories/Bracelets";
+import RingsContent from "./admin/Contents/Categories/Rings";
+import EarringsContent from "./admin/Contents/Categories/Earrings";
+import CategoriesContent from "./admin/Contents/Categories";
+import ClashContent from "./admin/Contents/Collections/Clash";
+import ClassicContent from "./admin/Contents/Collections/Classic";
+import LoveLanguageContent from "./admin/Contents/Collections/LoveLanguage";
+import KidsContent from "./admin/Contents/Collections/Kids";
+import CollectionsContent from "./admin/Contents/Collections/CollectionsContent";
 
 const App = () => {
   return (
@@ -65,14 +79,17 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Homepage />} />
           <Route path="/template" element={<Template />} />
-         
+
           {/*Customer Care Footer */}
           <Route path="/customer-care/faqs" element={<FAQs />} />
           <Route path="/customer-care/jewelry-care" element={<JewelryCare />} />
           <Route path="/customer-care/size-guide" element={<SizeGuide />} />
           <Route path="/customer-care/shipping" element={<Shipping />} />
           <Route path="/customer-care/track-order" element={<TrackOrder />} />
-          <Route path="/customer-care/track-order-2" element={<TrackOrder2 />} />
+          <Route
+            path="/customer-care/track-order-2"
+            element={<TrackOrder2 />}
+          />
           <Route path="/customer-care/return" element={<Return />} />
 
           {/*About Footer */}
@@ -85,7 +102,10 @@ const App = () => {
           <Route path="/user/Wishlist-Empty" element={<WishlistEmpty />} />
           <Route path="/login" element={<Login />} />
           <Route path="/shopping-bag" element={<ShoppingBag />} />
-          <Route path="/user/cart/ShoppingBag-Empty" element={<ShoppingBagEmpty />} />
+          <Route
+            path="/user/cart/ShoppingBag-Empty"
+            element={<ShoppingBagEmpty />}
+          />
           <Route path="/verification" element={<Verification />} />
 
           {/*Main nav */}
@@ -93,7 +113,7 @@ const App = () => {
           <Route path="/earrings" element={<Earrings />} />
           <Route path="/bracelet" element={<Bracelets />} />
           <Route path="/rings" element={<Rings />} />
-          <Route path="/product-description" element={<ProductDesc/>} />
+          <Route path="/product-description" element={<ProductDesc />} />
 
           {/*Collections */}
           <Route path="/collections/classic" element={<Classic />} />
@@ -104,19 +124,51 @@ const App = () => {
           <Route path="/collections/kids" element={<Kids />} />
 
           {/*Profile */}
-          <Route path="/profile" element={<Profile />}/>
-          <Route path="/profile/inprogress" element={<InProgress />}/>
-          <Route path="/profile/delivered" element={<Delivered />}/>
-          <Route path="/profile/cancelled" element={<Cancelled />}/>
-          <Route path="/profile/refund" element={<Refund />}/>
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/profile/inprogress" element={<InProgress />} />
+          <Route path="/profile/delivered" element={<Delivered />} />
+          <Route path="/profile/cancelled" element={<Cancelled />} />
+          <Route path="/profile/refund" element={<Refund />} />
 
           {/*Admin */}
-          <Route path="/admin/dashboard" element={<AdminDashboard />}/>
-          <Route path="/admin/orders" element={<AdminOrders />}/>
-          <Route path="/admin/products" element={<AdminProducts />}/> 
-          <Route path="/admin/collection" element={<CollectionManagement />}/>
-          <Route path="/admin/live-chat" element={<LiveChat />}/>
-          <Route path="/admin/content" element={<ContentManagement />}/>
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/orders" element={<AdminOrders />} />
+          <Route path="/admin/products" element={<AdminProducts />} />
+          <Route path="/admin/collection" element={<CollectionManagement />} />
+          <Route path="/admin/live-chat" element={<LiveChat />} />
+          <Route path="/admin/content" element={<ContentManagement />}>
+            <Route index element={<HomepageContent />} />
+            <Route path="homepage" element={<HomepageContent />} />
+            {/* Admin Content Management Homepage */}
+            {/* (now nested under /admin/content) */}
+            <Route path="categories" element={<CategoriesContent />} />
+            <Route path="categories/necklaces" element={<NecklacesContent />} />
+            <Route path="categories/bracelets" element={<BraceletsContent />} />
+            <Route path="categories/rings" element={<RingsContent />} />
+            <Route path="categories/earrings" element={<EarringsContent />} />
+
+            {/* Collections nested under /admin/content/collections */}
+            <Route path="collections" element={<CollectionsContent />}>
+              <Route index element={<ClassicContent />} />
+              <Route path="classic" element={<ClassicContent />} />
+              <Route path="clash" element={<ClashContent />} />
+              <Route path="love-language" element={<LoveLanguageContent />} />
+              <Route path="kids" element={<KidsContent />} />
+            </Route>
+          </Route>
+          <Route path="/admin/user" element={<UserManagement />} />
+
+          {/* Admin Collection Content Management */}
+          <Route
+            path="/admin/collection/classic"
+            element={<ClassicContent />}
+          />
+          <Route path="/admin/collection/clash" element={<ClashContent />} />
+          <Route
+            path="/admin/collection/love-language"
+            element={<LoveLanguageContent />}
+          />
+          <Route path="/admin/collection/kids" element={<KidsContent />} />
         </Routes>
       </div>
     </Router>
