@@ -72,6 +72,8 @@ import TopSelling from './icons/top-selling.png';
 import Revenue from './icons/revenue.png';
 import IncreaseIcon from './icons/increase.png';
 import DecreaseIcon from './icons/decrease.png';
+import NextIConBlack from './icons/NextIconBlack.svg';
+import PrevIConBlack from './icons/PrevIconBlack.svg';
  
 // IMAGES
 import LogoImage from './logo/black_brv.png';
@@ -313,5 +315,7 @@ export {
   TopSelling,
   Revenue,
   IncreaseIcon,
-  DecreaseIcon
+  DecreaseIcon,
+  NextIConBlack,
+  PrevIConBlack
 };
