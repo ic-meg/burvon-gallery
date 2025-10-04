@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import AdminHeader from '../../components/admin/AdminHeader';
 
 import {
@@ -12,6 +13,9 @@ const ContentManagement = () => {
   const [selectedCollection, setSelectedCollection] = useState('kids');
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [showCollectionDropdown, setShowCollectionDropdown] = useState(false);
+
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // Tab configuration
   const tabs = [
@@ -51,6 +55,22 @@ const ContentManagement = () => {
     };
   }, []);
 
+  // Keep activeTab in sync with the current URL so the correct dropdown/tab shows
+  useEffect(() => {
+    const path = location.pathname;
+    // more specific checks first
+    if (path.startsWith('/admin/content/categories')) {
+      setActiveTab('categories');
+    } else if (path.startsWith('/admin/content/collections')) {
+      setActiveTab('collections');
+    } else if (path.startsWith('/admin/collection')) {
+      // legacy collection routes
+      setActiveTab('collections');
+    } else if (path.startsWith('/admin/content')) {
+      setActiveTab('homepage');
+    }
+  }, [location.pathname]);
+
   return (
     <div className="min-h-screen bg-white">
       <AdminHeader />
@@ -82,15 +102,26 @@ const ContentManagement = () => {
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center space-x-2 pb-3 relative transition-colors duration-200 ${
+                    onClick={() => {
+                      setActiveTab(tab.id);
+                      // navigate to the matching route so the Outlet renders the correct child
+                      if (tab.id === 'homepage') {
+                        navigate('/admin/content/homepage');
+                      } else if (tab.id === 'categories') {
+                        navigate('/admin/content/categories');
+                      } else if (tab.id === 'collections') {
+                        // navigate into the new nested collections route
+                        navigate('/admin/content/collections');
+                      }
+                    }}
+                    className={`flex text-black items-center space-x-2 pb-3 relative transition-colors duration-200 ${
                       activeTab === tab.id
                         ? 'text-black'
                         : 'text-gray-500 hover:text-gray-700'
                     }`}
                   >
                     <span className="avant font-medium text-sm">{tab.label}</span>
-                    
+
                     {/* Active tab indicator line */}
                     {activeTab === tab.id && (
                       <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black"></div>
@@ -105,7 +136,7 @@ const ContentManagement = () => {
                   <button
                     type="button"
                     onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
-                    className="flex items-center justify-between px-4 py-2 border-2 border-gray-300 rounded-lg bg-white focus:outline-none focus:border-black avant text-sm select-none w-40"
+                    className="flex items-center justify-between px-4 py-2 border-2 text-black border-gray-300 rounded-lg bg-white focus:outline-none focus:border-black avant text-sm select-none w-40"
                   >
                     <span>{categoryOptions.find(cat => cat.value === selectedCategory)?.label}</span>
                     <img
@@ -115,13 +146,16 @@ const ContentManagement = () => {
                     />
                   </button>
                   {showCategoryDropdown && (
-                    <div className="absolute top-full left-0 mt-2 w-full bg-white border-2 border-gray-300 rounded-lg shadow-lg z-50 overflow-hidden">
+                    <div className="absolute top-full left-0 mt-2 w-full text-black bg-white border-2 border-gray-300 rounded-lg shadow-lg z-50 overflow-hidden">
                       {categoryOptions.map((option, index) => (
                         <button
                           key={option.value}
                           onClick={() => {
                             setSelectedCategory(option.value);
                             setShowCategoryDropdown(false);
+                            setActiveTab('categories');
+                            // navigate to the specific category content route
+                            navigate(`/admin/content/categories/${option.value}`);
                           }}
                           className={`w-full px-4 py-2 text-left text-sm avant transition-colors ${
                             selectedCategory === option.value ? "bg-gray-100 font-medium" : ""
@@ -161,7 +195,7 @@ const ContentManagement = () => {
                   <button
                     type="button"
                     onClick={() => setShowCollectionDropdown(!showCollectionDropdown)}
-                    className="flex items-center justify-between px-4 py-2 border-2 border-gray-300 rounded-lg bg-white focus:outline-none focus:border-black avant text-sm select-none w-60"
+                    className="flex items-center justify-between px-4 py-2 border-2 text-black border-gray-300 rounded-lg bg-white focus:outline-none focus:border-black avant text-sm select-none w-60"
                   >
                     <span>{collectionOptions.find(col => col.value === selectedCollection)?.label}</span>
                     <img
@@ -171,13 +205,17 @@ const ContentManagement = () => {
                     />
                   </button>
                   {showCollectionDropdown && (
-                    <div className="absolute top-full left-0 mt-2 w-full bg-white border-2 border-gray-300 rounded-lg shadow-lg z-50 overflow-hidden">
+                    <div className="absolute top-full left-0 mt-2 w-full bg-white  text-black border-2 border-gray-300 rounded-lg shadow-lg z-50 overflow-hidden">
                       {collectionOptions.map((option, index) => (
                         <button
                           key={option.value}
                           onClick={() => {
                             setSelectedCollection(option.value);
                             setShowCollectionDropdown(false);
+                            setActiveTab('collections');
+                            // map internal value to route slug used in App.jsx
+                            const map = (val) => (val === 'love' ? 'love-language' : val);
+                            navigate(`/admin/content/collections/${map(option.value)}`);
                           }}
                           className={`w-full px-4 py-2 text-left text-sm avant transition-colors ${
                             selectedCollection === option.value ? "bg-gray-100 font-medium" : ""
@@ -213,13 +251,11 @@ const ContentManagement = () => {
             </div>
           </div>
 
-          {/* Empty Content Container */}
+          {/* Empty Content Container (renders nested routes) */}
           <div className="bg-white border-2 border-[#000000] rounded-lg overflow-hidden">
-            {/* Empty Body */}
             <div className="px-6 py-16 text-center text-gray-500 avant">
-              {activeTab === 'homepage' && 'Homepage content will be displayed here'}
-              {activeTab === 'categories' && `${categoryOptions.find(cat => cat.value === selectedCategory)?.label} content will be displayed here`}
-              {activeTab === 'collections' && `${collectionOptions.find(col => col.value === selectedCollection)?.label} content will be displayed here`}
+              {/* Child routes will render here */}
+              <Outlet />
             </div>
           </div>
 
