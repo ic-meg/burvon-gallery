@@ -910,7 +910,7 @@ const AdminProducts = () => {
             <div>
               <button 
                 onClick={() => setShowAddProductModal(true)}
-                className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors avant text-sm font-medium"
+                className="px-6 py-2 bg-black text-white uppercase rounded-lg hover:bg-gray-800 transition-colors avantbold text-sm font-medium"
               >
                 Add New Product
               </button>

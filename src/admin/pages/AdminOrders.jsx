@@ -425,7 +425,7 @@ const AdminOrders = () => {
                   <button
                     onClick={handleMarkAsDelivered}
                     disabled={selectedOrders.length === 0}
-                    className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors avant text-sm font-medium"
+                    className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors avantbold text-sm font-medium"
                   >
                     MARK AS DELIVERED
                   </button>
