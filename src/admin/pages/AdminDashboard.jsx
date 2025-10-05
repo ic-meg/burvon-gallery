@@ -203,7 +203,7 @@ const AdminDashboard = () => {
             
             {/* To-Do List */}
             <div className="lg:col-span-1">
-              <div className="bg-white border-2 border-[#000000] rounded-lg p-6">
+              <div className="bg-white border-2 border-[#000000] rounded-lg p-6 h-full">
                 <h2 className="text-3xl avantbold text-black mb-2">To-Do List</h2>
                 
                 <div className="space-y-1">
@@ -215,7 +215,7 @@ const AdminDashboard = () => {
                       <span className="text-[#000000] avant text-xl">Pending Orders</span>
                       <span className="bg-transparent text-[#FF0000] border-2 border-[#FF0000] avantbold text-xs px-3 py-1 rounded-lg">Urgent</span>
                     </div>
-                    <span className="text-3xl avantbold">3</span>
+                    <span className="text-[#000000] text-3xl avantbold">3</span>
                   </div>
                   
                   <div 
@@ -226,7 +226,7 @@ const AdminDashboard = () => {
                       <span className="text-[#000000] avant text-xl">Low Stock Items</span>
                       <span className="bg-transparent text-[#FF0000] border-2 border-[#FF0000] avantbold text-xs px-3 py-1 rounded-lg">Urgent</span>
                     </div>
-                    <span className="text-3xl avantbold">3</span>
+                    <span className="text-[#000000] text-3xl avantbold">3</span>
                   </div>
                   
                   <div 
@@ -237,7 +237,7 @@ const AdminDashboard = () => {
                       <span className="text-[#000000] avant text-xl">Return/Refund Request</span>
                       <span className="bg-transparent text-[#FF0000] border-2 border-[#FF0000] avantbold text-xs px-3 py-1 rounded-lg">Urgent</span>
                     </div>
-                    <span className="text-3xl avantbold">3</span>
+                    <span className="text-[#000000] text-3xl avantbold">3</span>
                   </div>
                   
                   <div 
@@ -248,7 +248,7 @@ const AdminDashboard = () => {
                       <span className="text-[#000000] avant text-xl">Cancellation Request</span>
                       <span className="bg-transparent text-[#FF0000] border-2 border-[#FF0000] avantbold text-xs px-3 py-1 rounded-lg">Urgent</span>
                     </div>
-                    <span className="text-3xl avantbold">3</span>
+                    <span className="text-[#000000] text-3xl avantbold">3</span>
                   </div>
                   
                   <div 

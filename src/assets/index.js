@@ -77,6 +77,7 @@ import PrevIConBlack from './icons/PrevIconBlack.svg';
 import AddImage from './icons/AddImage.svg';
 import Remove from './icons/Remove.svg';
 import Add3D from './icons/Add3D.svg';
+import AddVideo from './icons/AddVideo.png';
  
 // IMAGES
 import LogoImage from './logo/black_brv.png';
@@ -323,5 +324,6 @@ export {
   PrevIConBlack,
   AddImage,
   Remove,
-  Add3D
+  Add3D,
+  AddVideo
 };
