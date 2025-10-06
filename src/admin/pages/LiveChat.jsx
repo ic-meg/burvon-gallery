@@ -10,14 +10,14 @@ import {
 
 const LiveChat = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState('UNANSWERED'); // Default to UNANSWERED
-  const [selectedChat, setSelectedChat] = useState(null); // Will be set based on available chats
-  const [lastOpenedChat, setLastOpenedChat] = useState(null); // Track last opened chat
-  const [newMessage, setNewMessage] = useState('');
+  const [selectedFilter, setSelectedFilter] = useState('CHAT'); // Default to CHAT
+  const [selectedChat, setSelectedChat] = useState(null); // No auto-selection
+  const [lastOpenedChat, setLastOpenedChat] = useState(null);
+  const [messagesByChat, setMessagesByChat] = useState({}); // Store messages per chat
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [showEditTemplateModal, setShowEditTemplateModal] = useState(false);
-  const [previouslyOpenedChats, setPreviouslyOpenedChats] = useState(new Set()); // Track opened chats
-  const [activelyAnswering, setActivelyAnswering] = useState(null); // Track chat being actively answered
+  const [previouslyOpenedChats, setPreviouslyOpenedChats] = useState(new Set());
+  const [activelyAnswering, setActivelyAnswering] = useState(null);
   const [newTemplate, setNewTemplate] = useState({
     title: '',
     content: '',
@@ -43,7 +43,7 @@ const LiveChat = () => {
       lastMessage: "Hi, I need help with my order.",
       lastSender: "customer",
       timestamp: "9:47PM",
-      status: "unread", // New customer messages that haven't been read by admin
+      status: "unread",
       unreadCount: 2,
       isOnline: true,
       messages: [
@@ -70,7 +70,7 @@ const LiveChat = () => {
       lastMessage: "Can you help me with sizing?",
       lastSender: "customer",
       timestamp: "9:45PM",
-      status: "unanswered", // Messages that have been read but no admin reply yet
+      status: "unanswered",
       unreadCount: 0,
       isOnline: true,
       messages: [
@@ -97,7 +97,7 @@ const LiveChat = () => {
       lastMessage: "You: Thank you for contacting us! Your order has been processed.",
       lastSender: "admin",
       timestamp: "9:40PM",
-      status: "answered", // Conversations where admin has replied and waiting for customer response
+      status: "answered",
       unreadCount: 0,
       isOnline: false,
       messages: [
@@ -158,7 +158,7 @@ const LiveChat = () => {
       lastMessage: "You: The issue has been resolved. Have a great day!",
       lastSender: "admin",
       timestamp: "8:30PM",
-      status: "resolved", // Conversations that have been manually marked as resolved/closed
+      status: "resolved",
       unreadCount: 0,
       isOnline: false,
       messages: [
@@ -210,17 +210,30 @@ const LiveChat = () => {
     }
   ]);
 
-  // Filter options with proper counts and new structure - Single line layout with inline numbers
+  // Updated filter options - Chat includes all except resolved, Unread only unread messages, Resolved only resolved
   const filterOptions = [
-    { value: 'UNREAD', label: 'UNREAD', count: chats.filter(c => c.status === 'unread').length },
-    { value: 'UNANSWERED', label: 'UNANSWERED', count: chats.filter(c => c.status === 'unanswered').length },
-    { value: 'ANSWERED', label: 'ANSWERED', count: chats.filter(c => c.status === 'answered').length },
-    { value: 'RESOLVED', label: 'RESOLVED', count: chats.filter(c => c.status === 'resolved').length }
+    { 
+      value: 'CHAT', 
+      label: 'CHAT', 
+      count: chats.filter(c => c.status !== 'resolved').length 
+    },
+    { 
+      value: 'UNREAD', 
+      label: 'UNREAD', 
+      count: chats.filter(c => c.status === 'unread').length 
+    },
+    { 
+      value: 'RESOLVED', 
+      label: 'RESOLVED', 
+      count: chats.filter(c => c.status === 'resolved').length 
+    }
   ];
 
-  // Get filtered chats
+  // Get filtered chats with updated logic
   const filteredChats = chats.filter(chat => {
-    const matchesFilter = chat.status.toLowerCase() === selectedFilter.toLowerCase();
+    const matchesFilter = selectedFilter === 'CHAT' ? 
+      chat.status !== 'resolved' : 
+      chat.status.toLowerCase() === selectedFilter.toLowerCase();
     const matchesSearch = chat.customerName.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
   });
@@ -228,21 +241,18 @@ const LiveChat = () => {
   // Get current chat
   const currentChat = chats.find(chat => chat.id === selectedChat);
 
-  // Initialize selected chat based on filter and last opened chat
-  useEffect(() => {
-    if (!selectedChat) {
-      if (lastOpenedChat && chats.find(c => c.id === lastOpenedChat)) {
-        // If returning to page, select the last opened chat
-        setSelectedChat(lastOpenedChat);
-      } else {
-        // Otherwise select first chat in current filter
-        const firstChat = filteredChats[0];
-        if (firstChat) {
-          setSelectedChat(firstChat.id);
-        }
-      }
-    }
-  }, [chats, filteredChats, lastOpenedChat, selectedChat]);
+  // Get current message for this chat
+  const getCurrentMessage = () => {
+    return messagesByChat[selectedChat] || '';
+  };
+
+  // Set message for current chat
+  const setCurrentMessage = (message) => {
+    setMessagesByChat(prev => ({
+      ...prev,
+      [selectedChat]: message
+    }));
+  };
 
   // Auto-resize textarea
   const adjustTextareaHeight = () => {
@@ -255,7 +265,7 @@ const LiveChat = () => {
   // Handle file selection
   const handleFileSelect = () => {
     if (fileInputRef.current) {
-      fileInputRef.current.value = ''; // Reset file input to allow same file selection
+      fileInputRef.current.value = '';
       fileInputRef.current.click();
     }
   };
@@ -263,7 +273,7 @@ const LiveChat = () => {
   // Handle file upload (multiple files up to 4)
   const handleFileUpload = (event) => {
     const files = Array.from(event.target.files);
-    const newFiles = files.slice(0, 4 - selectedFiles.length); // Limit to 4 total
+    const newFiles = files.slice(0, 4 - selectedFiles.length);
     
     if (newFiles.length > 0) {
       setSelectedFiles(prev => [...prev, ...newFiles].slice(0, 4));
@@ -279,7 +289,6 @@ const LiveChat = () => {
   // Handle chat click with improved status management
   const handleChatClick = (chatId) => {
     // Update previously opened chats to move them to unanswered if they were unread
-    // BUT don't move the chat we're currently actively answering
     if (selectedChat && selectedChat !== chatId && selectedChat !== activelyAnswering) {
       setChats(prevChats => 
         prevChats.map(chat => 
@@ -327,7 +336,7 @@ const LiveChat = () => {
 
   // Handle message input change - mark chat as actively being answered
   const handleMessageInputChange = (e) => {
-    setNewMessage(e.target.value);
+    setCurrentMessage(e.target.value);
     
     // If user starts typing, mark this chat as actively being answered
     if (e.target.value.trim() && currentChat && currentChat.status === 'unread') {
@@ -342,16 +351,17 @@ const LiveChat = () => {
 
   // Handle send message with file display - moves chat to "answered" tab
   const handleSendMessage = () => {
-    if ((!newMessage.trim() && selectedFiles.length === 0) || !currentChat) return;
+    const currentMessage = getCurrentMessage();
+    if ((!currentMessage.trim() && selectedFiles.length === 0) || !currentChat) return;
 
     const newMsg = {
       id: currentChat.messages.length + 1,
       sender: "admin",
-      content: newMessage || '', // Text content
+      content: currentMessage || '',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       files: selectedFiles.map(file => ({
         ...file,
-        url: createFilePreview(file), // Create preview URL
+        url: createFilePreview(file),
         type: file.type,
         name: file.name,
         size: file.size
@@ -365,18 +375,19 @@ const LiveChat = () => {
           ? { 
               ...chat, 
               messages: [...chat.messages, newMsg],
-              lastMessage: newMessage || `You: Sent ${selectedFiles.length} file(s)`,
+              lastMessage: currentMessage || `You: Sent ${selectedFiles.length} file(s)`,
               lastSender: "admin",
               timestamp: newMsg.timestamp,
-              status: 'answered' // Move to answered when admin replies (waiting for customer response)
+              status: 'answered'
             }
           : chat
       )
     );
 
-    setNewMessage('');
+    // Clear message for this chat
+    setCurrentMessage('');
     setSelectedFiles([]);
-    setActivelyAnswering(null); // Clear active answering status after sending
+    setActivelyAnswering(null);
     
     // Reset textarea height
     if (textareaRef.current) {
@@ -393,12 +404,12 @@ const LiveChat = () => {
           : chat
       )
     );
-    setActivelyAnswering(null); // Clear active answering status
+    setActivelyAnswering(null);
   };
 
   // Handle use template
   const handleUseTemplate = (template) => {
-    setNewMessage(template.content);
+    setCurrentMessage(template.content);
     
     // Mark as actively answering when using template
     if (currentChat && currentChat.status === 'unread') {
@@ -483,7 +494,7 @@ const LiveChat = () => {
   // Adjust textarea height on message change
   useEffect(() => {
     adjustTextareaHeight();
-  }, [newMessage]);
+  }, [getCurrentMessage()]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -516,11 +527,11 @@ const LiveChat = () => {
         <div className="max-w-7xl mx-auto">
           <div className="bg-white border-2 border-black rounded-lg overflow-hidden h-[700px] flex">
             
-            {/* Left Panel - Chat List (Adjusted width for better button layout) */}
+            {/* Left Panel - Chat List */}
             <div className="w-[35%] border-r-2 border-black flex flex-col">
               {/* Filter and Search */}
               <div className="p-4 border-b border-gray-200">
-                {/* Filter Buttons - Single line with inline numbers */}
+                {/* Updated Filter Buttons - Chat, Unread, Resolved */}
                 <div className="flex gap-1 mb-4">
                   {filterOptions.map(option => (
                     <button
@@ -594,7 +605,7 @@ const LiveChat = () => {
               </div>
             </div>
 
-            {/* Center Panel - Chat Messages (Adjusted width) */}
+            {/* Center Panel - Chat Messages */}
             <div className="flex-[1.4] flex flex-col">
               {currentChat ? (
                 <>
@@ -636,9 +647,9 @@ const LiveChat = () => {
                             ? 'bg-black text-white'
                             : `${!message.isRead ? 'bg-yellow-100 border-2 border-yellow-300' : 'bg-gray-200'} text-black`
                         }`}>
-                          {/* Text content */}
+                          {/* Text content with proper word breaking */}
                           {message.content && (
-                            <p className="text-sm avant break-words whitespace-pre-wrap mb-2">{message.content}</p>
+                            <p className="text-sm avant break-words whitespace-pre-wrap mb-2" style={{ wordBreak: 'break-word' }}>{message.content}</p>
                           )}
                           
                           {/* File display */}
@@ -750,7 +761,7 @@ const LiveChat = () => {
                       <textarea
                         ref={textareaRef}
                         placeholder="Type your message..."
-                        value={newMessage}
+                        value={getCurrentMessage()}
                         onChange={handleMessageInputChange}
                         onKeyPress={(e) => {
                           if (e.key === 'Enter' && !e.shiftKey) {
@@ -771,8 +782,14 @@ const LiveChat = () => {
                   </div>
                 </>
               ) : (
-                <div className="flex-1 flex items-center justify-center">
-                  <p className="text-gray-500 avant">Select a conversation to start chatting</p>
+                // Default Welcome Screen when no chat is selected
+                <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+                  <div className="bg-gray-100 rounded-full w-24 h-24 flex items-center justify-center mb-6">
+                    <span className="text-4xl">💬</span>
+                  </div>
+                  <h3 className="text-2xl avantbold text-gray-800 mb-2">Welcome to Live Chat</h3>
+                  <p className="text-gray-600 avant text-lg mb-4">Select a conversation from the left to start chatting</p>
+                  <p className="text-gray-500 avant text-sm">Choose any customer conversation to view messages and respond</p>
                 </div>
               )}
             </div>
