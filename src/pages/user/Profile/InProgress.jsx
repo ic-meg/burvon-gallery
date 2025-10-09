@@ -121,6 +121,7 @@ const ProfileDesktop = ({ openModal, onEditProfile }) => {
   const [activeTab, setActiveTab] = useState('TO RECEIVED') 
   const orders = ordersByTab[activeTab] || []
   const selectedOrder = orders[0]
+  const navigate = useNavigate() // Add this line
 
   return (
     <div className="hidden md:block min-h-screen bg-[#181818] px-0 py-34 text-[#fff7dc]">
@@ -238,7 +239,11 @@ const ProfileDesktop = ({ openModal, onEditProfile }) => {
                         </div>
                       </div>
                       <div className="flex gap-2 mb-17">
-                        <button className="avantbold rounded border border-[#FFF7DC] cream-text px-4 py-2 cursor-pointer">VIEW ORDER</button>
+                        <button className="avantbold rounded border border-[#FFF7DC] cream-text px-4 py-2 cursor-pointer"
+                        onClick={() => navigate('/profile/vieworder-inprogress')}
+                        >
+                          VIEW ORDER
+                        </button>
                         <button className="avantbold cream-bg metallic-text px-4 py-2 rounded border border-[#FFF7DC] cursor-pointer">ORDER RECEIVED</button>
                       </div>
                     </div>
@@ -347,7 +352,11 @@ const ProfileMobile = ({ openModal, onEditProfile }) => {
               </div>
             </div>
             <div className="flex justify-end gap-2 mt-6 mb-2">
-              <button className="avantbold rounded border border-[#FFF7DC] cream-text px-4 py-3 text-sm">VIEW ORDER</button>
+              <button className="avantbold rounded border border-[#FFF7DC] cream-text px-4 py-3 text-sm"
+              onClick={() => navigate('/profile/vieworder-inprogress')}
+              >
+                VIEW ORDER
+              </button>
               <button className="avantbold cream-bg metallic-text px-4 py-0 rounded border border-[#FFF7DC] text-sm">ORDER RECEIVED</button>
             </div>
             <div className="w-full h-[1px] bg-[#FFF7DC] mt-4" />
