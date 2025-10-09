@@ -75,9 +75,12 @@ import DecreaseIcon from './icons/decrease.png';
 import NextIConBlack from './icons/NextIconBlack.svg';
 import PrevIConBlack from './icons/PrevIconBlack.svg';
 import AddImage from './icons/AddImage.svg';
+import AddImageCream from './icons/AddImage-cream.png';
 import Remove from './icons/Remove.svg';
 import Add3D from './icons/Add3D.svg';
 import AddVideo from './icons/AddVideo.png';
+import AddVideoCream from './icons/AddVideo-cream.png';
+import editIcon from './icons/editIcon.png';
  
 // IMAGES
 import LogoImage from './logo/black_brv.png';
@@ -323,7 +326,10 @@ export {
   NextIConBlack,
   PrevIConBlack,
   AddImage,
+  AddImageCream,
   Remove,
   Add3D,
-  AddVideo
+  AddVideo,
+  AddVideoCream,
+  editIcon
 };
