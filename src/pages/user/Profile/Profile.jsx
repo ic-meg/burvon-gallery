@@ -121,6 +121,7 @@ const ProfileDesktop = ({ openModal, onEditProfile }) => {
   const [activeTab, setActiveTab] = useState('TO SHIP')
   const orders = ordersByTab[activeTab] || []
   const selectedOrder = orders[0]
+  const navigate = useNavigate() 
 
   return (
     <div className="hidden md:block min-h-screen bg-[#181818] px-0 py-34 text-[#fff7dc]">
@@ -132,7 +133,7 @@ const ProfileDesktop = ({ openModal, onEditProfile }) => {
         </div>
         <button className="avant cream-text text-md flex items-center gap-1 cursor-pointer" onClick={onEditProfile}>
           <span>Edit Profile</span>
-          <img src={editIcon} alt="Edit" className="w-5 h-5" /> {/* edit icon image */}
+          <img src={editIcon} alt="Edit" className="w-5 h-5" />
         </button>
       </div>
       {/* Cream horizontal line */}
@@ -140,7 +141,7 @@ const ProfileDesktop = ({ openModal, onEditProfile }) => {
         <div className="h-[4px] bg-[#FFF7DC] w-full" />
       </div>
       <div className="flex flex-row gap-0 px-12 pt-8">
-        {/* Sidebar "To Ship, To Received..." */}
+        {/* Sidebar */}
         <div className="relative flex flex-col avantbold cream-text text-xl gap-3 min-w-[140px] pt-2 mr-8 cursor-pointer">
           {tabs.map((tab, idx) => (
             <button
@@ -154,7 +155,6 @@ const ProfileDesktop = ({ openModal, onEditProfile }) => {
           ))}
           {/* Vertical Divider */}
           <div className="absolute top-0 right-[-18px] h-full flex flex-col items-center" style={{ width: '32px' }}>
-            {/* Cream highlight box - moves with active tab */}
             <div
               className="bg-[#FFF7DC] w-2 h-8 transition-all duration-300"
               style={{
@@ -164,7 +164,6 @@ const ProfileDesktop = ({ openModal, onEditProfile }) => {
                 zIndex: 2,
               }}
             />
-            {/* Vertical line */}
             <div
               className="bg-[#FFF7DC] w-[3px]"
               style={{
@@ -183,11 +182,9 @@ const ProfileDesktop = ({ openModal, onEditProfile }) => {
         <div className="flex flex-col flex-1 gap-6">
           {selectedOrder ? (
             <>
-              {/* ORDER ID */}
               <div className="avantbold cream-text text-2xl mb-2 font-bold">ORDER ID : #{selectedOrder.id}</div>
               {selectedOrder.items.map((item, idx) => (
                 <div key={item.variant} className="flex items-center justify-between rounded-lg px-0 py-2 w-full">
-                  {/* Image and product info */}
                   <div className="flex items-center gap-4 min-w-[320px]">
                     <img
                       src={item.image}
@@ -196,19 +193,19 @@ const ProfileDesktop = ({ openModal, onEditProfile }) => {
                       onClick={() => openModal(item.image)}
                     />
                     <div>
-                      <div className="avantbold cream-text text-lg text-nowrap">{item.name}</div> {/* product name */}
-                      <div className="bebas cream-text text-lg">{item.variant}</div> {/* product type "odyssey" */}
+                      <div className="avantbold cream-text text-lg text-nowrap">{item.name}</div>
+                      <div className="bebas cream-text text-lg">{item.variant}</div>
                       <div className="flex gap-2 items-center mt-1">
                         <span
                           className="avant text-md line-through"
                           style={{ color: '#959595' }}
                         >
                           ₱ {item.oldPrice}.00
-                        </span> {/* nakacrossed out na price */}
-                        <span className="avantbold cream-text text-lg">₱ {item.price}.00</span> {/* price */}
+                        </span>
+                        <span className="avantbold cream-text text-lg">₱ {item.price}.00</span>
                       </div>
-                      <div className="avantbold cream-text text-md mt-1" style={{ color: '#959595' }}>QUANTITY: {item.quantity} &nbsp; SIZE: {item.size}
-                      
+                      <div className="avantbold cream-text text-md mt-1" style={{ color: '#959595' }}>
+                        QUANTITY: {item.quantity} &nbsp; SIZE: {item.size}
                       </div>
                     </div>
                   </div>
@@ -216,7 +213,7 @@ const ProfileDesktop = ({ openModal, onEditProfile }) => {
                   {idx === 0 && (
                     <div className="flex flex-row items-center justify-between w-full ml-8">
                       <div className="flex flex-col gap-1 ml-45 mr-12">
-                        <div className="flex gap-20"> {/* gap between order date and expected delivery */}
+                        <div className="flex gap-20">
                           <div>
                             <div className="avantbold cream-text text-md">ORDER DATE:</div>
                             <div className="avantbold cream-text text-lg">{selectedOrder.date}</div>
@@ -226,7 +223,7 @@ const ProfileDesktop = ({ openModal, onEditProfile }) => {
                             <div className="avantbold cream-text text-lg">{selectedOrder.delivery}</div>
                           </div>
                         </div>
-                        <div className="flex gap-14 mt-2"> {/* gap between total quantity and subtotal */}
+                        <div className="flex gap-14 mt-2">
                           <div>
                             <div className="avantbold cream-text text-md">TOTAL QUANTITY:</div>
                             <div className="avantbold cream-text text-lg">{selectedOrder.totalQty}</div>
@@ -238,8 +235,15 @@ const ProfileDesktop = ({ openModal, onEditProfile }) => {
                         </div>
                       </div>
                       <div className="flex gap-2 mb-17">
-                        <button className="avantbold rounded border border-[#FFF7DC] cream-text px-4 py-2 cursor-pointer">VIEW ORDER</button>
-                        <button className="avantbold cream-bg metallic-text px-4 py-2 rounded border border-[#FFF7DC] cursor-pointer">CONTACT SELLER</button>
+                        <button
+                          className="avantbold rounded border border-[#FFF7DC] cream-text px-4 py-2 cursor-pointer"
+                          onClick={() => navigate('/profile/vieworder')}
+                        >
+                          VIEW ORDER
+                        </button>
+                        <button className="avantbold cream-bg metallic-text px-4 py-2 rounded border border-[#FFF7DC] cursor-pointer">
+                          CONTACT SELLER
+                        </button>
                       </div>
                     </div>
                   )}
@@ -261,7 +265,7 @@ const ProfileMobile = ({ openModal, onEditProfile }) => {
   const [activeTab, setActiveTab] = useState('TO SHIP')
   const orders = ordersByTab[activeTab] || []
   const selectedOrder = orders[0]
-  const navigate = useNavigate() 
+  const navigate = useNavigate()
 
   return (
     <div className="md:hidden w-full min-h-screen px-4 pt-2 text-[#fff7dc] relative">
@@ -269,14 +273,12 @@ const ProfileMobile = ({ openModal, onEditProfile }) => {
         HI, REBELS!
         <button className="avant text-xs cream-text ml-2 align-middle" onClick={onEditProfile}>
           <span>Edit Profile</span>
-          <img src={editIcon} alt="Edit" className="w-4 h-4 inline-block ml-1" /> {/* edit icon image */}
+          <img src={editIcon} alt="Edit" className="w-4 h-4 inline-block ml-1" />
         </button>
       </div>
       <div className="bebas cream-text text-center text-2xl mt-9 mb-4">SHOPPING HISTORY</div>
       <div className="w-full px-2 relative mb-2">
-        {/* Long horizontal line */}
         <div className="absolute left-0 right-0 top-1/2 translate-y-3 h-[2px] bg-[#FFF7DC] w-full z-0" />
-        {/* Sidebar "To Ship, To Received..."  */}
         <div className="flex flex-row overflow-x-auto scrollbar-hide gap-6 pb-2 relative z-10">
           {tabs.map(tab => (
             <div
@@ -289,7 +291,6 @@ const ProfileMobile = ({ openModal, onEditProfile }) => {
               }}
             >
               <span>{tab}</span>
-              {/* Cream underline for active tab */}
               {tab === activeTab && (
                 <span
                   className="block absolute left-1/2 -translate-x-1/2 bottom-[-6px] w-10 h-[4px] bg-[#FFF7DC]"
@@ -300,7 +301,6 @@ const ProfileMobile = ({ openModal, onEditProfile }) => {
           ))}
         </div>
       </div>
-      {/* Order Section */}
       <div className="mt-4">
         {selectedOrder ? (
           <>
@@ -330,7 +330,6 @@ const ProfileMobile = ({ openModal, onEditProfile }) => {
                   <span className="avant text-sm line-through" style={{ color: '#959595' }}>₱ {selectedOrder.items[0].oldPrice}.00</span>
                   <span className="avantbold cream-text text-sm">₱ {selectedOrder.items[0].price}.00</span>
                 </div>
-                {/* View More button */}
                 <button
                   className="avantbold cream-text text-sm mt-2 flex items-center gap-2 focus:outline-none"
                   onClick={() => setShowSubtotal((prev) => !prev)}
@@ -338,7 +337,6 @@ const ProfileMobile = ({ openModal, onEditProfile }) => {
                 >
                   View More <img src={DropDown} alt="Dropdown" className={`w-3 h-3 inline-block transition-transform ${showSubtotal ? 'rotate-180' : ''}`} />
                 </button>
-                {/* Subtotal */}
                 {showSubtotal && (
                   <div className="flex justify-end mt-2">
                     <span className="avantbold cream-text text-md" style={{ color: '#959595' }}>Subtotal:</span>
@@ -348,8 +346,15 @@ const ProfileMobile = ({ openModal, onEditProfile }) => {
               </div>
             </div>
             <div className="flex justify-end gap-2 mt-6 mb-2">
-              <button className="avantbold rounded border border-[#FFF7DC] cream-text px-4 py-3 text-sm">VIEW ORDER</button>
-              <button className="avantbold cream-bg metallic-text px-4 py-0 rounded border border-[#FFF7DC] text-sm">CONTACT SELLER</button>
+              <button
+                className="avantbold rounded border border-[#FFF7DC] cream-text px-4 py-3 text-sm"
+                onClick={() => navigate('/profile/vieworder')}
+              >
+                VIEW ORDER
+              </button>
+              <button className="avantbold cream-bg metallic-text px-3 py-2 rounded border border-[#FFF7DC] text-xs">
+                CONTACT SELLER
+              </button>
             </div>
             <div className="w-full h-[1px] bg-[#FFF7DC] mt-4" />
           </>

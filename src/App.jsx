@@ -48,6 +48,8 @@ import InProgress from "./pages/user/Profile/InProgress";
 import Delivered from "./pages/user/Profile/Delivered";
 import Cancelled from "./pages/user/Profile/Cancelled";
 import Refund from "./pages/user/Profile/Refund";
+import ViewOrder from "./pages/user/Profile/ViewOrder";
+import ViewOrderInProgress from "./pages/user/Profile/ViewOrder-InProgress";
 
 //admin
 import AdminDashboard from "./admin/pages/AdminDashboard";
@@ -129,6 +131,8 @@ const App = () => {
           <Route path="/profile/delivered" element={<Delivered />} />
           <Route path="/profile/cancelled" element={<Cancelled />} />
           <Route path="/profile/refund" element={<Refund />} />
+          <Route path="/profile/vieworder" element={<ViewOrder />} />
+          <Route path="/profile/vieworder-inprogress" element={<ViewOrderInProgress />} />
 
           {/*Admin */}
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
