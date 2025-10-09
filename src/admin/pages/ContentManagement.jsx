@@ -108,7 +108,7 @@ const ContentManagement = () => {
                       if (tab.id === 'homepage') {
                         navigate('/admin/content/homepage');
                       } else if (tab.id === 'categories') {
-                        navigate('/admin/content/categories');
+                        navigate('/admin/content/categories/necklaces');
                       } else if (tab.id === 'collections') {
                         // navigate into the new nested collections route
                         navigate('/admin/content/collections');
