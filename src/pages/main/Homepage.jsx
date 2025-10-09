@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Layout from "../../components/Layout";
 import { useNavigate } from "react-router-dom";
+import { useContent } from "../../contexts/ContentContext";
 
 import {
   KidsCollectionBanner,
@@ -182,6 +183,9 @@ const Homepage = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [openIndex, setOpenIndex] = useState(null);
 
+  // Homepage content from admin context
+  const { homepageContent, loading: contentLoading } = useContent();
+
   const rebelsScrollRef = useRef(null);
   const burvonScrollRef = useRef(null);
 
@@ -202,10 +206,11 @@ const Homepage = () => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % heroImages.length);
+      const totalImages = getDynamicHeroImages()?.length || heroImages.length;
+      setCurrentIndex((prev) => (prev + 1) % totalImages);
     }, 4000);
     return () => clearInterval(interval);
-  }, []);
+  }, [homepageContent]);
 
   // Preload critical images for better performance
   useEffect(() => {
@@ -429,6 +434,14 @@ const Homepage = () => {
   const atEndBurvon =
     collectionIndex === burvonsCollections.length - MAX_VISIBLE_BURVON;
 
+  // Get dynamic hero images from admin content or fallback to static
+  const getDynamicHeroImages = () => {
+    if (homepageContent?.hero_images && Array.isArray(homepageContent.hero_images) && homepageContent.hero_images.length > 0) {
+      return homepageContent.hero_images.map(url => ({ src: url, webp: url }));
+    }
+    return heroImages; // fallback to static images
+  };
+
   return (
     <Layout full>
       <style>{scrollbarHideStyle}</style>
@@ -442,7 +455,7 @@ const Homepage = () => {
           style={{ transform: `translateX(-${currentIndex * 100}%)` }}
           aria-live="polite"
         >
-          {heroImages.map((image, index) => (
+          {getDynamicHeroImages().map((image, index) => (
             <picture key={index} className="flex-shrink-0 w-full h-full">
               <source srcSet={image.webp} type="image/webp" />
               <img
@@ -455,7 +468,7 @@ const Homepage = () => {
           ))}
         </div>
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex space-x-1 z-20">
-          {heroImages.map((_, index) => (
+          {getDynamicHeroImages().map((_, index) => (
             <span
               key={index}
               className={`w-2 h-2 rounded-full border border-[#FFF7DC] ${
@@ -474,6 +487,8 @@ const Homepage = () => {
           ))}
         </div>
       </section>
+
+      
 
       {/* Rebels Top Picks */}
       <section className="bg-[#1f1f21] py-14">
@@ -907,13 +922,12 @@ const Homepage = () => {
         </div>
       </section>
 
-      {/* Style It On You Section */}
-      <section className="relative w-full bg-[#1F1F21] mt-16 md:mt-24 lg:mt-15">
-        <picture className="w-full">
-          <source srcSet={StyleItWebP} type="image/webp" />
+      {/* Dynamic Try-On Section */}
+      {homepageContent && homepageContent.promo_image && (
+        <section className="relative w-full bg-[#1F1F21] mt-16 md:mt-24 lg:mt-15">
           <img
-            src={StyleItImg}
-            alt="Style It On You"
+            src={homepageContent.promo_image}
+            alt={homepageContent.title || "Try On Feature"}
             className={`w-full object-cover ${
               isMobile ? "h-[400px]" : "h-[500px] md:h-[600px] lg:h-[650px]"
             }`}
@@ -922,39 +936,41 @@ const Homepage = () => {
               objectPosition: isMobile ? "center bottom" : "center center",
             }}
           />
-        </picture>
 
-        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"></div>
 
-        <div className="absolute inset-0 flex items-center">
-          <div className="max-w-7xl mx-auto w-full px-4 sm:px-10 md:px-10 lg:px-5">
-            {/* Removed mx-auto to align left */}
-            <div className="flex flex-col items-center text-center max-w-md md:items-start md:text-left">
-              <h2 className="font-bold text-2xl md:text-3xl lg:text-4xl mb-4 tracking-wide text-[#fff7dc] bebas">
-                STYLE IT ON YOU
-              </h2>
-              <p className="mb-8 text-sm md:text-base lg:text-lg text-[#fff7dc] opacity-90 avant leading-snug">
-                Experience our virtual try-on feature and see <br />
-                how each piece looks on you.
-              </p>
-              <button
-                style={{
-                  backgroundColor:
-                    hoveredButtonId === "try" ? "#FFF7DC" : "transparent",
-                  color: hoveredButtonId === "try" ? "#1F1F21" : "#FFF7DC",
-                  outline: "2px solid #FFF7DC",
-                  borderRadius: 5,
-                }}
-                onMouseEnter={() => setHoveredButtonId("try")}
-                onMouseLeave={() => setHoveredButtonId(null)}
-                className="flex items-center justify-center gap-2 py-3 px-6 avant text-base tracking-wide transition-colors duration-300 outline-none cursor-pointer"
-              >
-                TRY NOW
-              </button>
+          <div className="absolute inset-0 flex items-center">
+            <div className="max-w-7xl mx-auto w-full px-4 sm:px-10 md:px-10 lg:px-5">
+              <div className="flex flex-col items-center text-center max-w-md md:items-start md:text-left">
+                {homepageContent.title && (
+                  <h2 className="font-bold text-2xl md:text-3xl lg:text-4xl mb-4 tracking-wide text-[#fff7dc] bebas">
+                    {homepageContent.title.toUpperCase()}
+                  </h2>
+                )}
+                {homepageContent.description && (
+                  <p className="mb-8 text-sm md:text-base lg:text-lg text-[#fff7dc] opacity-90 avant leading-snug">
+                    {homepageContent.description}
+                  </p>
+                )}
+                <button
+                  style={{
+                    backgroundColor:
+                      hoveredButtonId === "try" ? "#FFF7DC" : "transparent",
+                    color: hoveredButtonId === "try" ? "#1F1F21" : "#FFF7DC",
+                    outline: "2px solid #FFF7DC",
+                    borderRadius: 5,
+                  }}
+                  onMouseEnter={() => setHoveredButtonId("try")}
+                  onMouseLeave={() => setHoveredButtonId(null)}
+                  className="flex items-center justify-center gap-2 py-3 px-6 avant text-base tracking-wide transition-colors duration-300 outline-none cursor-pointer"
+                >
+                  TRY NOW
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Services Highlights Section */}
       <section className="bg-[#1F1F21] py-20 flex justify-center">
