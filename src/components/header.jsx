@@ -17,6 +17,7 @@ import {
 } from "../assets/index";
 
 import SearchOverlay from "./SearchOverlay";
+import { useContent } from "../contexts/ContentContext";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -24,6 +25,7 @@ const Header = () => {
 
   const [isScrolled, setIsScrolled] = useState(false);
   const navigate = useNavigate();
+  const { homepageContent } = useContent();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -122,7 +124,7 @@ const Header = () => {
       >
         {/* Logo */}
         <img
-          src={WhiteLogo}
+          src={homepageContent?.logo_url || WhiteLogo}
           alt="BURVON Logo"
           className="max-h-[80px] w-auto object-contain"
           onClick={() => navigate("/")}
@@ -297,7 +299,7 @@ const Header = () => {
           }}
         >
           <img
-            src={LogoImage}
+            src={homepageContent?.logo_url || LogoImage}
             alt="BURVON Logo"
             className="h-[173px] w-auto object-contain mt-4"
           />
