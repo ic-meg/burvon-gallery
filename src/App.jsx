@@ -4,6 +4,7 @@ import Homepage from "./pages/main/Homepage";
 
 import Template from "./pages/Template";
 import ScrollToTop from "./components/ScrollToTop";
+import { ContentProvider } from "./contexts/ContentContext";
 
 //about
 import ContactUs from "./pages/about/ContactUs";
@@ -75,10 +76,11 @@ import CollectionsContent from "./admin/Contents/Collections/CollectionsContent"
 
 const App = () => {
   return (
-    <Router>
-      <ScrollToTop />
-      <div>
-        <Routes>
+    <ContentProvider>
+      <Router>
+        <ScrollToTop />
+        <div>
+          <Routes>
           <Route path="/" element={<Homepage />} />
           <Route path="/template" element={<Template />} />
 
@@ -176,6 +178,7 @@ const App = () => {
         </Routes>
       </div>
     </Router>
+    </ContentProvider>
   );
 };
 
