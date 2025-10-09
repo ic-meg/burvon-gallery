@@ -1,0 +1,260 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// --------------- ENUMS ---------------
+
+enum UserRole {
+  customer
+  admin
+  manager
+  csr
+  clerk
+}
+
+enum UserStatus {
+  active
+  inactive
+  suspended
+}
+
+enum InventoryChangeType {
+  addition
+  sale
+  return
+  adjustment
+}
+
+enum OrderStatus {
+  Pending
+  Processing
+  Shipped
+  Delivered
+  Cancelled
+  Refunded
+}
+
+enum ShippingMethod {
+  Standard
+}
+
+
+// --------------- MODELS ---------------
+
+model UserAccount {
+  user_id       Int        @id @default(autoincrement())
+  full_name     String?
+  email         String     @unique
+  password_hash String?
+  role          UserRole   @default(customer)
+  status        UserStatus @default(active)
+  can_access    Json?
+  created_at    DateTime   @default(now())
+
+  // relations
+  orders             Order[]
+  refunds            Refund[]
+  chats_sent         ChatMessage[]       @relation("UserChats")
+  chats_admin        ChatMessage[]       @relation("AdminChats")
+  homepage_updates   HomepageContent[]
+  category_updates   CategoryContent[]
+  collection_updates CollectionContent[]
+
+  Wishlist Wishlist[]
+
+  Cart Cart[]
+
+  Category Category[]
+}
+
+model Category {
+  category_id       Int          @id @default(autoincrement())
+  name              String       @unique
+  updated_at        DateTime     @default(now())
+  updated_by        Int?
+  updatedBy         UserAccount? @relation(fields: [updated_by], references: [user_id])
+
+  Product Product[]
+
+  CategoryContent CategoryContent[]
+}
+
+model Collection {
+  collection_id     Int      @id @default(autoincrement())
+  name              String   @unique
+  created_at        DateTime @default(now())
+
+  products Product[]
+
+  CollectionContent CollectionContent[]
+}
+
+model Product {
+  product_id     Int      @id @default(autoincrement())
+  sku            String?  @unique
+  name           String
+  description    String?
+  original_price Decimal?
+  current_price  Decimal?
+  stock          Int      @default(0)
+  size           String?
+  images         Json?
+  created_at     DateTime @default(now())
+
+  // relations
+  category_id   Int?
+  collection_id Int?
+  category      Category?   @relation(fields: [category_id], references: [category_id])
+  collection    Collection? @relation(fields: [collection_id], references: [collection_id])
+  inventory     Inventory[]
+  cartItems     Cart[]
+  wishlistItems Wishlist[]
+  orderItems    OrderItem[]
+}
+
+model Inventory {
+  inventory_id Int                 @id @default(autoincrement())
+  product_id   Int
+  quantity     Int
+  change_type  InventoryChangeType
+  note         String?
+  change_date  DateTime            @default(now())
+
+  product Product @relation(fields: [product_id], references: [product_id])
+}
+
+model Cart {
+  cart_id    Int      @id @default(autoincrement())
+  user_id    Int
+  product_id Int
+  quantity   Int      @default(1)
+  added_at   DateTime @default(now())
+
+  user    UserAccount @relation(fields: [user_id], references: [user_id])
+  product Product     @relation(fields: [product_id], references: [product_id])
+}
+
+model Wishlist {
+  wishlist_id Int      @id @default(autoincrement())
+  user_id     Int
+  product_id  Int
+  added_at    DateTime @default(now())
+
+  user    UserAccount @relation(fields: [user_id], references: [user_id])
+  product Product     @relation(fields: [product_id], references: [product_id])
+}
+
+model Order {
+  order_id         Int            @id @default(autoincrement())
+  user_id          Int?
+  shipping_address String?
+  phone            String?
+  shipping_method  ShippingMethod @default(Standard)
+  payment_method   String
+  total_price      Decimal?
+  status           OrderStatus    @default(Pending)
+  created_at       DateTime       @default(now())
+  delivered_date   DateTime?
+
+  user    UserAccount? @relation(fields: [user_id], references: [user_id])
+  items   OrderItem[]
+  refunds Refund[]
+}
+
+model OrderItem {
+  order_item_id Int     @id @default(autoincrement())
+  order_id      Int
+  product_id    Int?
+  quantity      Int
+  price         Decimal
+
+  order   Order    @relation(fields: [order_id], references: [order_id])
+  product Product? @relation(fields: [product_id], references: [product_id])
+}
+
+model Refund {
+  refund_id    Int      @id @default(autoincrement())
+  order_id     Int
+  amount       Decimal?
+  reason       String?
+  refund_date  DateTime @default(now())
+  processed_by Int?
+
+  order       Order        @relation(fields: [order_id], references: [order_id])
+  processedBy UserAccount? @relation(fields: [processed_by], references: [user_id])
+}
+
+model ChatMessage {
+  chat_id       Int      @id @default(autoincrement())
+  user_id       Int?
+  admin_id      Int?
+  message       String
+  is_from_admin Boolean  @default(false)
+  is_resolved   Boolean  @default(false)
+  created_at    DateTime @default(now())
+
+  user  UserAccount? @relation("UserChats", fields: [user_id], references: [user_id])
+  admin UserAccount? @relation("AdminChats", fields: [admin_id], references: [user_id])
+}
+
+model AutoReply {
+  auto_reply_id    Int      @id @default(autoincrement())
+  title            String?
+  reply_message    String?
+  trigger_keywords String[]
+  created_at       DateTime @default(now())
+}
+
+model HomepageContent {
+  id                 Int          @id @default(autoincrement())
+  logo_url           String?
+  hero_images        Json?
+  title              String?
+  description        String?
+  promo_image        String?
+  updated_by         Int?
+  updated_at         DateTime     @default(now())
+  UserAccount        UserAccount? @relation(fields: [userAccountUser_id], references: [user_id])
+  userAccountUser_id Int?
+}
+
+model CategoryContent {
+  id                 Int          @id @default(autoincrement())
+  category_id        Int?
+  category          Category?    @relation(fields: [category_id], references: [category_id])  
+  slug               String       @unique
+  category_images    Json?      // multiple images
+  title              String?
+  description        String?
+  promo_images       String? 
+  updated_by         Int?
+  updated_at         DateTime     @default(now())
+  UserAccount        UserAccount? @relation(fields: [userAccountUser_id], references: [user_id])
+  userAccountUser_id Int?
+}
+
+model CollectionContent {
+  id                 Int          @id @default(autoincrement())
+  collection_id      Int?
+  collection         Collection?  @relation(fields: [collection_id], references: [collection_id])
+  slug               String       @unique
+  collection_image   Json?    // multiple images
+  title              String?
+  description        String?
+  promo_images       String?
+  updated_at         DateTime     @default(now())
+  UserAccount        UserAccount? @relation(fields: [userAccountUser_id], references: [user_id])
+  userAccountUser_id Int?
+}
