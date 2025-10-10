@@ -232,7 +232,7 @@ const Homepage = () => {
             };
           });
           
-          console.log('Transformed collections:', transformedCollections);
+          // console.log('Transformed collections:', transformedCollections);
           setDynamicCollections(transformedCollections);
         } else {
           console.log('No collections data or empty array, using fallback');
@@ -489,13 +489,13 @@ const Homepage = () => {
 
   // Get dynamic collections from API or fallback to placeholder data
   const getDynamicCollections = () => {
-    console.log('getDynamicCollections called');
-    console.log('dynamicCollections:', dynamicCollections);
-    console.log('dynamicCollections length:', dynamicCollections?.length);
-    console.log('collectionsLoading:', collectionsLoading);
+    // console.log('getDynamicCollections called');
+    // console.log('dynamicCollections:', dynamicCollections);
+    // console.log('dynamicCollections length:', dynamicCollections?.length);
+    // console.log('collectionsLoading:', collectionsLoading);
     
     if (dynamicCollections && dynamicCollections.length > 0) {
-      console.log('Using dynamic collections:', dynamicCollections);
+      // console.log('Using dynamic collections:', dynamicCollections);
       return dynamicCollections;
     }
     console.log('Using fallback placeholder data');
