@@ -49,10 +49,8 @@ const Header = () => {
       document.body.style.right = "0";
       document.body.style.width = "100%";
 
-    
       document.documentElement.style.scrollBehavior = "auto";
     } else {
-   
       const scrollY = parseInt(document.body.dataset.scrollY || "0");
 
       // Remove fixed positioning
@@ -137,7 +135,7 @@ const Header = () => {
             className="w-6 h-6 cursor-pointer"
             onClick={() => setSearchOpen(true)}
           />
-        
+
           <SearchOverlay
             isOpen={searchOpen}
             onClose={() => setSearchOpen(false)}
@@ -197,10 +195,10 @@ const Header = () => {
             style={{ paddingTop: "2.5rem" }}
           >
             {[
-              { label: "Necklaces", path: "/necklace" },
-              { label: "Earrings", path: "/earrings" },
-              { label: "Rings", path: "/rings" },
-              { label: "Bracelets", path: "/bracelet" },
+              { label: "Necklaces", path: "/products/necklaces" },
+              { label: "Earrings", path: "/products/earrings" },
+              { label: "Rings", path: "/products/rings" },
+              { label: "Bracelets", path: "/products/bracelets" },
             ].map(({ label, path }, index) => (
               <div key={label} className="flex flex-col items-center w-full">
                 <div
@@ -270,13 +268,13 @@ const Header = () => {
           }`}
         >
           <span
-            onClick={() => navigate("/necklace")}
+            onClick={() => navigate("/products/necklaces")}
             className="hover:opacity-60 cursor-pointer"
           >
             Necklaces
           </span>
           <span
-            onClick={() => navigate("/earrings")}
+            onClick={() => navigate("/products/earrings")}
             className="hover:opacity-60 cursor-pointer"
           >
             Earrings
@@ -313,13 +311,13 @@ const Header = () => {
             }`}
           >
             <span
-              onClick={() => navigate("/rings")}
+              onClick={() => navigate("/products/rings")}
               className="hover:opacity-60 cursor-pointer"
             >
               Rings
             </span>
             <span
-              onClick={() => navigate("/bracelet")}
+              onClick={() => navigate("/products/bracelets")}
               className="hover:opacity-60 cursor-pointer"
             >
               Bracelets
