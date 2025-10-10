@@ -32,4 +32,9 @@ export class ProductController {
   delete(@Param('id', ParseIntPipe) id: number) {
     return this.productService.deleteProduct(id);
   }
+
+  @Get('category/:slug')
+  findByCategory(@Param('slug') slug: string) {
+    return this.productService.getProductsByCategory(slug);
+  }
 }
