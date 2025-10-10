@@ -6,10 +6,10 @@ import { useCollection } from '../../contexts/CollectionContext';
 import { useCategory } from '../../contexts/CategoryContext';
 
 // Modal Components
-import AddProductModal from '../components/modals/AddProductModal';
-import EditProductModal from '../components/modals/EditProductModal';
-import ReviewsModal from '../components/modals/ReviewsModal';
-import StockModal from '../components/modals/StockModal';
+import AddProductModal from '../Components/modals/AddProductModal';
+import EditProductModal from '../Components/modals/EditProductModal';
+import ReviewsModal from '../Components/modals/ReviewsModal';
+import StockModal from '../Components/modals/StockModal';
 
 import {
   NextIConBlack,
