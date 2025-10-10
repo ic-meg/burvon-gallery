@@ -24,7 +24,7 @@ export class CreateCollectionDto {
   promo_images: string[] = [];
 
   @IsInt()
-  category_id: number;
+  collection_id: number;
 
 
 }
