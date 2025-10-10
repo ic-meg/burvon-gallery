@@ -176,11 +176,11 @@ const RateProductModal = ({ open, onClose, products }) => {
               <button className="w-16 h-16 border-2 border-dashed border-[#FFF7DC] rounded-lg flex items-center justify-center">
                 <img src={AddVideoCream} alt="Add Video" className="w-8 h-8" />
               </button>
-              <button className="w-16 h-16 border-2 border-dashed border-[#FFF7DC] rounded-lg flex items-center justify-center">
+              <button className="w-16 h-16 border-2 border-dashed border-[#FFF7DC] rounded-lg flex items-center justify-center ">
                 <span className="text-3xl cream-text">+</span>
               </button>
             </div>
-            <label className="flex items-center gap-2 mt-2 avant cream-text text-md">
+            <label className="flex items-center gap-2 mt-2 avant cream-text text-md cursor-pointer">
               <input
                 type="checkbox"
                 checked={showUsername}
@@ -191,13 +191,13 @@ const RateProductModal = ({ open, onClose, products }) => {
             </label>
             <div className="flex gap-4 mt-4">
               <button
-                className="avantbold px-8 py-3 rounded-lg text-md border-2 border-[#FFF7DC] cream-text bg-transparent cursor-pointer"
+                className="avantbold px-8 py-3 rounded-lg text-md border-2 border-[#FFF7DC] cream-text bg-transparent" style={{ cursor: 'pointer' }}
                 onClick={onClose}
               >
                 CANCEL
               </button>
               <button
-                className="avantbold cream-bg metallic-text px-8 py-3 rounded-lg text-md cursor-pointer"
+                className="avantbold cream-bg metallic-text px-8 py-3 rounded-lg text-md" style={{ cursor: 'pointer' }}
                 onClick={() => {/* handle confirm */}}
               >
                 CONFIRM
@@ -310,6 +310,7 @@ const ProfileDesktop = ({ openModal, onEditProfile, openRateModal }) => {
   const [activeTab, setActiveTab] = useState('DELIVERED') 
   const orders = ordersByTab[activeTab] || []
   const selectedOrder = orders[0]
+  const navigate = useNavigate(); // Add this at the top of your component if not present
 
   return (
     <div className="hidden md:block min-h-screen bg-[#181818] px-0 py-34 text-[#fff7dc]">
@@ -427,7 +428,12 @@ const ProfileDesktop = ({ openModal, onEditProfile, openRateModal }) => {
                         </div>
                       </div>
                       <div className="flex gap-2 mb-17">
-                        <button className="avantbold rounded border border-[#FFF7DC] cream-text px-4 py-2 cursor-pointer">RETURN/REFUND</button>
+                        <button
+                          className="avantbold rounded border border-[#FFF7DC] cream-text px-4 py-2 cursor-pointer"
+                          onClick={() => navigate('/profile/requestreturn')}
+                        >
+                          RETURN/REFUND
+                        </button>
                         <button className="avantbold cream-bg metallic-text px-4 py-2 rounded border border-[#FFF7DC] cursor-pointer" onClick={openRateModal}>
                           RATE
                         </button>
@@ -532,7 +538,11 @@ const ProfileMobile = ({ openModal, onEditProfile, openRateModal }) => {
           </div>
         </div>
         <div className="flex justify-end gap-2 mt-6 mb-2">
-          <button className="avantbold rounded border border-[#FFF7DC] cream-text px-4 py-3 text-sm">RETURN/REFUND</button>
+          <button className="avantbold rounded border border-[#FFF7DC] cream-text px-4 py-3 text-sm"
+          onClick={() => navigate('/profile/requestreturn')}
+          >
+            RETURN/REFUND
+            </button>
           <button className="avantbold cream-bg metallic-text px-4 py-0 rounded border border-[#FFF7DC] text-sm" onClick={openRateModal}>
             RATE
           </button>
