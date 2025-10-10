@@ -94,6 +94,8 @@ model Category {
 model Collection {
   collection_id     Int      @id @default(autoincrement())
   name              String   @unique
+  description       String?
+  collection_image  String?
   created_at        DateTime @default(now())
 
   products Product[]
