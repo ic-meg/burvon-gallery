@@ -1,4 +1,4 @@
-,import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import categoryApi from '../../../api/categoryApi.jsx';
 import storageService from '../../../services/storageService.js';
 import {
@@ -392,7 +392,7 @@ const Bracelets = () => {
     saveContent();
   };
 
-  // dito ilload content on mount
+  // dito ilload content
   useEffect(() => {
     fetchContent();
   }, []);
@@ -619,7 +619,7 @@ const Bracelets = () => {
             <p>• Promo: {formData.promotionalImageUrl ? 'Set' : 'Not set'}</p>
             <p>• Changes: {hasUnsavedChanges ? 'Yes' : 'No'}</p>
           </div>
-        )} */} {/* uncomment if need mo */}
+        )} */}
       </div>
 
       {/* Right Column - Preview Placeholder */}
