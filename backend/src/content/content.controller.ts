@@ -58,8 +58,8 @@ export class ContentController {
 
   // ------------------- Category -------------------
   @Post('category/:slug')
-  createCategory(@Param('slug') slug: string, @Body() createCategoryDto: CreateCategoryDto) {
-    return this.contentService.createCategory(createCategoryDto);
+  upsertCategory(@Param('slug') slug: string, @Body() createCategoryDto: CreateCategoryDto) {
+    return this.contentService.upsertCategory(slug, createCategoryDto);
   }
 
   @Get('category/:slug')
@@ -98,5 +98,10 @@ export class ContentController {
   ) {
     return this.contentService.updateCollection(slug, updateCollectionDto);
   } 
+
+  @Delete('collection/:slug')
+  deleteCollection(@Param('slug') slug: string) {
+    return this.contentService.removeCollection(slug);  
+  }
 
 }
