@@ -51,7 +51,12 @@ export class ProductService {
   }
 
   async getProducts() {
-    const products = await this.db.product.findMany();
+    const products = await this.db.product.findMany({
+      include: {
+        category: true,
+        collection: true,
+      },
+    });
     if (products.length === 0) {
       throw new NotFoundException('No products found');
     }
@@ -61,6 +66,10 @@ export class ProductService {
   async findOne(id: number) {
     const product = await this.db.product.findUnique({
       where: { product_id: id },
+      include: {
+        category: true,
+        collection: true,
+      },
     });
     if (!product) {
       throw new NotFoundException('Product not found');
@@ -87,5 +96,37 @@ export class ProductService {
       throw new NotFoundException('Product not found');
     }
     return { deletedProduct };
+  }
+
+  async getProductsByCategory(categorySlug: string) {
+    // Find the category by slug (name in lowercase)
+    const category = await this.db.category.findFirst({
+      where: {
+        name: {
+          equals: categorySlug,
+          mode: 'insensitive', // Case-insensitive match
+        },
+      },
+    });
+
+    if (!category) {
+      throw new NotFoundException(`Category '${categorySlug}' not found`);
+    }
+
+    // Get all products for this category
+    const products = await this.db.product.findMany({
+      where: {
+        category_id: category.category_id,
+      },
+      include: {
+        category: true,
+        collection: true,
+      },
+      orderBy: {
+        created_at: 'desc', // Most recent first
+      },
+    });
+
+    return { products, category };
   }
 }
