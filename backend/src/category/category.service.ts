@@ -42,6 +42,19 @@ export class CategoryService {
         return categoryFind;
     }
 
+    async findBySlug(slug: string) {
+        const categoryContent = await this.db.categoryContent.findUnique({
+            where: { slug: slug },
+            include: {
+                category: true,
+            },
+        });
+        if(!categoryContent) {
+            throw new NotFoundException(`Category with slug ${slug} not found`);
+        }
+        return categoryContent;
+    }
+
 
     async update(id: number, updateCategoryDto: UpdateCategoryDto) {
         const categoryUpdate = await this.db.category.update({
