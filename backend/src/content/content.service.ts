@@ -89,6 +89,30 @@ export class ContentService {
     return { message: `Category with name ${slug} updated successfully.`, updated };
   }
 
+  async upsertCategory(slug: string, dto: CreateCategoryDto) {
+    try {
+      // Check if category content exists
+      const existing = await this.db.categoryContent.findUnique({ where: { slug } });
+      
+      if (existing) {
+        // Update existing content
+        const updated = await this.db.categoryContent.update({
+          where: { slug },
+          data: { ...dto, updated_at: new Date() },
+        });
+        return { message: `Category content updated successfully`, category: updated };
+      } else {
+        // Create new content
+        const created = await this.db.categoryContent.create({
+          data: { ...dto, slug },
+        });
+        return { message: `Category content created successfully`, category: created };
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async removeCategory(slug: string) {
     const existing = await this.db.categoryContent.findUnique({ where: { slug } });
     if (!existing) throw new NotFoundException(`Category with name ${slug} not found`);
