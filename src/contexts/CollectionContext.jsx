@@ -211,6 +211,7 @@ export const CollectionProvider = ({ children }) => {
       setError(null);
 
       const response = await collectionApi.fetchAllCollections();
+      // console.log('Collection API Response:', response);
 
       if (!response) {
         console.warn("Collection API returned undefined response");
@@ -226,9 +227,11 @@ export const CollectionProvider = ({ children }) => {
       } else if (response.data) {
         // Extract collections array from the response data
         const collectionsData = response.data.collections || response.data;
+        // console.log('Collections Data:', collectionsData);
         setCollections(collectionsData);
         return collectionsData;
       } else {
+        console.warn("No data in response");
         setCollections([]);
         return [];
       }
