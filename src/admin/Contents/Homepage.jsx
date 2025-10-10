@@ -157,7 +157,7 @@ const Homepage = () => {
           tryOnImageUrl: result.data.promo_image || null,
         });
         setHasUnsavedChanges(false);
-        showMessage("success", "Content loaded successfully");
+        // showMessage("success", "Content loaded successfully");
 
         // Debug log to see what I loaded
         // console.log('Loaded content:', {
