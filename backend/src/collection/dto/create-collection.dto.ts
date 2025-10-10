@@ -7,4 +7,12 @@ export class CreateCollectionDto {
     @IsNotEmpty()
     name: string;
 
+    @IsString()
+    @IsNotEmpty()
+    description: string;
+
+    @IsString()
+    @IsNotEmpty()
+    collection_image: string; // single image
+
 }
