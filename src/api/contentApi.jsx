@@ -2,6 +2,7 @@ import apiRequest from "./apiRequest";
 
 const apiURL = import.meta.env.VITE_CONTENT_API;
 
+
 const missing = (field) => {
   return { error: `${field} is required`, status: null, data: null };
 }
