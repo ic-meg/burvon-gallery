@@ -5,6 +5,8 @@ import Homepage from "./pages/main/Homepage";
 import Template from "./pages/Template";
 import ScrollToTop from "./components/ScrollToTop";
 import { ContentProvider } from "./contexts/ContentContext";
+import { CategoryProvider } from "./contexts/CategoryContext";
+import { CollectionProvider } from "./contexts/CollectionContext";
 
 //about
 import ContactUs from "./pages/about/ContactUs";
@@ -36,12 +38,7 @@ import Rings from "./pages/product/Rings";
 import ProductDesc from "./pages/product/ProductDesc";
 
 //collections
-import Classic from "/src/pages/product/collections/classic";
-import Clash from "/src/pages/product/collections/clash";
-import Rebellion from "/src/pages/product/collections/rebellion";
-import LoveLanguage from "/src/pages/product/collections/lovelanguage";
-import Pearl from "/src/pages/product/collections/pearl";
-import Kids from "/src/pages/product/collections/kids";
+import CollectionPage from "./pages/product/collections/CollectionPage";
 
 //Profile
 import Profile from "./pages/user/Profile/Profile";
@@ -68,17 +65,15 @@ import BraceletsContent from "./admin/Contents/Categories/Bracelets";
 import RingsContent from "./admin/Contents/Categories/Rings";
 import EarringsContent from "./admin/Contents/Categories/Earrings";
 import CategoriesContent from "./admin/Contents/Categories";
-import ClashContent from "./admin/Contents/Collections/Clash";
-import ClassicContent from "./admin/Contents/Collections/Classic";
-import LoveLanguageContent from "./admin/Contents/Collections/LoveLanguage";
-import KidsContent from "./admin/Contents/Collections/Kids";
 import CollectionsContent from "./admin/Contents/Collections/CollectionsContent";
 
 const App = () => {
   return (
     <ContentProvider>
-      <Router>
-        <ScrollToTop />
+      <CategoryProvider>
+        <CollectionProvider>
+          <Router>
+          <ScrollToTop />
         <div>
           <Routes>
           <Route path="/" element={<Homepage />} />
@@ -119,13 +114,8 @@ const App = () => {
           <Route path="/rings" element={<Rings />} />
           <Route path="/product-description" element={<ProductDesc />} />
 
-          {/*Collections */}
-          <Route path="/collections/classic" element={<Classic />} />
-          <Route path="/collections/clash" element={<Clash />} />
-          <Route path="/collections/rebellion" element={<Rebellion />} />
-          <Route path="/collections/love-language" element={<LoveLanguage />} />
-          <Route path="/collections/pearl" element={<Pearl />} />
-          <Route path="/collections/kids" element={<Kids />} />
+          {/*Collections - Dynamic Route */}
+          <Route path="/collections/:collectionSlug" element={<CollectionPage />} />
 
           {/*Profile */}
           <Route path="/profile" element={<Profile />} />
@@ -153,31 +143,16 @@ const App = () => {
             <Route path="categories/rings" element={<RingsContent />} />
             <Route path="categories/earrings" element={<EarringsContent />} />
 
-            {/* Collections nested under /admin/content/collections */}
-            <Route path="collections" element={<CollectionsContent />}>
-              <Route index element={<ClassicContent />} />
-              <Route path="classic" element={<ClassicContent />} />
-              <Route path="clash" element={<ClashContent />} />
-              <Route path="love-language" element={<LoveLanguageContent />} />
-              <Route path="kids" element={<KidsContent />} />
-            </Route>
+            {/* Collections - Dynamic routing for any collection */}
+            <Route path="collections" element={<CollectionsContent />} />
+            <Route path="collections/:collectionSlug" element={<CollectionsContent />} />
           </Route>
           <Route path="/admin/user" element={<UserManagement />} />
-
-          {/* Admin Collection Content Management */}
-          <Route
-            path="/admin/collection/classic"
-            element={<ClassicContent />}
-          />
-          <Route path="/admin/collection/clash" element={<ClashContent />} />
-          <Route
-            path="/admin/collection/love-language"
-            element={<LoveLanguageContent />}
-          />
-          <Route path="/admin/collection/kids" element={<KidsContent />} />
         </Routes>
       </div>
     </Router>
+        </CollectionProvider>
+      </CategoryProvider>
     </ContentProvider>
   );
 };
