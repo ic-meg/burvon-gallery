@@ -23,7 +23,4 @@ export class CreateCategoryDto {
 
   @IsNumber()
   category_id: number;
-
-  @IsNumber()
-  collection_id: number;
 }
