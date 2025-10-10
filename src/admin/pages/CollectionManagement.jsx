@@ -1,187 +1,331 @@
-import React, { useState, useMemo } from 'react';
-import AdminHeader from '../../components/admin/AdminHeader';
+import React, { useState, useMemo } from "react";
+import AdminHeader from "../../components/admin/AdminHeader";
+import Toast from "../../components/Toast";
+import AddCollectionModal from "../../components/modals/AddCollectionModal";
+import EditCollectionModal from "../../components/modals/EditCollectionModal";
+import DeleteCollectionModal from "../../components/modals/DeleteCollectionModal";
+import { useCollection } from "../../contexts/CollectionContext";
 
 import {
   NextIConBlack,
-  PrevIConBlack,  
+  PrevIConBlack,
   DropDownIconBlack,
   DropUpIconBlack,
-  AddImage
-} from '../../assets/index.js';
+} from "../../assets/index.js";
 
 const CollectionManagement = () => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const {
+    collections,
+    loading,
+    error,
+    createCollection,
+    updateCollection,
+    deleteCollection,
+    clearError,
+    toast,
+    showToast,
+    hideToast,
+  } = useCollection();
+
+  const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedSort, setSelectedSort] = useState('latest');
+  const [selectedSort, setSelectedSort] = useState("latest");
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [showAddCollectionModal, setShowAddCollectionModal] = useState(false);
   const [showEditCollectionModal, setShowEditCollectionModal] = useState(false);
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [selectedCollection, setSelectedCollection] = useState(null);
   const [newCollection, setNewCollection] = useState({
-    name: '',
-    description: '',
-    image: null
+    name: "",
+    description: "",
+    image: null,
   });
   const [editCollection, setEditCollection] = useState({
     id: null,
-    name: '',
-    description: '',
-    image: null
+    name: "",
+    description: "",
+    image: null,
+  });
+  const [originalCollection, setOriginalCollection] = useState(null);
+
+  //  loading
+  const [localLoading, setLocalLoading] = useState({
+    add: false,
+    edit: false,
+    delete: false,
   });
 
-  const itemsPerPage = 3; // 3 collections per page to match the layout
+  const itemsPerPage = 3;
 
-  // Sample collections data with creation dates - JUST ONE COLLECTION
-  const allCollections = [
-    {
-      id: 1,
-      name: "CLASSIC COLLECTION",
-      description: "Timeless elegance for every occasion.",
-      image: "/api/placeholder/300/200", // Replace with actual image path
-      createdAt: "2024-01-15",
-      products: {
-        necklaces: 8,
-        earrings: 8,
-        rings: 8,
-        bracelets: 8
-      }
-    }
-  ];
+  const allCollections = collections || [];
 
-  // Sort options
   const sortOptions = [
-    { value: 'latest', label: 'Latest Collection' },
-    { value: 'oldest', label: 'Oldest Collection' },
-    { value: 'name-asc', label: 'Name (A-Z)' },
-    { value: 'name-desc', label: 'Name (Z-A)' },
-    { value: 'most-products', label: 'Most Products' },
-    { value: 'least-products', label: 'Least Products' }
+    { value: "latest", label: "Latest Collection" },
+    { value: "oldest", label: "Oldest Collection" },
+    { value: "name-asc", label: "Name (A-Z)" },
+    { value: "name-desc", label: "Name (Z-A)" },
+    { value: "most-products", label: "Most Products" },
+    { value: "least-products", label: "Least Products" },
   ];
 
-  // Helper function to close all dropdowns
   const closeAllDropdowns = () => {
     setShowSortDropdown(false);
   };
 
-  // Handle collection form changes for add collection
   const handleCollectionChange = (field, value) => {
-    setNewCollection(prev => ({
+    setNewCollection((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
-  // Handle collection form changes for edit collection
   const handleEditCollectionChange = (field, value) => {
-    setEditCollection(prev => ({
+    setEditCollection((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
-  // Handle image upload for add collection
   const handleImageUpload = (file) => {
-    setNewCollection(prev => ({
+    setNewCollection((prev) => ({
       ...prev,
-      image: file
+      image: file,
     }));
   };
 
-  // Handle image upload for edit collection
   const handleEditImageUpload = (file) => {
-    setEditCollection(prev => ({
+    setEditCollection((prev) => ({
       ...prev,
-      image: file
+      image: file,
     }));
   };
 
   // Handle add collection
-  const handleAddCollection = () => {
-    console.log('Adding collection:', {
-      ...newCollection,
-      id: Date.now(),
-      createdAt: new Date().toISOString().split('T')[0],
-      products: {
-        necklaces: 0,
-        earrings: 0,
-        rings: 0,
-        bracelets: 0
-      }
-    });
+  const handleAddCollection = async () => {
+    if (!newCollection.name.trim()) {
+      alert("Please enter a collection name");
+      return;
+    }
+
+    if (!newCollection.description.trim()) {
+      alert("Please enter a collection description");
+      return;
+    }
+
+    if (!newCollection.image) {
+      alert("Please upload a collection image");
+      return;
+    }
+
+    setLocalLoading((prev) => ({ ...prev, add: true }));
+
     setShowAddCollectionModal(false);
     setNewCollection({
-      name: '',
-      description: '',
-      image: null
+      name: "",
+      description: "",
+      image: null,
     });
+
+    const result = await createCollection(newCollection);
+
+    setLocalLoading((prev) => ({ ...prev, add: false }));
+
+    if (!result.success) {
+      console.error("Failed to create collection:", result.error);
+    }
   };
 
-  // Handle edit collection button click
+  // Handle edit collection
   const handleEditClick = (collection) => {
-    setEditCollection({
-      id: collection.id,
+    const originalData = {
       name: collection.name,
       description: collection.description,
-      image: null // Reset image for new upload
+      image: collection.collection_image,
+    };
+
+    setOriginalCollection(originalData);
+    setEditCollection({
+      id: collection.collection_id || collection.id,
+      name: collection.name,
+      description: collection.description,
+      image: null,
     });
     setShowEditCollectionModal(true);
   };
 
   // Handle update collection
-  const handleUpdateCollection = () => {
-    console.log('Updating collection:', editCollection);
+  const handleUpdateCollection = async () => {
+    if (!editCollection.name.trim()) {
+      alert("Please enter a collection name");
+      return;
+    }
+
+    if (!editCollection.description.trim()) {
+      alert("Please enter a collection description");
+      return;
+    }
+
+    const currentCollection = allCollections.find(
+      (col) => (col.collection_id || col.id) === editCollection.id
+    );
+
+    const hasExistingImage =
+      currentCollection?.collection_image &&
+      !currentCollection.collection_image.includes("PLACEHOLDER") &&
+      !currentCollection.collection_image.includes("DEFAULT");
+
+    if (!editCollection.image && !hasExistingImage) {
+      alert("Please upload a collection image");
+      return;
+    }
+
+    const hasNameChanged = editCollection.name !== originalCollection?.name;
+    const hasDescriptionChanged =
+      editCollection.description !== originalCollection?.description;
+    const hasImageChanged = editCollection.image !== null; // New image uploaded
+
+    if (!hasNameChanged && !hasDescriptionChanged && !hasImageChanged) {
+      alert(
+        "No changes detected. Please modify the collection details before updating."
+      );
+      return;
+    }
+
+    setLocalLoading((prev) => ({ ...prev, edit: true }));
+
     setShowEditCollectionModal(false);
     setEditCollection({
       id: null,
-      name: '',
-      description: '',
-      image: null
+      name: "",
+      description: "",
+      image: null,
     });
+    setOriginalCollection(null);
+
+    const result = await updateCollection(editCollection.id, {
+      name: editCollection.name,
+      description: editCollection.description,
+      image: editCollection.image,
+    });
+
+    setLocalLoading((prev) => ({ ...prev, edit: false }));
+
+    if (!result.success) {
+      console.error("Failed to update collection:", result.error);
+    }
   };
 
-  // Handle manage products click
+  // Handle closing edit modal
+  const handleCloseEditModal = () => {
+    setShowEditCollectionModal(false);
+    setEditCollection({
+      id: null,
+      name: "",
+      description: "",
+      image: null,
+    });
+    setOriginalCollection(null);
+  };
+
+  // Handle delete collection
+  const handleDeleteClick = (collection) => {
+    setSelectedCollection(collection);
+    setShowDeleteConfirmModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedCollection) return;
+
+
+    setLocalLoading((prev) => ({ ...prev, delete: true }));
+
+ 
+    setShowDeleteConfirmModal(false);
+    setSelectedCollection(null);
+
+ 
+    const result = await deleteCollection(
+      selectedCollection.collection_id || selectedCollection.id
+    );
+
+  
+    setLocalLoading((prev) => ({ ...prev, delete: false }));
+
+   
+    if (!result.success) {
+      console.error("Failed to delete collection:", result.error);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteConfirmModal(false);
+    setSelectedCollection(null);
+  };
+
+  
   const handleManageProductsClick = (collection) => {
-    console.log('Managing products for collection:', collection.name);
-    // You can navigate to products page with collection filter
-    // or open a products management modal specific to this collection
+    // console.log('Managing products for collection:', collection.name);
   };
 
   // Calculate stats
   const totalCollections = allCollections.length;
-  const totalProducts = allCollections.reduce((sum, collection) => 
-    sum + Object.values(collection.products).reduce((a, b) => a + b, 0), 0
-  );
+  const totalProducts = allCollections.reduce((sum, collection) => {
+    if (collection.products && typeof collection.products === "object") {
+      return (
+        sum + Object.values(collection.products).reduce((a, b) => a + b, 0)
+      );
+    }
+    return sum;
+  }, 0);
 
-  // Filter and sort collections
+ 
   const filteredAndSortedCollections = useMemo(() => {
     let filtered = allCollections;
 
     // Apply search filter
     if (searchQuery.trim()) {
-      filtered = filtered.filter(collection =>
-        collection.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        collection.description.toLowerCase().includes(searchQuery.toLowerCase())
+      filtered = filtered.filter(
+        (collection) =>
+          collection.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (collection.description &&
+            collection.description
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase()))
       );
     }
 
     // Apply sorting
     const sorted = [...filtered].sort((a, b) => {
       switch (selectedSort) {
-        case 'latest':
-          return new Date(b.createdAt) - new Date(a.createdAt);
-        case 'oldest':
-          return new Date(a.createdAt) - new Date(b.createdAt);
-        case 'name-asc':
+        case "latest":
+          return (
+            new Date(b.created_at || b.createdAt) -
+            new Date(a.created_at || a.createdAt)
+          );
+        case "oldest":
+          return (
+            new Date(a.created_at || a.createdAt) -
+            new Date(b.created_at || b.createdAt)
+          );
+        case "name-asc":
           return a.name.localeCompare(b.name);
-        case 'name-desc':
+        case "name-desc":
           return b.name.localeCompare(a.name);
-        case 'most-products':
-          const totalA = Object.values(a.products).reduce((sum, count) => sum + count, 0);
-          const totalB = Object.values(b.products).reduce((sum, count) => sum + count, 0);
+        case "most-products":
+          const totalA = a.products
+            ? Object.values(a.products).reduce((sum, count) => sum + count, 0)
+            : 0;
+          const totalB = b.products
+            ? Object.values(b.products).reduce((sum, count) => sum + count, 0)
+            : 0;
           return totalB - totalA;
-        case 'least-products':
-          const totalC = Object.values(a.products).reduce((sum, count) => sum + count, 0);
-          const totalD = Object.values(b.products).reduce((sum, count) => sum + count, 0);
+        case "least-products":
+          const totalC = a.products
+            ? Object.values(a.products).reduce((sum, count) => sum + count, 0)
+            : 0;
+          const totalD = b.products
+            ? Object.values(b.products).reduce((sum, count) => sum + count, 0)
+            : 0;
           return totalC - totalD;
         default:
           return 0;
@@ -192,7 +336,9 @@ const CollectionManagement = () => {
   }, [searchQuery, selectedSort]);
 
   // Pagination
-  const totalPages = Math.ceil(filteredAndSortedCollections.length / itemsPerPage);
+  const totalPages = Math.ceil(
+    filteredAndSortedCollections.length / itemsPerPage
+  );
   const paginatedCollections = filteredAndSortedCollections.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
@@ -201,14 +347,14 @@ const CollectionManagement = () => {
   // Close dropdowns when clicking outside
   React.useEffect(() => {
     const handleClickOutside = (event) => {
-      if (!event.target.closest('.dropdown-container')) {
+      if (!event.target.closest(".dropdown-container")) {
         closeAllDropdowns();
       }
     };
-    
-    document.addEventListener('mousedown', handleClickOutside);
+
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
@@ -225,10 +371,8 @@ const CollectionManagement = () => {
       <div className="pt-24 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-8">
-            <h1 className="text-5xl bebas text-black">
-              COLLECTION MANAGEMENT
-            </h1>
-            
+            <h1 className="text-5xl bebas text-black">COLLECTION MANAGEMENT</h1>
+
             {/* Search Bar aligned with header */}
             <div className="relative">
               <input
@@ -254,7 +398,12 @@ const CollectionManagement = () => {
                   }}
                   className="flex items-center justify-between px-4 py-2 border-2 border-gray-300 rounded-lg bg-white focus:outline-none focus:border-black avant text-sm select-none w-48"
                 >
-                  <span className="text-black">{sortOptions.find(sort => sort.value === selectedSort)?.label}</span>
+                  <span className="text-black">
+                    {
+                      sortOptions.find((sort) => sort.value === selectedSort)
+                        ?.label
+                    }
+                  </span>
                   <img
                     src={showSortDropdown ? DropUpIconBlack : DropDownIconBlack}
                     alt="dropdown"
@@ -271,22 +420,22 @@ const CollectionManagement = () => {
                           setShowSortDropdown(false);
                         }}
                         className={`w-full px-4 py-2 text-left text-sm avant transition-colors text-black ${
-                          selectedSort === option.value ? "bg-gray-100 font-medium" : ""
-                        } ${
-                          index === 0 ? "rounded-t-lg" : ""
-                        } ${
+                          selectedSort === option.value
+                            ? "bg-gray-100 font-medium"
+                            : ""
+                        } ${index === 0 ? "rounded-t-lg" : ""} ${
                           index === sortOptions.length - 1 ? "rounded-b-lg" : ""
                         }`}
                         onMouseEnter={(e) => {
                           if (selectedSort !== option.value) {
-                            e.target.style.backgroundColor = '#959595';
-                            e.target.style.color = 'white';
+                            e.target.style.backgroundColor = "#959595";
+                            e.target.style.color = "white";
                           }
                         }}
                         onMouseLeave={(e) => {
                           if (selectedSort !== option.value) {
-                            e.target.style.backgroundColor = 'transparent';
-                            e.target.style.color = 'black';
+                            e.target.style.backgroundColor = "transparent";
+                            e.target.style.color = "black";
                           }
                         }}
                         type="button"
@@ -310,7 +459,7 @@ const CollectionManagement = () => {
             </div>
 
             {/* Add Collection Button */}
-            <button 
+            <button
               onClick={() => setShowAddCollectionModal(true)}
               className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors avantbold uppercase text-sm font-medium"
             >
@@ -326,305 +475,290 @@ const CollectionManagement = () => {
           {/* Collections Grid */}
           <div className="bg-white border-2 border-black rounded-lg overflow-hidden">
             <div className="p-6">
-              <div className="space-y-6 mb-6">
-                {paginatedCollections.map((collection) => (
-                  <div key={collection.id} className="flex items-center space-x-6 p-4 border border-gray-300 rounded-lg">
-                    {/* Collection Image */}
-                    <div className="w-72 h-48 bg-gray-900 rounded-lg overflow-hidden flex-shrink-0">
-                      <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center text-white bebas text-2xl">
-                        {collection.name}
-                      </div>
-                    </div>
-
-                    {/* Collection Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-2xl bebas text-black">{collection.name}</h3>
-                        <span className="text-xs avant text-gray-500">Created: {collection.createdAt}</span>
-                      </div>
-                      <p className="text-gray-600 avant text-sm mb-4">{collection.description}</p>
-
-                      {/* Product Count Grid */}
-                      <div className="grid grid-cols-4 gap-3 mb-4">
-                        <div className="text-center p-3 border border-gray-200 rounded">
-                          <div className="text-xs avant text-gray-600 mb-1">Necklaces</div>
-                          <div className="text-xl bebas text-black">{collection.products.necklaces}</div>
-                        </div>
-                        <div className="text-center p-3 border border-gray-200 rounded">
-                          <div className="text-xs avant text-gray-600 mb-1">Earrings</div>
-                          <div className="text-xl bebas text-black">{collection.products.earrings}</div>
-                        </div>
-                        <div className="text-center p-3 border border-gray-200 rounded">
-                          <div className="text-xs avant text-gray-600 mb-1">Rings</div>
-                          <div className="text-xl bebas text-black">{collection.products.rings}</div>
-                        </div>
-                        <div className="text-center p-3 border border-gray-200 rounded">
-                          <div className="text-xs avant text-gray-600 mb-1">Bracelets</div>
-                          <div className="text-xl bebas text-black">{collection.products.bracelets}</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex flex-col space-y-3">
-                      <button 
-                        onClick={() => handleEditClick(collection)}
-                        className="px-6 py-2 bg-transparent border-2 border-black text-black rounded-lg hover:bg-black hover:text-white transition-colors avant text-sm font-medium whitespace-nowrap"
-                      >
-                        Edit
-                      </button>
-                      <button 
-                        onClick={() => handleManageProductsClick(collection)}
-                        className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors avant text-sm font-medium whitespace-nowrap"
-                      >
-                        Manage Products
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex justify-center items-center">
-                  <div
-                    className="inline-flex items-stretch border border-black rounded-full overflow-hidden bg-white"
-                    style={{ height: 44 }}
-                  >
-                    <button
-                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                      disabled={currentPage === 1}
-                      aria-label="Previous Page"
-                      className="flex items-center justify-center border-r border-black bg-white transition disabled:opacity-40 disabled:cursor-not-allowed"
-                      style={{
-                        width: 44,
-                        height: 44,
-                        borderTopLeftRadius: 22,
-                        borderBottomLeftRadius: 22,
-                      }}
-                    >
-                      <img src={PrevIConBlack} alt="Prev" className="w-5 h-5" />
-                    </button>
-                    <div
-                      className="flex items-center justify-center text-black avantbold font-bold text-base select-none whitespace-nowrap px-6"
-                      style={{
-                        letterSpacing: 2,
-                        height: 44,
-                      }}
-                    >
-                      {currentPage} OF {totalPages}
-                    </div>
-                    <button
-                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                      disabled={currentPage === totalPages}
-                      aria-label="Next Page"
-                      className="flex items-center justify-center border-l border-black bg-white transition disabled:opacity-40 disabled:cursor-not-allowed"
-                      style={{
-                        width: 44,
-                        height: 44,
-                        borderTopRightRadius: 22,
-                        borderBottomRightRadius: 22,
-                      }}
-                    >
-                      <img src={NextIConBlack} alt="Next" className="w-5 h-5" />
-                    </button>
-                  </div>
+              {loading && (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mr-4"></div>
+                  <span className="avant text-black">
+                    Loading collections...
+                  </span>
                 </div>
               )}
+
+              {!loading && allCollections.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <p className="avant text-gray-500 text-lg mb-4">
+                    No collections found
+                  </p>
+                  <button
+                    onClick={() => setShowAddCollectionModal(true)}
+                    className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors avant text-sm font-medium"
+                  >
+                    Add Your First Collection
+                  </button>
+                </div>
+              )}
+
+              {!loading &&
+                allCollections.length > 0 &&
+                paginatedCollections.length === 0 && (
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <p className="avant text-gray-500 text-lg mb-4">
+                      No collections match your search criteria
+                    </p>
+                    <button
+                      onClick={() => {
+                        setSearchQuery("");
+                        setSelectedSort("latest");
+                      }}
+                      className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors avant text-sm font-medium"
+                    >
+                      Clear Filters
+                    </button>
+                  </div>
+                )}
+
+              {!loading && paginatedCollections.length > 0 && (
+                <div className="space-y-6 mb-6">
+                  {paginatedCollections.map((collection) => (
+                    <div
+                      key={collection.collection_id || collection.id}
+                      className="flex items-center space-x-6 p-4 border border-gray-300 rounded-lg"
+                    >
+                      {/* Collection Image */}
+                      <div className="w-72 h-48 bg-[#1F1F21] rounded-lg overflow-hidden flex-shrink-0">
+                        {(collection.collection_image || collection.image) &&
+                        !(
+                          collection.collection_image || collection.image
+                        ).includes("PLACEHOLDER") &&
+                        !(
+                          collection.collection_image || collection.image
+                        ).includes("DEFAULT") ? (
+                          <img
+                            src={
+                              collection.collection_image || collection.image
+                            }
+                            alt={collection.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.target.style.display = "none";
+                              e.target.nextSibling.style.display = "flex";
+                            }}
+                          />
+                        ) : null}
+                        <div
+                          className="w-full h-full bg-[#1F1F21] flex items-center justify-center text-white avant text-sm text-center p-4"
+                          style={{
+                            display:
+                              (collection.collection_image ||
+                                collection.image) &&
+                              !(
+                                collection.collection_image || collection.image
+                              ).includes("PLACEHOLDER") &&
+                              !(
+                                collection.collection_image || collection.image
+                              ).includes("DEFAULT")
+                                ? "none"
+                                : "flex",
+                          }}
+                        >
+                          COLLECTION IMAGE PLACEHOLDER
+                        </div>
+                      </div>
+
+                      {/* Collection Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-2">
+                          <h3 className="text-2xl bebas text-black">
+                            {collection.name}
+                          </h3>
+                          <span className="text-xs avant text-gray-500">
+                            Created:{" "}
+                            {new Date(
+                              collection.created_at || collection.createdAt
+                            ).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <p className="text-gray-600 avant text-sm mb-4">
+                          {collection.description}
+                        </p>
+
+                        {/* Product Count Grid */}
+                        <div className="grid grid-cols-4 gap-3 mb-4">
+                          <div className="text-center p-3 border border-gray-200 rounded">
+                            <div className="text-xs avant text-gray-600 mb-1">
+                              Necklaces
+                            </div>
+                            <div className="text-xl bebas text-black">
+                              {collection.products?.necklaces || 0}
+                            </div>
+                          </div>
+                          <div className="text-center p-3 border border-gray-200 rounded">
+                            <div className="text-xs avant text-gray-600 mb-1">
+                              Earrings
+                            </div>
+                            <div className="text-xl bebas text-black">
+                              {collection.products?.earrings || 0}
+                            </div>
+                          </div>
+                          <div className="text-center p-3 border border-gray-200 rounded">
+                            <div className="text-xs avant text-gray-600 mb-1">
+                              Rings
+                            </div>
+                            <div className="text-xl bebas text-black">
+                              {collection.products?.rings || 0}
+                            </div>
+                          </div>
+                          <div className="text-center p-3 border border-gray-200 rounded">
+                            <div className="text-xs avant text-gray-600 mb-1">
+                              Bracelets
+                            </div>
+                            <div className="text-xl bebas text-black">
+                              {collection.products?.bracelets || 0}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex flex-col space-y-3">
+                        <button
+                          onClick={() => handleEditClick(collection)}
+                          className="px-6 py-2 bg-transparent border-2 border-black text-black rounded-lg hover:bg-black hover:text-white transition-colors avant text-sm font-medium whitespace-nowrap"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleManageProductsClick(collection)}
+                          className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors avant text-sm font-medium whitespace-nowrap"
+                        >
+                          Manage Products
+                        </button>
+                        <button
+                          onClick={() => handleDeleteClick(collection)}
+                          className="px-6 py-2 bg-transparent border-2 border-red-500 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-colors avant text-sm font-medium whitespace-nowrap"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Pagination */}
+              {!loading &&
+                paginatedCollections.length > 0 &&
+                totalPages > 1 && (
+                  <div className="flex justify-center items-center">
+                    <div
+                      className="inline-flex items-stretch border border-black rounded-full overflow-hidden bg-white"
+                      style={{ height: 44 }}
+                    >
+                      <button
+                        onClick={() =>
+                          setCurrentPage(Math.max(1, currentPage - 1))
+                        }
+                        disabled={currentPage === 1}
+                        aria-label="Previous Page"
+                        className="flex items-center justify-center border-r border-black bg-white transition disabled:opacity-40 disabled:cursor-not-allowed"
+                        style={{
+                          width: 44,
+                          height: 44,
+                          borderTopLeftRadius: 22,
+                          borderBottomLeftRadius: 22,
+                        }}
+                      >
+                        <img
+                          src={PrevIConBlack}
+                          alt="Prev"
+                          className="w-5 h-5"
+                        />
+                      </button>
+                      <div
+                        className="flex items-center justify-center text-black avantbold font-bold text-base select-none whitespace-nowrap px-6"
+                        style={{
+                          letterSpacing: 2,
+                          height: 44,
+                        }}
+                      >
+                        {currentPage} OF {totalPages}
+                      </div>
+                      <button
+                        onClick={() =>
+                          setCurrentPage(Math.min(totalPages, currentPage + 1))
+                        }
+                        disabled={currentPage === totalPages}
+                        aria-label="Next Page"
+                        className="flex items-center justify-center border-l border-black bg-white transition disabled:opacity-40 disabled:cursor-not-allowed"
+                        style={{
+                          width: 44,
+                          height: 44,
+                          borderTopRightRadius: 22,
+                          borderBottomRightRadius: 22,
+                        }}
+                      >
+                        <img
+                          src={NextIConBlack}
+                          alt="Next"
+                          className="w-5 h-5"
+                        />
+                      </button>
+                    </div>
+                  </div>
+                )}
             </div>
           </div>
         </div>
       </div>
 
       {/* Add New Collection Modal */}
-      {showAddCollectionModal && (
-        <div 
-          className="fixed inset-0 flex items-center justify-center z-50"
-          style={{ 
-            backgroundColor: 'rgba(255, 255, 255, 0.65)',
-            backdropFilter: 'blur(5px)'
-          }}
-        >
-          <div className="bg-white rounded-2xl border-2 border-black w-full max-w-md mx-4 shadow-2xl">
-            {/* Modal Header */}
-            <div className="flex justify-between items-center p-6 border-b border-gray-200">
-              <h2 className="text-xl avantbold text-black">Add New Collection</h2>
-              <button 
-                onClick={() => setShowAddCollectionModal(false)}
-                className="text-2xl text-black hover:text-gray-600 transition-colors"
-              >
-                ×
-              </button>
-            </div>
-
-            {/* Modal Content */}
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm avantbold text-black mb-2">COLLECTION NAME</label>
-                <input
-                  type="text"
-                  placeholder="Enter Collection Name"
-                  value={newCollection.name}
-                  onChange={(e) => handleCollectionChange('name', e.target.value)}
-                  className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm text-black placeholder:text-gray-400"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm avantbold text-black mb-2">DESCRIPTION</label>
-                <textarea
-                  placeholder="Enter Collection Description"
-                  value={newCollection.description}
-                  onChange={(e) => handleCollectionChange('description', e.target.value)}
-                  rows={3}
-                  className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm resize-none text-black placeholder:text-gray-400"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm avantbold text-black mb-2">COLLECTION IMAGE</label>
-                <label className="cursor-pointer">
-                  <div className="w-full h-32 border-2 border-dashed border-black rounded-lg flex items-center justify-center bg-white hover:bg-gray-50 transition-colors">
-                    {newCollection.image ? (
-                      <img 
-                        src={URL.createObjectURL(newCollection.image)} 
-                        alt="Collection" 
-                        className="w-full h-full object-cover rounded-lg"
-                      />
-                    ) : (
-                      <div className="text-center">
-                        <img 
-                          src={AddImage} 
-                          alt="Add image" 
-                          className="w-8 h-8 mx-auto mb-2 opacity-60"
-                        />
-                        <span className="text-sm avant text-gray-500">Click to upload image</span>
-                      </div>
-                    )}
-                  </div>
-                  <input 
-                    type="file" 
-                    className="hidden" 
-                    accept="image/*"
-                    onChange={(e) => handleImageUpload(e.target.files[0])}
-                  />
-                </label>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex space-x-4 pt-4">
-                <button
-                  onClick={() => setShowAddCollectionModal(false)}
-                  className="flex-1 px-4 py-2 bg-transparent border-2 border-black text-black rounded-lg hover:bg-black hover:text-white transition-colors avant text-sm font-medium"
-                >
-                  CANCEL
-                </button>
-                <button
-                  onClick={handleAddCollection}
-                  className="flex-1 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors avant text-sm font-medium"
-                >
-                  ADD COLLECTION
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <AddCollectionModal
+        show={showAddCollectionModal}
+        onClose={() => setShowAddCollectionModal(false)}
+        newCollection={newCollection}
+        onCollectionChange={handleCollectionChange}
+        onImageUpload={handleImageUpload}
+        onSubmit={handleAddCollection}
+        loading={localLoading.add}
+      />
 
       {/* Edit Collection Modal */}
-      {showEditCollectionModal && (
-        <div 
-          className="fixed inset-0 flex items-center justify-center z-50"
-          style={{ 
-            backgroundColor: 'rgba(255, 255, 255, 0.65)',
-            backdropFilter: 'blur(5px)'
-          }}
-        >
-          <div className="bg-white rounded-2xl border-2 border-black w-full max-w-md mx-4 shadow-2xl">
-            {/* Modal Header */}
-            <div className="flex justify-between items-center p-6 border-b border-gray-200">
-              <h2 className="text-xl avantbold text-black">Edit Collection</h2>
-              <button 
-                onClick={() => setShowEditCollectionModal(false)}
-                className="text-2xl text-black hover:text-gray-600 transition-colors"
-              >
-                ×
-              </button>
-            </div>
+      <EditCollectionModal
+        show={showEditCollectionModal}
+        onClose={handleCloseEditModal}
+        editCollection={editCollection}
+        onCollectionChange={handleEditCollectionChange}
+        onImageUpload={handleEditImageUpload}
+        onSubmit={handleUpdateCollection}
+        loading={localLoading.edit}
+      />
 
-            {/* Modal Content */}
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm avantbold text-black mb-2">COLLECTION NAME</label>
-                <input
-                  type="text"
-                  placeholder="Enter Collection Name"
-                  value={editCollection.name}
-                  onChange={(e) => handleEditCollectionChange('name', e.target.value)}
-                  className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm text-black placeholder:text-gray-400"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm avantbold text-black mb-2">DESCRIPTION</label>
-                <textarea
-                  placeholder="Enter Collection Description"
-                  value={editCollection.description}
-                  onChange={(e) => handleEditCollectionChange('description', e.target.value)}
-                  rows={3}
-                  className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm resize-none text-black placeholder:text-gray-400"
-                />
-              </div>
+      {/* Delete Confirmation Modal */}
+      <DeleteCollectionModal
+        show={showDeleteConfirmModal}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        selectedCollection={selectedCollection}
+        loading={localLoading.delete}
+      />
 
-              <div>
-                <label className="block text-sm avantbold text-black mb-2">COLLECTION IMAGE</label>
-                <label className="cursor-pointer">
-                  <div className="w-full h-32 border-2 border-dashed border-black rounded-lg flex items-center justify-center bg-white hover:bg-gray-50 transition-colors">
-                    {editCollection.image ? (
-                      <img 
-                        src={URL.createObjectURL(editCollection.image)} 
-                        alt="Collection" 
-                        className="w-full h-full object-cover rounded-lg"
-                      />
-                    ) : (
-                      <div className="text-center">
-                        <img 
-                          src={AddImage} 
-                          alt="Add image" 
-                          className="w-8 h-8 mx-auto mb-2 opacity-60"
-                        />
-                        <span className="text-sm avant text-gray-500">Click to upload new image</span>
-                      </div>
-                    )}
-                  </div>
-                  <input 
-                    type="file" 
-                    className="hidden" 
-                    accept="image/*"
-                    onChange={(e) => handleEditImageUpload(e.target.files[0])}
-                  />
-                </label>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex space-x-4 pt-4">
-                <button
-                  onClick={() => setShowEditCollectionModal(false)}
-                  className="flex-1 px-4 py-2 bg-transparent border-2 border-black text-black rounded-lg hover:bg-black hover:text-white transition-colors avant text-sm font-medium"
-                >
-                  CANCEL
-                </button>
-                <button
-                  onClick={handleUpdateCollection}
-                  className="flex-1 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors avant text-sm font-medium"
-                >
-                  UPDATE COLLECTION
-                </button>
-              </div>
-            </div>
+      {/* Error Display */}
+      {error && (
+        <div className="fixed top-24 right-6 bg-red-500 text-white p-4 rounded-lg shadow-lg z-50">
+          <div className="flex items-center justify-between">
+            <span className="avant text-sm">{error}</span>
+            <button
+              onClick={clearError}
+              className="ml-4 text-white hover:text-red-200"
+            >
+              ×
+            </button>
           </div>
         </div>
       )}
+
+      {/* Toast Notification */}
+      <Toast show={toast.show} message={toast.message} type={toast.type} />
     </div>
   );
 };
