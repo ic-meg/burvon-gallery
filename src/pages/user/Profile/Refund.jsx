@@ -216,7 +216,7 @@ const ProfileDesktop = ({ openModal, onEditProfile }) => {
                   {/* Order details and actions */}
                   {idx === 0 && (
                     <div className="flex flex-row items-center justify-between w-full ml-8">
-                      <div className="flex flex-col gap-1 ml-45 mr-12">
+                      <div className="flex flex-col gap-1 ml-45 mt-[-40px] mr-12">
                         <div className="flex gap-20"> {/* gap between order date and expected delivery */}
                           <div>
                             <div className="bebas cream-text text-md">TOTAL AMOUNT:</div>

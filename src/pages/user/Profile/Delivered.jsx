@@ -310,7 +310,7 @@ const ProfileDesktop = ({ openModal, onEditProfile, openRateModal }) => {
   const [activeTab, setActiveTab] = useState('DELIVERED') 
   const orders = ordersByTab[activeTab] || []
   const selectedOrder = orders[0]
-  const navigate = useNavigate(); // Add this at the top of your component if not present
+  const navigate = useNavigate(); 
 
   return (
     <div className="hidden md:block min-h-screen bg-[#181818] px-0 py-34 text-[#fff7dc]">
