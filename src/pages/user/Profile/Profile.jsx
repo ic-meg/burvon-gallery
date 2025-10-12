@@ -186,21 +186,13 @@ const ProfileDesktop = ({ openModal, onEditProfile }) => {
               {selectedOrder.items.map((item, idx) => (
                 <div key={item.variant} className="flex items-center justify-between rounded-lg px-0 py-2 w-full">
                   <div className="flex items-center gap-4 min-w-[320px]">
-                    <div
-                      className="relative w-25 h-25 flex items-center justify-center"
-                      style={{
-                        backgroundImage: 'url(/path/to/your/bg-image.png)', // Update with your actual image path
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                      }}
-                    >
-                      <img
-                        src={item.image}
-                        alt={item.variant}
-                        className="w-20 h-20 object-cover rounded-md cursor-pointer z-10"
-                        onClick={() => openModal(item.image)}
-                      />
-                    </div>
+                    <img
+                      src={item.image}
+                      alt={item.variant}
+                      className="w-25 h-25 object-cover rounded-md cursor-pointer"
+                      onClick={() => openModal(item.image)}
+                    />
+            
                     <div>
                       <div className="avantbold cream-text text-lg text-nowrap">{item.name}</div>
                       <div className="bebas cream-text text-lg">{item.variant}</div>
@@ -224,22 +216,22 @@ const ProfileDesktop = ({ openModal, onEditProfile }) => {
                       <div className="flex flex-col gap-1 ml-45 mr-12">
                         <div className="flex gap-20">
                           <div>
-                            <div className="avantbold cream-text text-md">ORDER DATE:</div>
-                            <div className="avantbold cream-text text-lg">{selectedOrder.date}</div>
+                            <div className="bebas cream-text text-md">ORDER DATE:</div>
+                            <div className="avant cream-text text-lg">{selectedOrder.date}</div>
                           </div>
                           <div>
-                            <div className="avantbold cream-text text-md">EXPECTED DELIVERY:</div>
-                            <div className="avantbold cream-text text-lg">{selectedOrder.delivery}</div>
+                            <div className="bebas cream-text text-md">EXPECTED DELIVERY:</div>
+                            <div className="avant cream-text text-lg">{selectedOrder.delivery}</div>
                           </div>
                         </div>
                         <div className="flex gap-14 mt-2">
                           <div>
-                            <div className="avantbold cream-text text-md">TOTAL QUANTITY:</div>
-                            <div className="avantbold cream-text text-lg">{selectedOrder.totalQty}</div>
+                            <div className="bebas cream-text text-md">TOTAL QUANTITY:</div>
+                            <div className="avant cream-text text-lg">{selectedOrder.totalQty}</div>
                           </div>
                           <div>
-                            <div className="avantbold cream-text text-md">SUBTOTAL:</div>
-                            <div className="avantbold cream-text text-lg">₱ {selectedOrder.subtotal.toLocaleString(undefined, {minimumFractionDigits:2})}</div>
+                            <div className="bebas cream-text text-md">SUBTOTAL:</div>
+                            <div className="avant cream-text text-lg">₱ {selectedOrder.subtotal.toLocaleString(undefined, {minimumFractionDigits:2})}</div>
                           </div>
                         </div>
                       </div>
