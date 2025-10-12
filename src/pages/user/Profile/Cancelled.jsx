@@ -69,7 +69,7 @@ const EditProfileModal = ({ open, onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50"
+      className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50"
       onClick={onClose}
     >
       <div
