@@ -69,7 +69,7 @@ const EditProfileModal = ({ open, onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50"
+      className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50"
       onClick={onClose}
     >
       <div
@@ -186,12 +186,21 @@ const ProfileDesktop = ({ openModal, onEditProfile }) => {
               {selectedOrder.items.map((item, idx) => (
                 <div key={item.variant} className="flex items-center justify-between rounded-lg px-0 py-2 w-full">
                   <div className="flex items-center gap-4 min-w-[320px]">
-                    <img
-                      src={item.image}
-                      alt={item.variant}
-                      className="w-25 h-25 object-cover rounded-md cursor-pointer"
-                      onClick={() => openModal(item.image)}
-                    />
+                    <div
+                      className="relative w-25 h-25 flex items-center justify-center"
+                      style={{
+                        backgroundImage: 'url(/path/to/your/bg-image.png)', // Update with your actual image path
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                      }}
+                    >
+                      <img
+                        src={item.image}
+                        alt={item.variant}
+                        className="w-20 h-20 object-cover rounded-md cursor-pointer z-10"
+                        onClick={() => openModal(item.image)}
+                      />
+                    </div>
                     <div>
                       <div className="avantbold cream-text text-lg text-nowrap">{item.name}</div>
                       <div className="bebas cream-text text-lg">{item.variant}</div>
