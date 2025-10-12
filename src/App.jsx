@@ -51,6 +51,7 @@ import Refund from "./pages/user/Profile/Refund";
 import ViewOrder from "./pages/user/Profile/ViewOrder";
 import ViewOrderInProgress from "./pages/user/Profile/ViewOrder-InProgress";
 import RequestReturn from "./pages/user/Profile/Return";
+import ReviewDetails from "./pages/user/Profile/ReviewDetails";
 
 //admin
 import AdminDashboard from "./admin/pages/AdminDashboard";
@@ -135,6 +136,7 @@ const App = () => {
           <Route path="/profile/vieworder" element={<ViewOrder />} />
           <Route path="/profile/vieworder-inprogress" element={<ViewOrderInProgress />} />
           <Route path="/profile/requestreturn" element={<RequestReturn />} />
+          <Route path="/profile/reviewdetails" element={<ReviewDetails />} />
 
           {/*Admin */}
           <Route path="/admin/dashboard" element={<AdminDashboard />} />

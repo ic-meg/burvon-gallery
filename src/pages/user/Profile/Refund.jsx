@@ -121,6 +121,7 @@ const ProfileDesktop = ({ openModal, onEditProfile }) => {
   const [activeTab, setActiveTab] = useState('RETURN/REFUND') 
   const orders = ordersByTab[activeTab] || []
   const selectedOrder = orders[0]
+  const navigate = useNavigate();
 
   return (
     <div className="hidden md:block min-h-screen bg-[#181818] px-0 py-34 text-[#fff7dc]">
@@ -229,7 +230,11 @@ const ProfileDesktop = ({ openModal, onEditProfile }) => {
                       </div>
                       <div className="flex gap-2 mb-17">
                         <button className="avantbold cream-text px-4 py-2 cursor-pointer">REVIEW IN PROGRESS</button>
-                        <button className="avantbold cream-bg metallic-text px-4 py-2 rounded border border-[#FFF7DC] cursor-pointer">VIEW DETAILS</button>
+                        <button className="avantbold cream-bg metallic-text px-4 py-2 rounded border border-[#FFF7DC] cursor-pointer"
+                        onClick={() => navigate('/profile/reviewdetails')}
+                        >
+                          VIEW DETAILS
+                        </button>
                       </div>
                     </div>
                   )}
@@ -332,7 +337,11 @@ const ProfileMobile = ({ openModal, onEditProfile }) => {
         </div>
         <div className="flex justify-end gap-2 mt-6 mb-2">
           <button className="avantbold cream-text px-4 py-3 text-sm">REVIEW IN PROGRESS</button>
-          <button className="avantbold cream-bg metallic-text px-4 py-0 rounded border border-[#FFF7DC] text-sm">VIEW DETAILS</button>
+          <button className="avantbold cream-bg metallic-text px-4 py-0 rounded border border-[#FFF7DC] text-sm"
+          onClick={() => navigate('/profile/reviewdetails')}
+          >
+            VIEW DETAILS
+          </button>
         </div>
         <div className="w-full h-[1px] bg-[#FFF7DC] mt-4" />
       </div>
