@@ -1,10 +1,11 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import AdminHeader from "../../components/admin/AdminHeader";
 import Toast from "../../components/Toast";
 import AddCollectionModal from "../../components/modals/AddCollectionModal";
 import EditCollectionModal from "../../components/modals/EditCollectionModal";
 import DeleteCollectionModal from "../../components/modals/DeleteCollectionModal";
 import { useCollection } from "../../contexts/CollectionContext";
+import { useProduct } from "../../contexts/ProductContext";
 
 import {
   NextIConBlack,
@@ -27,6 +28,8 @@ const CollectionManagement = () => {
     hideToast,
   } = useCollection();
 
+  const { fetchProductsByCollection, loading: productsLoading } = useProduct();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedSort, setSelectedSort] = useState("latest");
@@ -47,6 +50,7 @@ const CollectionManagement = () => {
     image: null,
   });
   const [originalCollection, setOriginalCollection] = useState(null);
+  const [collectionProducts, setCollectionProducts] = useState({});
 
   //  loading
   const [localLoading, setLocalLoading] = useState({
@@ -70,6 +74,67 @@ const CollectionManagement = () => {
 
   const closeAllDropdowns = () => {
     setShowSortDropdown(false);
+  };
+
+  const fetchCollectionProducts = async (collectionId) => {
+    try {
+      const products = await fetchProductsByCollection(collectionId);
+
+      if (Array.isArray(products)) {
+        const productCounts = {
+          necklaces: 0,
+          earrings: 0,
+          rings: 0,
+          bracelets: 0,
+          total: products.length,
+        };
+
+        products.forEach((product) => {
+          const categoryName =
+            product.category?.name?.toLowerCase() ||
+            product.category?.toLowerCase() ||
+            "";
+
+          if (categoryName.includes("necklace")) {
+            productCounts.necklaces++;
+          } else if (categoryName.includes("earring")) {
+            productCounts.earrings++;
+          } else if (categoryName.includes("ring")) {
+            productCounts.rings++;
+          } else if (categoryName.includes("bracelet")) {
+            productCounts.bracelets++;
+          }
+        });
+
+        setCollectionProducts((prev) => ({
+          ...prev,
+          [collectionId]: productCounts,
+        }));
+        console.debug(
+          "[CollectionManagement] productCounts for",
+          collectionId,
+          productCounts
+        );
+
+        return productCounts;
+      }
+
+      return { necklaces: 0, earrings: 0, rings: 0, bracelets: 0, total: 0 };
+    } catch (error) {
+      console.error("Error fetching collection products:", error);
+      return { necklaces: 0, earrings: 0, rings: 0, bracelets: 0, total: 0 };
+    }
+  };
+
+  const fetchAllCollectionProducts = async () => {
+    if (collections && collections.length > 0) {
+      for (const collection of collections) {
+        const collectionId = collection.collection_id || collection.id;
+        if (collectionId && !collectionProducts[collectionId]) {
+          await fetchCollectionProducts(collectionId);
+        }
+      }
+    }
   };
 
   const handleCollectionChange = (field, value) => {
@@ -100,7 +165,6 @@ const CollectionManagement = () => {
     }));
   };
 
-  // Handle add collection
   const handleAddCollection = async () => {
     if (!newCollection.name.trim()) {
       alert("Please enter a collection name");
@@ -135,7 +199,7 @@ const CollectionManagement = () => {
     }
   };
 
-  // Handle edit collection
+
   const handleEditClick = (collection) => {
     const originalData = {
       name: collection.name,
@@ -153,7 +217,7 @@ const CollectionManagement = () => {
     setShowEditCollectionModal(true);
   };
 
-  // Handle update collection
+
   const handleUpdateCollection = async () => {
     if (!editCollection.name.trim()) {
       alert("Please enter a collection name");
@@ -215,7 +279,7 @@ const CollectionManagement = () => {
     }
   };
 
-  // Handle closing edit modal
+  
   const handleCloseEditModal = () => {
     setShowEditCollectionModal(false);
     setEditCollection({
@@ -227,7 +291,7 @@ const CollectionManagement = () => {
     setOriginalCollection(null);
   };
 
-  // Handle delete collection
+
   const handleDeleteClick = (collection) => {
     setSelectedCollection(collection);
     setShowDeleteConfirmModal(true);
@@ -236,22 +300,17 @@ const CollectionManagement = () => {
   const handleConfirmDelete = async () => {
     if (!selectedCollection) return;
 
-
     setLocalLoading((prev) => ({ ...prev, delete: true }));
 
- 
     setShowDeleteConfirmModal(false);
     setSelectedCollection(null);
 
- 
     const result = await deleteCollection(
       selectedCollection.collection_id || selectedCollection.id
     );
 
-  
     setLocalLoading((prev) => ({ ...prev, delete: false }));
 
-   
     if (!result.success) {
       console.error("Failed to delete collection:", result.error);
     }
@@ -262,14 +321,39 @@ const CollectionManagement = () => {
     setSelectedCollection(null);
   };
 
-  
   const handleManageProductsClick = (collection) => {
-    // console.log('Managing products for collection:', collection.name);
+    const collectionId = collection.collection_id || collection.id;
+    const collectionName = collection.name;
+
+    sessionStorage.setItem(
+      "selectedCollection",
+      JSON.stringify({
+        id: collectionId,
+        name: collectionName,
+      })
+    );
+
+    window.location.href = "/admin/products";
   };
 
-  // Calculate stats
+  // Fetch collection products when collections change
+  useEffect(() => {
+    if (collections && collections.length > 0) {
+      fetchAllCollectionProducts();
+    }
+  }, [collections.length]); // Using collections.length to avoid infinite loops
+
+  // Calculate product kung ilan na per collection
   const totalCollections = allCollections.length;
   const totalProducts = allCollections.reduce((sum, collection) => {
+    const collectionId = collection.collection_id || collection.id;
+    const products = collectionProducts[collectionId];
+
+    if (products && products.total) {
+      return sum + products.total;
+    }
+
+    //backup
     if (collection.products && typeof collection.products === "object") {
       return (
         sum + Object.values(collection.products).reduce((a, b) => a + b, 0)
@@ -278,7 +362,6 @@ const CollectionManagement = () => {
     return sum;
   }, 0);
 
- 
   const filteredAndSortedCollections = useMemo(() => {
     let filtered = allCollections;
 
@@ -312,20 +395,32 @@ const CollectionManagement = () => {
         case "name-desc":
           return b.name.localeCompare(a.name);
         case "most-products":
-          const totalA = a.products
-            ? Object.values(a.products).reduce((sum, count) => sum + count, 0)
-            : 0;
-          const totalB = b.products
-            ? Object.values(b.products).reduce((sum, count) => sum + count, 0)
-            : 0;
+          const aId = a.collection_id || a.id;
+          const bId = b.collection_id || b.id;
+          const totalA =
+            collectionProducts[aId]?.total ||
+            (a.products
+              ? Object.values(a.products).reduce((sum, count) => sum + count, 0)
+              : 0);
+          const totalB =
+            collectionProducts[bId]?.total ||
+            (b.products
+              ? Object.values(b.products).reduce((sum, count) => sum + count, 0)
+              : 0);
           return totalB - totalA;
         case "least-products":
-          const totalC = a.products
-            ? Object.values(a.products).reduce((sum, count) => sum + count, 0)
-            : 0;
-          const totalD = b.products
-            ? Object.values(b.products).reduce((sum, count) => sum + count, 0)
-            : 0;
+          const cId = a.collection_id || a.id;
+          const dId = b.collection_id || b.id;
+          const totalC =
+            collectionProducts[cId]?.total ||
+            (a.products
+              ? Object.values(a.products).reduce((sum, count) => sum + count, 0)
+              : 0);
+          const totalD =
+            collectionProducts[dId]?.total ||
+            (b.products
+              ? Object.values(b.products).reduce((sum, count) => sum + count, 0)
+              : 0);
           return totalC - totalD;
         default:
           return 0;
@@ -589,7 +684,20 @@ const CollectionManagement = () => {
                               Necklaces
                             </div>
                             <div className="text-xl bebas text-black">
-                              {collection.products?.necklaces || 0}
+                              {(() => {
+                                const collectionId =
+                                  collection.collection_id || collection.id;
+                                const products =
+                                  collectionProducts[collectionId];
+                                if (productsLoading && !products) {
+                                  return (
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mx-auto"></div>
+                                  );
+                                }
+                                return products?.necklaces !== undefined
+                                  ? products.necklaces
+                                  : collection.products?.necklaces || 0;
+                              })()}
                             </div>
                           </div>
                           <div className="text-center p-3 border border-gray-200 rounded">
@@ -597,7 +705,17 @@ const CollectionManagement = () => {
                               Earrings
                             </div>
                             <div className="text-xl bebas text-black">
-                              {collection.products?.earrings || 0}
+                              {(() => {
+                                const collectionId =
+                                  collection.collection_id || collection.id;
+                                const products =
+                                  collectionProducts[collectionId];
+                                return (
+                                  products?.earrings ||
+                                  collection.products?.earrings ||
+                                  0
+                                );
+                              })()}
                             </div>
                           </div>
                           <div className="text-center p-3 border border-gray-200 rounded">
@@ -605,7 +723,17 @@ const CollectionManagement = () => {
                               Rings
                             </div>
                             <div className="text-xl bebas text-black">
-                              {collection.products?.rings || 0}
+                              {(() => {
+                                const collectionId =
+                                  collection.collection_id || collection.id;
+                                const products =
+                                  collectionProducts[collectionId];
+                                return (
+                                  products?.rings ||
+                                  collection.products?.rings ||
+                                  0
+                                );
+                              })()}
                             </div>
                           </div>
                           <div className="text-center p-3 border border-gray-200 rounded">
@@ -613,7 +741,17 @@ const CollectionManagement = () => {
                               Bracelets
                             </div>
                             <div className="text-xl bebas text-black">
-                              {collection.products?.bracelets || 0}
+                              {(() => {
+                                const collectionId =
+                                  collection.collection_id || collection.id;
+                                const products =
+                                  collectionProducts[collectionId];
+                                return (
+                                  products?.bracelets ||
+                                  collection.products?.bracelets ||
+                                  0
+                                );
+                              })()}
                             </div>
                           </div>
                         </div>
