@@ -62,7 +62,7 @@ export const CategoryProvider = ({ children }) => {
       const response = await categoryApi.fetchCategoryContent();
 
       if (response.error) {
-        console.warn("Categories API error:", response.error);
+        // console.warn("Categories API error:", response.error);
         setCategories({});
       } else if (response.data) {
         // If response.data is an array, convert to object keyed by slug
