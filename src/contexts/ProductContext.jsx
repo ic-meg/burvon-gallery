@@ -85,16 +85,14 @@ export const ProductProvider = ({ children }) => {
           }
         }
 
-        // Backend returns { products: [...] }, extract the products array
         if (productsData && productsData.products) {
-          console.log(' Products fetched:', productsData.products.length);
+          // console.log(' Products fetched:', productsData.products.length);
           setProducts(Array.isArray(productsData.products) ? productsData.products : []);
         } else if (Array.isArray(productsData)) {
-          // Fallback: if data is already an array
-          console.log(' Products fetched (array):', productsData.length);
+          // console.log(' Products fetched (array):', productsData.length);
           setProducts(productsData);
         } else {
-          console.warn('⚠️ Unexpected products data structure:', productsData);
+          console.warn('Unexpected products data structure:', productsData);
           setProducts([]);
         }
       } else {
@@ -167,16 +165,15 @@ export const ProductProvider = ({ children }) => {
           }
         }
 
-        // Backend returns { products: [...], category: {...} }, extract products array
+   
         let products = [];
         if (productsData && productsData.products && Array.isArray(productsData.products)) {
           products = productsData.products;
         } else if (Array.isArray(productsData)) {
-          // Fallback: if data is already an array
+     
           products = productsData;
         }
-
-        // console.log(` Products fetched for category '${categorySlug}':`, products.length);
+        
         setProductsByCategory(prev => ({ ...prev, [categorySlug]: products }));
         return products;
       }
@@ -206,7 +203,7 @@ export const ProductProvider = ({ children }) => {
         return [];
       } else if (response.data) {
         let productsData = response.data;
-        
+
         if (typeof productsData === 'string') {
           try {
             productsData = JSON.parse(productsData);
@@ -216,7 +213,19 @@ export const ProductProvider = ({ children }) => {
           }
         }
 
-        const products = Array.isArray(productsData) ? productsData : [];
+        let products = [];
+        if (Array.isArray(productsData)) {
+          products = productsData;
+        } else if (productsData && Array.isArray(productsData.products)) {
+          products = productsData.products;
+        } else if (productsData && productsData.products && typeof productsData.products === 'object') {
+          try {
+            products = Object.values(productsData.products).flat();
+          } catch (e) {
+            products = [];
+          }
+        }
+
         setProductsByCollection(prev => ({ ...prev, [collectionId]: products }));
         return products;
       }
