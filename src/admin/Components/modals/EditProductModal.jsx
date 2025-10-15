@@ -1,11 +1,12 @@
 import React from 'react';
-import { Add3D, AddImage, DropDownIconBlack, DropUpIconBlack } from '../../../assets';
+import { Add3D, AddImage, DropDownIconBlack, DropUpIconBlack, Remove } from '../../../assets';
 
 const EditProductModal = ({
   showModal,
   onClose,
   editProduct,
   onEditProductChange,
+  onRemoveImage, 
   modalCollectionOptions,
   showEditModalCollectionDropdown,
   setShowEditModalCollectionDropdown,
@@ -111,22 +112,38 @@ const EditProductModal = ({
             <div>
               <label className="block text-sm avantbold text-black mb-2">ORIGINAL PRICE</label>
               <input
-                type="text"
+                type="number"
+                min="0"
+                step="0.01"
                 value={editProduct.original_price}
-                readOnly
-                className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg bg-gray-100 avant text-sm text-gray-600 cursor-not-allowed"
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === '' || (!isNaN(value) && parseFloat(value) >= 0)) {
+                    onEditProductChange('original_price', value);
+                  }
+                }}
+                className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-black avant text-sm text-black"
               />
-              <p className="text-xs text-gray-500 mt-1 avant">Original price cannot be edited</p>
             </div>
             <div>
               <label className="block text-sm avantbold text-black mb-2">
                 CURRENT PRICE <span className="text-gray-500 font-normal">(Optional)</span>
               </label>
               <input
-                type="text"
-                placeholder="₱0.00 (Leave empty for no discount)"
+                type="number"
+                placeholder="0.00 (Leave empty for no discount)"
+                min="0"
+                step="0.01"
                 value={editProduct.current_price}
-                onChange={(e) => onEditProductChange('current_price', e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  const originalPrice = parseFloat(editProduct.original_price) || 0;
+                  const currentPrice = parseFloat(value) || 0;
+                  
+                  if (value === '' || (!isNaN(value) && currentPrice >= 0 && currentPrice !== originalPrice)) {
+                    onEditProductChange('current_price', value);
+                  }
+                }}
                 className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm text-black placeholder:text-gray-400"
               />
             </div>
@@ -208,50 +225,61 @@ const EditProductModal = ({
               return !isRings ? 'lg:col-span-2' : '';
             })()}>
               <label className="block text-sm avantbold text-black mb-3">IMAGES</label>
+
               <div className="grid grid-cols-5 gap-2">
                 {editProduct.images.map((image, index) => {
-                  // Check if there's a new uploaded image or existing image URL
-                  const imageUrl = image 
-                    ? URL.createObjectURL(image) 
-                    : (editProduct.imageUrls && editProduct.imageUrls[index]);
-                  
+                  const existingImageUrl = editProduct.imageUrls && editProduct.imageUrls[index];
+                  const imageUrl = image instanceof File ? URL.createObjectURL(image) : existingImageUrl || null;
+                  const hasImage = !!(image || existingImageUrl);
+
                   return (
-                    <label key={index} className="cursor-pointer">
-                      <div className="w-16 h-16 border-2 border-dashed border-black rounded-lg flex items-center justify-center bg-white hover:bg-gray-50 transition-colors overflow-hidden">
-                        {imageUrl ? (
-                          <img 
-                            src={imageUrl} 
-                            alt={`Product ${index + 1}`} 
-                            className="w-full h-full object-cover rounded-lg"
-                            onError={(e) => {
-                              e.target.src = AddImage;
-                              e.target.className = "w-6 h-6 opacity-60";
-                            }}
-                          />
-                        ) : (
-                          <img 
-                            src={AddImage} 
-                            alt="Add image" 
-                            className="w-6 h-6 opacity-60"
-                          />
-                        )}
-                      </div>
-                      <input 
-                        type="file" 
-                        className="hidden" 
-                        accept="image/*"
-                        onChange={(e) => onEditImageUpload(index, e.target.files[0])}
-                      />
-                    </label>
+                    <div key={index} className="relative">
+                      <label className="cursor-pointer">
+                        <div className="w-16 h-16 border-2 border-dashed border-black rounded-lg flex items-center justify-center bg-white hover:bg-gray-50 transition-colors relative overflow-visible image-box">
+                          <div className="w-full h-full overflow-hidden rounded-lg">
+                            {imageUrl ? (
+                              <img
+                                src={imageUrl}
+                                alt={`Product ${index + 1}`}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.currentTarget.src = AddImage;
+                                  e.currentTarget.className = "w-6 h-6 opacity-60";
+                                }}
+                              />
+                            ) : (
+                              <img src={AddImage} alt="Add image" className="w-6 h-6 opacity-60" />
+                            )}
+                          </div>
+
+                        
+                          {hasImage && (
+                            <button
+                              type="button"
+                              onPointerDown={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                              }}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                onRemoveImage?.(index);
+                              }}
+                              className="image-remove-btn"
+                              aria-label={`Remove image ${index + 1}`}
+                            >
+                              <img src={Remove} alt="Remove" className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                        <input type="file" className="hidden" accept="image/*" onChange={(e) => onEditImageUpload(index, e.target.files?.[0])} />
+                      </label>
+                    </div>
                   );
                 })}
-                {/* Additional single box */}
+
                 <div className="w-16 h-16 border-2 border-dashed border-black rounded-lg flex items-center justify-center bg-white">
-                  <img 
-                    src={Add3D} 
-                    alt="3D model" 
-                    className="w-6 h-6 opacity-60"
-                  />
+                  <img src={Add3D} alt="3D model" className="w-6 h-6 opacity-60" />
                 </div>
               </div>
             </div>

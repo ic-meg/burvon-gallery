@@ -45,46 +45,79 @@ const StockModal = ({
           </div>
 
           {/* Stock Details */}
-          {selectedProduct.category.toLowerCase() === 'rings' ? (
-            // Ring sizes inventory - simplified
-            <div>
-              <h3 className="text-lg avantbold text-black mb-4">Size Inventory</h3>
-              <div className="space-y-3">
-                {sizeOptions.map((size) => (
-                  <div key={size} className="grid grid-cols-2 gap-4 items-center p-3 bg-gray-50 rounded-lg">
-                    <div className="avantbold text-black">{size}</div>
-                    <div>
-                      <label className="block text-xs avant text-gray-600 mb-1">Stock</label>
-                      <input
-                        type="number"
-                        value={stockData.sizes[size]?.stock || 0}
-                        onChange={(e) => handleStockUpdate('size', size, 'stock', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded text-sm avant focus:outline-none focus:border-black text-black"
-                        min="0"
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            // General inventory - simplified
-            <div>
-              <h3 className="text-lg avantbold text-black mb-4">Inventory Management</h3>
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <div className="max-w-sm mx-auto">
-                  <label className="block text-sm avantbold text-black mb-2">Stock Quantity</label>
-                  <input
-                    type="number"
-                    value={stockData.general.stock}
-                    onChange={(e) => handleStockUpdate('general', null, 'stock', e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg avant focus:outline-none focus:border-black text-black text-center text-lg"
-                    min="0"
-                  />
+          {(() => {
+            // Get category name safely
+            const categoryName = typeof selectedProduct.category === 'object' && selectedProduct.category?.name 
+              ? selectedProduct.category.name.toLowerCase() 
+              : typeof selectedProduct.category === 'string' 
+                ? selectedProduct.category.toLowerCase() 
+                : '';
+            
+            return categoryName === 'rings' ? (
+              <div>
+                <h3 className="text-lg avantbold text-black mb-4">Size Inventory</h3>
+                <div className="space-y-3">
+                  {(() => {
+                    // Parse sizes from either 'sizes' array or 'size' string
+                    let selectedSizes = [];
+                    if (selectedProduct.sizes && Array.isArray(selectedProduct.sizes)) {
+                      selectedSizes = selectedProduct.sizes;
+                    } else if (selectedProduct.size && typeof selectedProduct.size === 'string') {
+                      selectedSizes = selectedProduct.size.split(',').map(s => s.trim()).filter(s => s);
+                    }
+                    
+                    // Sort sizes numerically (Size 3, Size 4, Size 5, etc.)
+                    selectedSizes = selectedSizes.sort((a, b) => {
+                      const numA = parseInt(a.replace('Size ', ''));
+                      const numB = parseInt(b.replace('Size ', ''));
+                      return numA - numB;
+                    });
+                    
+                    if (selectedSizes.length === 0) {
+                      return (
+                        <div className="text-center p-4 text-gray-500 avant">
+                          No sizes selected for this ring product.
+                        </div>
+                      );
+                    }
+                    
+                    return selectedSizes.map((size) => (
+                      <div key={size} className="grid grid-cols-2 gap-4 items-center p-3 bg-gray-50 rounded-lg">
+                        <div className="avantbold text-black">{size}</div>
+                        <div>
+                          <label className="block text-xs avant text-gray-600 mb-1">Stock</label>
+                          <input
+                            type="number"
+                            value={stockData.sizes[size]?.stock || 0}
+                            onChange={(e) => handleStockUpdate('size', size, 'stock', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded text-sm avant focus:outline-none focus:border-black text-black"
+                            min="0"
+                          />
+                        </div>
+                      </div>
+                    ));
+                  })()}
                 </div>
               </div>
-            </div>
-          )}
+            ) : (
+              // General inventory - simplified
+              <div>
+                <h3 className="text-lg avantbold text-black mb-4">Inventory Management</h3>
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <div className="max-w-sm mx-auto">
+                    <label className="block text-sm avantbold text-black mb-2">Stock Quantity</label>
+                    <input
+                      type="number"
+                      value={stockData.general.stock}
+                      onChange={(e) => handleStockUpdate('general', null, 'stock', e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg avant focus:outline-none focus:border-black text-black text-center text-lg"
+                      min="0"
+                    />
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Action Buttons */}
           <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200 mt-6">
