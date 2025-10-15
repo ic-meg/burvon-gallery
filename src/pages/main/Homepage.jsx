@@ -213,16 +213,16 @@ const Homepage = () => {
   useEffect(() => {
     const loadCollections = async () => {
       try {
-        console.log('Starting to fetch collections for homepage...');
+        // console.log('Starting to fetch collections for homepage...');
         const collectionsData = await fetchAllCollections();
-        console.log('Fetched collections for homepage:', collectionsData);
-        console.log('Collections data type:', typeof collectionsData);
-        console.log('Is collections array?', Array.isArray(collectionsData));
+        // console.log('Fetched collections for homepage:', collectionsData);
+        // console.log('Collections data type:', typeof collectionsData);
+        // console.log('Is collections array?', Array.isArray(collectionsData));
         
         if (collectionsData && Array.isArray(collectionsData) && collectionsData.length > 0) {
           // Transform collections data to match homepage format
           const transformedCollections = collectionsData.map((collection, index) => {
-            console.log(`Processing collection ${index}:`, collection);
+            // console.log(`Processing collection ${index}:`, collection);
             return {
               id: collection.collection_id || collection.id || index + 1,
               name: collection.name || `Collection ${index + 1}`,
@@ -235,7 +235,7 @@ const Homepage = () => {
           // console.log('Transformed collections:', transformedCollections);
           setDynamicCollections(transformedCollections);
         } else {
-          console.log('No collections data or empty array, using fallback');
+          // console.log('No collections data or empty array, using fallback');
           setDynamicCollections([]);
         }
       } catch (error) {
@@ -498,7 +498,7 @@ const Homepage = () => {
       // console.log('Using dynamic collections:', dynamicCollections);
       return dynamicCollections;
     }
-    console.log('Using fallback placeholder data');
+    // console.log('Using fallback placeholder data');
     return burvonsCollections; // fallback to placeholder data
   };
 
