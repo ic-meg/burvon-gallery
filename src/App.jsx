@@ -131,7 +131,7 @@ const App = () => {
                     element={<CategoryProducts />}
                   />
                   <Route
-                    path="/product-description"
+                    path="/product/:productSlug"
                     element={<ProductDesc />}
                   />
 
