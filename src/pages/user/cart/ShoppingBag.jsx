@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import Layout from '../../../components/Layout'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import { 
   XWhite, 
@@ -53,6 +53,7 @@ const ShoppingBagMobile = ({
   modalImg,
   openModal,
   closeModal,
+  navigate, // add this prop
 }) => (
   <div className="lg:hidden w-full min-h-screen bg-[#181818] px-5 pt-2 text-[#fff7dc] relative">
     {/* Title and subtitle */}
@@ -130,7 +131,10 @@ const ShoppingBagMobile = ({
           <span>-</span>
         </div>
         <hr className="my-4 border-[#fff7dc]/30" />
-        <button className="w-full py-3 rounded bg-[#fff7dc] text-[#181818] avantbold text-sm tracking-wide shadow hover:bg-[#ffe9b3] transition">
+        <button
+          className="w-full py-3 cursor-pointer rounded bg-[#fff7dc] text-[#181818] avantbold text-sm tracking-wide shadow hover:bg-[#ffe9b3] transition"
+          onClick={() => navigate('/user/cart/checkout')}
+        >
           PROCEED TO CHECKOUT
         </button>
         <div className="text-center mt-4 avantbold text-sm text-[#fff7dc]">
@@ -161,6 +165,7 @@ const ShoppingBagMobile = ({
 const ShoppingBag = () => {
   const [modalOpen, setModalOpen] = useState(false)
   const [modalImg, setModalImg] = useState(null)
+  const navigate = useNavigate() // add this
 
   const openModal = (img) => {
     setModalImg(img)
@@ -265,7 +270,10 @@ const ShoppingBag = () => {
               <div className="flex justify-between avantbold text-xl mt-4 border-t border-[#fff7dc]/30 pt-2">
                
               </div>
-              <button className="w-full mt-3 py-4 rounded-xl bg-[#fff7dc] text-[#181818] avantbold text-lg tracking-wide shadow-md hover:bg-[#ffe9b3] transition">
+              <button
+                className="w-full mt-3 cursor-pointer py-4 rounded-xl bg-[#fff7dc] text-[#181818] avantbold text-lg tracking-wide shadow-md hover:bg-[#ffe9b3] transition"
+                onClick={() => navigate('/user/cart/checkout')}
+              >
                 PROCEED TO CHECKOUT
               </button>
               <div className="text-center mt-6 avantbold text-lg text-[#fff7dc]">
@@ -301,6 +309,7 @@ const ShoppingBag = () => {
         modalImg={modalImg}
         openModal={openModal}
         closeModal={closeModal}
+        navigate={navigate} // pass navigate here
       />
     </Layout>
   )

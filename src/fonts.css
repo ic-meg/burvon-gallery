@@ -43,6 +43,13 @@
   src: url('/fonts/avant/AvantGardeBookBT.ttf') format('truetype'); 
 }
 
+@font-face {
+  font-family: 'AvantGarde Demi Italic';
+  src: url('/fonts/avant/AvantGardeDemiIt.ttf') format('truetype');
+  font-style: italic;
+  font-weight: bold;
+}
+
 .bebas {
   font-family: 'Bebas Neue', sans-serif;
 }
@@ -57,6 +64,12 @@
 
 .avant-book {
   font-family: 'AvantGarde Book', sans-serif;
+}
+
+.avantitalic {
+  font-family: 'AvantGarde Demi Oblique', sans-serif;
+  font-style: italic;
+  font-weight: bold;
 }
 
 a {
