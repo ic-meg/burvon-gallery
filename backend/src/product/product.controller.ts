@@ -17,9 +17,14 @@ export class ProductController {
     return this.productService.getProducts();
   }
 
-  @Get(':id')
+  @Get('id/:id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.productService.findOne(id);
+  }
+
+  @Get(':slug')
+  findBySlug(@Param('slug') slug: string) {
+    return this.productService.findBySlug(slug);
   }
 
   @Patch(':id')
@@ -36,5 +41,10 @@ export class ProductController {
   @Get('category/:slug')
   findByCategory(@Param('slug') slug: string) {
     return this.productService.getProductsByCategory(slug);
+  }
+
+  @Get('collection/:id')
+  findByCollection(@Param('id', ParseIntPipe) collectionId: number) {
+    return this.productService.getProductsByCollection(collectionId);
   }
 }
