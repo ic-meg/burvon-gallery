@@ -17,7 +17,13 @@ const fetchAllProducts = async () => {
 const fetchProductById = async (id) => {
   if (!apiURL) return missing("VITE_PRODUCT_API");
   if (!id) return missing("product id");
-  return await apiRequest(`${baseUrl}${id}`, null);
+  return await apiRequest(`${baseUrl}id/${id}`, null);
+};
+
+const fetchProductBySlug = async (slug) => {
+  if (!apiURL) return missing("VITE_PRODUCT_API");
+  if (!slug) return missing("product slug");
+  return await apiRequest(`${baseUrl}${slug}`, null);
 };
 
 const fetchProductsByCategory = async (categorySlug) => {
@@ -114,6 +120,7 @@ const filterProducts = async (filters) => {
 export default {
   fetchAllProducts,
   fetchProductById,
+  fetchProductBySlug,
   fetchProductsByCategory,
   fetchProductsByCollection,
   createProduct,
