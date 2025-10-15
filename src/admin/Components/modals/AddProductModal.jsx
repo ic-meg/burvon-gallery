@@ -111,10 +111,17 @@ const AddProductModal = ({
             <div>
               <label className="block text-sm avantbold text-black mb-2">ORIGINAL PRICE</label>
               <input
-                type="text"
-                placeholder="₱0.00"
+                type="number"
+                placeholder="0.00"
+                min="0"
+                step="0.01"
                 value={newProduct.original_price}
-                onChange={(e) => onProductChange('original_price', e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === '' || (!isNaN(value) && parseFloat(value) >= 0)) {
+                    onProductChange('original_price', value);
+                  }
+                }}
                 className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm text-black placeholder:text-gray-400"
               />
             </div>
@@ -123,10 +130,20 @@ const AddProductModal = ({
                 CURRENT PRICE <span className="text-gray-500 font-normal">(Optional)</span>
               </label>
               <input
-                type="text"
-                placeholder="₱0.00 (Leave empty for no discount)"
+                type="number"
+                placeholder="0.00 (Leave empty for no discount)"
+                min="0"
+                step="0.01"
                 value={newProduct.current_price}
-                onChange={(e) => onProductChange('current_price', e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  const originalPrice = parseFloat(newProduct.original_price) || 0;
+                  const currentPrice = parseFloat(value) || 0;
+                  
+                  if (value === '' || (!isNaN(value) && currentPrice >= 0 && currentPrice !== originalPrice)) {
+                    onProductChange('current_price', value);
+                  }
+                }}
                 className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm text-black placeholder:text-gray-400"
               />
             </div>
@@ -170,10 +187,13 @@ const AddProductModal = ({
             </div>
           </div>
 
-          {/* Row 3: Conditional Sizes and Images */}
+        
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Sizes - Only visible for rings */}
-            {newProduct.category === 'rings' && (
+            {(() => {
+              const selectedCategory = modalCategoryOptions.find(cat => cat.value === newProduct.category);
+              const isRings = selectedCategory?.slug === 'rings';
+              return isRings && (
               <div>
                 <label className="block text-sm avantbold text-black mb-3">SIZES</label>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-2">
@@ -193,10 +213,16 @@ const AddProductModal = ({
                   ))}
                 </div>
               </div>
-            )}
+              );
+            })()}
 
             {/* Images - Takes full width if no sizes */}
-            <div className={newProduct.category !== 'rings' ? 'lg:col-span-2' : ''}>
+            <div className={(() => {
+              // Check if selected category is rings by looking at the slug  
+              const selectedCategory = modalCategoryOptions.find(cat => cat.value === newProduct.category);
+              const isRings = selectedCategory?.slug === 'rings';
+              return !isRings ? 'lg:col-span-2' : '';
+            })()}>
               <label className="block text-sm avantbold text-black mb-3">IMAGES</label>
               <div className="grid grid-cols-5 gap-2">
                 {newProduct.images.map((image, index) => (
