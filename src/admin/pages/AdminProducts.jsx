@@ -1,148 +1,175 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import ErrorBoundary from '../../components/ErrorBoundary';
-import AdminHeader from '../../components/admin/AdminHeader';
-import { useProduct } from '../../contexts/ProductContext';
-import { useCollection } from '../../contexts/CollectionContext';
-import { useCategory } from '../../contexts/CategoryContext';
+import React, { useState, useMemo, useEffect } from "react";
+import ErrorBoundary from "../../components/ErrorBoundary";
+import AdminHeader from "../../components/admin/AdminHeader";
+import { useProduct } from "../../contexts/ProductContext";
+import { useCollection } from "../../contexts/CollectionContext";
+import { useCategory } from "../../contexts/CategoryContext";
 
 // Modal Components
-import AddProductModal from '../Components/modals/AddProductModal';
-import EditProductModal from '../Components/modals/EditProductModal';
-import ReviewsModal from '../Components/modals/ReviewsModal';
-import StockModal from '../Components/modals/StockModal';
+import AddProductModal from "../Components/modals/AddProductModal";
+import EditProductModal from "../Components/modals/EditProductModal";
+import ReviewsModal from "../Components/modals/ReviewsModal";
+import StockModal from "../Components/modals/StockModal";
 
 import {
   NextIConBlack,
-  PrevIConBlack,  
+  PrevIConBlack,
   DropDownIconBlack,
   DropUpIconBlack,
-  LyricImage,
-  AgathaImage,
-  RiomImage,
-  CelineImage,
-  AddImage,
-  Add3D 
-} from '../../assets/index.js';
+} from "../../assets/index.js";
 
 const AdminProducts = () => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedCollection, setSelectedCollection] = useState('all');
-  const [selectedStockLevel, setSelectedStockLevel] = useState('all');
-  const [selectedSellingStatus, setSelectedSellingStatus] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedCollection, setSelectedCollection] = useState("all");
+  const [selectedStockLevel, setSelectedStockLevel] = useState("all");
+  const [selectedSellingStatus, setSelectedSellingStatus] = useState("all");
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [showCollectionDropdown, setShowCollectionDropdown] = useState(false);
   const [showStockDropdown, setShowStockDropdown] = useState(false);
   const [showSellingDropdown, setShowSellingDropdown] = useState(false);
-  
+
   // Modal states
   const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [showEditProductModal, setShowEditProductModal] = useState(false);
   const [showStockModal, setShowStockModal] = useState(false);
   const [showReviewsModal, setShowReviewsModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [reviewFilter, setReviewFilter] = useState('all');
+  const [reviewFilter, setReviewFilter] = useState("all");
   const [newProduct, setNewProduct] = useState({
-    name: '',
-    collection_id: '',
-    category: '',
-    original_price: '',
-    current_price: '',
-    stock: '',
+    name: "",
+    collection_id: "",
+    category: "",
+    original_price: "",
+    current_price: "",
+    stock: "",
     sizes: [],
     images: [null, null, null, null, null],
     imageUrls: [null, null, null, null, null],
-    description: ''
+    description: "",
   });
   const [editProduct, setEditProduct] = useState({
     id: null,
-    name: '',
-    collection_id: '',
-    category: '',
-    original_price: '',
-    current_price: '',
-    stock: '',
+    name: "",
+    collection_id: "",
+    category: "",
+    original_price: "",
+    current_price: "",
+    stock: "",
     sizes: [],
     images: [null, null, null, null, null],
     imageUrls: [null, null, null, null, null],
-    description: ''
+    description: "",
   });
+  const [originalEditProduct, setOriginalEditProduct] = useState(null);
   const [stockData, setStockData] = useState({
     totalStock: 0,
     sizes: {
-      'Size 3': { stock: 0 },
-      'Size 4': { stock: 0 },
-      'Size 5': { stock: 0 },
-      'Size 6': { stock: 0 },
-      'Size 7': { stock: 0 },
-      'Size 8': { stock: 0 },
-      'Size 9': { stock: 0 }
+      "Size 3": { stock: 0 },
+      "Size 4": { stock: 0 },
+      "Size 5": { stock: 0 },
+      "Size 6": { stock: 0 },
+      "Size 7": { stock: 0 },
+      "Size 8": { stock: 0 },
+      "Size 9": { stock: 0 },
     },
-    general: { stock: 0 }
+    general: { stock: 0 },
   });
   // Add Product Modal dropdown states
-  const [showAddModalCollectionDropdown, setShowAddModalCollectionDropdown] = useState(false);
-  const [showAddModalCategoryDropdown, setShowAddModalCategoryDropdown] = useState(false);
-  const [showModalCategoryDropdown, setShowModalCategoryDropdown] = useState(false);
-  const [showEditModalCollectionDropdown, setShowEditModalCollectionDropdown] = useState(false);
-  const [showEditModalCategoryDropdown, setShowEditModalCategoryDropdown] = useState(false);
-  
+  const [showAddModalCollectionDropdown, setShowAddModalCollectionDropdown] =
+    useState(false);
+  const [showAddModalCategoryDropdown, setShowAddModalCategoryDropdown] =
+    useState(false);
+  const [showModalCategoryDropdown, setShowModalCategoryDropdown] =
+    useState(false);
+  const [showEditModalCollectionDropdown, setShowEditModalCollectionDropdown] =
+    useState(false);
+  const [showEditModalCategoryDropdown, setShowEditModalCategoryDropdown] =
+    useState(false);
+
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [message, setMessage] = useState({ type: '', text: '' });
-  
-  const { 
-    products, 
-    loading: productsLoading, 
+  const [message, setMessage] = useState({ type: "", text: "" });
+
+  const {
+    products,
+    loading: productsLoading,
     error: productsError,
     fetchAllProducts,
     createProduct,
     updateProduct,
     deleteProduct,
-    uploadProductImages
+    uploadProductImages,
   } = useProduct();
-  
+
   const { collections, fetchAllCollections } = useCollection();
   const { categories, fetchAllCategories } = useCategory();
-  
+
   const itemsPerPage = 8;
 
   const showMessage = (type, text, duration = 3000) => {
     setMessage({ type, text });
-    setTimeout(() => setMessage({ type: '', text: '' }), duration);
+    setTimeout(() => setMessage({ type: "", text: "" }), duration);
   };
 
   useEffect(() => {
     const initializeData = async () => {
       setLoading(true);
       try {
-        console.log('🔄 Fetching collections...');
+        // Check if we have a selected collection from collection management
+        const selectedCollectionData =
+          sessionStorage.getItem("selectedCollection");
+        if (selectedCollectionData) {
+          try {
+            const collectionInfo = JSON.parse(selectedCollectionData);
+            // Set the collection filter to the selected collection
+            setSelectedCollection(collectionInfo.id.toString());
+            sessionStorage.removeItem("selectedCollection");
+          } catch (error) {
+            console.warn("Failed to parse selected collection data:", error);
+          }
+        }
+
         const results = await Promise.allSettled([
           fetchAllProducts(),
           fetchAllCollections(),
-          fetchAllCategories()
+          fetchAllCategories(),
         ]);
-        console.log('📦 Fetch results:', results);
-        
-        const failures = results.filter(result => result.status === 'rejected');
+
+        const failures = results.filter(
+          (result) => result.status === "rejected"
+        );
         if (failures.length > 0) {
-          console.error('Some data failed to load:', failures);
+          console.error("Some data failed to load:", failures);
           const failedServices = [];
-          if (results[0].status === 'rejected') failedServices.push('products');
-          if (results[1].status === 'rejected') failedServices.push('collections');
-          if (results[2].status === 'rejected') failedServices.push('categories');
-          
-          showMessage('warning', `Failed to load: ${failedServices.join(', ')}. Some features may not work properly.`);
+          if (results[0].status === "rejected") failedServices.push("products");
+          if (results[1].status === "rejected")
+            failedServices.push("collections");
+          if (results[2].status === "rejected")
+            failedServices.push("categories");
+
+          showMessage(
+            "warning",
+            `Failed to load: ${failedServices.join(
+              ", "
+            )}. Some features may not work properly.`
+          );
         }
-        
+
         if (failures.length === results.length) {
-          showMessage('error', 'Failed to connect to server. Please check your connection and refresh the page.');
+          showMessage(
+            "error",
+            "Failed to connect to server. Please check your connection and refresh the page."
+          );
         }
       } catch (error) {
-        showMessage('error', 'Failed to initialize application. Please refresh the page.');
-        console.error('Error initializing data:', error);
+        showMessage(
+          "error",
+          "Failed to initialize application. Please refresh the page."
+        );
+        console.error("Error initializing data:", error);
       } finally {
         setLoading(false);
       }
@@ -153,30 +180,30 @@ const AdminProducts = () => {
 
   const validateImageFile = (file, index) => {
     const maxSize = 10 * 1024 * 1024; // 10MB
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
-    
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/jpg"];
+
     if (!file) return { valid: true };
-    
+
     if (!allowedTypes.includes(file.type)) {
-      return { 
-        valid: false, 
-        error: `Image ${index + 1}: Only JPEG, PNG, and WebP files are allowed`
+      return {
+        valid: false,
+        error: `Image ${index + 1}: Only JPEG, PNG, and WebP files are allowed`,
       };
     }
-    
+
     if (file.size > maxSize) {
-      return { 
-        valid: false, 
-        error: `Image ${index + 1}: File size must be less than 10MB`
+      return {
+        valid: false,
+        error: `Image ${index + 1}: File size must be less than 10MB`,
       };
     }
-    
+
     return { valid: true };
   };
 
   const uploadAllProductImages = async (imageFiles, productName) => {
     if (!imageFiles || imageFiles.length === 0) return [];
-    
+
     // Validate all images first
     for (let i = 0; i < imageFiles.length; i++) {
       const validation = validateImageFile(imageFiles[i], i);
@@ -184,31 +211,30 @@ const AdminProducts = () => {
         throw new Error(validation.error);
       }
     }
-    
+
     if (!productName?.trim()) {
-      throw new Error('Product name is required for image upload');
+      throw new Error("Product name is required for image upload");
     }
-    
+
     setUploading(true);
     try {
-      showMessage('info', 'Uploading product images...');
+      showMessage("info", "Uploading product images...");
       const uploadResults = await uploadProductImages(imageFiles, productName);
-      
+
       if (!uploadResults || uploadResults.length === 0) {
-        throw new Error('Image upload service returned no results');
+        throw new Error("Image upload service returned no results");
       }
-      
+
       return uploadResults;
     } catch (error) {
-      const errorMessage = error.message || 'Failed to upload images';
-      showMessage('error', errorMessage);
+      const errorMessage = error.message || "Failed to upload images";
+      showMessage("error", errorMessage);
       throw error;
     } finally {
       setUploading(false);
     }
   };
 
-  // Sample reviews data
   const [productReviews, setProductReviews] = useState({
     1: [
       {
@@ -216,9 +242,10 @@ const AdminProducts = () => {
         customerName: "Maria Santos",
         email: "maria@email.com",
         rating: 5,
-        comment: "Amazing quality! The necklace is exactly as described and looks even better in person. Highly recommend!",
+        comment:
+          "Amazing quality! The necklace is exactly as described and looks even better in person. Highly recommend!",
         date: "2024-10-01",
-        status: "pending" // pending, approved, rejected
+        status: "pending", // pending, approved, rejected
       },
       {
         id: 2,
@@ -227,7 +254,7 @@ const AdminProducts = () => {
         rating: 4,
         comment: "Good quality product. Fast delivery. Would buy again.",
         date: "2024-09-28",
-        status: "approved"
+        status: "approved",
       },
       {
         id: 3,
@@ -236,7 +263,7 @@ const AdminProducts = () => {
         rating: 5,
         comment: "Perfect gift for my sister! She loved it so much.",
         date: "2024-09-25",
-        status: "approved"
+        status: "approved",
       },
       {
         id: 4,
@@ -245,8 +272,8 @@ const AdminProducts = () => {
         rating: 1,
         comment: "This is a fake review with inappropriate content.",
         date: "2024-09-20",
-        status: "rejected"
-      }
+        status: "rejected",
+      },
     ],
     2: [
       {
@@ -256,8 +283,8 @@ const AdminProducts = () => {
         rating: 5,
         comment: "Beautiful earrings! Very comfortable to wear all day.",
         date: "2024-10-02",
-        status: "pending"
-      }
+        status: "pending",
+      },
     ],
     3: [
       {
@@ -267,12 +294,11 @@ const AdminProducts = () => {
         rating: 4,
         comment: "Nice ring, good value for money. Fits perfectly.",
         date: "2024-09-30",
-        status: "approved"
-      }
-    ]
+        status: "approved",
+      },
+    ],
   });
 
-  // Helper function to close all dropdowns
   const closeAllDropdowns = () => {
     setShowCategoryDropdown(false);
     setShowCollectionDropdown(false);
@@ -281,126 +307,137 @@ const AdminProducts = () => {
   };
 
   const modalCollectionOptions = useMemo(() => {
-    const baseOptions = [{ value: '', label: 'Select Collection' }];
-    
+    const baseOptions = [{ value: "", label: "Select Collection" }];
+
     if (collections && Array.isArray(collections) && collections.length > 0) {
       const collectionOptions = collections
-        .filter(collection => {
-          // Support both collection_id and id fields
+        .filter((collection) => {
           const collectionId = collection.collection_id || collection.id;
-          return collection && collectionId !== undefined && collectionId !== null;
+          return (
+            collection && collectionId !== undefined && collectionId !== null
+          );
         })
-        .map(collection => {
-          // Support both collection_id and id fields
+        .map((collection) => {
           const collectionId = collection.collection_id || collection.id;
           return {
             value: collectionId.toString(),
-            label: collection.name || 'Unnamed Collection'
+            label: collection.name || "Unnamed Collection",
           };
         });
-      
+
       return [...baseOptions, ...collectionOptions];
     }
-    
-    // Fallback: If no collections loaded, show a message
-    return [...baseOptions, { value: 'loading', label: 'Loading collections...', disabled: true }];
+
+    return [
+      ...baseOptions,
+      { value: "loading", label: "Loading collections...", disabled: true },
+    ];
   }, [collections]);
 
   const modalCategoryOptions = useMemo(() => {
-    const baseOptions = [{ value: '', label: 'Select Category' }];
-    
-    if (categories && typeof categories === 'object') {
-      const categoryArray = Array.isArray(categories) ? categories : Object.values(categories);
-      
+    const baseOptions = [{ value: "", label: "Select Category" }];
+
+    if (categories && typeof categories === "object") {
+      const categoryArray = Array.isArray(categories)
+        ? categories
+        : Object.values(categories);
+
       if (categoryArray.length > 0) {
         const categoryOptions = categoryArray
-          .filter(cat => cat && (cat.category_id || cat.id))
-          .map(cat => ({
+          .filter((cat) => cat && (cat.category_id || cat.id))
+          .map((cat) => ({
             value: (cat.category_id || cat.id).toString(),
-            label: cat.name || cat.slug || 'Unnamed Category',
-            slug: cat.slug
+            label: cat.name || cat.slug || "Unnamed Category",
+            slug: cat.slug,
           }));
-        
-        console.log('Category options:', categoryOptions);
+
         return [...baseOptions, ...categoryOptions];
       }
     }
-    
-    // Fallback to hardcoded if no categories loaded
     return [
       ...baseOptions,
-      { value: '1', label: 'Necklaces', slug: 'necklaces' },
-      { value: '2', label: 'Rings', slug: 'rings' },
-      { value: '3', label: 'Bracelets', slug: 'bracelets' },
-      { value: '4', label: 'Earrings', slug: 'earrings' }
+      { value: "1", label: "Necklaces", slug: "necklaces" },
+      { value: "2", label: "Earrings", slug: "earrings" },
+      { value: "3", label: "Bracelets", slug: "bracelets" },
+      { value: "4", label: "Rings", slug: "rings" },
     ];
   }, [categories]);
 
-  const sizeOptions = ['Size 3', 'Size 4', 'Size 5', 'Size 6', 'Size 7', 'Size 8', 'Size 9'];
+  const sizeOptions = [
+    "Size 3",
+    "Size 4",
+    "Size 5",
+    "Size 6",
+    "Size 7",
+    "Size 8",
+    "Size 9",
+  ];
 
-  // Handle review status change
   const handleReviewStatusChange = (reviewId, newStatus) => {
-    setProductReviews(prev => ({
+    setProductReviews((prev) => ({
       ...prev,
-      [selectedProduct.id]: prev[selectedProduct.id].map(review =>
+      [selectedProduct.id]: prev[selectedProduct.id].map((review) =>
         review.id === reviewId ? { ...review, status: newStatus } : review
-      )
+      ),
     }));
   };
 
-  // Handle reviews modal
   const handleReviewsClick = (product) => {
     setSelectedProduct(product);
     setShowReviewsModal(true);
-    setReviewFilter('all');
+    setReviewFilter("all");
   };
 
-  // Get filtered reviews
   const getFilteredReviews = () => {
     if (!selectedProduct || !productReviews[selectedProduct.id]) return [];
-    
+
     const reviews = productReviews[selectedProduct.id];
-    if (reviewFilter === 'all') return reviews;
-    return reviews.filter(review => review.status === reviewFilter);
+    if (reviewFilter === "all") return reviews;
+    return reviews.filter((review) => review.status === reviewFilter);
   };
 
-  // Get review stats
   const getReviewStats = () => {
     if (!selectedProduct || !productReviews[selectedProduct.id]) {
       return { total: 0, pending: 0, approved: 0, rejected: 0, avgRating: 0 };
     }
-    
+
     const reviews = productReviews[selectedProduct.id];
-    const approvedReviews = reviews.filter(r => r.status === 'approved');
-    const avgRating = approvedReviews.length > 0 
-      ? (approvedReviews.reduce((sum, r) => sum + r.rating, 0) / approvedReviews.length).toFixed(1)
-      : 0;
-    
+    const approvedReviews = reviews.filter((r) => r.status === "approved");
+    const avgRating =
+      approvedReviews.length > 0
+        ? (
+            approvedReviews.reduce((sum, r) => sum + r.rating, 0) /
+            approvedReviews.length
+          ).toFixed(1)
+        : 0;
+
     return {
       total: reviews.length,
-      pending: reviews.filter(r => r.status === 'pending').length,
-      approved: reviews.filter(r => r.status === 'approved').length,
-      rejected: reviews.filter(r => r.status === 'rejected').length,
-      avgRating: avgRating
+      pending: reviews.filter((r) => r.status === "pending").length,
+      approved: reviews.filter((r) => r.status === "approved").length,
+      rejected: reviews.filter((r) => r.status === "rejected").length,
+      avgRating: avgRating,
     };
   };
 
-  // Get star display
   const getStarDisplay = (rating) => {
     return Array.from({ length: 5 }, (_, i) => (
-      <span key={i} className={i < rating ? "text-yellow-400" : "text-gray-300"}>
+      <span
+        key={i}
+        className={i < rating ? "text-yellow-400" : "text-gray-300"}
+      >
         ★
       </span>
     ));
   };
 
   const handleProductChange = (field, value) => {
-    setNewProduct(prev => {
+    setNewProduct((prev) => {
       const updated = {
         ...prev,
-        [field]: value
+        [field]: value,
       };
-      if (field === 'category' && value !== 'rings') {
+      if (field === "category" && value !== "rings") {
         updated.sizes = [];
       }
       return updated;
@@ -408,35 +445,33 @@ const AdminProducts = () => {
   };
 
   const handleEditProductChange = (field, value) => {
-    setEditProduct(prev => {
+    setEditProduct((prev) => {
       const updated = {
         ...prev,
-        [field]: value
+        [field]: value,
       };
-      if (field === 'category' && value !== 'rings') {
+      if (field === "category" && value !== "rings") {
         updated.sizes = [];
       }
       return updated;
     });
   };
 
-  // Handle size selection for add product
   const handleSizeToggle = (size) => {
-    setNewProduct(prev => ({
+    setNewProduct((prev) => ({
       ...prev,
-      sizes: prev.sizes.includes(size) 
-        ? prev.sizes.filter(s => s !== size)
-        : [...prev.sizes, size]
+      sizes: prev.sizes.includes(size)
+        ? prev.sizes.filter((s) => s !== size)
+        : [...prev.sizes, size],
     }));
   };
 
-  // Handle size selection for edit product
   const handleEditSizeToggle = (size) => {
-    setEditProduct(prev => ({
+    setEditProduct((prev) => ({
       ...prev,
-      sizes: prev.sizes.includes(size) 
-        ? prev.sizes.filter(s => s !== size)
-        : [...prev.sizes, size]
+      sizes: prev.sizes.includes(size)
+        ? prev.sizes.filter((s) => s !== size)
+        : [...prev.sizes, size],
     }));
   };
 
@@ -444,17 +479,17 @@ const AdminProducts = () => {
     if (file) {
       const validation = validateImageFile(file, index);
       if (!validation.valid) {
-        showMessage('error', validation.error);
+        showMessage("error", validation.error);
         return;
       }
     }
-    
-    setNewProduct(prev => {
+
+    setNewProduct((prev) => {
       const newImages = [...prev.images];
       newImages[index] = file;
       return {
         ...prev,
-        images: newImages
+        images: newImages,
       };
     });
   };
@@ -463,231 +498,388 @@ const AdminProducts = () => {
     if (file) {
       const validation = validateImageFile(file, index);
       if (!validation.valid) {
-        showMessage('error', validation.error);
+        showMessage("error", validation.error);
         return;
       }
     }
-    
-    setEditProduct(prev => {
+
+    setEditProduct((prev) => {
       const newImages = [...prev.images];
       newImages[index] = file;
       return {
         ...prev,
-        images: newImages
+        images: newImages,
       };
     });
   };
 
-  // Handle stock modal
+  const [deletedImageUrls, setDeletedImageUrls] = useState([]);
+
+  const handleRemoveEditImage = (index) => {
+    setEditProduct((prev) => {
+      const newImages = [...prev.images];
+      const newImageUrls = [...(prev.imageUrls || [])];
+
+      if (newImageUrls[index]) {
+        setDeletedImageUrls((d) => [...d, newImageUrls[index]]);
+      }
+      newImages[index] = null;
+      newImageUrls[index] = null;
+      return { ...prev, images: newImages, imageUrls: newImageUrls };
+    });
+  };
+
   const handleStockClick = (product) => {
     setSelectedProduct(product);
-    
-    // Get category name safely
-    const categoryName = typeof product.category === 'object' && product.category?.name 
-      ? product.category.name.toLowerCase() 
-      : typeof product.category === 'string' 
-        ? product.category.toLowerCase() 
-        : '';
-    
-    // Initialize stock data based on product category
-    if (categoryName === 'rings') {
+
+    const categoryName =
+      typeof product.category === "object" && product.category?.name
+        ? product.category.name.toLowerCase()
+        : typeof product.category === "string"
+        ? product.category.toLowerCase()
+        : "";
+
+    if (categoryName === "rings") {
       const initialSizesStock = {};
-      sizeOptions.forEach(size => {
-        initialSizesStock[size] = { 
-          stock: Math.floor(Math.random() * 20)
-        };
+
+      let productSizes = [];
+      if (product.sizes && Array.isArray(product.sizes)) {
+        productSizes = product.sizes;
+      } else if (product.size && typeof product.size === "string") {
+        productSizes = product.size
+          .split(",")
+          .map((s) => s.trim())
+          .filter((s) => s);
+      }
+
+      productSizes = productSizes.sort((a, b) => {
+        const numA = parseInt(a.replace("Size ", ""));
+        const numB = parseInt(b.replace("Size ", ""));
+        return numA - numB;
       });
+
+      if (productSizes.length > 0) {
+        productSizes.forEach((size) => {
+          if (product.sizeStocks && Array.isArray(product.sizeStocks)) {
+            const sizeStock = product.sizeStocks.find((ss) => ss.size === size);
+            initialSizesStock[size] = {
+              stock: sizeStock ? sizeStock.stock : 0,
+            };
+          } else {
+            initialSizesStock[size] = {
+              stock: 0,
+            };
+          }
+        });
+      }
+
+      // Calculate total stock from individual size stocks
+      const totalFromSizes = Object.values(initialSizesStock).reduce(
+        (total, item) => total + item.stock,
+        0
+      );
+
       setStockData({
-        totalStock: product.stock,
+        totalStock: totalFromSizes || product.stock || 0,
         sizes: initialSizesStock,
-        general: { stock: 0 }
+        general: { stock: 0 },
       });
     } else {
       setStockData({
-        totalStock: product.stock,
+        totalStock: product.stock || 0,
         sizes: {},
-        general: { stock: product.stock }
+        general: { stock: product.stock || 0 },
       });
     }
-    
+
     setShowStockModal(true);
   };
 
-  // Handle stock updates
   const handleStockUpdate = (type, size, field, value) => {
-    setStockData(prev => {
+    setStockData((prev) => {
       const newData = { ...prev };
-      if (type === 'size') {
+      if (type === "size") {
         newData.sizes[size][field] = parseInt(value) || 0;
       } else {
         newData.general[field] = parseInt(value) || 0;
       }
-      
-      // Get category name safely
-      const categoryName = typeof selectedProduct?.category === 'object' && selectedProduct?.category?.name 
-        ? selectedProduct.category.name.toLowerCase() 
-        : typeof selectedProduct?.category === 'string' 
-          ? selectedProduct.category.toLowerCase() 
-          : '';
-      
+
+      const categoryName =
+        typeof selectedProduct?.category === "object" &&
+        selectedProduct?.category?.name
+          ? selectedProduct.category.name.toLowerCase()
+          : typeof selectedProduct?.category === "string"
+          ? selectedProduct.category.toLowerCase()
+          : "";
+
       // Recalculate total stock
-      if (categoryName === 'rings') {
-        newData.totalStock = Object.values(newData.sizes).reduce((total, item) => total + item.stock, 0);
+      if (categoryName === "rings") {
+        newData.totalStock = Object.values(newData.sizes).reduce(
+          (total, item) => total + item.stock,
+          0
+        );
       } else {
         newData.totalStock = newData.general.stock;
       }
-      
+
       return newData;
     });
   };
 
-  const validateProductData = (productData, isEdit = false) => {
+  const validateProductData = (
+    productData,
+    isEdit = false,
+    deletedImages = []
+  ) => {
     const errors = [];
-    
+
     if (!productData.name?.trim()) {
-      errors.push('Product name is required');
+      errors.push("Product name is required");
     } else if (productData.name.trim().length < 2) {
-      errors.push('Product name must be at least 2 characters');
+      errors.push("Product name must be at least 2 characters");
     } else if (productData.name.trim().length > 100) {
-      errors.push('Product name must be less than 100 characters');
+      errors.push("Product name must be less than 100 characters");
     }
-    
+
     if (!productData.collection_id) {
-      errors.push('Collection is required');
+      errors.push("Collection is required");
     }
-    
+
     if (!productData.category) {
-      errors.push('Category is required');
+      errors.push("Category is required");
     }
-    
-    if (!isEdit && (!productData.original_price || parseFloat(productData.original_price) <= 0)) {
-      errors.push('Original price must be greater than 0');
+
+    if (
+      !isEdit &&
+      (!productData.original_price ||
+        parseFloat(productData.original_price) <= 0)
+    ) {
+      errors.push("Original price must be greater than 0");
     }
-    
+
     // Current price is optional (for discounts). If provided, it must be valid
     if (productData.current_price && productData.current_price.trim()) {
       const currentPrice = parseFloat(productData.current_price);
       if (isNaN(currentPrice) || currentPrice <= 0) {
-        errors.push('Current price must be a valid number greater than 0');
-      } else if (productData.original_price && currentPrice > parseFloat(productData.original_price)) {
-        errors.push('Current price cannot be higher than original price');
+        errors.push("Current price must be a valid number greater than 0");
+      } else if (
+        productData.original_price &&
+        currentPrice > parseFloat(productData.original_price)
+      ) {
+        errors.push("Current price cannot be higher than original price");
       }
     }
-    
+
     if (productData.stock && parseInt(productData.stock) < 0) {
-      errors.push('Stock cannot be negative');
+      errors.push("Stock cannot be negative");
     }
-    
+
+    // Description validation
+    if (!productData.description?.trim()) {
+      errors.push("Product description is required");
+    } else if (productData.description.trim().length < 10) {
+      errors.push("Product description must be at least 10 characters");
+    } else if (productData.description.trim().length > 1000) {
+      errors.push("Product description must be less than 1000 characters");
+    }
+
+    if (isEdit) {
+      const existingImages = (productData.imageUrls || []).filter(
+        (url) => url !== null && url !== undefined
+      );
+      const remainingImages = Math.max(
+        0,
+        existingImages.length - (deletedImages?.length || 0)
+      );
+      const newImages = (productData.images || []).filter(
+        (img) => img !== null && img !== undefined
+      );
+      const totalImages = remainingImages + newImages.length;
+
+      if (totalImages === 0) {
+        errors.push("At least one product image is required");
+      }
+    } else {
+      const newImages = (productData.images || []).filter(
+        (img) => img !== null
+      );
+      if (newImages.length === 0) {
+        errors.push("At least one product image is required");
+      }
+    }
+
     return errors;
   };
 
   const checkDuplicateProduct = (productName, excludeId = null) => {
     const normalizedName = productName.trim().toLowerCase();
-    return products.some(product => 
-      product.id !== excludeId && 
-      product.name.toLowerCase() === normalizedName
-    );
+    return products.some((product) => {
+      const productId = product.product_id || product.id;
+      return (
+        productId !== excludeId && product.name.toLowerCase() === normalizedName
+      );
+    });
+  };
+
+  const hasProductChanges = () => {
+    if (!originalEditProduct) return true;
+
+    const fieldsToCompare = [
+      "name",
+      "collection_id",
+      "category",
+      "original_price",
+      "current_price",
+      "stock",
+      "description",
+    ];
+    for (let field of fieldsToCompare) {
+      if (editProduct[field] !== originalEditProduct[field]) {
+        return true;
+      }
+    }
+
+    if (
+      JSON.stringify(editProduct.sizes) !==
+      JSON.stringify(originalEditProduct.sizes)
+    ) {
+      return true;
+    }
+
+    const hasNewImages = editProduct.images.some((img) => img !== null);
+    if (hasNewImages) {
+      return true;
+    }
+
+    if (deletedImageUrls.length > 0) {
+      return true;
+    }
+
+    return false;
   };
 
   const handleAddProduct = async () => {
     const validationErrors = validateProductData(newProduct);
-    
+
     if (validationErrors.length > 0) {
-      alert(validationErrors.join('\n'));
+      alert(validationErrors.join("\n"));
       return;
     }
 
     if (checkDuplicateProduct(newProduct.name)) {
-      alert('A product with this name already exists');
+      alert("A product with this name already exists");
       return;
     }
 
     setSaving(true);
     let uploadedImagePaths = [];
-    
+
     try {
       let imageUrls = [];
-      const imageFiles = newProduct.images.filter(img => img !== null);
-      
+      const imageFiles = newProduct.images.filter((img) => img !== null);
+
       if (imageFiles.length > 0) {
         try {
-          const uploadResults = await uploadAllProductImages(imageFiles, newProduct.name);
-          imageUrls = uploadResults.map(result => result.success ? result.url : null);
-          uploadedImagePaths = uploadResults.map(result => result.success ? result.filePath : null).filter(path => path);
-          
-          const failedUploads = uploadResults.filter(result => !result.success);
+          const uploadResults = await uploadAllProductImages(
+            imageFiles,
+            newProduct.name
+          );
+          imageUrls = uploadResults.map((result) =>
+            result.success ? result.url : null
+          );
+          uploadedImagePaths = uploadResults
+            .map((result) => (result.success ? result.filePath : null))
+            .filter((path) => path);
+
+          const failedUploads = uploadResults.filter(
+            (result) => !result.success
+          );
           if (failedUploads.length > 0) {
-            console.warn('Some images failed to upload:', failedUploads);
-            alert(`Warning: ${failedUploads.length} image(s) failed to upload but product will be created`);
+            console.warn("Some images failed to upload:", failedUploads);
+            alert(
+              `Warning: ${failedUploads.length} image(s) failed to upload but product will be created`
+            );
           }
         } catch (uploadError) {
-          console.error('Image upload failed:', uploadError);
-          alert(`Image upload failed: ${uploadError.message}\n\nPlease try again.`);
+          console.error("Image upload failed:", uploadError);
+          alert(
+            `Image upload failed: ${uploadError.message}\n\nPlease try again.`
+          );
           setSaving(false);
           return;
         }
       }
 
       const originalPrice = parseFloat(newProduct.original_price) || 0;
-      // If current price is not provided, use original price (no discount)
-      const currentPrice = newProduct.current_price && newProduct.current_price.trim() 
-        ? parseFloat(newProduct.current_price) 
-        : originalPrice;
+      const currentPrice =
+        newProduct.current_price && newProduct.current_price.trim()
+          ? parseFloat(newProduct.current_price)
+          : null;
 
       // Get the selected category to check if it's rings
-      const selectedCategory = modalCategoryOptions.find(cat => cat.value === newProduct.category);
-      const isRings = selectedCategory?.slug === 'rings';
+      const selectedCategory = modalCategoryOptions.find(
+        (cat) => cat.value === newProduct.category
+      );
+      const isRings = selectedCategory?.slug === "rings";
 
       const productData = {
         name: newProduct.name.trim(),
         collection_id: parseInt(newProduct.collection_id),
-        category_id: parseInt(newProduct.category), // Backend expects category_id as integer
+        category_id: parseInt(newProduct.category),
         original_price: originalPrice,
         current_price: currentPrice,
         stock: parseInt(newProduct.stock) || 0,
-        // Only include size if category is rings and sizes are selected
-        size: isRings && newProduct.sizes.length > 0 ? newProduct.sizes.join(',') : '',
+        size:
+          isRings && newProduct.sizes.length > 0
+            ? newProduct.sizes.join(",")
+            : "",
         images: imageUrls,
-        description: newProduct.description?.trim() || ''
+        description: newProduct.description?.trim() || "",
       };
 
       const result = await createProduct(productData, imageFiles);
-      
+
       if (result.success) {
-        alert('Product created successfully!');
+        alert("Product created successfully!");
         setShowAddProductModal(false);
         setNewProduct({
-          name: '',
-          collection_id: '',
-          category: '',
-          original_price: '',
-          current_price: '',
-          stock: '',
+          name: "",
+          collection_id: "",
+          category: "",
+          original_price: "",
+          current_price: "",
+          stock: "",
           sizes: [],
           images: [null, null, null, null, null],
           imageUrls: [null, null, null, null, null],
-          description: ''
+          description: "",
         });
       } else {
         await cleanupFailedImages(uploadedImagePaths);
-        const errorMessage = result.error || 'Failed to create product';
-        console.error('Product creation failed:', errorMessage);
+        const errorMessage = result.error || "Failed to create product";
+        console.error("Product creation failed:", errorMessage);
         alert(`❌ Failed to create product:\n\n${errorMessage}`);
       }
     } catch (error) {
       await cleanupFailedImages(uploadedImagePaths);
-      console.error('Error creating product:', error);
-      
-      let errorMessage = 'An unexpected error occurred';
-      if (error.message?.includes('network') || error.message?.includes('fetch')) {
-        errorMessage = 'Network error. Please check your connection and try again.';
-      } else if (error.message?.includes('unauthorized')) {
-        errorMessage = 'You are not authorized to perform this action.';
+      console.error("Error creating product:", error);
+
+      let errorMessage = "An unexpected error occurred";
+      if (
+        error.message?.includes("network") ||
+        error.message?.includes("fetch")
+      ) {
+        errorMessage =
+          "Network error. Please check your connection and try again.";
+      } else if (error.message?.includes("unauthorized")) {
+        errorMessage = "You are not authorized to perform this action.";
       } else if (error.message) {
         errorMessage = error.message;
       }
-      
-      alert(`❌ Error creating product:\n\n${errorMessage}\n\nCheck console for more details.`);
+
+      alert(
+        `❌ Error creating product:\n\n${errorMessage}\n\nCheck console for more details.`
+      );
     } finally {
       setSaving(false);
     }
@@ -698,7 +890,7 @@ const AdminProducts = () => {
       try {
         await storageService.cleanupOldImages(imagePaths);
       } catch (cleanupError) {
-        console.error('Failed to cleanup images:', cleanupError);
+        console.error("Failed to cleanup images:", cleanupError);
       }
     }
   };
@@ -707,16 +899,16 @@ const AdminProducts = () => {
   const handleEditClick = (product) => {
     // Parse sizes if it's a string (comma-separated)
     let parsedSizes = [];
-    if (product.size && typeof product.size === 'string') {
-      parsedSizes = product.size.split(',').filter(s => s.trim());
+    if (product.size && typeof product.size === "string") {
+      parsedSizes = product.size.split(",").filter((s) => s.trim());
     } else if (Array.isArray(product.sizes)) {
       parsedSizes = product.sizes;
     }
-    
+
     // Handle images - ensure we have the right format
     let imageUrls = [];
     if (product.images) {
-      if (typeof product.images === 'string') {
+      if (typeof product.images === "string") {
         try {
           imageUrls = JSON.parse(product.images);
         } catch (e) {
@@ -726,135 +918,186 @@ const AdminProducts = () => {
         imageUrls = product.images;
       }
     }
-    
+
     const editData = {
-      id: product.product_id || product.id, // Backend uses product_id
-      name: product.name || '',
-      collection_id: product.collection_id?.toString() || '',
-      category: product.category_id?.toString() || '', // Backend uses category_id
-      original_price: product.original_price?.toString() || '',
-      current_price: product.current_price?.toString() || '',
-      stock: product.stock?.toString() || '',
+      id: product.product_id || product.id,
+      name: product.name || "",
+      collection_id: product.collection_id?.toString() || "",
+      category: product.category_id?.toString() || "",
+      original_price: product.original_price?.toString() || "",
+      current_price: product.current_price?.toString() || "",
+      stock: product.stock?.toString() || "",
       sizes: parsedSizes,
       images: [null, null, null, null, null],
       imageUrls: imageUrls,
-      description: product.description || ''
+      description: product.description || "",
     };
-    
+
     setEditProduct(editData);
+    setOriginalEditProduct(editData);
     setShowEditProductModal(true);
   };
 
   const handleUpdateProduct = async () => {
-    const validationErrors = validateProductData(editProduct, true);
-    
+    const validationErrors = validateProductData(
+      editProduct,
+      true,
+      deletedImageUrls
+    );
+
     if (validationErrors.length > 0) {
-      showMessage('error', validationErrors[0]);
+      showMessage("error", validationErrors[0]);
       return;
     }
 
     if (checkDuplicateProduct(editProduct.name, editProduct.id)) {
-      showMessage('error', 'A product with this name already exists');
+      showMessage("error", "A product with this name already exists");
+      return;
+    }
+
+    const hasChanges = hasProductChanges();
+
+    if (!hasChanges) {
+      showMessage(
+        "info",
+        "No changes detected. Please modify the product details before updating."
+      );
       return;
     }
 
     setSaving(true);
     let uploadedImagePaths = [];
-    
+
     try {
       let imageUrls = [...(editProduct.imageUrls || [])];
-      const imageFiles = editProduct.images.filter(img => img !== null);
-      
+      const imageFiles = editProduct.images.filter((img) => img !== null);
+
       if (imageFiles.length > 0) {
         try {
-          const uploadResults = await uploadAllProductImages(imageFiles, editProduct.name);
-          const newUrls = uploadResults.map(result => result.success ? result.url : null);
-          uploadedImagePaths = uploadResults.map(result => result.success ? result.filePath : null).filter(path => path);
-          
-          const successfulUrls = newUrls.filter(url => url !== null);
-          const existingUrls = imageUrls.filter(url => url !== null);
+          const uploadResults = await uploadAllProductImages(
+            imageFiles,
+            editProduct.name
+          );
+          const newUrls = uploadResults.map((result) =>
+            result.success ? result.url : null
+          );
+          uploadedImagePaths = uploadResults
+            .map((result) => (result.success ? result.filePath : null))
+            .filter((path) => path);
+
+          const successfulUrls = newUrls.filter((url) => url !== null);
+          const existingUrls = imageUrls.filter((url) => url !== null);
           imageUrls = [...successfulUrls, ...existingUrls].slice(0, 5);
-          
-          const failedUploads = uploadResults.filter(result => !result.success);
+
+          const failedUploads = uploadResults.filter(
+            (result) => !result.success
+          );
           if (failedUploads.length > 0) {
-            console.warn('Some images failed to upload:', failedUploads);
-            showMessage('warning', `${failedUploads.length} image(s) failed to upload but product will be updated`);
+            console.warn("Some images failed to upload:", failedUploads);
+            showMessage(
+              "warning",
+              `${failedUploads.length} image(s) failed to upload but product will be updated`
+            );
           }
         } catch (uploadError) {
-          console.error('Image upload failed:', uploadError);
-          showMessage('error', 'Image upload failed. Please try again.');
+          console.error("Image upload failed:", uploadError);
+          showMessage("error", "Image upload failed. Please try again.");
           return;
         }
       }
 
       const originalPrice = parseFloat(editProduct.original_price) || 0;
-      // If current price is not provided, use original price (no discount)
-      const currentPrice = editProduct.current_price && editProduct.current_price.trim() 
-        ? parseFloat(editProduct.current_price) 
-        : originalPrice;
+      const currentPrice =
+        editProduct.current_price && editProduct.current_price.trim()
+          ? parseFloat(editProduct.current_price)
+          : null;
 
       // Get the selected category to check if it's rings
-      const selectedCategory = modalCategoryOptions.find(cat => cat.value === editProduct.category);
-      const isRings = selectedCategory?.slug === 'rings';
+      const selectedCategory = modalCategoryOptions.find(
+        (cat) => cat.value === editProduct.category
+      );
+      const isRings = selectedCategory?.slug === "rings";
 
       const productData = {
         name: editProduct.name.trim(),
         collection_id: parseInt(editProduct.collection_id),
-        category_id: parseInt(editProduct.category), // Backend expects category_id as integer
+        category_id: parseInt(editProduct.category),
         original_price: originalPrice,
         current_price: currentPrice,
         stock: parseInt(editProduct.stock) || 0,
-        // Only include size if category is rings and sizes are selected
-        size: isRings && editProduct.sizes.length > 0 ? editProduct.sizes.join(',') : '',
+        size:
+          isRings && editProduct.sizes.length > 0
+            ? editProduct.sizes.join(",")
+            : "",
         images: imageUrls,
-        description: editProduct.description?.trim() || ''
+        description: editProduct.description?.trim() || "",
       };
 
-      const result = await updateProduct(editProduct.id, productData, imageFiles);
-      
+      const result = await updateProduct(
+        editProduct.id,
+        productData,
+        imageFiles
+      );
+
       if (result.success) {
-        showMessage('success', 'Product updated successfully!');
+        showMessage("success", "Product updated successfully!");
         setShowEditProductModal(false);
         setEditProduct({
           id: null,
-          name: '',
-          collection_id: '',
-          category: '',
-          original_price: '',
-          current_price: '',
-          stock: '',
+          name: "",
+          collection_id: "",
+          category: "",
+          original_price: "",
+          current_price: "",
+          stock: "",
           sizes: [],
           images: [null, null, null, null, null],
           imageUrls: [null, null, null, null, null],
-          description: ''
+          description: "",
         });
       } else {
         await cleanupFailedImages(uploadedImagePaths);
-        const errorMessage = result.error || 'Failed to update product';
-        
-        if (errorMessage.toLowerCase().includes('not found')) {
-          showMessage('error', 'Product not found. It may have been deleted.');
+        const errorMessage = result.error || "Failed to update product";
+
+        if (errorMessage.toLowerCase().includes("not found")) {
+          showMessage("error", "Product not found. It may have been deleted.");
           setShowEditProductModal(false);
           await fetchAllProducts();
-        } else if (errorMessage.toLowerCase().includes('duplicate') || 
-                   errorMessage.toLowerCase().includes('already exists')) {
-          showMessage('error', 'A product with this name already exists');
-        } else if (errorMessage.toLowerCase().includes('validation')) {
-          showMessage('error', 'Invalid product data. Please check all fields.');
+        } else if (
+          errorMessage.toLowerCase().includes("duplicate") ||
+          errorMessage.toLowerCase().includes("already exists")
+        ) {
+          showMessage("error", "A product with this name already exists");
+        } else if (errorMessage.toLowerCase().includes("validation")) {
+          showMessage(
+            "error",
+            "Invalid product data. Please check all fields."
+          );
         } else {
-          showMessage('error', errorMessage);
+          showMessage("error", errorMessage);
         }
       }
     } catch (error) {
       await cleanupFailedImages(uploadedImagePaths);
-      console.error('Error updating product:', error);
-      
-      if (error.message?.includes('network') || error.message?.includes('fetch')) {
-        showMessage('error', 'Network error. Please check your connection and try again.');
-      } else if (error.message?.includes('unauthorized')) {
-        showMessage('error', 'You are not authorized to perform this action.');
+      console.error("Error updating product:", error);
+
+      if (
+        error.message?.includes("network") ||
+        error.message?.includes("fetch")
+      ) {
+        showMessage(
+          "error",
+          "Network error. Please check your connection and try again."
+        );
+      } else if (error.message?.includes("unauthorized")) {
+        showMessage("error", "You are not authorized to perform this action.");
       } else {
-        showMessage('error', 'An unexpected error occurred. Please try again.');
+        showMessage(
+          "error",
+          `An unexpected error occurred: ${
+            error.message || "Please try again."
+          }`
+        );
       }
     } finally {
       setSaving(false);
@@ -864,34 +1107,85 @@ const AdminProducts = () => {
   // Handle save stock changes
   const handleSaveStockChanges = async () => {
     if (!selectedProduct) {
-      showMessage('error', 'No product selected');
+      showMessage("error", "No product selected");
       return;
     }
 
     setSaving(true);
     try {
-      // Prepare the update data
-      const updateData = {
-        stock: stockData.totalStock
-      };
+      const categoryName =
+        typeof selectedProduct.category === "object" &&
+        selectedProduct.category?.name
+          ? selectedProduct.category.name.toLowerCase()
+          : typeof selectedProduct.category === "string"
+          ? selectedProduct.category.toLowerCase()
+          : "";
 
-      // If it's rings, we might want to store size-specific stock data
-      // For now, we'll just update the total stock
-      const result = await updateProduct(selectedProduct.id || selectedProduct.product_id, updateData);
+      // Prepare update data based on category
+      let updateData = {};
+
+      if (categoryName === "rings") {
+        // Parse sizes from either 'sizes' array or 'size' string
+        let productSizes = [];
+        if (selectedProduct.sizes && Array.isArray(selectedProduct.sizes)) {
+          productSizes = selectedProduct.sizes;
+        } else if (
+          selectedProduct.size &&
+          typeof selectedProduct.size === "string"
+        ) {
+          productSizes = selectedProduct.size
+            .split(",")
+            .map((s) => s.trim())
+            .filter((s) => s);
+        }
+
+        // Sort sizes numerically for consistency
+        productSizes = productSizes.sort((a, b) => {
+          const numA = parseInt(a.replace("Size ", ""));
+          const numB = parseInt(b.replace("Size ", ""));
+          return numA - numB;
+        });
+
+        // For rings, update individual size stocks
+        const sizeStocks = Object.entries(stockData.sizes)
+          .filter(([size, data]) => productSizes.includes(size))
+          .map(([size, data]) => ({
+            size: size,
+            stock: data.stock || 0,
+          }));
+
+        updateData = {
+          stock: stockData.totalStock,
+          sizeStocks: sizeStocks,
+        };
+      } else {
+        // For other categories, update general stock
+        updateData = {
+          stock: stockData.general.stock,
+        };
+      }
+
+      const result = await updateProduct(
+        selectedProduct.id || selectedProduct.product_id,
+        updateData
+      );
 
       if (result.success) {
-        showMessage('success', 'Stock updated successfully!');
+        showMessage("success", "Stock updated successfully!");
         setShowStockModal(false);
-        
+
         // Refresh products to show updated stock
         await fetchAllProducts();
       } else {
-        const errorMessage = result.error || 'Failed to update stock';
-        showMessage('error', errorMessage);
+        const errorMessage = result.error || "Failed to update stock";
+        showMessage("error", errorMessage);
       }
     } catch (error) {
-      console.error('Error updating stock:', error);
-      showMessage('error', 'An unexpected error occurred while updating stock.');
+      console.error("Error updating stock:", error);
+      showMessage(
+        "error",
+        "An unexpected error occurred while updating stock."
+      );
     } finally {
       setSaving(false);
     }
@@ -899,12 +1193,12 @@ const AdminProducts = () => {
 
   const handleDeleteProduct = async (productId, productName) => {
     if (!productId) {
-      showMessage('error', 'Invalid product selected');
+      showMessage("error", "Invalid product selected");
       return;
     }
 
     const confirmMessage = `Are you sure you want to delete "${productName}"?\n\nThis action cannot be undone and will:\n- Remove the product from your inventory\n- Delete all associated images\n- Remove it from all collections`;
-    
+
     if (!confirm(confirmMessage)) {
       return;
     }
@@ -912,10 +1206,10 @@ const AdminProducts = () => {
     setSaving(true);
     try {
       const result = await deleteProduct(productId);
-      
+
       if (result.success) {
-        showMessage('success', 'Product deleted successfully!');
-        
+        showMessage("success", "Product deleted successfully!");
+
         if (showEditProductModal && editProduct.id === productId) {
           setShowEditProductModal(false);
         }
@@ -923,27 +1217,44 @@ const AdminProducts = () => {
           setShowStockModal(false);
         }
       } else {
-        const errorMessage = result.error || 'Failed to delete product';
-        
-        if (errorMessage.toLowerCase().includes('not found')) {
-          showMessage('error', 'Product not found. It may have already been deleted.');
+        const errorMessage = result.error || "Failed to delete product";
+
+        if (errorMessage.toLowerCase().includes("not found")) {
+          showMessage(
+            "error",
+            "Product not found. It may have already been deleted."
+          );
           await fetchAllProducts();
-        } else if (errorMessage.toLowerCase().includes('referenced') || 
-                   errorMessage.toLowerCase().includes('constraint')) {
-          showMessage('error', 'Cannot delete product. It may be referenced by orders or other data.');
+        } else if (
+          errorMessage.toLowerCase().includes("referenced") ||
+          errorMessage.toLowerCase().includes("constraint")
+        ) {
+          showMessage(
+            "error",
+            "Cannot delete product. It may be referenced by orders or other data."
+          );
         } else {
-          showMessage('error', errorMessage);
+          showMessage("error", errorMessage);
         }
       }
     } catch (error) {
-      console.error('Error deleting product:', error);
-      
-      if (error.message?.includes('network') || error.message?.includes('fetch')) {
-        showMessage('error', 'Network error. Please check your connection and try again.');
-      } else if (error.message?.includes('unauthorized')) {
-        showMessage('error', 'You are not authorized to delete products.');
+      console.error("Error deleting product:", error);
+
+      if (
+        error.message?.includes("network") ||
+        error.message?.includes("fetch")
+      ) {
+        showMessage(
+          "error",
+          "Network error. Please check your connection and try again."
+        );
+      } else if (error.message?.includes("unauthorized")) {
+        showMessage("error", "You are not authorized to delete products.");
       } else {
-        showMessage('error', 'An unexpected error occurred while deleting the product.');
+        showMessage(
+          "error",
+          "An unexpected error occurred while deleting the product."
+        );
       }
     } finally {
       setSaving(false);
@@ -955,21 +1266,21 @@ const AdminProducts = () => {
   // Helper function to format product data for display
   const formatProductForDisplay = (product) => {
     // Extract collection name
-    let collectionName = 'N/A';
+    let collectionName = "N/A";
     if (product.collection) {
-      if (typeof product.collection === 'object' && product.collection.name) {
+      if (typeof product.collection === "object" && product.collection.name) {
         collectionName = product.collection.name;
-      } else if (typeof product.collection === 'string') {
+      } else if (typeof product.collection === "string") {
         collectionName = product.collection;
       }
     }
 
     // Extract category name
-    let categoryName = 'N/A';
+    let categoryName = "N/A";
     if (product.category) {
-      if (typeof product.category === 'object' && product.category.name) {
+      if (typeof product.category === "object" && product.category.name) {
         categoryName = product.category.name;
-      } else if (typeof product.category === 'string') {
+      } else if (typeof product.category === "string") {
         categoryName = product.category;
       }
     }
@@ -977,124 +1288,142 @@ const AdminProducts = () => {
     return {
       ...product,
       id: product.product_id || product.id,
-      price: product.original_price ? `₱${parseFloat(product.original_price).toFixed(2)}` : 'N/A',
-      soldPrice: product.current_price ? `₱${parseFloat(product.current_price).toFixed(2)}` : (product.original_price ? `₱${parseFloat(product.original_price).toFixed(2)}` : 'N/A'),
+      price: product.original_price
+        ? `₱${parseFloat(product.original_price).toFixed(2)}`
+        : "N/A",
+      soldPrice: product.current_price
+        ? `₱${parseFloat(product.current_price).toFixed(2)}`
+        : "N/A",
       collection: collectionName,
       category: categoryName,
-      status: product.status || 'Normal Selling'
+      status: product.status || "Normal Selling",
     };
   };
 
   // Category options
   const categoryOptions = [
-    { value: 'all', label: 'All Categories' },
-    { value: 'necklaces', label: 'Necklaces' },
-    { value: 'rings', label: 'Rings' },
-    { value: 'bracelets', label: 'Bracelets' },
-    { value: 'earrings', label: 'Earrings' }
+    { value: "all", label: "All Categories" },
+    { value: "necklaces", label: "Necklaces" },
+    { value: "rings", label: "Rings" },
+    { value: "bracelets", label: "Bracelets" },
+    { value: "earrings", label: "Earrings" },
   ];
 
   // Collection options
   const collectionOptions = [
-    { value: 'all', label: 'All Collections' },
-    { value: 'love-language', label: 'Love Language Collection' },
-    { value: 'classic', label: 'Classic Collection' },
-    { value: 'clash', label: 'Clash Collection' },
-    { value: 'rebellion', label: 'The Rebellion Collection' }
+    { value: "all", label: "All Collections" },
+    { value: "love-language", label: "Love Language Collection" },
+    { value: "classic", label: "Classic Collection" },
+    { value: "clash", label: "Clash Collection" },
+    { value: "rebellion", label: "The Rebellion Collection" },
   ];
 
   // Stock level options
   const stockOptions = [
-    { value: 'all', label: 'All Stock Levels' },
-    { value: 'in-stock', label: 'In Stock' },
-    { value: 'low-stock', label: 'Low Stock' },
-    { value: 'out-of-stock', label: 'Out of Stock' }
+    { value: "all", label: "All Stock Levels" },
+    { value: "in-stock", label: "In Stock" },
+    { value: "low-stock", label: "Low Stock" },
+    { value: "out-of-stock", label: "Out of Stock" },
   ];
 
   // Updated selling status options
   const sellingStatusOptions = [
-    { value: 'all', label: 'All Selling Status' },
-    { value: 'best-selling', label: 'Best Selling' },
-    { value: 'normal-selling', label: 'Normal Selling' },
-    { value: 'low-selling', label: 'Low Selling' }
+    { value: "all", label: "All Selling Status" },
+    { value: "best-selling", label: "Best Selling" },
+    { value: "normal-selling", label: "Normal Selling" },
+    { value: "low-selling", label: "Low Selling" },
   ];
 
   // Calculate stats
   const totalProducts = allProducts.length;
-  const lowStockProducts = allProducts.filter(p => p.stock > 0 && p.stock <= 10).length;
-  const outOfStockProducts = allProducts.filter(p => p.stock === 0).length;
+  const lowStockProducts = allProducts.filter(
+    (p) => p.stock > 0 && p.stock <= 10
+  ).length;
+  const outOfStockProducts = allProducts.filter((p) => p.stock === 0).length;
 
   // Filter products with working filters
   const filteredProducts = useMemo(() => {
     let filtered = allProducts;
 
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(product => {
-        const productCategory = product.category?.name || product.category || '';
+    if (selectedCategory !== "all") {
+      filtered = filtered.filter((product) => {
+        const productCategory =
+          product.category?.name || product.category || "";
         return productCategory.toLowerCase() === selectedCategory.toLowerCase();
       });
     }
 
-    if (selectedCollection !== 'all') {
+    if (selectedCollection !== "all") {
       const collectionMap = {
-        'love-language': 'LOVE LANGUAGE COLLECTION',
-        'clash': 'CLASH COLLECTION',
-        'rebellion': 'THE REBELLION COLLECTION',
-        'classic': 'CLASSIC COLLECTION'
+        "love-language": "LOVE LANGUAGE COLLECTION",
+        clash: "CLASH COLLECTION",
+        rebellion: "THE REBELLION COLLECTION",
+        classic: "CLASSIC COLLECTION",
       };
-      filtered = filtered.filter(product => {
-        const productCollection = product.collection?.name || product.collection || '';
+      filtered = filtered.filter((product) => {
+        const productCollection =
+          product.collection?.name || product.collection || "";
         return productCollection === collectionMap[selectedCollection];
       });
     }
 
-    if (selectedStockLevel !== 'all') {
-      if (selectedStockLevel === 'in-stock') {
-        filtered = filtered.filter(product => (product.stock || 0) > 10);
-      } else if (selectedStockLevel === 'low-stock') {
-        filtered = filtered.filter(product => (product.stock || 0) > 0 && (product.stock || 0) <= 10);
-      } else if (selectedStockLevel === 'out-of-stock') {
-        filtered = filtered.filter(product => (product.stock || 0) === 0);
+    if (selectedStockLevel !== "all") {
+      if (selectedStockLevel === "in-stock") {
+        filtered = filtered.filter((product) => (product.stock || 0) > 10);
+      } else if (selectedStockLevel === "low-stock") {
+        filtered = filtered.filter(
+          (product) => (product.stock || 0) > 0 && (product.stock || 0) <= 10
+        );
+      } else if (selectedStockLevel === "out-of-stock") {
+        filtered = filtered.filter((product) => (product.stock || 0) === 0);
       }
     }
 
-    if (selectedSellingStatus !== 'all') {
+    if (selectedSellingStatus !== "all") {
       const statusMap = {
-        'best-selling': 'Best Selling',
-        'normal-selling': 'Normal Selling',
-        'low-selling': 'Low Selling'
+        "best-selling": "Best Selling",
+        "normal-selling": "Normal Selling",
+        "low-selling": "Low Selling",
       };
-      filtered = filtered.filter(product => {
-        const productStatus = product.status || 'Normal Selling';
+      filtered = filtered.filter((product) => {
+        const productStatus = product.status || "Normal Selling";
         return productStatus === statusMap[selectedSellingStatus];
       });
     }
 
     if (searchQuery.trim()) {
-      filtered = filtered.filter(product => {
-        const productName = (product.name || '').toLowerCase();
-        const productCollection = (product.collection?.name || product.collection || '').toLowerCase();
+      filtered = filtered.filter((product) => {
+        const productName = (product.name || "").toLowerCase();
+        const productCollection = (
+          product.collection?.name ||
+          product.collection ||
+          ""
+        ).toLowerCase();
         const query = searchQuery.toLowerCase();
         return productName.includes(query) || productCollection.includes(query);
       });
     }
 
     return filtered;
-  }, [allProducts, selectedCategory, selectedCollection, selectedStockLevel, selectedSellingStatus, searchQuery]);
+  }, [
+    allProducts,
+    selectedCategory,
+    selectedCollection,
+    selectedStockLevel,
+    selectedSellingStatus,
+    searchQuery,
+  ]);
 
   // Pagination
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
   const paginatedProducts = filteredProducts
-    .slice(
-      (currentPage - 1) * itemsPerPage,
-      currentPage * itemsPerPage
-    )
+    .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
     .map(formatProductForDisplay);
 
   // Close dropdowns when clicking outside
   React.useEffect(() => {
     const handleClickOutside = (event) => {
-      if (!event.target.closest('.dropdown-container')) {
+      if (!event.target.closest(".dropdown-container")) {
         closeAllDropdowns();
         setShowAddModalCollectionDropdown(false);
         setShowAddModalCategoryDropdown(false);
@@ -1102,28 +1431,38 @@ const AdminProducts = () => {
         setShowEditModalCategoryDropdown(false);
       }
     };
-    
-    document.addEventListener('mousedown', handleClickOutside);
+
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
   // Reset page when filters change
   React.useEffect(() => {
     setCurrentPage(1);
-  }, [selectedCategory, selectedCollection, selectedStockLevel, selectedSellingStatus, searchQuery]);
+  }, [
+    selectedCategory,
+    selectedCollection,
+    selectedStockLevel,
+    selectedSellingStatus,
+    searchQuery,
+  ]);
 
   // Get status badge styling
   const getStatusBadge = (status) => {
     const statusStyles = {
-      'Best Selling': 'bg-green-500 text-white',
-      'Normal Selling': 'bg-blue-500 text-white',
-      'Low Selling': 'bg-red-500 text-white'
+      "Best Selling": "bg-green-500 text-white",
+      "Normal Selling": "bg-blue-500 text-white",
+      "Low Selling": "bg-red-500 text-white",
     };
 
     return (
-      <span className={`px-3 py-1 rounded text-xs avantbold ${statusStyles[status] || 'bg-gray-100 text-gray-800'}`}>
+      <span
+        className={`px-3 py-1 rounded text-xs avantbold ${
+          statusStyles[status] || "bg-gray-100 text-gray-800"
+        }`}
+      >
         {status}
       </span>
     );
@@ -1137,8 +1476,12 @@ const AdminProducts = () => {
           <div className="max-w-7xl mx-auto">
             <div className="flex flex-col items-center justify-center py-20">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mb-4"></div>
-              <h2 className="text-2xl bebas text-black mb-2">LOADING PRODUCTS</h2>
-              <p className="text-gray-600 avant">Please wait while we fetch your products...</p>
+              <h2 className="text-2xl bebas text-black mb-2">
+                LOADING PRODUCTS
+              </h2>
+              <p className="text-gray-600 avant">
+                Please wait while we fetch your products...
+              </p>
             </div>
           </div>
         </div>
@@ -1151,11 +1494,17 @@ const AdminProducts = () => {
       <AdminHeader />
 
       {message.text && (
-        <div className={`fixed top-20 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-lg text-white font-semibold ${
-          message.type === 'success' ? 'bg-green-500' : 
-          message.type === 'error' ? 'bg-red-500' : 
-          message.type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500'
-        }`}>
+        <div
+          className={`fixed bottom-6 right-6 z-[60] px-6 py-3 rounded-lg text-white font-semibold ${
+            message.type === "success"
+              ? "bg-green-500"
+              : message.type === "error"
+              ? "bg-red-500"
+              : message.type === "warning"
+              ? "bg-yellow-500"
+              : "bg-blue-500"
+          }`}
+        >
           {message.text}
         </div>
       )}
@@ -1163,10 +1512,8 @@ const AdminProducts = () => {
       <div className="pt-24 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-8">
-            <h1 className="text-5xl bebas text-black">
-              PRODUCTS MANAGEMENT
-            </h1>
-            
+            <h1 className="text-5xl bebas text-black">PRODUCTS MANAGEMENT</h1>
+
             {/* Search Bar aligned with header */}
             <div className="relative">
               <input
@@ -1192,9 +1539,17 @@ const AdminProducts = () => {
                   }}
                   className="flex items-center justify-between px-4 py-2 border-2 border-gray-300 rounded-lg bg-white focus:outline-none focus:border-black avant text-sm select-none w-40"
                 >
-                  <span className="text-black">{categoryOptions.find(cat => cat.value === selectedCategory)?.label}</span>
+                  <span className="text-black">
+                    {
+                      categoryOptions.find(
+                        (cat) => cat.value === selectedCategory
+                      )?.label
+                    }
+                  </span>
                   <img
-                    src={showCategoryDropdown ? DropUpIconBlack : DropDownIconBlack}
+                    src={
+                      showCategoryDropdown ? DropUpIconBlack : DropDownIconBlack
+                    }
                     alt="dropdown"
                     className="w-4 h-4 opacity-70"
                   />
@@ -1209,22 +1564,24 @@ const AdminProducts = () => {
                           setShowCategoryDropdown(false);
                         }}
                         className={`w-full px-4 py-2 text-left text-sm avant transition-colors text-black ${
-                          selectedCategory === option.value ? "bg-gray-100 font-medium" : ""
-                        } ${
-                          index === 0 ? "rounded-t-lg" : ""
-                        } ${
-                          index === categoryOptions.length - 1 ? "rounded-b-lg" : ""
+                          selectedCategory === option.value
+                            ? "bg-gray-100 font-medium"
+                            : ""
+                        } ${index === 0 ? "rounded-t-lg" : ""} ${
+                          index === categoryOptions.length - 1
+                            ? "rounded-b-lg"
+                            : ""
                         }`}
                         onMouseEnter={(e) => {
                           if (selectedCategory !== option.value) {
-                            e.target.style.backgroundColor = '#959595';
-                            e.target.style.color = 'white';
+                            e.target.style.backgroundColor = "#959595";
+                            e.target.style.color = "white";
                           }
                         }}
                         onMouseLeave={(e) => {
                           if (selectedCategory !== option.value) {
-                            e.target.style.backgroundColor = 'transparent';
-                            e.target.style.color = 'black';
+                            e.target.style.backgroundColor = "transparent";
+                            e.target.style.color = "black";
                           }
                         }}
                         type="button"
@@ -1246,9 +1603,19 @@ const AdminProducts = () => {
                   }}
                   className="flex items-center justify-between px-4 py-2 border-2 border-gray-300 rounded-lg bg-white focus:outline-none focus:border-black avant text-sm select-none w-48"
                 >
-                  <span className="text-black">{collectionOptions.find(col => col.value === selectedCollection)?.label}</span>
+                  <span className="text-black">
+                    {
+                      collectionOptions.find(
+                        (col) => col.value === selectedCollection
+                      )?.label
+                    }
+                  </span>
                   <img
-                    src={showCollectionDropdown ? DropUpIconBlack : DropDownIconBlack}
+                    src={
+                      showCollectionDropdown
+                        ? DropUpIconBlack
+                        : DropDownIconBlack
+                    }
                     alt="dropdown"
                     className="w-4 h-4 opacity-70"
                   />
@@ -1263,22 +1630,24 @@ const AdminProducts = () => {
                           setShowCollectionDropdown(false);
                         }}
                         className={`w-full px-4 py-2 text-left text-sm avant transition-colors text-black ${
-                          selectedCollection === option.value ? "bg-gray-100 font-medium" : ""
-                        } ${
-                          index === 0 ? "rounded-t-lg" : ""
-                        } ${
-                          index === collectionOptions.length - 1 ? "rounded-b-lg" : ""
+                          selectedCollection === option.value
+                            ? "bg-gray-100 font-medium"
+                            : ""
+                        } ${index === 0 ? "rounded-t-lg" : ""} ${
+                          index === collectionOptions.length - 1
+                            ? "rounded-b-lg"
+                            : ""
                         }`}
                         onMouseEnter={(e) => {
                           if (selectedCollection !== option.value) {
-                            e.target.style.backgroundColor = '#959595';
-                            e.target.style.color = 'white';
+                            e.target.style.backgroundColor = "#959595";
+                            e.target.style.color = "white";
                           }
                         }}
                         onMouseLeave={(e) => {
                           if (selectedCollection !== option.value) {
-                            e.target.style.backgroundColor = 'transparent';
-                            e.target.style.color = 'black';
+                            e.target.style.backgroundColor = "transparent";
+                            e.target.style.color = "black";
                           }
                         }}
                         type="button"
@@ -1300,9 +1669,17 @@ const AdminProducts = () => {
                   }}
                   className="flex items-center justify-between px-4 py-2 border-2 border-gray-300 rounded-lg bg-white focus:outline-none focus:border-black avant text-sm select-none w-44"
                 >
-                  <span className="text-black">{stockOptions.find(stock => stock.value === selectedStockLevel)?.label}</span>
+                  <span className="text-black">
+                    {
+                      stockOptions.find(
+                        (stock) => stock.value === selectedStockLevel
+                      )?.label
+                    }
+                  </span>
                   <img
-                    src={showStockDropdown ? DropUpIconBlack : DropDownIconBlack}
+                    src={
+                      showStockDropdown ? DropUpIconBlack : DropDownIconBlack
+                    }
                     alt="dropdown"
                     className="w-4 h-4 opacity-70"
                   />
@@ -1317,22 +1694,24 @@ const AdminProducts = () => {
                           setShowStockDropdown(false);
                         }}
                         className={`w-full px-4 py-2 text-left text-sm avant transition-colors text-black ${
-                          selectedStockLevel === option.value ? "bg-gray-100 font-medium" : ""
-                        } ${
-                          index === 0 ? "rounded-t-lg" : ""
-                        } ${
-                          index === stockOptions.length - 1 ? "rounded-b-lg" : ""
+                          selectedStockLevel === option.value
+                            ? "bg-gray-100 font-medium"
+                            : ""
+                        } ${index === 0 ? "rounded-t-lg" : ""} ${
+                          index === stockOptions.length - 1
+                            ? "rounded-b-lg"
+                            : ""
                         }`}
                         onMouseEnter={(e) => {
                           if (selectedStockLevel !== option.value) {
-                            e.target.style.backgroundColor = '#959595';
-                            e.target.style.color = 'white';
+                            e.target.style.backgroundColor = "#959595";
+                            e.target.style.color = "white";
                           }
                         }}
                         onMouseLeave={(e) => {
                           if (selectedStockLevel !== option.value) {
-                            e.target.style.backgroundColor = 'transparent';
-                            e.target.style.color = 'black';
+                            e.target.style.backgroundColor = "transparent";
+                            e.target.style.color = "black";
                           }
                         }}
                         type="button"
@@ -1354,9 +1733,17 @@ const AdminProducts = () => {
                   }}
                   className="flex items-center justify-between px-4 py-2 border-2 border-gray-300 rounded-lg bg-white focus:outline-none focus:border-black avant text-sm select-none w-48"
                 >
-                  <span className="text-black">{sellingStatusOptions.find(status => status.value === selectedSellingStatus)?.label}</span>
+                  <span className="text-black">
+                    {
+                      sellingStatusOptions.find(
+                        (status) => status.value === selectedSellingStatus
+                      )?.label
+                    }
+                  </span>
                   <img
-                    src={showSellingDropdown ? DropUpIconBlack : DropDownIconBlack}
+                    src={
+                      showSellingDropdown ? DropUpIconBlack : DropDownIconBlack
+                    }
                     alt="dropdown"
                     className="w-4 h-4 opacity-70"
                   />
@@ -1371,22 +1758,24 @@ const AdminProducts = () => {
                           setShowSellingDropdown(false);
                         }}
                         className={`w-full px-4 py-2 text-left text-sm avant transition-colors text-black ${
-                          selectedSellingStatus === option.value ? "bg-gray-100 font-medium" : ""
-                        } ${
-                          index === 0 ? "rounded-t-lg" : ""
-                        } ${
-                          index === sellingStatusOptions.length - 1 ? "rounded-b-lg" : ""
+                          selectedSellingStatus === option.value
+                            ? "bg-gray-100 font-medium"
+                            : ""
+                        } ${index === 0 ? "rounded-t-lg" : ""} ${
+                          index === sellingStatusOptions.length - 1
+                            ? "rounded-b-lg"
+                            : ""
                         }`}
                         onMouseEnter={(e) => {
                           if (selectedSellingStatus !== option.value) {
-                            e.target.style.backgroundColor = '#959595';
-                            e.target.style.color = 'white';
+                            e.target.style.backgroundColor = "#959595";
+                            e.target.style.color = "white";
                           }
                         }}
                         onMouseLeave={(e) => {
                           if (selectedSellingStatus !== option.value) {
-                            e.target.style.backgroundColor = 'transparent';
-                            e.target.style.color = 'black';
+                            e.target.style.backgroundColor = "transparent";
+                            e.target.style.color = "black";
                           }
                         }}
                         type="button"
@@ -1401,7 +1790,7 @@ const AdminProducts = () => {
 
             {/* Add New Product Button */}
             <div>
-              <button 
+              <button
                 onClick={() => setShowAddProductModal(true)}
                 className="px-6 py-2 bg-black text-white uppercase rounded-lg hover:bg-gray-800 transition-colors avantbold text-sm font-medium"
               >
@@ -1413,16 +1802,26 @@ const AdminProducts = () => {
           {/* Stats Cards */}
           <div className="grid grid-cols-3 gap-6 mb-8">
             <div className="bg-white border-2 border-black rounded-lg p-6 text-center">
-              <div className="text-sm avantbold text-gray-600 mb-2">TOTAL PRODUCTS</div>
+              <div className="text-sm avantbold text-gray-600 mb-2">
+                TOTAL PRODUCTS
+              </div>
               <div className="text-4xl bebas text-black">{totalProducts}</div>
             </div>
             <div className="bg-white border-2 border-black rounded-lg p-6 text-center">
-              <div className="text-sm avantbold text-gray-600 mb-2">LOW STOCKS</div>
-              <div className="text-4xl bebas text-black">{lowStockProducts}</div>
+              <div className="text-sm avantbold text-gray-600 mb-2">
+                LOW STOCKS
+              </div>
+              <div className="text-4xl bebas text-black">
+                {lowStockProducts}
+              </div>
             </div>
             <div className="bg-white border-2 border-black rounded-lg p-6 text-center">
-              <div className="text-sm avantbold text-gray-600 mb-2">OUT OF STOCKS</div>
-              <div className="text-4xl bebas text-black">{outOfStockProducts}</div>
+              <div className="text-sm avantbold text-gray-600 mb-2">
+                OUT OF STOCKS
+              </div>
+              <div className="text-4xl bebas text-black">
+                {outOfStockProducts}
+              </div>
             </div>
           </div>
         </div>
@@ -1436,7 +1835,10 @@ const AdminProducts = () => {
             <div className="p-6">
               <div className="grid grid-cols-4 gap-6 mb-6">
                 {paginatedProducts.map((product) => (
-                  <div key={product.id} className="relative bg-white rounded-lg overflow-hidden shadow-md">
+                  <div
+                    key={product.id}
+                    className="relative bg-white rounded-lg overflow-hidden shadow-md"
+                  >
                     {/* Status Badge */}
                     <div className="absolute top-2 left-2 z-10">
                       {getStatusBadge(product.status)}
@@ -1444,56 +1846,74 @@ const AdminProducts = () => {
 
                     {/* Product Image */}
                     <div className="w-full h-48 bg-gray-900 relative overflow-hidden">
-                      <img 
+                      <img
                         src={
-                          product.images && Array.isArray(product.images) && product.images.length > 0
-                            ? product.images[0] 
-                            : product.image || 'https://via.placeholder.com/400x400?text=No+Image'
-                        } 
+                          product.images &&
+                          Array.isArray(product.images) &&
+                          product.images.length > 0
+                            ? product.images[0]
+                            : product.image ||
+                              "https://via.placeholder.com/400x400?text=No+Image"
+                        }
                         alt={product.name}
                         className="w-full h-full object-cover"
                         onError={(e) => {
-                          e.target.src = 'https://via.placeholder.com/400x400?text=No+Image';
+                          e.target.src =
+                            "https://via.placeholder.com/400x400?text=No+Image";
                         }}
                       />
                     </div>
 
                     {/* Product Info */}
                     <div className="p-4">
-                      <h3 className="avantbold text-sm text-black mb-1">{product.name}</h3>
-                      <p className="avant text-xs text-gray-600 mb-2">{product.collection}</p>
-                      
+                      <h3 className="avantbold text-sm text-black mb-1">
+                        {product.name}
+                      </h3>
+                      <p className="avant text-xs text-gray-600 mb-2">
+                        {product.collection}
+                      </p>
+
                       {/* Updated Pricing Section with Labels */}
                       <div className="mb-3">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="avant text-xs text-gray-500">Original Price:</span>
-                          <span className="avant text-sm text-gray-500 line-through">{product.price}</span>
+                          <span className="avant text-xs text-gray-500">
+                            Original Price:
+                          </span>
+                          <span className="avant text-sm text-gray-500 line-through">
+                            {product.price}
+                          </span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="avant text-xs text-black font-medium">Current Price:</span>
-                          <span className="avantbold text-sm text-black">{product.soldPrice}</span>
+                          <span className="avant text-xs text-black font-medium">
+                            Current Price:
+                          </span>
+                          <span className="avantbold text-sm text-black">
+                            {product.soldPrice}
+                          </span>
                         </div>
                       </div>
-                      
-                      <p className="avant text-xs text-gray-600 mb-3">{product.stock} STOCKS</p>
+
+                      <p className="avant text-xs text-gray-600 mb-3">
+                        {product.stock} STOCKS
+                      </p>
 
                       {/* Action Buttons */}
                       <div className="space-y-2">
                         <div className="flex space-x-2">
-                          <button 
+                          <button
                             onClick={() => handleEditClick(product)}
                             className="flex-1 px-3 py-1 bg-transparent border border-black text-black rounded text-xs avant font-medium hover:bg-black hover:text-white transition-colors"
                           >
                             EDIT
                           </button>
-                          <button 
+                          <button
                             onClick={() => handleStockClick(product)}
                             className="flex-1 px-3 py-1 bg-transparent border border-black text-black rounded text-xs avant font-medium hover:bg-black hover:text-white transition-colors"
                           >
                             STOCKS
                           </button>
                         </div>
-                        <button 
+                        <button
                           onClick={() => handleReviewsClick(product)}
                           className="w-full px-3 py-1 bg-gray-600 text-white rounded text-xs avant font-medium hover:bg-gray-700 transition-colors"
                         >
@@ -1513,7 +1933,9 @@ const AdminProducts = () => {
                     style={{ height: 44 }}
                   >
                     <button
-                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                      onClick={() =>
+                        setCurrentPage(Math.max(1, currentPage - 1))
+                      }
                       disabled={currentPage === 1}
                       aria-label="Previous Page"
                       className="flex items-center justify-center border-r border-black bg-white transition disabled:opacity-40 disabled:cursor-not-allowed"
@@ -1536,7 +1958,9 @@ const AdminProducts = () => {
                       {currentPage} OF {totalPages}
                     </div>
                     <button
-                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                      onClick={() =>
+                        setCurrentPage(Math.min(totalPages, currentPage + 1))
+                      }
                       disabled={currentPage === totalPages}
                       aria-label="Next Page"
                       className="flex items-center justify-center border-l border-black bg-white transition disabled:opacity-40 disabled:cursor-not-allowed"
@@ -1559,21 +1983,25 @@ const AdminProducts = () => {
 
       {/* Reviews Management Modal */}
       {showReviewsModal && selectedProduct && (
-        <div 
+        <div
           className="fixed inset-0 flex items-center justify-center z-50"
-          style={{ 
-            backgroundColor: 'rgba(255, 255, 255, 0.65)',
-            backdropFilter: 'blur(5px)'
+          style={{
+            backgroundColor: "rgba(255, 255, 255, 0.65)",
+            backdropFilter: "blur(5px)",
           }}
         >
           <div className="bg-white rounded-2xl border-2 border-black w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto shadow-2xl">
             {/* Modal Header */}
             <div className="flex justify-between items-center p-6 border-b border-gray-200">
               <div>
-                <h2 className="text-xl avantbold text-black">Reviews Management</h2>
-                <p className="text-sm avant text-gray-600 mt-1">{selectedProduct.name}</p>
+                <h2 className="text-xl avantbold text-black">
+                  Reviews Management
+                </h2>
+                <p className="text-sm avant text-gray-600 mt-1">
+                  {selectedProduct.name}
+                </p>
               </div>
-              <button 
+              <button
                 onClick={() => setShowReviewsModal(false)}
                 className="text-2xl text-black hover:text-gray-600 transition-colors"
               >
@@ -1586,65 +2014,85 @@ const AdminProducts = () => {
               {/* Review Stats */}
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
-                  <div className="text-sm avant text-blue-600 mb-1">Total Reviews</div>
-                  <div className="text-2xl bebas text-blue-800">{getReviewStats().total}</div>
+                  <div className="text-sm avant text-blue-600 mb-1">
+                    Total Reviews
+                  </div>
+                  <div className="text-2xl bebas text-blue-800">
+                    {getReviewStats().total}
+                  </div>
                 </div>
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
-                  <div className="text-sm avant text-yellow-600 mb-1">Pending</div>
-                  <div className="text-2xl bebas text-yellow-800">{getReviewStats().pending}</div>
+                  <div className="text-sm avant text-yellow-600 mb-1">
+                    Pending
+                  </div>
+                  <div className="text-2xl bebas text-yellow-800">
+                    {getReviewStats().pending}
+                  </div>
                 </div>
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-                  <div className="text-sm avant text-green-600 mb-1">Approved</div>
-                  <div className="text-2xl bebas text-green-800">{getReviewStats().approved}</div>
+                  <div className="text-sm avant text-green-600 mb-1">
+                    Approved
+                  </div>
+                  <div className="text-2xl bebas text-green-800">
+                    {getReviewStats().approved}
+                  </div>
                 </div>
                 <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
-                  <div className="text-sm avant text-red-600 mb-1">Rejected</div>
-                  <div className="text-2xl bebas text-red-800">{getReviewStats().rejected}</div>
+                  <div className="text-sm avant text-red-600 mb-1">
+                    Rejected
+                  </div>
+                  <div className="text-2xl bebas text-red-800">
+                    {getReviewStats().rejected}
+                  </div>
                 </div>
                 <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 text-center">
-                  <div className="text-sm avant text-purple-600 mb-1">Avg Rating</div>
-                  <div className="text-2xl bebas text-purple-800">{getReviewStats().avgRating}★</div>
+                  <div className="text-sm avant text-purple-600 mb-1">
+                    Avg Rating
+                  </div>
+                  <div className="text-2xl bebas text-purple-800">
+                    {getReviewStats().avgRating}★
+                  </div>
                 </div>
               </div>
 
               {/* Filter Buttons */}
               <div className="flex flex-wrap gap-3 mb-6">
                 <button
-                  onClick={() => setReviewFilter('all')}
+                  onClick={() => setReviewFilter("all")}
                   className={`px-4 py-2 rounded-lg transition-colors avant text-sm font-medium ${
-                    reviewFilter === 'all' 
-                      ? 'bg-black text-white' 
-                      : 'bg-gray-100 text-black hover:bg-gray-200'
+                    reviewFilter === "all"
+                      ? "bg-black text-white"
+                      : "bg-gray-100 text-black hover:bg-gray-200"
                   }`}
                 >
                   All Reviews
                 </button>
                 <button
-                  onClick={() => setReviewFilter('pending')}
+                  onClick={() => setReviewFilter("pending")}
                   className={`px-4 py-2 rounded-lg transition-colors avant text-sm font-medium ${
-                    reviewFilter === 'pending' 
-                      ? 'bg-yellow-600 text-white' 
-                      : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+                    reviewFilter === "pending"
+                      ? "bg-yellow-600 text-white"
+                      : "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
                   }`}
                 >
                   Pending ({getReviewStats().pending})
                 </button>
                 <button
-                  onClick={() => setReviewFilter('approved')}
+                  onClick={() => setReviewFilter("approved")}
                   className={`px-4 py-2 rounded-lg transition-colors avant text-sm font-medium ${
-                    reviewFilter === 'approved' 
-                      ? 'bg-green-600 text-white' 
-                      : 'bg-green-100 text-green-700 hover:bg-green-200'
+                    reviewFilter === "approved"
+                      ? "bg-green-600 text-white"
+                      : "bg-green-100 text-green-700 hover:bg-green-200"
                   }`}
                 >
                   Approved ({getReviewStats().approved})
                 </button>
                 <button
-                  onClick={() => setReviewFilter('rejected')}
+                  onClick={() => setReviewFilter("rejected")}
                   className={`px-4 py-2 rounded-lg transition-colors avant text-sm font-medium ${
-                    reviewFilter === 'rejected' 
-                      ? 'bg-red-600 text-white' 
-                      : 'bg-red-100 text-red-700 hover:bg-red-200'
+                    reviewFilter === "rejected"
+                      ? "bg-red-600 text-white"
+                      : "bg-red-100 text-red-700 hover:bg-red-200"
                   }`}
                 >
                   Rejected ({getReviewStats().rejected})
@@ -1655,55 +2103,79 @@ const AdminProducts = () => {
               <div className="space-y-4 max-h-96 overflow-y-auto">
                 {getFilteredReviews().length > 0 ? (
                   getFilteredReviews().map((review) => (
-                    <div key={review.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                    <div
+                      key={review.id}
+                      className="border border-gray-200 rounded-lg p-4 bg-gray-50"
+                    >
                       <div className="flex justify-between items-start mb-3">
                         <div className="flex-1">
                           <div className="flex items-center space-x-3 mb-2">
-                            <h4 className="avantbold text-black">{review.customerName}</h4>
-                            <div className="flex">{getStarDisplay(review.rating)}</div>
-                            <span className="text-xs avant text-gray-500">{review.date}</span>
+                            <h4 className="avantbold text-black">
+                              {review.customerName}
+                            </h4>
+                            <div className="flex">
+                              {getStarDisplay(review.rating)}
+                            </div>
+                            <span className="text-xs avant text-gray-500">
+                              {review.date}
+                            </span>
                           </div>
-                          <p className="text-xs avant text-gray-600 mb-2">{review.email}</p>
-                          <p className="avant text-sm text-black">{review.comment}</p>
+                          <p className="text-xs avant text-gray-600 mb-2">
+                            {review.email}
+                          </p>
+                          <p className="avant text-sm text-black">
+                            {review.comment}
+                          </p>
                         </div>
                         <div className="flex items-center space-x-2 ml-4">
-                          <span className={`px-2 py-1 rounded text-xs avantbold ${ 
-                            review.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                            review.status === 'approved' ? 'bg-green-100 text-green-700' :
-                            'bg-red-100 text-red-700'
-                          }`}>
-                            {review.status.charAt(0).toUpperCase() + review.status.slice(1)}
+                          <span
+                            className={`px-2 py-1 rounded text-xs avantbold ${
+                              review.status === "pending"
+                                ? "bg-yellow-100 text-yellow-700"
+                                : review.status === "approved"
+                                ? "bg-green-100 text-green-700"
+                                : "bg-red-100 text-red-700"
+                            }`}
+                          >
+                            {review.status.charAt(0).toUpperCase() +
+                              review.status.slice(1)}
                           </span>
                         </div>
                       </div>
-                      
+
                       {/* Action Buttons */}
                       <div className="flex space-x-2 pt-3 border-t border-gray-200">
                         <button
-                          onClick={() => handleReviewStatusChange(review.id, 'approved')}
-                          disabled={review.status === 'approved'}
+                          onClick={() =>
+                            handleReviewStatusChange(review.id, "approved")
+                          }
+                          disabled={review.status === "approved"}
                           className={`px-4 py-2 text-xs avant font-medium rounded transition-colors ${
-                            review.status === 'approved'
-                              ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                              : 'bg-green-600 text-white hover:bg-green-700'
+                            review.status === "approved"
+                              ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                              : "bg-green-600 text-white hover:bg-green-700"
                           }`}
                         >
                           Approve
                         </button>
                         <button
-                          onClick={() => handleReviewStatusChange(review.id, 'rejected')}
-                          disabled={review.status === 'rejected'}
+                          onClick={() =>
+                            handleReviewStatusChange(review.id, "rejected")
+                          }
+                          disabled={review.status === "rejected"}
                           className={`px-4 py-2 text-xs avant font-medium rounded transition-colors ${
-                            review.status === 'rejected'
-                              ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                              : 'bg-red-600 text-white hover:bg-red-700'
+                            review.status === "rejected"
+                              ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                              : "bg-red-600 text-white hover:bg-red-700"
                           }`}
                         >
                           Reject
                         </button>
-                        {review.status !== 'pending' && (
+                        {review.status !== "pending" && (
                           <button
-                            onClick={() => handleReviewStatusChange(review.id, 'pending')}
+                            onClick={() =>
+                              handleReviewStatusChange(review.id, "pending")
+                            }
                             className="px-4 py-2 text-xs avant font-medium bg-yellow-600 text-white hover:bg-yellow-700 rounded transition-colors"
                           >
                             Set Pending
@@ -1715,10 +2187,9 @@ const AdminProducts = () => {
                 ) : (
                   <div className="text-center py-8">
                     <p className="text-gray-500 avant">
-                      {reviewFilter === 'all' 
-                        ? 'No reviews found for this product.'
-                        : `No ${reviewFilter} reviews found.`
-                      }
+                      {reviewFilter === "all"
+                        ? "No reviews found for this product."
+                        : `No ${reviewFilter} reviews found.`}
                     </p>
                   </div>
                 )}
@@ -1740,21 +2211,25 @@ const AdminProducts = () => {
 
       {/* Stock Management Modal */}
       {showStockModal && selectedProduct && (
-        <div 
+        <div
           className="fixed inset-0 flex items-center justify-center z-50"
-          style={{ 
-            backgroundColor: 'rgba(255, 255, 255, 0.65)',
-            backdropFilter: 'blur(5px)'
+          style={{
+            backgroundColor: "rgba(255, 255, 255, 0.65)",
+            backdropFilter: "blur(5px)",
           }}
         >
           <div className="bg-white rounded-2xl border-2 border-black w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto shadow-2xl">
             {/* Modal Header */}
             <div className="flex justify-between items-center p-6 border-b border-gray-200">
               <div>
-                <h2 className="text-xl avantbold text-black">Stock Management</h2>
-                <p className="text-sm avant text-gray-600 mt-1">{selectedProduct.name}</p>
+                <h2 className="text-xl avantbold text-black">
+                  Stock Management
+                </h2>
+                <p className="text-sm avant text-gray-600 mt-1">
+                  {selectedProduct.name}
+                </p>
               </div>
-              <button 
+              <button
                 onClick={() => setShowStockModal(false)}
                 className="text-2xl text-black hover:text-gray-600 transition-colors"
               >
@@ -1767,59 +2242,124 @@ const AdminProducts = () => {
               {/* Stock Overview - simplified to just total stock */}
               <div className="mb-6">
                 <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-6 text-center">
-                  <div className="text-sm avantbold text-gray-600 mb-2">TOTAL STOCK</div>
-                  <div className="text-3xl bebas text-black">{stockData.totalStock}</div>
+                  <div className="text-sm avantbold text-gray-600 mb-2">
+                    TOTAL STOCK
+                  </div>
+                  <div className="text-3xl bebas text-black">
+                    {stockData.totalStock}
+                  </div>
                 </div>
               </div>
 
               {/* Stock Details */}
               {(() => {
                 // Get category name safely
-                const categoryName = typeof selectedProduct.category === 'object' && selectedProduct.category?.name 
-                  ? selectedProduct.category.name.toLowerCase() 
-                  : typeof selectedProduct.category === 'string' 
-                    ? selectedProduct.category.toLowerCase() 
-                    : '';
-                
-                return categoryName === 'rings' ? (
-                  // Ring sizes inventory - simplified
+                const categoryName =
+                  typeof selectedProduct.category === "object" &&
+                  selectedProduct.category?.name
+                    ? selectedProduct.category.name.toLowerCase()
+                    : typeof selectedProduct.category === "string"
+                    ? selectedProduct.category.toLowerCase()
+                    : "";
+
+                return categoryName === "rings" ? (
+                  // Ring sizes inventory - only show selected sizes
                   <div>
-                    <h3 className="text-lg avantbold text-black mb-4">Size Inventory</h3>
+                    <h3 className="text-lg avantbold text-black mb-4">
+                      Size Inventory
+                    </h3>
                     <div className="space-y-3">
-                      {sizeOptions.map((size) => (
-                        <div key={size} className="grid grid-cols-2 gap-4 items-center p-3 bg-gray-50 rounded-lg">
-                          <div className="avantbold text-black">{size}</div>
-                          <div>
-                            <label className="block text-xs avant text-gray-600 mb-1">Stock</label>
-                            <input
-                              type="number"
-                              value={stockData.sizes[size]?.stock || 0}
-                              onChange={(e) => handleStockUpdate('size', size, 'stock', e.target.value)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded text-sm avant focus:outline-none focus:border-black text-black"
-                              min="0"
-                            />
+                      {(() => {
+                        // Parse sizes from either 'sizes' array or 'size' string
+                        let selectedSizes = [];
+                        if (
+                          selectedProduct.sizes &&
+                          Array.isArray(selectedProduct.sizes)
+                        ) {
+                          selectedSizes = selectedProduct.sizes;
+                        } else if (
+                          selectedProduct.size &&
+                          typeof selectedProduct.size === "string"
+                        ) {
+                          selectedSizes = selectedProduct.size
+                            .split(",")
+                            .map((s) => s.trim())
+                            .filter((s) => s);
+                        }
+
+                        // Sort sizes numerically (Size 3, Size 4, Size 5, etc.)
+                        selectedSizes = selectedSizes.sort((a, b) => {
+                          const numA = parseInt(a.replace("Size ", ""));
+                          const numB = parseInt(b.replace("Size ", ""));
+                          return numA - numB;
+                        });
+
+                        if (selectedSizes.length === 0) {
+                          return (
+                            <div className="text-center p-4 text-gray-500 avant">
+                              No sizes selected for this ring product.
+                            </div>
+                          );
+                        }
+
+                        return selectedSizes.map((size) => (
+                          <div
+                            key={size}
+                            className="grid grid-cols-2 gap-4 items-center p-3 bg-gray-50 rounded-lg"
+                          >
+                            <div className="avantbold text-black">{size}</div>
+                            <div>
+                              <label className="block text-xs avant text-gray-600 mb-1">
+                                Stock
+                              </label>
+                              <input
+                                type="number"
+                                value={stockData.sizes[size]?.stock || 0}
+                                onChange={(e) =>
+                                  handleStockUpdate(
+                                    "size",
+                                    size,
+                                    "stock",
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full px-3 py-2 border border-gray-300 rounded text-sm avant focus:outline-none focus:border-black text-black"
+                                min="0"
+                              />
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        ));
+                      })()}
                     </div>
                   </div>
                 ) : (
-                // General inventory - simplified
-                <div>
-                  <h3 className="text-lg avantbold text-black mb-4">Inventory Management</h3>
-                  <div className="p-4 bg-gray-50 rounded-lg">
-                    <div className="max-w-sm mx-auto">
-                      <label className="block text-sm avantbold text-black mb-2">Stock Quantity</label>
-                      <input
-                        type="number"
-                        value={stockData.general.stock}
-                        onChange={(e) => handleStockUpdate('general', null, 'stock', e.target.value)}
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg avant focus:outline-none focus:border-black text-black text-center text-lg"
-                        min="0"
-                      />
+                  // General inventory - simplified
+                  <div>
+                    <h3 className="text-lg avantbold text-black mb-4">
+                      Inventory Management
+                    </h3>
+                    <div className="p-4 bg-gray-50 rounded-lg">
+                      <div className="max-w-sm mx-auto">
+                        <label className="block text-sm avantbold text-black mb-2">
+                          Stock Quantity
+                        </label>
+                        <input
+                          type="number"
+                          value={stockData.general.stock}
+                          onChange={(e) =>
+                            handleStockUpdate(
+                              "general",
+                              null,
+                              "stock",
+                              e.target.value
+                            )
+                          }
+                          className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg avant focus:outline-none focus:border-black text-black text-center text-lg"
+                          min="0"
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
                 );
               })()}
 
@@ -1878,6 +2418,7 @@ const AdminProducts = () => {
         sizeOptions={sizeOptions}
         onEditSizeToggle={handleEditSizeToggle}
         onEditImageUpload={handleEditImageUpload}
+        onRemoveImage={handleRemoveEditImage}
         onUpdateProduct={handleUpdateProduct}
         saving={saving}
         uploading={uploading}
