@@ -24,6 +24,7 @@ import Wishlist from "./pages/user/Wishlist";
 import WishlistEmpty from "./pages/user/Wishlist-Empty";
 import Login from "./pages/main/Login/Login";
 import ShoppingBag from "./pages/user/cart/ShoppingBag";
+import Checkout from "./pages/user/cart/Checkout";
 import ShoppingBagEmpty from "./pages/user/cart/ShoppingBag-Empty";
 import Verification from "./pages/main/Login/Verification";
 
@@ -107,10 +108,8 @@ const App = () => {
           <Route path="/user/Wishlist-Empty" element={<WishlistEmpty />} />
           <Route path="/login" element={<Login />} />
           <Route path="/shopping-bag" element={<ShoppingBag />} />
-          <Route
-            path="/user/cart/ShoppingBag-Empty"
-            element={<ShoppingBagEmpty />}
-          />
+          <Route path="/user/cart/checkout" element={<Checkout />} />
+          <Route path="/user/cart/ShoppingBag-Empty" element={<ShoppingBagEmpty />} />
           <Route path="/verification" element={<Verification />} />
 
           {/*Main nav */}

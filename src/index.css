@@ -135,3 +135,7 @@ button:focus-visible {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #fff7dc;
 }
+
+.placeholder-avant::placeholder {
+  font-family: 'Avant Garde', sans-serif;
+}

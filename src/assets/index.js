@@ -81,6 +81,11 @@ import Add3D from './icons/Add3D.svg';
 import AddVideo from './icons/AddVideo.png';
 import AddVideoCream from './icons/AddVideo-cream.png';
 import editIcon from './icons/editIcon.png';
+import visa from './icons/visa.png';
+import mastercard from './icons/mastercard.png';
+import paymongo from './icons/paymongo.png';
+import gcash from './icons/gcash.jpeg';
+import maya from './icons/maya.png';
  
 // IMAGES
 import LogoImage from './logo/black_brv.png';
@@ -331,5 +336,10 @@ export {
   Add3D,
   AddVideo,
   AddVideoCream,
-  editIcon
+  editIcon,
+  visa,
+  mastercard,
+  paymongo,
+  gcash,
+  maya
 };
