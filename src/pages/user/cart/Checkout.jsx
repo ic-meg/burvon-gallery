@@ -83,51 +83,51 @@ const CheckoutDesktop = ({ onImageClick }) => (
               {/* EMAIL ADDRESS */}
               <div>
                 <label className="bebas text-lg mb-1 block">EMAIL ADDRESS</label>
-                <input type="email" className="w-full px-4 py-2 rounded-lg bg-transparent border border-[#FFF7DC] avant cream-text text-md mb-2" placeholder="Enter your Email Address" />
+                <input type="email" className="w-full px-4 py-2 rounded-lg bg-transparent border border-[#FFF7DC] avant cream-text text-md mb-2 placeholder-avant" placeholder="Enter your Email Address" />
               </div>
               {/* FIRST NAME and LAST NAME */}
               <div className="flex gap-4">
                 <div className="flex-1">
                   <label className="bebas text-lg mb-1 block">FIRST NAME</label>
-                  <input type="text" className="w-full px-4 py-2 rounded-lg bg-transparent border border-[#FFF7DC] avant cream-text text-md mb-2" placeholder="Enter your First Name" />
+                  <input type="text" className="w-full px-4 py-2 rounded-lg bg-transparent border border-[#FFF7DC] avant cream-text text-md mb-2 placeholder-avant" placeholder="Enter your First Name" />
                 </div>
                 <div className="flex-1">
                   <label className="bebas text-lg mb-1 block">LAST NAME</label>
-                  <input type="text" className="w-full px-4 py-2 rounded-lg bg-transparent border border-[#FFF7DC] avant cream-text text-md mb-2" placeholder="Enter your Last Name" />
+                  <input type="text" className="w-full px-4 py-2 rounded-lg bg-transparent border border-[#FFF7DC] avant cream-text text-md mb-2 placeholder-avant" placeholder="Enter your Last Name" />
                 </div>
               </div>
               {/* STREET ADDRESS */}
               <div>
                 <label className="bebas text-lg mb-1 block">STREET ADDRESS</label>
-                <input type="text" className="w-full px-4 py-2 rounded-lg bg-transparent border border-[#FFF7DC] avant cream-text text-md mb-2" placeholder="(house/building number, street name, and optional subdivision)" />
+                <input type="text" className="w-full px-4 py-2 rounded-lg bg-transparent border border-[#FFF7DC] avant cream-text text-md mb-2 placeholder-avant" placeholder="(house/building number, street name, and optional subdivision)" />
               </div>
               {/* BARANGAY and CITY/MUNICIPALITY */}
               <div className="flex gap-4">
                 <div className="flex-1">
                   <label className="bebas text-lg mb-1 block">BARANGAY</label>
-                  <input type="text" className="w-full px-4 py-2 rounded-lg bg-transparent border border-[#FFF7DC] avant cream-text text-md mb-2" placeholder="Select your Barangay" />
+                  <input type="text" className="w-full px-4 py-2 rounded-lg bg-transparent border border-[#FFF7DC] avant cream-text text-md mb-2 placeholder-avant" placeholder="Select your Barangay" />
                 </div>
                 <div className="flex-1">
                   <label className="bebas text-lg mb-1 block">CITY/MUNICIPALITY</label>
-                  <input type="text" className="w-full px-4 py-2 rounded-lg bg-transparent border border-[#FFF7DC] avant cream-text text-md mb-2" placeholder="Select your City/Municipality" />
+                  <input type="text" className="w-full px-4 py-2 rounded-lg bg-transparent border border-[#FFF7DC] avant cream-text text-md mb-2 placeholder-avant" placeholder="Select your City/Municipality" />
                 </div>
               </div>
               {/* PROVINCE/REGION and POSTAL CODE */}
               <div className="flex gap-4">
                 <div className="flex-1">
                   <label className="bebas text-lg mb-1 block">PROVINCE/REGION</label>
-                  <input type="text" className="w-full px-4 py-2 rounded-lg bg-transparent border border-[#FFF7DC] avant cream-text text-md mb-2" placeholder="Select your Province/Region" />
+                  <input type="text" className="w-full px-4 py-2 rounded-lg bg-transparent border border-[#FFF7DC] avant cream-text text-md mb-2 placeholder-avant" placeholder="Select your Province/Region" />
                 </div>
                 <div className="flex-1">
                   <label className="bebas text-lg mb-1 block">POSTAL CODE</label>
-                  <input type="text" className="w-full px-4 py-2 rounded-lg bg-transparent border border-[#FFF7DC] avant cream-text text-md mb-2" placeholder="Enter your Postal Code" />
+                  <input type="text" className="w-full px-4 py-2 rounded-lg bg-transparent border border-[#FFF7DC] avant cream-text text-md mb-2 placeholder-avant" placeholder="Enter your Postal Code" />
                 </div>
               </div>
               {/* PHONE NUMBER */}
               <div className="flex gap-4">
                 <div className="flex-1">
                   <label className="bebas text-lg mb-1 block">PHONE NUMBER</label>
-                  <input type="text" className="w-full px-4 py-2 rounded-lg bg-transparent border border-[#FFF7DC] avant cream-text text-md mb-2" placeholder="+63XXXXXXXXXX" />
+                  <input type="text" className="w-full px-4 py-2 rounded-lg bg-transparent border border-[#FFF7DC] avant cream-text text-md mb-2 placeholder-avant" placeholder="+63XXXXXXXXXX" />
                 </div>
               </div>
               <label className="flex items-center gap-2 mt-2 avant cream-text text-sm cursor-pointer">
@@ -176,7 +176,7 @@ const CheckoutDesktop = ({ onImageClick }) => (
               </div>
               {/* PayMongo button */}
               <button
-                className="w-full py-3 rounded bg-[#fff7dc] text-[#181818] avantbold text-xs tracking-wide shadow hover:bg-[#ffe9b3] transition flex items-center justify-center gap-2"
+                className="w-full py-3 cursor-pointer rounded bg-[#fff7dc] text-[#181818] avantbold text-xs tracking-wide shadow hover:bg-[#ffe9b3] transition flex items-center justify-center gap-2"
                 style={{ height: '45px', overflow: 'visible' }}
               >
                 <span className="avantbold text-sm">PAY WITH</span>
