@@ -34,6 +34,7 @@ import Earrings from "./pages/product/Earrings";
 import Bracelets from "./pages/product/Bracelets";
 import Rings from "./pages/product/Rings";
 import ProductDesc from "./pages/product/ProductDesc";
+import TryOn from "/src/pages/product/tryon/TryOn";
 
 //collections
 import Classic from "/src/pages/product/collections/classic";
@@ -118,6 +119,7 @@ const App = () => {
           <Route path="/bracelet" element={<Bracelets />} />
           <Route path="/rings" element={<Rings />} />
           <Route path="/product-description" element={<ProductDesc />} />
+          <Route path="/tryon" element={<TryOn />} />
 
           {/*Collections */}
           <Route path="/collections/classic" element={<Classic />} />

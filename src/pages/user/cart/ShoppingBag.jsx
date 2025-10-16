@@ -53,7 +53,7 @@ const ShoppingBagMobile = ({
   modalImg,
   openModal,
   closeModal,
-  navigate, // add this prop
+  navigate, 
 }) => (
   <div className="lg:hidden w-full min-h-screen bg-[#181818] px-5 pt-2 text-[#fff7dc] relative">
     {/* Title and subtitle */}
@@ -276,7 +276,9 @@ const ShoppingBag = () => {
               >
                 PROCEED TO CHECKOUT
               </button>
-              <div className="text-center mt-6 avantbold text-lg text-[#fff7dc]">
+              <div className="text-center mt-6 avantbold cursor-pointer text-lg text-[#fff7dc]"
+              onClick={() => navigate('/')}
+              >
                 CONTINUE SHOPPING...
               </div>
               <div className="text-center text-[#fff7dc] mt-5 avant text-xs">
