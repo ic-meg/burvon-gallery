@@ -3,30 +3,40 @@ import contentApi from "../../api/contentApi";
 import storageService from "../../services/storageService";
 
 import { AddImage, Remove } from "../../assets/index.js";
+import Toast from "../../components/Toast";
 
 const Homepage = () => {
   const [formData, setFormData] = useState({
     logo: null,
     logoUrl: null, // Supabase URL
     heroImages: [null, null, null, null, null, null, null, null],
-    heroImageUrls: [null, null, null, null, null, null, null, null], // Supabase URLs
+    heroImageUrls: [null, null, null, null, null, null, null, null],
     tryOnTitle: "Style It On You",
     tryOnDescription:
       "Experience our virtual try-on feature and see how each piece looks on you.",
     tryOnImage: null,
-    tryOnImageUrl: null, // Supabase URL
+    tryOnImageUrl: null,
   });
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [message, setMessage] = useState({ type: "", text: "" });
   const [hasExistingContent, setHasExistingContent] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
-  const showMessage = (type, text, duration = 3000) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage({ type: "", text: "" }), duration);
+  // Toast state
+  const [toast, setToast] = useState({
+    show: false,
+    message: "",
+    type: "loading",
+  });
+
+  //helper uli
+  const showToast = (message, type = "error", duration = 5000) => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast((prev) => ({ ...prev, show: false }));
+    }, duration);
   };
 
   const uploadAllImages = async () => {
@@ -40,7 +50,7 @@ const Homepage = () => {
     try {
       // Upload logo hereee
       if (formData.logo) {
-        showMessage("info", "Uploading logo...");
+        showToast("Uploading logo...", "loading", 3000);
         const logoResult = await storageService.uploadLogo(formData.logo);
         if (logoResult.success) {
           uploadResults.logoUrl = storageService.getImageUrl(
@@ -53,7 +63,7 @@ const Homepage = () => {
 
       // Upload try-on image heree
       if (formData.tryOnImage) {
-        showMessage("info", "Uploading try-on image...");
+        showToast("Uploading try-on image...", "loading", 3000);
         const tryOnResult = await storageService.uploadTryOnImage(
           formData.tryOnImage
         );
@@ -71,7 +81,7 @@ const Homepage = () => {
         (img) => img !== null
       );
       if (heroImagesToUpload.length > 0) {
-        showMessage("info", "Uploading hero images...");
+        showToast("Uploading hero images...", "loading", 3000);
         const heroResults = await storageService.uploadMultipleHeroImages(
           formData.heroImages
         );
@@ -106,7 +116,6 @@ const Homepage = () => {
       promo_image: imageUrls.tryOnImageUrl || null,
     };
 
-    // console.log('Prepared data for backend:', data);
     return data;
   };
 
@@ -118,9 +127,10 @@ const Homepage = () => {
       const result = await contentApi.fetchHomepageContent();
 
       if (result.error) {
-        showMessage(
+        showToast(
+          "No existing content found - ready to create new content",
           "warning",
-          `No existing content found - ready to create new content`
+          4000
         );
         setHasExistingContent(false);
         return;
@@ -129,9 +139,10 @@ const Homepage = () => {
       if (result.data && result.data.message) {
         setHasExistingContent(false);
         setHasUnsavedChanges(false);
-        showMessage(
-          "info",
-          "No existing content found - ready to create new content"
+        showToast(
+          "No existing content found - ready to create new content",
+          "warning",
+          4000
         );
       } else if (result.data) {
         setHasExistingContent(true);
@@ -158,18 +169,9 @@ const Homepage = () => {
         });
         setHasUnsavedChanges(false);
         // showMessage("success", "Content loaded successfully");
-
-        // Debug log to see what I loaded
-        // console.log('Loaded content:', {
-        //   logo_url: result.data.logo_url,
-        //   hero_images: result.data.hero_images,
-        //   promo_image: result.data.promo_image,
-        //   title: result.data.title,
-        //   description: result.data.description
-        // });
       }
     } catch (error) {
-      showMessage("error", `Network error: ${error.message}`);
+      showToast(`Network error: ${error.message}`, "error", 6000);
       setHasExistingContent(false);
       setHasUnsavedChanges(false); // Reset on error too
     } finally {
@@ -188,41 +190,36 @@ const Homepage = () => {
       const hasChanges = hasUnsavedChanges || hasNewImages;
 
       if (!hasExistingContent) {
-        showMessage("info", "Creating new homepage content...");
+        showToast("Creating new homepage content...", "loading", 3000);
       } else if (!hasChanges) {
-        showMessage(
-          "info",
-          "No changes detected - content is already up to date"
+        showToast(
+          "No changes detected - content is already up to date",
+          "warning",
+          4000
         );
         setSaving(false);
         return;
       } else if (hasNewImages && hasUnsavedChanges) {
-        showMessage("info", "Updating content and uploading new images...");
+        showToast(
+          "Updating content and uploading new images...",
+          "loading",
+          3000
+        );
       } else if (hasNewImages) {
-        showMessage("info", "Uploading new images...");
+        showToast("Uploading new images...", "loading", 3000);
       } else {
-        showMessage("info", "Updating content...");
+        showToast("Updating content...", "loading", 3000);
       }
 
       const imageUrls = await uploadAllImages();
 
       const contentData = prepareContentDataForSubmission(imageUrls);
 
-      console.log("Image URLs after upload:", imageUrls);
-      console.log("Content data being sent to backend:", contentData);
-      console.log("Saving content with data:", {
-        hasData: !!contentData,
-        dataKeys: Object.keys(contentData || {}),
-        apiURL: import.meta.env.VITE_CONTENT_API,
-      });
-
-      showMessage("info", "Saving content data...");
+      showToast("Saving content data...", "loading", 3000);
       const result = await contentApi.saveHomepageContent(contentData);
 
-      console.log("API Result:", result);
-
       if (result.error) {
-        showMessage("error", `Failed to save: ${result.error}`);
+        showToast(`Failed to save: ${result.error}`, "error", 6000);
         return;
       }
 
@@ -241,20 +238,20 @@ const Homepage = () => {
 
       const wasExisting = hasExistingContent;
       if (!wasExisting) {
-        showMessage("success", "Homepage content created successfully!");
+        showToast("Homepage content created successfully!", "success");
       } else if (hasNewImages && hasUnsavedChanges) {
-        showMessage(
-          "success",
-          "Content updated and new images uploaded successfully!"
+        showToast(
+          "Content updated and new images uploaded successfully!",
+          "success"
         );
       } else if (hasNewImages) {
-        showMessage("success", "New images uploaded successfully!");
+        showToast("New images uploaded successfully!", "success");
       } else {
-        showMessage("success", "Homepage content updated successfully!");
+        showToast("Homepage content updated successfully!", "success");
       }
     } catch (error) {
       console.error("Save error:", error);
-      showMessage("error", `Save error: ${error.message}`);
+      showToast(`Save error: ${error.message}`, "error", 6000);
     } finally {
       setSaving(false);
     }
@@ -343,11 +340,11 @@ const Homepage = () => {
 
       // Delete images from Supabase
       if (imagesToDelete.length > 0) {
-        showMessage("info", "Deleting images from storage...");
+        showToast("Deleting images from storage...", "loading", 3000);
         await storageService.cleanupOldImages(imagesToDelete);
       }
 
-      showMessage("info", "Deleting database record...");
+      showToast("Deleting database record...", "loading", 3000);
 
       // Get the correct ID from the current content
       const contentId =
@@ -358,9 +355,10 @@ const Homepage = () => {
       const result = await contentApi.deleteHomepageContent(contentId);
 
       if (result.error && !result.error.includes("not found")) {
-        showMessage(
+        showToast(
+          `Failed to delete database record: ${result.error}`,
           "error",
-          `Failed to delete database record: ${result.error}`
+          6000
         );
         return;
       }
@@ -377,12 +375,9 @@ const Homepage = () => {
         tryOnImageUrl: null,
       });
       setHasExistingContent(false);
-      showMessage(
-        "success",
-        "Homepage content and images deleted successfully"
-      );
+      showToast("Homepage content and images deleted successfully", "success");
     } catch (error) {
-      showMessage("error", `Delete error: ${error.message}`);
+      showToast(`Delete error: ${error.message}`, "error", 6000);
     } finally {
       setLoading(false);
     }
@@ -400,9 +395,9 @@ const Homepage = () => {
 
     setLoading(true);
     try {
-      showMessage("info", "Cleaning up homepage storage folders...");
+      showToast("Cleaning up homepage storage folders...", "loading", 3000);
 
-      // Homepage-related folders 
+      // Homepage-related folders
       const foldersToClean = [
         "admin/logos",
         "admin/hero/hero_0",
@@ -435,23 +430,21 @@ const Homepage = () => {
         }
       }
 
-      showMessage(
-        "success",
+      showToast(
         `Cleanup completed! ${totalDeleted} files deleted from ${
           deleteResults.filter((r) => r.success).length
-        } folders.`
+        } folders.`,
+        "success"
       );
     } catch (error) {
       console.error("Cleanup error:", error);
-      showMessage("error", `Cleanup error: ${error.message}`);
+      showToast(`Cleanup error: ${error.message}`, "error", 6000);
     } finally {
       setLoading(false);
     }
   };
 
-
   // EVENT HANDLERS
- 
 
   const handleLogoUpload = (e) => {
     const file = e.target.files[0];
@@ -517,14 +510,11 @@ const Homepage = () => {
   };
 
   const handlePreview = () => {
-    console.log("Preview data:", formData);
     // Implement preview logic here
-    showMessage("info", "Preview functionality coming soon");
+    showToast("Preview functionality coming soon", "warning", 4000);
   };
 
-
   // LIFECYCLE
- 
 
   useEffect(() => {
     fetchContent();
@@ -532,31 +522,6 @@ const Homepage = () => {
 
   return (
     <div className="grid grid-cols-2 gap-8 -mt-8 h-full">
-      {/* Status Message */}
-      {message.text && (
-        <div
-          className={`col-span-2 p-4 rounded-lg mb-4 ${
-            message.type === "success"
-              ? "bg-green-100 text-green-800 border border-green-200"
-              : message.type === "error"
-              ? "bg-red-100 text-red-800 border border-red-200"
-              : message.type === "warning"
-              ? "bg-yellow-100 text-yellow-800 border border-yellow-200"
-              : "bg-blue-100 text-blue-800 border border-blue-200"
-          }`}
-        >
-          <div className="flex justify-between items-center">
-            <span className="avant text-sm font-medium">{message.text}</span>
-            <button
-              onClick={() => setMessage({ type: "", text: "" })}
-              className="text-current hover:opacity-70"
-            >
-              ×
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Loading Overlay */}
       {loading && (
         <div className="col-span-2 flex items-center justify-center py-8">
@@ -872,6 +837,9 @@ const Homepage = () => {
           </span>
         </div>
       </div>
+
+      {/* Toast Component */}
+      <Toast show={toast.show} message={toast.message} type={toast.type} />
     </div>
   );
 };
