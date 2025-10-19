@@ -28,7 +28,12 @@ const CollectionManagement = () => {
     hideToast,
   } = useCollection();
 
-  const { fetchProductsByCollection, loading: productsLoading } = useProduct();
+  const {
+    fetchProductsByCollection,
+    fetchAllProducts,
+    clearProductsByCollection,
+    loading: productsLoading,
+  } = useProduct();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -110,11 +115,6 @@ const CollectionManagement = () => {
           ...prev,
           [collectionId]: productCounts,
         }));
-        console.debug(
-          "[CollectionManagement] productCounts for",
-          collectionId,
-          productCounts
-        );
 
         return productCounts;
       }
@@ -135,6 +135,19 @@ const CollectionManagement = () => {
         }
       }
     }
+  };
+
+  const refreshCollectionProducts = async (collectionId) => {
+    setCollectionProducts((prev) => {
+      const updated = { ...prev };
+      delete updated[collectionId];
+      return updated;
+    });
+
+    clearProductsByCollection(collectionId);
+
+    // Fetch fresh data
+    await fetchCollectionProducts(collectionId);
   };
 
   const handleCollectionChange = (field, value) => {
@@ -199,7 +212,6 @@ const CollectionManagement = () => {
     }
   };
 
-
   const handleEditClick = (collection) => {
     const originalData = {
       name: collection.name,
@@ -216,7 +228,6 @@ const CollectionManagement = () => {
     });
     setShowEditCollectionModal(true);
   };
-
 
   const handleUpdateCollection = async () => {
     if (!editCollection.name.trim()) {
@@ -257,6 +268,20 @@ const CollectionManagement = () => {
 
     setLocalLoading((prev) => ({ ...prev, edit: true }));
 
+    const updateData = {};
+
+    if (hasNameChanged) {
+      updateData.name = editCollection.name;
+    }
+
+    if (hasDescriptionChanged) {
+      updateData.description = editCollection.description;
+    }
+
+    if (hasImageChanged) {
+      updateData.image = editCollection.image;
+    }
+
     setShowEditCollectionModal(false);
     setEditCollection({
       id: null,
@@ -266,20 +291,22 @@ const CollectionManagement = () => {
     });
     setOriginalCollection(null);
 
-    const result = await updateCollection(editCollection.id, {
-      name: editCollection.name,
-      description: editCollection.description,
-      image: editCollection.image,
-    });
+    const result = await updateCollection(editCollection.id, updateData);
 
     setLocalLoading((prev) => ({ ...prev, edit: false }));
 
     if (!result.success) {
       console.error("Failed to update collection:", result.error);
+    } else {
+   
+      if (editCollection.id) {
+        await refreshCollectionProducts(editCollection.id);
+
+        await fetchAllProducts();
+      }
     }
   };
 
-  
   const handleCloseEditModal = () => {
     setShowEditCollectionModal(false);
     setEditCollection({
@@ -290,7 +317,6 @@ const CollectionManagement = () => {
     });
     setOriginalCollection(null);
   };
-
 
   const handleDeleteClick = (collection) => {
     setSelectedCollection(collection);
