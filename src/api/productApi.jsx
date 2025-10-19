@@ -6,7 +6,7 @@ const missing = (field) => {
   return { error: `${field} is required`, status: null, data: null };
 };
 
-const baseUrl = apiURL;
+const baseUrl = apiURL ? (apiURL.endsWith("/") ? apiURL : apiURL + "/") : "";
 
 const fetchAllProducts = async () => {
   if (!apiURL) return missing("VITE_PRODUCT_API");
@@ -35,7 +35,31 @@ const fetchProductsByCategory = async (categorySlug) => {
 const fetchProductsByCollection = async (collectionId) => {
   if (!apiURL) return missing("VITE_PRODUCT_API");
   if (!collectionId) return missing("collection id");
-  return await apiRequest(`${baseUrl}collection/${collectionId}`, null);
+
+  const url = `${baseUrl}collection/${collectionId}`;
+  const res = await apiRequest(url, null);
+
+  if (res && res.error) {
+    return { error: res.error, data: null };
+  }
+
+  if (res && typeof res === "object" && Array.isArray(res.products)) {
+    return { error: null, data: res };
+  }
+
+  if (res && res.data && Array.isArray(res.data.products)) {
+    return { error: null, data: res };
+  }
+
+  if (Array.isArray(res)) {
+    return { error: null, data: { products: res } };
+  }
+
+  if (res && res.products && !Array.isArray(res.products)) {
+    return { error: null, data: { products: [] } };
+  }
+
+  return { error: null, data: { products: [] } };
 };
 
 const createProduct = async (productData) => {
@@ -100,20 +124,27 @@ const updateProductStock = async (id, stockData) => {
 const searchProducts = async (query) => {
   if (!apiURL) return missing("VITE_PRODUCT_API");
   if (!query) return missing("search query");
-  return await apiRequest(`${baseUrl}search?q=${encodeURIComponent(query)}`, null);
+  return await apiRequest(
+    `${baseUrl}search?q=${encodeURIComponent(query)}`,
+    null
+  );
 };
 
 const filterProducts = async (filters) => {
   if (!apiURL) return missing("VITE_PRODUCT_API");
   if (!filters) return missing("filters");
-  
+
   const params = new URLSearchParams();
-  Object.keys(filters).forEach(key => {
-    if (filters[key] !== null && filters[key] !== undefined && filters[key] !== '') {
+  Object.keys(filters).forEach((key) => {
+    if (
+      filters[key] !== null &&
+      filters[key] !== undefined &&
+      filters[key] !== ""
+    ) {
       params.append(key, filters[key]);
     }
   });
-  
+
   return await apiRequest(`${baseUrl}filter?${params.toString()}`, null);
 };
 
