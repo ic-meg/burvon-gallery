@@ -1,4 +1,3 @@
-import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Homepage from "./pages/main/Homepage";
 
@@ -8,6 +7,7 @@ import { ContentProvider } from "./contexts/ContentContext";
 import { CategoryProvider } from "./contexts/CategoryContext";
 import { CollectionProvider } from "./contexts/CollectionContext";
 import { ProductProvider } from "./contexts/ProductContext";
+import { CartProvider } from "./contexts/CartContext";
 
 //about
 import ContactUs from "./pages/about/ContactUs";
@@ -58,22 +58,21 @@ import UserManagement from "./admin/pages/UserManagement";
 
 //admin content management
 import HomepageContent from "./admin/Contents/Homepage";
-import NecklacesContent from "./admin/Contents/Categories/Necklaces";
-import BraceletsContent from "./admin/Contents/Categories/Bracelets";
-import RingsContent from "./admin/Contents/Categories/Rings";
-import EarringsContent from "./admin/Contents/Categories/Earrings";
 import CategoriesContent from "./admin/Contents/Categories";
 import CollectionsContent from "./admin/Contents/Collections/CollectionsContent";
 
 const App = () => {
   return (
+    
     <ContentProvider>
       <CategoryProvider>
         <CollectionProvider>
           <ProductProvider>
             <Router>
+              <CartProvider>
               <ScrollToTop />
               <div>
+                
                 <Routes>
                   <Route path="/" element={<Homepage />} />
                   <Route path="/template" element={<Template />} />
@@ -170,16 +169,16 @@ const App = () => {
                     <Route path="categories" element={<CategoriesContent />} />
                     <Route
                       path="categories/necklaces"
-                      element={<NecklacesContent />}
+                      element={<CategoriesContent />}
                     />
                     <Route
                       path="categories/bracelets"
-                      element={<BraceletsContent />}
+                      element={<CategoriesContent />}
                     />
-                    <Route path="categories/rings" element={<RingsContent />} />
+                    <Route path="categories/rings" element={<CategoriesContent />} />
                     <Route
                       path="categories/earrings"
-                      element={<EarringsContent />}
+                      element={<CategoriesContent />}
                     />
 
                     {/* Collections - Dynamic routing for any collection */}
@@ -195,6 +194,7 @@ const App = () => {
                   <Route path="/admin/user" element={<UserManagement />} />
                 </Routes>
               </div>
+              </CartProvider>
             </Router>
           </ProductProvider>
         </CollectionProvider>
