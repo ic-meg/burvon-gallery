@@ -1,66 +1,41 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Layout from '../../../components/Layout'
-import { Link } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
+import { useCart } from '../../../contexts/CartContext'
+import ShoppingBagEmpty from './ShoppingBag-Empty'
+import productApi from '../../../api/productApi'
+import categoryApi from '../../../api/categoryApi'
 
 import { 
-  XWhite, 
-  Odyssey, 
-  Friden 
+  XWhite
 } from '../../../assets/index.js'
-
-// products
-const products = [
-  {
-    id: 1,
-    name: 'Clash Collection Necklaces (Elegant Pendant Jewelry)',
-    image: Odyssey,
-    price: 590,
-    quantity: 1,
-    variant: 'ODYSSEY',
-  },
-  {
-    id: 2,
-    name: 'Clash Collection Necklaces (Elegant Pendant Jewelry)',
-    image: Friden,
-    price: 590,
-    quantity: 2,
-    variant: 'FRIDEN',
-  },
-  {
-    id: 3,
-    name: 'Clash Collection Necklaces (Elegant Pendant Jewelry)',
-    image: Odyssey,
-    price: 590,
-    quantity: 1,
-    variant: 'ODYSSEY',
-  },
-  {
-    id: 4,
-    name: 'Clash Collection Necklaces (Elegant Pendant Jewelry)',
-    image: Friden,
-    price: 590,
-    quantity: 1,
-    variant: 'FRIDEN',
-  },
-]
 
 {/* Mobile Layout */}
 const ShoppingBagMobile = ({
-  products,
+  cart,
   subtotal,
   itemCount,
   modalOpen,
   modalImg,
   openModal,
   closeModal,
+  removeFromCart,
+  updateQuantity,
+  updateSize,
+  getAvailableSizes,
+  getSizeStock,
+  ringCategoryId,
+  isAtMaxStock,
+  hoveredCheckout,
+  setHoveredCheckout,
 }) => (
   <div className="lg:hidden w-full min-h-screen bg-[#181818] px-5 pt-2 text-[#fff7dc] relative">
-    {/* Title and subtitle */}
-    <Link to="/user/cart/ShoppingBag-Empty">
+ 
+    
       <h1 className="text-center bebas tracking-wide mt-26 mb-2" style={{ fontSize: '55px' }}>
         SHOPPING BAG
       </h1>
-    </Link>
+
     <p className="text-center avant text-xs mb-10 mt-[-8px]">
       ALMOST YOURS, READY TO MAKE THEIR WAY TO YOU.
     </p>
@@ -68,55 +43,164 @@ const ShoppingBagMobile = ({
     <div className="w-full max-w-md mx-auto relative">
       <div
         className="flex flex-col overflow-y-auto"
-        style={{ maxHeight: '440px' }} 
+        style={{ maxHeight: '60vh' }} 
       >
-        {products.map((p, i) => (
-          <div key={p.id}>
+        {cart && cart.map((item, i) => (
+          <div key={item.id}>
             <div className="flex gap-3 items-start py-4 px-4 text-nowrap relative">
               {/* Product image */}
               <img
-                src={p.image}
-                alt={p.name}
+                src={item.image}
+                alt={item.name}
                 className="w-24 h-24 object-cover shadow-lg cursor-pointer border border-[#fff7dc]/20"
-                onClick={() => openModal(p.image)}
+                onClick={() => openModal(item.image)}
               />
               {/* Product details */}
               <div className="flex-1 pl-2">
                 <div className="avantbold text-xs whitespace-normal leading-tight">
-                  Clash Collection Necklaces<br />
-                  <span>(Elegant Pendant Jewelry)</span>
+                  {item.name}
                 </div>
+                {item.collection && (
+                  <div className="bebas text-xs mt-1 tracking-wide text-[#fff7dc]/80">
+                    {item.collection}
+                  </div>
+                )}
+                {item.category && (
+                  <div className="avant text-xs mt-1 opacity-60">
+                    {item.category.replace(/\s+Collection$/i, '')}
+                  </div>
+                )}
                 <div className="flex items-center justify-between mt-1">
-                  <span className="bebas text-xs tracking-wide">{p.variant}</span>
-                  <span className="avant text-xs mr-12">Size: N/A</span>
+                  {item.variant && (
+                    <span className="avant text-xs opacity-70">{item.variant}</span>
+                  )}
+                  <span className="avant text-xs mr-12 opacity-60">
+                    Size: {(item.category_id === ringCategoryId || (item.category && (
+                      item.category.toLowerCase() === 'ring' || 
+                      item.category.toLowerCase() === 'rings' ||
+                      item.category.toLowerCase().includes('ring collection')
+                    ))) ? (
+                      <select
+                        value={item.size || ''}
+                        onChange={(e) => {
+                          const newSize = parseInt(e.target.value);
+                          const sizeStock = getSizeStock(item.product_id, newSize);
+                          updateSize(item.id, newSize, sizeStock);
+                        }}
+                        className="bg-[#181818] text-[#fff7dc] border border-[#fff7dc]/30 rounded px-1 py-0.5 text-xs avant focus:outline-none focus:border-[#fff7dc] ml-1 cursor-pointer min-w-[60px]"
+                        style={{ 
+                          appearance: 'none', 
+                          WebkitAppearance: 'none', 
+                          MozAppearance: 'none',
+                          backgroundImage: 'none'
+                        }}
+                      >
+                        <option value="">Select</option>
+                        {getAvailableSizes(item.product_id, item.id).map(size => (
+                          <option key={size} value={size} className="bg-[#181818] text-[#fff7dc]">{size}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      item.size || '-'
+                    )}
+                  </span>
                 </div>
                 <div className="avantbold text-xs mt-2">
-                  ₱ {p.price.toFixed(2)}
+                  {item.price}
                 </div>
                 {/* quantity content */}
                 <div className="flex items-center mt-2">
-                  <span className="text-lg cursor-pointer select-none px-2 py-1 rounded hover:bg-[#fff7dc]/10 transition">−</span>
-                  <span className="text-xs">{p.quantity}</span> {/* number inside - + */}
-                  <span className="text-lg cursor-pointer select-none px-2 py-1 rounded hover:bg-[#fff7dc]/10 transition">+</span>
+                  <span 
+                    onClick={() => {
+                      const isRing = item.category_id === ringCategoryId || (item.category && (
+                        item.category.toLowerCase() === 'ring' || 
+                        item.category.toLowerCase() === 'rings' ||
+                        item.category.toLowerCase().includes('ring collection')
+                      ));
+                      if (isRing && !item.size) return;
+                      updateQuantity(item.id, item.quantity - 1);
+                    }}
+                    className={`text-lg select-none px-2 py-1 rounded transition ${
+                      (() => {
+                        const isRing = item.category_id === ringCategoryId || (item.category && (
+                          item.category.toLowerCase() === 'ring' || 
+                          item.category.toLowerCase() === 'rings' ||
+                          item.category.toLowerCase().includes('ring collection')
+                        ));
+                        return isRing && !item.size ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-[#fff7dc]/10';
+                      })()
+                    }`}>−</span>
+                  <span className="text-xs">{(() => {
+                    const isRing = item.category_id === ringCategoryId || (item.category && (
+                      item.category.toLowerCase() === 'ring' || 
+                      item.category.toLowerCase() === 'rings' ||
+                      item.category.toLowerCase().includes('ring collection')
+                    ));
+                    return isRing && !item.size ? 1 : item.quantity;
+                  })()}</span>
+                  <span 
+                    onClick={() => {
+                      const isRing = item.category_id === ringCategoryId || (item.category && (
+                        item.category.toLowerCase() === 'ring' || 
+                        item.category.toLowerCase() === 'rings' ||
+                        item.category.toLowerCase().includes('ring collection')
+                      ));
+                      if (isRing && !item.size) return;
+                      const sizeStock = item.size ? getSizeStock(item.product_id, item.size) : null;
+                      updateQuantity(item.id, item.quantity + 1, sizeStock);
+                    }}
+                    className={`text-lg select-none px-2 py-1 rounded transition ${
+                      (() => {
+                        const isRing = item.category_id === ringCategoryId || (item.category && (
+                          item.category.toLowerCase() === 'ring' || 
+                          item.category.toLowerCase() === 'rings' ||
+                          item.category.toLowerCase().includes('ring collection')
+                        ));
+                        if (isRing && !item.size) return 'opacity-50 cursor-not-allowed';
+                        return isAtMaxStock(item.id, item.size ? getSizeStock(item.product_id, item.size) : null) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-[#fff7dc]/10';
+                      })()
+                    }`}
+                    title={(() => {
+                      const isRing = item.category_id === ringCategoryId || (item.category && (
+                        item.category.toLowerCase() === 'ring' || 
+                        item.category.toLowerCase() === 'rings' ||
+                        item.category.toLowerCase().includes('ring collection')
+                      ));
+                      if (isRing && !item.size) return 'Please select a size first';
+                      return isAtMaxStock(item.id, item.size ? getSizeStock(item.product_id, item.size) : null) ? 'Maximum stock reached' : '';
+                    })()}
+                  >+</span>
                 </div>
                 <div className="avant text-xs mt-2">
-                  Subtotal: <span className="avantbold text-xs">₱ {(p.price * p.quantity).toFixed(2)}</span>
+                  Subtotal: <span className="avantbold text-xs">
+                    ₱ {(parseFloat(item.price.replace(/[^\d.]/g, '')) * (() => {
+                      const isRing = item.category_id === ringCategoryId || (item.category && (
+                        item.category.toLowerCase() === 'ring' || 
+                        item.category.toLowerCase() === 'rings' ||
+                        item.category.toLowerCase().includes('ring collection')
+                      ));
+                      return isRing && !item.size ? 1 : item.quantity;
+                    })()).toFixed(2)}
+                  </span>
                 </div>
               </div>
               {/* Remove button */}
-              <button className="absolute top-4 right-2 z-10">
+              <button 
+                onClick={() => removeFromCart(item.id)}
+                className="absolute top-4 right-2 z-10"
+              >
                 <img src={XWhite} alt="Remove" className="w-4 h-4" />
               </button>
             </div>
             {/* Divider line between products */}
-            {i < products.length - 1 && (
+            {i < cart.length - 1 && (
               <hr className="my-2 border-[#fff7dc]/30" />
             )}
           </div>
         ))}
       </div>
       {/* sticky checkout content */}
-      <div className="sticky w-full bg-[#181818] p-6 z-30 mt-[-220px]  mx-auto">
+      <div className="sticky w-full bg-[#181818] p-6 z-30 mt-4 mx-auto">
         <div className="flex justify-between mb-2 avantbold text-sm">
           <span>Subtotal ( {itemCount} items )</span>
           <span>₱ {subtotal.toFixed(2)}</span>
@@ -130,12 +214,22 @@ const ShoppingBagMobile = ({
           <span>-</span>
         </div>
         <hr className="my-4 border-[#fff7dc]/30" />
-        <button className="w-full py-3 rounded bg-[#fff7dc] text-[#181818] avantbold text-sm tracking-wide shadow hover:bg-[#ffe9b3] transition">
+        <button 
+          onMouseEnter={() => setHoveredCheckout(true)}
+          onMouseLeave={() => setHoveredCheckout(false)}
+          style={{
+            backgroundColor: hoveredCheckout ? "transparent" : "#FFF7DC",
+            color: hoveredCheckout ? "#FFF7DC" : "#181818",
+            outline: "1px solid #FFF7DC",
+            borderRadius: 5,
+          }}
+          className="w-full py-3 rounded avantbold text-sm tracking-wide shadow transition-all duration-300"
+        >
           PROCEED TO CHECKOUT
         </button>
-        <div className="text-center mt-4 avantbold text-sm text-[#fff7dc]">
+        <Link to="/" className="text-center mt-4 avantbold text-sm text-[#fff7dc] hover:underline block">
           CONTINUE SHOPPING...
-        </div>
+        </Link>
         <div className="text-center text-[#fff7dc] mt-8 avant text-xs">
           Shipping and discounts are calculated at checkout.
         </div>
@@ -159,8 +253,14 @@ const ShoppingBagMobile = ({
 )
 
 const ShoppingBag = () => {
+  const { cart, removeFromCart, updateQuantity, updateSize, getCartTotal, getCartItemCount, isAtMaxStock } = useCart();
+
   const [modalOpen, setModalOpen] = useState(false)
   const [modalImg, setModalImg] = useState(null)
+  const [hoveredCheckout, setHoveredCheckout] = useState(false)
+  const [productData, setProductData] = useState({})
+  const [categories, setCategories] = useState([])
+  const [ringCategoryId, setRingCategoryId] = useState(null)
 
   const openModal = (img) => {
     setModalImg(img)
@@ -172,81 +272,312 @@ const ShoppingBag = () => {
     setModalImg(null)
   }
 
-  const subtotal = products.reduce((sum, p) => sum + p.price * p.quantity, 0)
+  // Fetch categories to get ring category ID
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const result = await categoryApi.fetchAllCategories();
+        if (result && !result.error) {
+          const categoriesData = result.data || result;
+          setCategories(categoriesData);
+          
+      
+          const ringCategory = categoriesData.find(cat => 
+            cat.name && (
+              cat.name.toLowerCase() === 'rings' ||
+              cat.name.toLowerCase() === 'ring'
+            )
+          );
+          if (ringCategory) {
+            setRingCategoryId(ringCategory.category_id);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  // Fetch product data for cart items
+  useEffect(() => {
+    const fetchProductData = async () => {
+      const productIds = [...new Set(cart.map(item => item.product_id))];
+      const data = {};
+      
+      for (const productId of productIds) {
+        try {
+          const result = await productApi.fetchProductById(productId);
+          
+          if (result && !result.error) {
+           
+            const responseData = result.data;
+            
+          
+            const product = responseData.product || responseData;
+            
+            data[productId] = {
+              sizes: product.sizes || [],
+              sizeStocks: product.sizeStocks || []
+            };
+          }
+        } catch (error) {
+          console.error(`Error fetching product ${productId}:`, error);
+        }
+      }
+      
+      setProductData(data);
+    };
+
+    if (cart.length > 0) {
+      fetchProductData();
+    }
+  }, [cart]);
+
+  // Get available sizes for a product
+  const getAvailableSizes = (productId, currentItemId = null) => {
+    const product = productData[productId];
+    
+    if (!product) {
+      return [3, 4, 5, 6, 7, 8, 9];
+    }
+    
+    let availableSizes = [];
+    
+    if (product.sizeStocks && product.sizeStocks.length > 0) {
+      availableSizes = product.sizeStocks
+        .filter(ss => ss.stock > 0)
+        .map(ss => {
+          const sizeMatch = ss.size?.match(/\d+/);
+          return sizeMatch ? parseInt(sizeMatch[0]) : null;
+        })
+        .filter(size => size !== null)
+        .sort((a, b) => a - b);
+    } else {
+    
+      availableSizes = (product.sizes && product.sizes.length > 0) ? product.sizes : [3, 4, 5, 6, 7, 8, 9];
+    }
+    
+    
+    return availableSizes.filter(size => {
+   
+      const existingItemAtMax = cart.find(item => 
+        item.product_id === productId && 
+        item.size === size && 
+        item.id !== currentItemId && 
+        item.quantity >= getSizeStock(productId, size)
+      );
+      
+      return !existingItemAtMax; // Only include sizes that are not at max stock
+    });
+  };
+
+  
+  const getSizeStock = (productId, size) => {
+    const product = productData[productId];
+    
+    if (!product || !product.sizeStocks) {
+
+      return 0;
+    }
+    
+    const sizeStock = product.sizeStocks.find(ss => {
+      const sizeMatch = ss.size?.match(/\d+/);
+      return sizeMatch && parseInt(sizeMatch[0]) === size;
+    });
+    
+    
+    return sizeStock ? sizeStock.stock : 0;
+  };
+
+  const subtotal = getCartTotal();
   const shipping = 80
   const total = subtotal + shipping
-  const itemCount = products.reduce((sum, p) => sum + p.quantity, 0)
+  const itemCount = getCartItemCount();
+
+
+ 
+  if (!cart || cart.length === 0) {
+    return <ShoppingBagEmpty />;
+  }
 
   return (
     <Layout full>
       {/* Desktop layout */}
       <div className="hidden lg:block min-h-screen bg-[#181818] py-10 px-0 bebas text-[#fff7dc]">
         {/* shopping bag title */}
-        <Link to="/user/cart/ShoppingBag-Empty">
+
           <h1 
             className="text-center bebas mb-2 tracking-wide mt-36" 
             style={{ fontSize: '80px' }}
           >
             SHOPPING BAG
           </h1>
-        </Link>
+     
         
         {/* subtitle */}
         <p className="text-center avant text-md mb-30 mt-[-18px] ml-[-18px]">ALMOST YOURS, READY TO MAKE THEIR WAY TO YOU.</p>
 
-        <div className="w-full max-w-[1600px] mx-auto flex gap-2 px-12"> {/* kung gusto iwiden yung buong content jan sa left side, adjust mo lang yung max-w, gap, px depende kung gano kasakto sa laptop */}
+        <div className="w-full max-w-[1600px] mx-auto flex gap-8 px-12"> {/* kung gusto iwiden yung buong content jan sa left side, adjust mo lang yung max-w, gap, px depende kung gano kasakto sa laptop */}
           {/* left: scrollable products */}
-          <div className="flex-[2.2] overflow-y-auto custom-scrollbar ml-2" style={{ maxHeight: '370px', background: 'rgba(24,24,24,0.98)' }}>
+          <div className="flex-[2.2] overflow-y-auto custom-scrollbar ml-2" style={{ maxHeight: '70vh', background: 'rgba(24,24,24,0.98)', overflowX: 'visible' }}>
             {/* product title */}
-            <div className="grid grid-cols-4 avant text-xl border-b border-[#fff7dc]/30 pb-2 mb-2 sticky top-0 bg-[#181818] z-10">
+            <div className="grid grid-cols-5 avant text-xl border-b border-[#fff7dc]/30 pb-2 mb-2 sticky top-0 bg-[#181818] z-10">
               <div className="pl-2">Item/s</div>
+              <div className="pl-53">Size</div> {/* Size column */}
               <div className="pl-53">Price</div> {/* dito meg start ka dito pero title lang mauusog hindi buong column */}
               <div className="pl-36">Quantity</div> {/* adjust mo na lang mga pl */}
               <div className="text-center">Subtotal</div> {/* dito kung gusto mo rin gawing pl, pl mo na rin */}
             </div>
-            {products.map((p, i) => (
-              <div key={p.id} className="grid grid-cols-4 items-center border-b border-[#fff7dc]/10 py-6 hover:bg-[#232323] transition-all duration-200">
+            {cart && cart.map((item, i) => (
+              <div key={item.id} className="grid grid-cols-5 items-center border-b border-[#fff7dc]/10 py-6 hover:bg-[#232323] transition-all duration-200">
                 <div className="flex items-center gap-5 min-w-[340px]">
                   {/* remove button */}
-                  <button className="mr-2 flex-shrink-0 hover:bg-[#fff7dc]/10 rounded-full p-1 transition">
+                  <button 
+                    onClick={() => removeFromCart(item.id)}
+                    className="mr-2 flex-shrink-0 hover:bg-[#fff7dc]/10 rounded-full p-1 transition"
+                  >
                     <img src={XWhite} alt="Remove" className="w-5 h-5" />
                   </button>
                   {/* product image and details */}
                   <img
-                    src={p.image}
-                    alt={p.name}
+                    src={item.image}
+                    alt={item.name}
                     className="w-24 h-24 object-cover rounded-lg shadow-lg flex-shrink-0 cursor-pointer border border-[#fff7dc]/20 hover:scale-105 transition"
-                    onClick={() => openModal(p.image)}
+                    onClick={() => openModal(item.image)}
                   />
                   <div>
                     <div className="avantbold text-md whitespace-nowrap leading-tight">
-                      Clash Collection Necklaces
+                      {item.name}
                     </div>
-                    <div className="avantbold text-md whitespace-nowrap leading-tight">
-                      (Elegant Pendant Jewelry)
-                    </div>
-                    <div className="bebas text-md mt-1 whitespace-nowrap tracking-wide">
-                      {p.variant} 
-                    </div>
-                    <div className="avant text-md mt-[-2px] opacity-60 whitespace-nowrap">
-                      Size: N/A
-                    </div>
+                    {item.collection && (
+                      <div className="bebas text-sm mt-1 whitespace-nowrap tracking-wide text-[#fff7dc]/80">
+                        {item.collection}
+                      </div>
+                    )}
+                    {item.category && (
+                      <div className="avant text-xs mt-1 whitespace-nowrap opacity-60">
+                        {item.category.replace(/\s+Collection$/i, '')}
+                      </div>
+                    )}
+                    {item.variant && (
+                      <div className="avant text-sm mt-1 whitespace-nowrap opacity-70">
+                        {item.variant} 
+                      </div>
+                    )}
                   </div>
                 </div>
-                <div className="avantbold text-lg pl-50 text-nowrap">₱ {p.price.toFixed(2)}</div> {/* price content */} {/* dito na yung buong price mauusog, pl lang din galawin mo */}
-                <div className="text-center avantbold flex items-center justify-center pl-35"> {/* quantity content */} {/* adjust mo lang pl */}
-                  <span className="text-2xl cursor-pointer select-none px-2 py-1 rounded hover:bg-[#fff7dc]/10 transition">−</span>
-                  <span className="text-lg">{p.quantity}</span> {/* number in quantity */}
-                  <span className="text-2xl cursor-pointer select-none px-2 py-1 rounded hover:bg-[#fff7dc]/10 transition">+</span>
+                <div className="text-center avant text-lg pl-54 relative">
+                  {(item.category_id === ringCategoryId || (item.category && (
+                    item.category.toLowerCase() === 'ring' || 
+                    item.category.toLowerCase() === 'rings' ||
+                    item.category.toLowerCase().includes('ring collection')
+                  ))) ? (
+                    <div className="relative inline-block">
+                      <select
+                        value={item.size || ''}
+                        onChange={(e) => {
+                          const newSize = parseInt(e.target.value);
+                          const sizeStock = getSizeStock(item.product_id, newSize);
+                          updateSize(item.id, newSize, sizeStock);
+                        }}
+                        className="metallic-bg cream-text border border-[#fff7dc]/30 rounded px-2 py-1 text-center avant text-sm focus:outline-none focus:border-[#fff7dc] cursor-pointer min-w-[80px] max-w-[120px]"
+                        style={{ 
+                          appearance: 'auto',
+                          WebkitAppearance: 'menulist',
+                          MozAppearance: 'menulist'
+                        }}
+                      >
+                        <option value="">Select Size</option>
+                        {getAvailableSizes(item.product_id, item.id).map(size => (
+                          <option key={size} value={size}>{size}</option>
+                        ))}
+                      </select>
+                    </div>
+                  ) : (
+                    item.size || '-'
+                  )}
                 </div>
-                {/* subtotal content */} {/* dito kung need din ng pl, lagyan mo na lang din */}
-                <div className="text-center avantbold text-lg">₱ {(p.price * p.quantity).toFixed(2)}</div>
+                <div className="avantbold text-lg pl-50 text-nowrap">{item.price}</div>
+                <div className="text-center avantbold flex items-center justify-center pl-35">
+                  <span 
+                    onClick={() => {
+                      const isRing = item.category_id === ringCategoryId || (item.category && (
+                        item.category.toLowerCase() === 'ring' || 
+                        item.category.toLowerCase() === 'rings' ||
+                        item.category.toLowerCase().includes('ring collection')
+                      ));
+                      if (isRing && !item.size) return;
+                      updateQuantity(item.id, item.quantity - 1);
+                    }}
+                    className={`text-2xl select-none px-2 py-1 rounded transition ${
+                      (() => {
+                        const isRing = item.category_id === ringCategoryId || (item.category && (
+                          item.category.toLowerCase() === 'ring' || 
+                          item.category.toLowerCase() === 'rings' ||
+                          item.category.toLowerCase().includes('ring collection')
+                        ));
+                        return isRing && !item.size ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-[#fff7dc]/10';
+                      })()
+                    }`}>−</span>
+                  <span className="text-lg">{(() => {
+                    const isRing = item.category_id === ringCategoryId || (item.category && (
+                      item.category.toLowerCase() === 'ring' || 
+                      item.category.toLowerCase() === 'rings' ||
+                      item.category.toLowerCase().includes('ring collection')
+                    ));
+                    return isRing && !item.size ? 1 : item.quantity;
+                  })()}</span>
+                  <span 
+                    onClick={() => {
+                      const isRing = item.category_id === ringCategoryId || (item.category && (
+                        item.category.toLowerCase() === 'ring' || 
+                        item.category.toLowerCase() === 'rings' ||
+                        item.category.toLowerCase().includes('ring collection')
+                      ));
+                      if (isRing && !item.size) return;
+                      const sizeStock = item.size ? getSizeStock(item.product_id, item.size) : null;
+                      updateQuantity(item.id, item.quantity + 1, sizeStock);
+                    }}
+                    className={`text-2xl select-none px-2 py-1 rounded transition ${
+                      (() => {
+                        const isRing = item.category_id === ringCategoryId || (item.category && (
+                          item.category.toLowerCase() === 'ring' || 
+                          item.category.toLowerCase() === 'rings' ||
+                          item.category.toLowerCase().includes('ring collection')
+                        ));
+                        if (isRing && !item.size) return 'opacity-50 cursor-not-allowed';
+                        return isAtMaxStock(item.id, item.size ? getSizeStock(item.product_id, item.size) : null) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-[#fff7dc]/10';
+                      })()
+                    }`}
+                    title={(() => {
+                      const isRing = item.category_id === ringCategoryId || (item.category && (
+                        item.category.toLowerCase() === 'ring' || 
+                        item.category.toLowerCase() === 'rings' ||
+                        item.category.toLowerCase().includes('ring collection')
+                      ));
+                      if (isRing && !item.size) return 'Please select a size first';
+                      return isAtMaxStock(item.id, item.size ? getSizeStock(item.product_id, item.size) : null) ? 'Maximum stock reached' : '';
+                    })()}
+                  >+</span>
+                </div>
+                <div className="text-center avantbold text-lg">
+                  ₱ {(parseFloat(item.price.replace(/[^\d.]/g, '')) * (() => {
+                    const isRing = item.category_id === ringCategoryId || (item.category && (
+                      item.category.toLowerCase() === 'ring' || 
+                      item.category.toLowerCase() === 'rings' ||
+                      item.category.toLowerCase().includes('ring collection')
+                    ));
+                    return isRing && !item.size ? 1 : item.quantity;
+                  })()).toFixed(2)}
+                </div>
               </div>
             ))}
           </div>
           {/* right: sticky */}
-          <div className="w-full max-w-xl avant text-base sticky top-36 h-fit self-start">
-            <div className="flex flex-col gap-2 bg-[#181818] p-8">
+          <div className="flex-[1] max-w-xl avant text-base sticky top-36 self-start">
+            <div className="flex flex-col gap-2 bg-[#181818] p-8 rounded-lg">
               {/* subtotal */}
               <div className="flex justify-between mb-2 avantbold text-lg">
                 <span>Subtotal ( {itemCount} items )</span>
@@ -265,12 +596,22 @@ const ShoppingBag = () => {
               <div className="flex justify-between avantbold text-xl mt-4 border-t border-[#fff7dc]/30 pt-2">
                
               </div>
-              <button className="w-full mt-3 py-4 rounded-xl bg-[#fff7dc] text-[#181818] avantbold text-lg tracking-wide shadow-md hover:bg-[#ffe9b3] transition">
+              <button 
+                onMouseEnter={() => setHoveredCheckout(true)}
+                onMouseLeave={() => setHoveredCheckout(false)}
+                style={{
+                  backgroundColor: hoveredCheckout ? "transparent" : "#FFF7DC",
+                  color: hoveredCheckout ? "#FFF7DC" : "#181818",
+                  outline: "1px solid #FFF7DC",
+                  borderRadius: 5,
+                }}
+                className="w-full mt-3 py-4 rounded-xl cursor-pointer avantbold text-lg tracking-wide shadow-md transition-all duration-300"
+              >
                 PROCEED TO CHECKOUT
               </button>
-              <div className="text-center mt-6 avantbold text-lg text-[#fff7dc]">
+              <Link to="/" className="text-center mt-6 avantbold text-lg text-[#fff7dc] hover:underline block">
                 CONTINUE SHOPPING...
-              </div>
+              </Link>
               <div className="text-center text-[#fff7dc] mt-5 avant text-xs">
                 Shipping and discounts are calculated at checkout
               </div>
@@ -294,13 +635,22 @@ const ShoppingBag = () => {
       </div>
       {/* Mobile layout */}
       <ShoppingBagMobile
-        products={products}
+        cart={cart}
         subtotal={subtotal}
         itemCount={itemCount}
         modalOpen={modalOpen}
         modalImg={modalImg}
         openModal={openModal}
         closeModal={closeModal}
+        removeFromCart={removeFromCart}
+        updateQuantity={updateQuantity}
+        updateSize={updateSize}
+        getAvailableSizes={getAvailableSizes}
+        getSizeStock={getSizeStock}
+        ringCategoryId={ringCategoryId}
+        isAtMaxStock={isAtMaxStock}
+        hoveredCheckout={hoveredCheckout}
+        setHoveredCheckout={setHoveredCheckout}
       />
     </Layout>
   )
