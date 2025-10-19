@@ -71,67 +71,67 @@ const heroImages = [
 const rebelsTopPicks = [
   {
     id: 1,
-    images: ["PRODUCT IMAGE PLACEHOLDER", "PRODUCT IMAGE PLACEHOLDER"],
-    webpImages: ["PRODUCT IMAGE PLACEHOLDER", "PRODUCT IMAGE PLACEHOLDER"],
-    name: "PRODUCT NAME PLACEHOLDER",
-    collection: "COLLECTION NAME PLACEHOLDER",
-    originalPrice: "ORIGINAL PRICE PLACEHOLDER",
-    salePrice: "SALE PRICE PLACEHOLDER",
+    images: ["PRODUCT IMAGE ", "PRODUCT IMAGE "],
+    webpImages: ["PRODUCT IMAGE ", "PRODUCT IMAGE "],
+    name: "PRODUCT NAME ",
+    collection: "COLLECTION NAME ",
+    originalPrice: "ORIGINAL PRICE ",
+    salePrice: "SALE PRICE ",
   },
   {
     id: 2,
-    images: ["PRODUCT IMAGE PLACEHOLDER", "PRODUCT IMAGE PLACEHOLDER"],
-    webpImages: ["PRODUCT IMAGE PLACEHOLDER", "PRODUCT IMAGE PLACEHOLDER"],
-    name: "PRODUCT NAME PLACEHOLDER",
-    collection: "COLLECTION NAME PLACEHOLDER",
-    originalPrice: "ORIGINAL PRICE PLACEHOLDER",
-    salePrice: "SALE PRICE PLACEHOLDER",
+    images: ["PRODUCT IMAGE ", "PRODUCT IMAGE "],
+    webpImages: ["PRODUCT IMAGE ", "PRODUCT IMAGE "],
+    name: "PRODUCT NAME ",
+    collection: "COLLECTION NAME ",
+    originalPrice: "ORIGINAL PRICE ",
+    salePrice: "SALE PRICE ",
   },
   {
     id: 3,
-    images: ["PRODUCT IMAGE PLACEHOLDER", "PRODUCT IMAGE PLACEHOLDER"],
-    webpImages: ["PRODUCT IMAGE PLACEHOLDER", "PRODUCT IMAGE PLACEHOLDER"],
-    name: "PRODUCT NAME PLACEHOLDER",
-    collection: "COLLECTION NAME PLACEHOLDER",
-    originalPrice: "ORIGINAL PRICE PLACEHOLDER",
-    salePrice: "SALE PRICE PLACEHOLDER",
+    images: ["PRODUCT IMAGE ", "PRODUCT IMAGE "],
+    webpImages: ["PRODUCT IMAGE ", "PRODUCT IMAGE "],
+    name: "PRODUCT NAME ",
+    collection: "COLLECTION NAME ",
+    originalPrice: "ORIGINAL PRICE ",
+    salePrice: "SALE PRICE ",
   },
   {
     id: 4,
-    images: ["PRODUCT IMAGE PLACEHOLDER", "PRODUCT IMAGE PLACEHOLDER"],
-    webpImages: ["PRODUCT IMAGE PLACEHOLDER", "PRODUCT IMAGE PLACEHOLDER"],
-    name: "PRODUCT NAME PLACEHOLDER",
-    collection: "COLLECTION NAME PLACEHOLDER",
-    originalPrice: "ORIGINAL PRICE PLACEHOLDER",
-    salePrice: "SALE PRICE PLACEHOLDER",
+    images: ["PRODUCT IMAGE ", "PRODUCT IMAGE "],
+    webpImages: ["PRODUCT IMAGE", "PRODUCT IMAGE "],
+    name: "PRODUCT NAME ",
+    collection: "COLLECTION NAME ",
+    originalPrice: "ORIGINAL PRICE ",
+    salePrice: "SALE PRICE ",
   },
   {
     id: 5,
-    images: ["PRODUCT IMAGE PLACEHOLDER", "PRODUCT IMAGE PLACEHOLDER"],
-    webpImages: ["PRODUCT IMAGE PLACEHOLDER", "PRODUCT IMAGE PLACEHOLDER"],
-    name: "PRODUCT NAME PLACEHOLDER",
-    collection: "COLLECTION NAME PLACEHOLDER",
-    originalPrice: "ORIGINAL PRICE PLACEHOLDER",
-    salePrice: "SALE PRICE PLACEHOLDER",
+    images: ["PRODUCT IMAGE ", "PRODUCT IMAGE "],
+    webpImages: ["PRODUCT IMAGE", "PRODUCT IMAGE "],
+    name: "PRODUCT NAME ",
+    collection: "COLLECTION NAME ",
+    originalPrice: "ORIGINAL PRICE ",
+    salePrice: "SALE PRICE ",
   },
   {
     id: 6,
-    images: ["PRODUCT IMAGE PLACEHOLDER", "PRODUCT IMAGE PLACEHOLDER"],
-    webpImages: ["PRODUCT IMAGE PLACEHOLDER", "PRODUCT IMAGE PLACEHOLDER"],
-    name: "PRODUCT NAME PLACEHOLDER",
-    collection: "COLLECTION NAME PLACEHOLDER",
-    originalPrice: "ORIGINAL PRICE PLACEHOLDER",
-    salePrice: "SALE PRICE PLACEHOLDER",
+    images: ["PRODUCT IMAGE ", "PRODUCT IMAGE "],
+    webpImages: ["PRODUCT IMAGE ", "PRODUCT IMAGE "],
+    name: "PRODUCT NAME ",
+    collection: "COLLECTION NAME ",
+    originalPrice: "ORIGINAL PRICE ",
+    salePrice: "SALE PRICE",
   },
 ];
 
 // Placeholder data for when server is down - will be replaced with dynamic content
 const burvonsCollections = [
-  { id: 1, image: "COLLECTION IMAGE PLACEHOLDER", webp: "COLLECTION IMAGE PLACEHOLDER", path: "/collections/placeholder" },
-  { id: 2, image: "COLLECTION IMAGE PLACEHOLDER", webp: "COLLECTION IMAGE PLACEHOLDER", path: "/collections/placeholder" },
-  { id: 3, image: "COLLECTION IMAGE PLACEHOLDER", webp: "COLLECTION IMAGE PLACEHOLDER", path: "/collections/placeholder" },
-  { id: 4, image: "COLLECTION IMAGE PLACEHOLDER", webp: "COLLECTION IMAGE PLACEHOLDER", path: "/collections/placeholder" },
-  { id: 5, image: "COLLECTION IMAGE PLACEHOLDER", webp: "COLLECTION IMAGE PLACEHOLDER", path: "/collections/placeholder" },
+  { id: 1, image: "COLLECTION IMAGE ", webp: "COLLECTION IMAGE ", path: "/collections/collection" },
+  { id: 2, image: "COLLECTION IMAGE ", webp: "COLLECTION IMAGE ", path: "/collections/collection" },
+  { id: 3, image: "COLLECTION IMAGE ", webp: "COLLECTION IMAGE ", path: "/collections/collection" },
+  { id: 4, image: "COLLECTION IMAGE ", webp: "COLLECTION IMAGE ", path: "/collections/collection" },
+  { id: 5, image: "COLLECTION IMAGE ", webp: "COLLECTION IMAGE ", path: "/collections/collection" },
 ];
 
 const BASE_HEIGHT = 320; 
@@ -156,7 +156,7 @@ const faqs = [
   },
 ];
 
-const SCROLL_STEP = 320; // Adjust for full card width per swipe
+const SCROLL_STEP = 320; 
 
 const Homepage = () => {
   const navigate = useNavigate();
@@ -525,7 +525,7 @@ const Homepage = () => {
         >
           {getDynamicHeroImages().map((image, index) => (
             <picture key={index} className="flex-shrink-0 w-full h-full">
-              <source srcSet={image.webp} type="image/webp" />
+              <source src={image.webp} type="image/webp" />
               <img
                 src={image.src}
                 alt={`Burvon homepage banner collection ${index + 1}`}
@@ -659,7 +659,7 @@ const Homepage = () => {
                   )}
                   <picture className="w-full h-full">
                     {item.webpImages[0] && !item.webpImages[0].includes('PLACEHOLDER') && (
-                      <source srcSet={item.webpImages[0]} type="image/webp" />
+                      <source src={item.webpImages[0]} type="image/webp" />
                     )}
                     <img
                       src={item.images[0]}
@@ -759,7 +759,7 @@ const Homepage = () => {
                           <picture className="w-full h-full">
                             {item.webpImages[isHovered ? hoveredImageIndex : 0] && !item.webpImages[isHovered ? hoveredImageIndex : 0].includes('PLACEHOLDER') && (
                               <source
-                                srcSet={
+                                src={
                                   item.webpImages[isHovered ? hoveredImageIndex : 0]
                                 }
                                 type="image/webp"
@@ -965,7 +965,7 @@ const Homepage = () => {
                     </div>
                   ) : (
                     <picture>
-                      <source srcSet={col.webp} type="image/webp" />
+                      <source src={col.webp} type="image/webp" />
                       <img
                         src={col.image}
                         alt={`Burvon Collection ${col.id}`}
@@ -1010,7 +1010,7 @@ const Homepage = () => {
                       </div>
                     ) : (
                       <picture className="w-full">
-                        <source srcSet={col.webp} type="image/webp" />
+                        <source src={col.webp} type="image/webp" />
                         <img
                           src={col.image}
                           alt={`Burvon Collection ${col.id}`}
