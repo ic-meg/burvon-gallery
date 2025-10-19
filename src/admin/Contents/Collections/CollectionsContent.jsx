@@ -4,6 +4,7 @@ import { useCollection } from "../../../contexts/CollectionContext";
 import storageService from "../../../services/storageService";
 
 import { AddImage, Remove } from "../../../assets/index.js";
+import Toast from "../../../components/Toast";
 
 const CollectionsContent = () => {
   const { collectionSlug } = useParams();
@@ -31,12 +32,10 @@ const CollectionsContent = () => {
     null,
     null,
   ]); // URL strings
-  const [promotionalTitle, setPromotionalTitle] = useState("Style It On You");
-  const [promotionalDescription, setPromotionalDescription] = useState(
-    "Experience our virtual try-on feature and see how each piece looks on you."
-  );
-  const [promotionalImage, setPromotionalImage] = useState(null); // File object
-  const [promotionalImageUrl, setPromotionalImageUrl] = useState(null); // URL string
+  const [promotionalTitle, setPromotionalTitle] = useState("");
+  const [promotionalDescription, setPromotionalDescription] = useState("");
+  const [promotionalImage, setPromotionalImage] = useState(null);
+  const [promotionalImageUrl, setPromotionalImageUrl] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -44,22 +43,37 @@ const CollectionsContent = () => {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [formErrors, setFormErrors] = useState({});
 
+  const [toast, setToast] = useState({
+    show: false,
+    message: "",
+    type: "loading",
+  });
+
+  const showToast = (message, type = "error", duration = 5000) => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast((prev) => ({ ...prev, show: false }));
+    }, duration);
+  };
+
+  const resetFormToDefaults = () => {
+    setPromotionalTitle("");
+    setPromotionalDescription("");
+    setPromotionalImage(null);
+    setPromotionalImageUrl(null);
+    setCollectionImages([null, null, null, null, null, null, null, null]);
+    setCollectionImageUrls([null, null, null, null, null, null, null, null]);
+    setFormErrors({});
+  };
+
   useEffect(() => {
-    console.log("CollectionData updated:", collectionData);
     if (collectionData) {
-      // console.log('Collection ID:', collectionData.collection_id || collectionData.id);
-      // console.log('Collection Name:', collectionData.name);
-      // console.log('Collection Keys:', Object.keys(collectionData));
     }
   }, [collectionData]);
 
   // dito hinahandle pag galing sa dropdown sa ContentManagement
   useEffect(() => {
     if (location.state?.collectionData) {
-      console.log(
-        "Location state changed, updating collection data:",
-        location.state.collectionData
-      );
       setCollectionData(location.state.collectionData);
     }
   }, [location.state?.collectionData, location.pathname]);
@@ -76,19 +90,13 @@ const CollectionsContent = () => {
           .replace(/\s+/g, "-")
           .replace(/[^a-z0-9-]/g, "");
         const apiUrl = `${
-          import.meta.env.VITE_COLLECTION_CONTENT_API ||
-          "http://localhost:3000/content/collection/"
+          import.meta.env.VITE_COLLECTION_CONTENT_API
         }${collectionSlug}`;
-        console.log("Loading content from API URL:", apiUrl);
-        console.log("Using collection slug:", collectionSlug);
 
         const response = await fetch(apiUrl);
 
         if (response.ok) {
           const contentData = await response.json();
-          console.log("Loaded collection content:", contentData);
-          console.log("Loaded promo_images:", contentData.promo_images);
-          console.log("Loaded collection_image:", contentData.collection_image);
 
           setHasExistingContent(true);
 
@@ -105,9 +113,7 @@ const CollectionsContent = () => {
           if (typeof promoImages === "string") {
             try {
               promoImages = JSON.parse(promoImages);
-              console.log("Parsed promo_images from string:", promoImages);
             } catch (e) {
-              console.error("Failed to parse promo_images:", e);
               promoImages = [];
             }
           }
@@ -117,11 +123,9 @@ const CollectionsContent = () => {
             Array.isArray(promoImages) &&
             promoImages.length > 0
           ) {
-            console.log("Setting promotional image URL:", promoImages[0]);
             setPromotionalImageUrl(promoImages[0]); // Store URL, not File
             setPromotionalImage(null); // Clear File object
           } else {
-            console.log("No promotional images found or invalid format");
             setPromotionalImageUrl(null);
             setPromotionalImage(null);
           }
@@ -131,12 +135,7 @@ const CollectionsContent = () => {
           if (typeof collectionImages === "string") {
             try {
               collectionImages = JSON.parse(collectionImages);
-              console.log(
-                "Parsed collection_image from string:",
-                collectionImages
-              );
             } catch (e) {
-              console.error("Failed to parse collection_image:", e);
               collectionImages = [];
             }
           }
@@ -160,10 +159,6 @@ const CollectionsContent = () => {
               }
             });
 
-            console.log(
-              "Setting collection image URLs:",
-              newCollectionImageUrls
-            );
             setCollectionImageUrls(newCollectionImageUrls);
             setCollectionImages([
               null,
@@ -176,7 +171,6 @@ const CollectionsContent = () => {
               null,
             ]);
           } else {
-            console.log("No collection images found or invalid format");
             setCollectionImageUrls([
               null,
               null,
@@ -199,19 +193,15 @@ const CollectionsContent = () => {
             ]);
           }
         } else if (response.status === 404) {
-          console.log("No existing content found for this collection");
           setHasExistingContent(false);
-          setPromotionalTitle("Style It On You");
-          setPromotionalDescription(
-            "Experience our virtual try-on feature and see how each piece looks on you."
-          );
+          resetFormToDefaults();
         } else {
-          console.error("Failed to load collection content:", response.status);
           setHasExistingContent(false);
+          resetFormToDefaults();
         }
       } catch (error) {
-        console.error("Error loading collection content:", error);
         setHasExistingContent(false);
+        resetFormToDefaults();
       }
 
       setHasUnsavedChanges(false);
@@ -222,12 +212,6 @@ const CollectionsContent = () => {
 
   // kukunin yung collection data base sa slug or location state or first collection
   useEffect(() => {
-    console.log("CollectionsContent useEffect triggered");
-    console.log("collectionSlug:", collectionSlug);
-    console.log("location.state:", location.state);
-    console.log("location.key:", location.key); // This changes on navigation
-    console.log("collections:", collections);
-
     if (
       location.state?.collectionData &&
       location.state.collectionData.collection_id
@@ -239,7 +223,7 @@ const CollectionsContent = () => {
           (collection.collection_id || collection.id) ===
           location.state.collectionId
       );
-      console.log("Found collection by ID:", foundCollection);
+
       setCollectionData(foundCollection);
     } else if (collectionSlug && collections?.length > 0) {
       // Find collection by slug
@@ -247,20 +231,16 @@ const CollectionsContent = () => {
         const slug = collection.name?.toLowerCase().replace(/\s+/g, "-");
         return slug === collectionSlug;
       });
-      console.log("Found collection by slug:", foundCollection);
+
       setCollectionData(foundCollection);
     } else if (!collectionSlug && collections?.length > 0) {
-      // If no slug provided, use the first collection as default
-      console.log("Using first collection as default:", collections[0]);
+      // if no slug, use the  first coll
+
       setCollectionData(collections[0]);
     } else {
-      console.log(
-        "No collection data available - waiting for collections to load..."
-      );
     }
   }, [collectionSlug, location.state, location.key, collections]);
 
-  //hanlesd uplooad ng collection carousel image
   const handleCollectionImageUpload = (index, e) => {
     const file = e.target.files[0];
     if (file) {
@@ -271,7 +251,6 @@ const CollectionsContent = () => {
     }
   };
 
-  // Handle collection image removal
   const handleCollectionImageRemove = (index) => {
     const newCollectionImages = [...collectionImages];
     const newCollectionImageUrls = [...collectionImageUrls];
@@ -282,7 +261,6 @@ const CollectionsContent = () => {
     setHasUnsavedChanges(true);
   };
 
-  // Handle promotional image upload
   const handlePromotionalImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -291,14 +269,12 @@ const CollectionsContent = () => {
     }
   };
 
-  // Handle promotional image removal
   const handlePromotionalImageRemove = () => {
     setPromotionalImage(null);
     setPromotionalImageUrl(null);
     setHasUnsavedChanges(true);
   };
 
-  // Handle title and description changes
   const handleTitleChange = (value) => {
     setPromotionalTitle(value);
     setHasUnsavedChanges(true);
@@ -315,73 +291,80 @@ const CollectionsContent = () => {
     }
   };
 
-  // Form validation
   const validateForm = () => {
-    console.log("Validating form...");
-    console.log("promotionalTitle:", promotionalTitle);
-    console.log("promotionalDescription:", promotionalDescription);
-    console.log("promotionalImage:", promotionalImage);
-
     const errors = {};
 
     if (!promotionalTitle.trim()) {
-      errors.promotionalTitle = "Promotional title is required";
+      errors.promotionalTitle =
+        "Please enter a promotional title for your collection";
     }
 
-    if (!collectionImages.some((img) => img)) {
-      errors.collectionImages = "At least one collection image is required";
+    const hasCollectionImages =
+      collectionImages.some((img) => img) ||
+      collectionImageUrls.some((url) => url);
+    if (!hasCollectionImages) {
+      errors.collectionImages =
+        "Please add at least one image to the collection carousel";
     }
 
-    if (!promotionalImage) {
-      errors.promotionalImage = "Promotional image is required";
+    // Check if there's a promotional image (either new file or existing URL)
+    const hasPromotionalImage = promotionalImage || promotionalImageUrl;
+    if (!hasPromotionalImage) {
+      errors.promotionalImage =
+        "Please add a promotional image for your collection";
     }
 
     if (!promotionalDescription.trim()) {
-      errors.promotionalDescription = "Promotional description is required";
+      errors.promotionalDescription =
+        "Please enter a promotional description for your collection";
     }
 
     if (promotionalDescription.length > 100) {
       errors.promotionalDescription =
-        "Description must be 100 characters or less";
+        "Description must be 100 characters or less (currently " +
+        promotionalDescription.length +
+        " characters)";
     }
 
-    console.log("Validation errors:", errors);
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
   const saveContent = async () => {
-    console.log("saveContent called");
-
     // Check if collection data is available
     if (!collectionData) {
-      alert(
-        "Collection data is not loaded. Please select a collection from the dropdown."
+      showToast(
+        "Collection data is not loaded. Please select a collection from the dropdown.",
+        "error"
       );
-      // console.log('No collection data available');
       return;
     }
-
-    // console.log('Collection data available:', collectionData);
 
     // Validate form first
     const isValid = validateForm();
-    // console.log('Form validation result:', isValid);
-    // console.log('Form errors:', formErrors);
 
     if (!isValid) {
-      alert("Please fix the form errors before saving.");
+      const errorCount = Object.keys(formErrors).length;
+      if (errorCount > 0) {
+        const errorMessages = Object.values(formErrors).join("\n• ");
+        showToast(
+          `Please fix the following errors:\n• ${errorMessages}`,
+          "error",
+          8000
+        );
+      } else {
+        showToast("Please complete all required fields before saving", "error");
+      }
       return;
     }
 
-    // Check if there are any new images to upload or changes to save
     const hasNewImages =
       collectionImages.some((img) => img !== null) || promotionalImage !== null;
     const hasChanges = hasUnsavedChanges || hasNewImages;
 
     // If existing content and no changes, wag na
     if (hasExistingContent && !hasChanges) {
-      alert("No changes detected - content is already up to date");
+      showToast("No changes detected - content is already up to date", "error");
       return;
     }
 
@@ -396,12 +379,9 @@ const CollectionsContent = () => {
         throw new Error("Collection ID is missing. Cannot save content.");
       }
 
-      console.log("Starting image uploads to Supabase...");
-
       // Upload promotional image to Supabase (only if it's a new File, not existing URL)
       let promotionalImageUrlResult = null;
       if (promotionalImage) {
-        // console.log("Uploading new promotional image...");
         const promotionalResult =
           await storageService.uploadCollectionPromotionalImage(
             promotionalImage,
@@ -411,7 +391,6 @@ const CollectionsContent = () => {
           promotionalImageUrlResult = storageService.getImageUrl(
             promotionalResult.filePath
           );
-          console.log("Promotional image uploaded:", promotionalImageUrlResult);
         } else {
           throw new Error(
             `Failed to upload promotional image: ${promotionalResult.error}`
@@ -420,10 +399,6 @@ const CollectionsContent = () => {
       } else if (promotionalImageUrl) {
         // Use existing URL
         promotionalImageUrlResult = promotionalImageUrl;
-        console.log(
-          "Using existing promotional image URL:",
-          promotionalImageUrlResult
-        );
       }
 
       // upload kapag may bagong image sa carousel
@@ -433,7 +408,6 @@ const CollectionsContent = () => {
         const existingUrl = collectionImageUrls[i]; // URL string
 
         if (image) {
-          // console.log(`Uploading new carousel image ${i}...`);
           const carouselResult =
             await storageService.uploadCollectionCarouselImage(
               image,
@@ -445,7 +419,6 @@ const CollectionsContent = () => {
               carouselResult.filePath
             );
             carouselImageUrls[i] = imageUrl;
-            // console.log(`Carousel image ${i} uploaded:`, imageUrl);
           } else {
             throw new Error(
               `Failed to upload carousel image ${i}: ${carouselResult.error}`
@@ -454,13 +427,10 @@ const CollectionsContent = () => {
         } else if (existingUrl) {
           // Use existing URL
           carouselImageUrls[i] = existingUrl;
-          console.log(`Using existing carousel image ${i} URL:`, existingUrl);
         } else {
           carouselImageUrls[i] = null;
         }
       }
-
-      console.log("All images uploaded, creating API payload...");
 
       // Create slug from collection name
       const collectionSlug = collectionName
@@ -487,18 +457,10 @@ const CollectionsContent = () => {
         collection_image: carouselImageUrls.filter((url) => url !== null),
       };
 
-      // console.log("API Payload:", payload);
-      // console.log("Payload promo_images:", payload.promo_images);
-      // console.log("Payload collection_image:", payload.collection_image);
-      // console.log("Raw promotionalImageUrlResult:", promotionalImageUrlResult);
-      // console.log("Raw carouselImageUrls:", carouselImageUrls);
-
       // Save to collection content API endpoint (using slug, not ID)
       const apiUrl = `${
         import.meta.env.VITE_COLLECTION_CONTENT_API
       }${collectionSlug}`;
-      // console.log("Saving to API URL:", apiUrl);
-      // console.log("Using collection slug:", collectionSlug);
 
       const response = await fetch(apiUrl, {
         method: "POST",
@@ -510,13 +472,6 @@ const CollectionsContent = () => {
 
       if (response.ok) {
         const result = await response.json();
-        console.log("Save successful:", result);
-
-        // console.log("carouselImageUrls to save:", carouselImageUrls);
-        // console.log(
-        //   "promotionalImageUrlResult to save:",
-        //   promotionalImageUrlResult
-        // );
 
         const newCollectionImageUrls = [
           null,
@@ -534,44 +489,103 @@ const CollectionsContent = () => {
           }
         });
 
-        console.log(
-          "Updated collectionImageUrls state:",
-          newCollectionImageUrls
-        );
-
-        // Update form state with URLs and clear File objects
         setCollectionImageUrls(newCollectionImageUrls);
         setCollectionImages([null, null, null, null, null, null, null, null]);
         setPromotionalImageUrl(promotionalImageUrlResult);
         setPromotionalImage(null);
 
-        // Update state flags
         setHasExistingContent(true);
         setHasUnsavedChanges(false);
 
         // Provide specific success messages like sa neck
         const wasExisting = hasExistingContent;
         if (!wasExisting) {
-          alert(`${collectionName} collection content created successfully!`);
+          showToast(
+            `${collectionName} collection content created successfully!`,
+            "success"
+          );
         } else if (hasNewImages && hasUnsavedChanges) {
-          alert(
-            `${collectionName} content updated and new images uploaded successfully!`
+          showToast(
+            `${collectionName} content updated and new images uploaded successfully!`,
+            "success"
           );
         } else if (hasNewImages) {
-          alert(`${collectionName} new images uploaded successfully!`);
+          showToast(
+            `${collectionName} new images uploaded successfully!`,
+            "success"
+          );
         } else {
-          alert(`${collectionName} content updated successfully!`);
+          showToast(
+            `${collectionName} content updated successfully!`,
+            "success"
+          );
         }
       } else {
         const errorText = await response.text();
         console.error("Save failed:", response.status, errorText);
-        throw new Error(
-          `Failed to save: ${response.status} ${response.statusText}`
-        );
+
+        let errorMessage = `Failed to save content for ${collectionName}`;
+        try {
+          const errorData = JSON.parse(errorText);
+          if (errorData.message) {
+            errorMessage = errorData.message;
+          } else if (errorData.error) {
+            errorMessage = errorData.error;
+          }
+        } catch (parseError) {
+          // If response is not JSON, use status-based messages
+          switch (response.status) {
+            case 400:
+              errorMessage = `Invalid data provided for ${collectionName}. Please check your inputs and try again.`;
+              break;
+            case 401:
+              errorMessage = `Authentication failed. Please refresh the page and try again.`;
+              break;
+            case 403:
+              errorMessage = `You don't have permission to save content for ${collectionName}.`;
+              break;
+            case 404:
+              errorMessage = `Collection "${collectionName}" not found. Please select a valid collection.`;
+              break;
+            case 409:
+              errorMessage = `Content for ${collectionName} already exists. Please try updating instead.`;
+              break;
+            case 413:
+              errorMessage = `Image files are too large. Please use smaller images (under 5MB each).`;
+              break;
+            case 422:
+              errorMessage = `Invalid data format. Please check your inputs and try again.`;
+              break;
+            case 500:
+              errorMessage = `Server error occurred while saving ${collectionName}. Please try again later.`;
+              break;
+            default:
+              errorMessage = `Failed to save ${collectionName} content (Error ${response.status}). Please try again.`;
+          }
+        }
+
+        throw new Error(errorMessage);
       }
     } catch (error) {
       console.error("Error saving collection content:", error);
-      alert(`Error saving collection content: ${error.message}`);
+
+      // Provide more specific error messages based on error type
+      let userMessage = error.message;
+
+      if (error.message.includes("Failed to upload")) {
+        userMessage = `Image upload failed for ${collectionName}. Please check your internet connection and try again.`;
+      } else if (error.message.includes("Collection ID is missing")) {
+        userMessage = `Collection data is incomplete. Please refresh the page and select the collection again.`;
+      } else if (error.message.includes("Invalid collection ID")) {
+        userMessage = `Invalid collection selected. Please choose a different collection.`;
+      } else if (
+        error.message.includes("NetworkError") ||
+        error.message.includes("fetch")
+      ) {
+        userMessage = `Network error occurred. Please check your internet connection and try again.`;
+      }
+
+      showToast(userMessage, "error", 8000);
     } finally {
       setIsSaving(false);
       setUploading(false);
@@ -581,7 +595,10 @@ const CollectionsContent = () => {
   // Delete collection content
   const deleteContent = async () => {
     if (!collectionData) {
-      alert("Collection data is not loaded. Cannot delete content.");
+      showToast(
+        "Collection data is not loaded. Cannot delete content.",
+        "error"
+      );
       return;
     }
 
@@ -604,63 +621,77 @@ const CollectionsContent = () => {
         .replace(/\s+/g, "-")
         .replace(/[^a-z0-9-]/g, "");
 
-      // console.log("Collection data for delete:", collectionData);
-      // console.log("Collection name:", collectionName);
-      // console.log("Generated slug:", collectionSlug);
-
       const apiUrl = `${
         import.meta.env.VITE_COLLECTION_CONTENT_API
       }${collectionSlug}`;
-      // console.log("Deleting at API URL:", apiUrl);
-      // console.log("Using collection slug:", collectionSlug);
 
       const response = await fetch(apiUrl, {
         method: "DELETE",
       });
 
       if (response.ok) {
-        // console.log("Delete successful");
-        alert(`${collectionName} collection content deleted successfully!`);
-        setPromotionalTitle("Style It On You");
-        setPromotionalDescription(
-          "Experience our virtual try-on feature and see how each piece looks on you."
+        showToast(
+          `${collectionName} collection content deleted successfully!`,
+          "success"
         );
-        setPromotionalImage(null);
-        setPromotionalImageUrl(null);
-        setCollectionImages([null, null, null, null, null, null, null, null]);
-        setCollectionImageUrls([
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-        ]);
-        setFormErrors({});
+        resetFormToDefaults();
         setHasExistingContent(false);
         setHasUnsavedChanges(false);
       } else {
         const errorText = await response.text();
         console.error("Delete failed:", response.status, errorText);
-        throw new Error(
-          `Failed to delete: ${response.status} ${response.statusText}`
-        );
+
+        let errorMessage = `Failed to delete content for ${collectionName}`;
+        try {
+          const errorData = JSON.parse(errorText);
+          if (errorData.message) {
+            errorMessage = errorData.message;
+          } else if (errorData.error) {
+            errorMessage = errorData.error;
+          }
+        } catch (parseError) {
+          switch (response.status) {
+            case 400:
+              errorMessage = `Invalid request to delete ${collectionName} content.`;
+              break;
+            case 401:
+              errorMessage = `Authentication failed. Please refresh the page and try again.`;
+              break;
+            case 403:
+              errorMessage = `You don't have permission to delete content for ${collectionName}.`;
+              break;
+            case 404:
+              errorMessage = `No content found for ${collectionName} to delete.`;
+              break;
+            case 500:
+              errorMessage = `Server error occurred while deleting ${collectionName} content. Please try again later.`;
+              break;
+            default:
+              errorMessage = `Failed to delete ${collectionName} content (Error ${response.status}). Please try again.`;
+          }
+        }
+
+        throw new Error(errorMessage);
       }
     } catch (error) {
       console.error("Error deleting collection content:", error);
-      alert(`Error deleting collection content: ${error.message}`);
+
+      let userMessage = error.message;
+
+      if (
+        error.message.includes("NetworkError") ||
+        error.message.includes("fetch")
+      ) {
+        userMessage = `Network error occurred while deleting ${collectionName} content. Please check your internet connection and try again.`;
+      }
+
+      showToast(userMessage, "error", 8000);
     } finally {
       setLoading(false);
     }
   };
 
-  // Preview handler
-  const handlePreview = () => {
-    console.log("handlePreview called");
-    console.log(`Opening ${collectionData?.name} collection preview...`);
-  };
+  const handlePreview = () => {};
 
   if (!collectionData) {
     return (
@@ -732,6 +763,11 @@ const CollectionsContent = () => {
               <p className="text-xs text-gray-500 avant">
                 At least 600x200 px recommended.
               </p>
+              {formErrors.collectionImages && (
+                <p className="text-red-500 text-xs mt-1 avant">
+                  {formErrors.collectionImages}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -755,7 +791,7 @@ const CollectionsContent = () => {
                       ? "border-red-500"
                       : "border-black"
                   }`}
-                  placeholder="Enter promotional title"
+                  placeholder="Eg. Style It On You"
                 />
                 {formErrors.promotionalTitle && (
                   <p className="text-red-500 text-xs mt-1 avant">
@@ -781,7 +817,7 @@ const CollectionsContent = () => {
                       ? "border-red-500"
                       : "border-black"
                   }`}
-                  placeholder="Enter promotional description"
+                  placeholder="Eg. Experience our virtual try-on feature and see how each piece looks on you."
                 />
                 <div className="flex justify-between items-center mt-1">
                   {formErrors.promotionalDescription && (
@@ -839,6 +875,11 @@ const CollectionsContent = () => {
               <p className="text-xs text-gray-500 avant">
                 At least 600x200 px recommended.
               </p>
+              {formErrors.promotionalImage && (
+                <p className="text-red-500 text-xs mt-1 avant">
+                  {formErrors.promotionalImage}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -902,6 +943,9 @@ const CollectionsContent = () => {
           </span>
         </div>
       </div>
+
+      {/* Toast Component */}
+      <Toast show={toast.show} message={toast.message} type={toast.type} />
     </div>
   );
 };
