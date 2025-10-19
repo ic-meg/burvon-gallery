@@ -316,7 +316,6 @@ const CollectionPage = () => {
       category_id: product.category_id || null,
     }));
 
-    // If no products after filtering, show all products as fallback
     if (transformedProducts.length === 0 && sourceProducts.length > 0) {
       const fallbackProducts = sourceProducts.map((product) => ({
         id: product.id || product.product_id || product._id,
@@ -406,7 +405,6 @@ const CollectionPage = () => {
         }
 
         if (collectionsData && collectionsData.length > 0) {
-          // Find collection by slug
           const foundCollection = collectionsData.find((collection) => {
             const slug = collection.name
               ?.toLowerCase()
@@ -516,7 +514,6 @@ const CollectionPage = () => {
           }
         }
 
-        // Parse collection_image if it's a JSON string
         let collectionImages = contentData.collection_image;
         if (typeof collectionImages === "string") {
           try {
@@ -651,7 +648,6 @@ const CollectionPage = () => {
           const targetNameLower =
             collectionName?.toString().toLowerCase() || "";
           
-          // Check by collection ID first (most reliable)
           if (
             collectionId &&
             productCollectionId &&
@@ -660,7 +656,6 @@ const CollectionPage = () => {
             return true;
           }
           
-          // Check by collection name
           if (
             collectionNameLower === targetNameLower ||
               collectionNameLower.includes(targetNameLower) || 
@@ -825,7 +820,6 @@ const CollectionPage = () => {
     });
   };
 
-  // Carousel logic
 
   const topPicksProducts = [];
   const canPrev = carouselIndex > 0;
