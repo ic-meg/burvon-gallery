@@ -64,7 +64,7 @@ const collectionApi = {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      // Backend returns data in 'findOne' property
+
       return { data: data.findOne || data, error: null };
     } catch (error) {
       console.error("Error fetching collection:", error);
@@ -123,18 +123,25 @@ const collectionApi = {
 
   async updateCollection(id, collectionData) {
     try {
-      let imageUrl = null;
-      if (collectionData.image) {
-        imageUrl = await uploadCollectionImage(
-          collectionData.image,
-          collectionData.name
-        );
+      const requestBody = {};
+
+      // Only include fields that are being updated
+      if (collectionData.name !== undefined) {
+        requestBody.name = collectionData.name.trim();
       }
-      const requestBody = {
-        name: collectionData.name.trim(),
-        description: collectionData.description.trim(),
-        collection_image: imageUrl || "DEFAULT_PLACEHOLDER",
-      };
+
+      if (collectionData.description !== undefined) {
+        requestBody.description = collectionData.description.trim();
+      }
+
+      if (collectionData.image) {
+        // Only upload new image if one is provided
+        const imageUrl = await uploadCollectionImage(
+          collectionData.image,
+          collectionData.name || "collection" // Use provided name or fallback
+        );
+        requestBody.collection_image = imageUrl;
+      }
 
       const response = await fetch(`${BASE_URL}${id}`, {
         method: "PATCH",
@@ -211,7 +218,6 @@ export const CollectionProvider = ({ children }) => {
       setError(null);
 
       const response = await collectionApi.fetchAllCollections();
-      // console.log('Collection API Response:', response);
 
       if (!response) {
         console.warn("Collection API returned undefined response");
@@ -227,7 +233,7 @@ export const CollectionProvider = ({ children }) => {
       } else if (response.data) {
         // Extract collections array from the response data
         const collectionsData = response.data.collections || response.data;
-        // console.log('Collections Data:', collectionsData);
+
         setCollections(collectionsData);
         return collectionsData;
       } else {
@@ -303,11 +309,14 @@ export const CollectionProvider = ({ children }) => {
 
       if (response.data) {
         setCollections((prev) =>
-          prev.map((collection) =>
-            (collection.collection_id || collection.id) === id
-              ? { ...collection, ...response.data }
-              : collection
-          )
+          prev.map((collection) => {
+            if ((collection.collection_id || collection.id) === id) {
+              const updatedCollection = { ...collection, ...response.data };
+
+              return updatedCollection;
+            }
+            return collection;
+          })
         );
         showToast("Collection updated successfully!", "success");
         return { success: true, data: response.data };
@@ -363,12 +372,12 @@ export const CollectionProvider = ({ children }) => {
     }
   };
 
-  // Clear error
+
   const clearError = useCallback(() => {
     setError(null);
   }, []);
 
-  // Auto-fetch collections on mount
+
   useEffect(() => {
     fetchAllCollections();
   }, [fetchAllCollections]);
