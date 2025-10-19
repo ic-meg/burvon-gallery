@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../../../components/Layout";
+import ProductCard from "../../../components/ProductCard";
+import FilterComponent from "../../../components/FilterComponent";
 import { useCollection } from "../../../contexts/CollectionContext";
+import { useProduct } from "../../../contexts/ProductContext";
 
-// Hero Images (fallback)
 import {
   KidsCollHeroNeck,
   ClashCollHeroNeck,
@@ -26,56 +28,9 @@ import {
   FilterIcon,
 } from "../../../assets/index.js";
 
-// Fallback product data for when API is not available
-const fallbackProducts = [
-  {
-    id: 101,
-    name: "COLLECTION ITEM 1",
-    collection: "DYNAMIC COLLECTION",
-    oldPrice: "₱790.00",
-    price: "₱711.00",
-    images: [LyricImage, ClashCollHeroNeck],
-  },
-  {
-    id: 102,
-    name: "COLLECTION ITEM 2",
-    collection: "DYNAMIC COLLECTION",
-    oldPrice: "₱790.00",
-    price: "₱711.00",
-    images: [AgathaImage, ClashCollHeroNeck],
-  },
-  {
-    id: 103,
-    name: "COLLECTION ITEM 3",
-    collection: "DYNAMIC COLLECTION",
-    oldPrice: "₱790.00",
-    price: "₱711.00",
-    images: [RiomImage, ClashCollHeroNeck],
-  },
-  {
-    id: 104,
-    name: "COLLECTION ITEM 4",
-    collection: "DYNAMIC COLLECTION",
-    oldPrice: "₱790.00",
-    price: "₱711.00",
-    images: [CelineImage, ClashCollHeroNeck],
-  },
-];
-
-// Fallback hero images
 const fallbackHeroImages = [
   { src: KidsCollHeroNeck },
   { src: ClashCollHeroNeck },
-];
-
-const collectionOptions = [
-  { label: "Select a Collection...", value: "none" },
-  { label: "Classic Collection", value: "classic" },
-  { label: "Clash Collection", value: "clash" },
-  { label: "Rebellion Collection", value: "rebellion" },
-  { label: "Love Language Collection", value: "love-language" },
-  { label: "Pearl Collection", value: "pearl" },
-  { label: "Kids Collection", value: "kids" },
 ];
 
 const categoryOptions = [
@@ -92,7 +47,6 @@ const sortOptions = [
   { label: "Price: High to Low", value: "priceHighLow" },
 ];
 
-// Reuse CustomDropdown component
 const CustomDropdown = ({
   options,
   value,
@@ -150,26 +104,33 @@ const CustomDropdown = ({
 
 const CollectionPage = () => {
   const { collectionSlug } = useParams();
+  const navigate = useNavigate();
   const {
     collections,
     loading: collectionsLoading,
     fetchAllCollections,
   } = useCollection();
 
-  // Component state
+  const {
+    products,
+    fetchAllProducts: contextFetchAllProducts,
+    fetchProductsByCollection,
+  } = useProduct();
+
   const [currentCollection, setCurrentCollection] = useState(null);
   const [collectionProducts, setCollectionProducts] = useState([]);
+  const [rawProducts, setRawProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [collectionContent, setCollectionContent] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // UI state
   const [currentIndex, setCurrentIndex] = useState(0);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [collectionValue, setCollectionValue] = useState("none");
   const [categoryValue, setCategoryValue] = useState("none");
   const [sortValue, setSortValue] = useState(sortOptions[0].value);
-  const [minPrice, setMinPrice] = useState(300);
-  const [maxPrice, setMaxPrice] = useState(1200);
+  const [minPrice, setMinPrice] = useState(0);
+  const [maxPrice, setMaxPrice] = useState(10000);
   const [hoveredCardId, setHoveredCardId] = useState(null);
   const [hoveredButtonId, setHoveredButtonId] = useState(null);
   const [hoveredImageIndexes, setHoveredImageIndexes] = useState({});
@@ -178,18 +139,267 @@ const CollectionPage = () => {
   const [showMobileCategory, setShowMobileCategory] = useState(false);
   const [showMobileSort, setShowMobileSort] = useState(false);
 
-  // Carousel state
+  const collectionOptions = [
+    { label: "Select a Collection...", value: "none" },
+    ...(collections || []).map((collection) => ({
+      label: collection.name,
+      value: collection.collection_id || collection.id,
+    })),
+  ];
+
+  const getCategoryOptions = () => {
+    const categories = new Set();
+    const sourceProducts = rawProducts.length > 0 ? rawProducts : products;
+    
+    sourceProducts.forEach((product) => {
+      if (product.category?.name) {
+        categories.add(product.category.name);
+      }
+    });
+    
+    const categoryOptions = [
+      { label: "Select a category....", value: "none" },
+      ...Array.from(categories).map((category) => ({
+        label: category
+          .replace(/\s+Collection$/i, "")
+          .split(" ")
+          .pop(),
+        value: category.toLowerCase(),
+      })),
+    ];
+    
+    return categoryOptions;
+  };
+
   const [carouselIndex, setCarouselIndex] = useState(0);
   const maxVisible = 4;
   const isMobile = window.innerWidth < 768;
 
-  // Load collection data based on slug
+  const handleCollectionChange = (selectedCollectionId) => {
+    if (selectedCollectionId === "none") {
+      return;
+    }
+    
+    const selectedCollection = collections.find(
+      (col) => (col.collection_id || col.id) === selectedCollectionId
+    );
+    
+    if (selectedCollection) {
+      const slug = selectedCollection.name
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^a-z0-9-]/g, "");
+      
+      navigate(`/collections/${slug}`);
+    }
+  };
+
+  const handleSortChange = (value) => {
+    setSortValue(value);
+  };
+
+  const handlePriceChange = (newMinPrice, newMaxPrice) => {
+    setMinPrice(newMinPrice);
+    setMaxPrice(newMaxPrice);
+  };
+
+  const applyFilters = () => {
+    const sourceProducts =
+      rawProducts.length > 0 ? rawProducts : collectionProducts;
+    
+    let filtered = [...sourceProducts];
+
+
+    if (categoryValue !== "none") {
+      filtered = filtered.filter((product) => {
+        const productCategory =
+          product.category?.name?.toLowerCase() ||
+          product.category?.toLowerCase() ||
+          "";
+        const matches = productCategory.includes(categoryValue);
+        return matches;
+      });
+    }
+
+    filtered = filtered.filter((product) => {
+      const price = parseFloat(
+        product.current_price?.replace(/[^\d.]/g, "") ||
+          product.price?.replace(/[^\d.]/g, "") ||
+          0
+      );
+      const matches = price >= minPrice && price <= maxPrice;
+      return matches;
+    });
+
+    filtered.sort((a, b) => {
+      switch (sortValue) {
+        case "latest":
+          return (
+            new Date(b.created_at || b.createdAt || 0) -
+            new Date(a.created_at || a.createdAt || 0)
+          );
+        case "priceLowHigh":
+          const priceA = parseFloat(
+            a.current_price?.replace(/[^\d.]/g, "") ||
+              a.price?.replace(/[^\d.]/g, "") ||
+              0
+          );
+          const priceB = parseFloat(
+            b.current_price?.replace(/[^\d.]/g, "") ||
+              b.price?.replace(/[^\d.]/g, "") ||
+              0
+          );
+          return priceA - priceB;
+        case "priceHighLow":
+          const priceA2 = parseFloat(
+            a.current_price?.replace(/[^\d.]/g, "") ||
+              a.price?.replace(/[^\d.]/g, "") ||
+              0
+          );
+          const priceB2 = parseFloat(
+            b.current_price?.replace(/[^\d.]/g, "") ||
+              b.price?.replace(/[^\d.]/g, "") ||
+              0
+          );
+          return priceB2 - priceA2;
+        default:
+          return 0;
+      }
+    });
+
+    const transformedProducts = filtered.map((product) => ({
+      id: product.id || product.product_id || product._id,
+      name: (product.name || "").toUpperCase() || "PRODUCT NAME",
+      collection: currentCollection?.name?.toUpperCase() || "COLLECTION",
+      oldPrice: (() => {
+        if (product.original_price && product.current_price) {
+          const cleaned = product.original_price
+            .toString()
+            .replace(/[^\d.]/g, "");
+          const parsed = parseFloat(cleaned);
+          return !isNaN(parsed) && parsed > 0 ? `₱${parsed.toFixed(2)}` : "";
+        }
+        return "";
+      })(),
+      price: (() => {
+        if (product.current_price) {
+          const cleaned = product.current_price
+            .toString()
+            .replace(/[^\d.]/g, "");
+          const parsed = parseFloat(cleaned);
+          return !isNaN(parsed) && parsed > 0 ? `₱${parsed.toFixed(2)}` : "";
+        }
+        if (product.price) {
+          const cleaned = product.price.toString().replace(/[^\d.]/g, "");
+          const parsed = parseFloat(cleaned);
+          return !isNaN(parsed) && parsed > 0 ? `₱${parsed.toFixed(2)}` : "";
+        }
+        if (product.original_price && !product.current_price) {
+          const cleaned = product.original_price
+            .toString()
+            .replace(/[^\d.]/g, "");
+          const parsed = parseFloat(cleaned);
+          return !isNaN(parsed) && parsed > 0 ? `₱${parsed.toFixed(2)}` : "";
+        }
+        return "";
+      })(),
+      images: Array.isArray(product.images)
+          ? product.images
+        : typeof product.images === "string" && product.images
+            ? [product.images]
+            : [],
+      sku: product.sku,
+      description: product.description,
+      stock: product.stock,
+      size: product.size,
+      category: product.category?.name || product.category || null,
+      category_id: product.category_id || null,
+    }));
+
+    // If no products after filtering, show all products as fallback
+    if (transformedProducts.length === 0 && sourceProducts.length > 0) {
+      const fallbackProducts = sourceProducts.map((product) => ({
+        id: product.id || product.product_id || product._id,
+        name: (product.name || "").toUpperCase() || "PRODUCT NAME",
+        collection: currentCollection?.name?.toUpperCase() || "COLLECTION",
+        oldPrice: (() => {
+          if (product.original_price && product.current_price) {
+            const cleaned = product.original_price
+              .toString()
+              .replace(/[^\d.]/g, "");
+            const parsed = parseFloat(cleaned);
+            return !isNaN(parsed) && parsed > 0 ? `₱${parsed.toFixed(2)}` : "";
+          }
+          return "";
+        })(),
+        price: (() => {
+          if (product.current_price) {
+            const cleaned = product.current_price
+              .toString()
+              .replace(/[^\d.]/g, "");
+            const parsed = parseFloat(cleaned);
+            return !isNaN(parsed) && parsed > 0 ? `₱${parsed.toFixed(2)}` : "";
+          }
+          if (product.price) {
+            const cleaned = product.price.toString().replace(/[^\d.]/g, "");
+            const parsed = parseFloat(cleaned);
+            return !isNaN(parsed) && parsed > 0 ? `₱${parsed.toFixed(2)}` : "";
+          }
+          if (product.original_price && !product.current_price) {
+            const cleaned = product.original_price
+              .toString()
+              .replace(/[^\d.]/g, "");
+            const parsed = parseFloat(cleaned);
+            return !isNaN(parsed) && parsed > 0 ? `₱${parsed.toFixed(2)}` : "";
+          }
+          return "";
+        })(),
+        images: Array.isArray(product.images)
+            ? product.images
+          : typeof product.images === "string" && product.images
+              ? [product.images]
+              : [],
+        sku: product.sku,
+        description: product.description,
+        stock: product.stock,
+        size: product.size,
+        category: product.category?.name || product.category || null,
+        category_id: product.category_id || null,
+      }));
+      setFilteredProducts(fallbackProducts);
+    } else {
+      setFilteredProducts(transformedProducts);
+    }
+  };
+
+  useEffect(() => {
+    if (rawProducts.length > 0 || collectionProducts.length > 0) {
+      applyFilters();
+    }
+  }, [
+    rawProducts,
+    collectionProducts,
+    collectionValue,
+    categoryValue,
+    sortValue,
+    minPrice,
+    maxPrice,
+  ]);
+
+
+  useEffect(() => {
+    if (rawProducts.length > 0 || collectionProducts.length > 0) {
+      applyFilters();
+    } else {
+      setFilteredProducts([]);
+    }
+  }, [rawProducts, collectionProducts]);
+
+
   useEffect(() => {
     const loadCollectionData = async () => {
       setLoading(true);
       try {
-        console.log("Loading collection data for slug:", collectionSlug);
-
         let collectionsData = collections;
         if (!collectionsData || collectionsData.length === 0) {
           collectionsData = await fetchAllCollections();
@@ -206,16 +416,16 @@ const CollectionPage = () => {
           });
 
           if (foundCollection) {
-            console.log("Found collection:", foundCollection);
             setCurrentCollection(foundCollection);
-            setCollectionValue(collectionSlug);
+            setCollectionValue(
+              foundCollection.collection_id || foundCollection.id
+            );
 
-            // Load collection content (hero images, promotional content)
+           
             await loadCollectionContent(foundCollection.name);
 
-            // Load products for this collection
             await loadCollectionProducts(
-              foundCollection.id,
+              foundCollection.collection_id || foundCollection.id,
               foundCollection.name
             );
           } else {
@@ -223,12 +433,14 @@ const CollectionPage = () => {
 
             const fallbackCollection = {
               id: null,
+              collection_id: null,
               name: collectionSlug
                 .replace(/-/g, " ")
                 .replace(/\b\w/g, (l) => l.toUpperCase()),
               collection_image: null,
             };
             setCurrentCollection(fallbackCollection);
+            setCollectionValue("none"); 
 
             await loadCollectionContent(fallbackCollection.name);
 
@@ -239,12 +451,14 @@ const CollectionPage = () => {
 
           const fallbackCollection = {
             id: null,
+            collection_id: null,
             name: collectionSlug
               .replace(/-/g, " ")
               .replace(/\b\w/g, (l) => l.toUpperCase()),
             collection_image: null,
           };
           setCurrentCollection(fallbackCollection);
+          setCollectionValue("none"); 
 
           await loadCollectionContent(fallbackCollection.name);
 
@@ -252,20 +466,19 @@ const CollectionPage = () => {
         }
       } catch (error) {
         console.error("Error loading collection data:", error);
-        // Use fallback data on error
+
         const fallbackCollection = {
           id: null,
+          collection_id: null,
           name: collectionSlug
             .replace(/-/g, " ")
             .replace(/\b\w/g, (l) => l.toUpperCase()),
           collection_image: null,
         };
         setCurrentCollection(fallbackCollection);
+        setCollectionValue("none"); 
 
-       
         await loadCollectionContent(fallbackCollection.name);
-
-        
         await loadCollectionProducts(null, fallbackCollection.name);
       } finally {
         setLoading(false);
@@ -277,7 +490,7 @@ const CollectionPage = () => {
     }
   }, [collectionSlug, collections, fetchAllCollections]);
 
-  // Load collection content (promotional section data only - hero images, title, description)
+
   const loadCollectionContent = async (collectionName) => {
     try {
       const slug = collectionName
@@ -289,18 +502,14 @@ const CollectionPage = () => {
         "http://localhost:3000/content/collection/"
       }${slug}`;
 
-      console.log("Fetching collection content from:", apiUrl);
       const response = await fetch(apiUrl);
       if (response.ok) {
         const contentData = await response.json();
-        console.log("Loaded collection content:", contentData);
-
         
         let promoImages = contentData.promo_images;
         if (typeof promoImages === "string") {
           try {
             promoImages = JSON.parse(promoImages);
-            console.log("Parsed promo_images from string:", promoImages);
           } catch (e) {
             console.error("Failed to parse promo_images:", e);
             promoImages = [];
@@ -312,107 +521,243 @@ const CollectionPage = () => {
         if (typeof collectionImages === "string") {
           try {
             collectionImages = JSON.parse(collectionImages);
-            console.log(
-              "Parsed collection_image from string:",
-              collectionImages
-            );
           } catch (e) {
             console.error("Failed to parse collection_image:", e);
             collectionImages = [];
           }
         }
 
-        // Update the content data with parsed arrays
+   
         const parsedContentData = {
           ...contentData,
           promo_images: promoImages,
           collection_image: collectionImages,
         };
-
-        console.log("Setting parsed collection content:", parsedContentData);
+  
         setCollectionContent(parsedContentData);
       } else {
-        console.log("No collection content found");
         setCollectionContent(null);
       }
     } catch (error) {
-      console.error("Error loading collection content:", error);
       setCollectionContent(null);
+    }
+  };
+  
+  const loadCollectionProducts = async (collectionId, collectionName) => {
+    try {
+      let fetched = [];
+      console.debug("[CollectionPage] Using collectionId:", collectionId);
+      console.debug("[CollectionPage] Collection name:", collectionName);
+      console.debug(
+        "[CollectionPage] fetchProductsByCollection function:",
+        fetchProductsByCollection
+      );
+      
+      if (collectionId && fetchProductsByCollection) {
+        try {
+          fetched = await fetchProductsByCollection(collectionId);
+          
+           
+          if (fetched && fetched.length > 0) {
+          } else {
+          }
+        } catch (error) {
+          console.error(
+            `Error fetching products for collection ${collectionId}:`,
+            error
+          );
+          fetched = [];
+        }
+      } else {
+        if (contextFetchAllProducts) {
+          await contextFetchAllProducts();
+          fetched = Array.isArray(products) ? products : [];
+          console.debug(
+            "[CollectionPage] fetchAllProducts fallback result:",
+            fetched
+          );
+          console.debug("[CollectionPage] All products count:", fetched.length);
+        }
+      }
+
+
+      if (
+        (!fetched || fetched.length === 0) &&
+        collectionName &&
+        collectionId
+      ) {
+        if (contextFetchAllProducts) {
+          await contextFetchAllProducts();
+          fetched = Array.isArray(products) ? products : [];
+        }
+      } else if (!fetched || fetched.length === 0) {
+        fetched = [];
+      }
+
+       
+      let filtered = fetched;
+      if (
+        collectionName &&
+        (!collectionId || (filtered && filtered.length === 0))
+      ) {
+        const nameLower = collectionName.toString().toLowerCase();
+        filtered = fetched.filter((product) => {
+
+          const productCollection = product.collection;
+          const productCollectionName =
+            product.collection?.name || product.collection_name || "";
+          const productCollectionId =
+            product.collection_id || product.collection?.collection_id;
+
+      
+          if (
+            collectionId &&
+            productCollectionId &&
+            productCollectionId === collectionId
+          ) {
+            return true;
+          }
+          
+   
+          const collectionNameLower = productCollectionName
+            .toString()
+            .toLowerCase();
+          if (collectionNameLower === nameLower) {
+            return true;
+          }
+          
+        
+          if (
+            collectionNameLower.includes(nameLower) ||
+            nameLower.includes(collectionNameLower)
+          ) {
+            return true;
+          }
+  
+          return false;
+        });
+      }
+
+      if (filtered && filtered.length > 0) {
+       
+        const validProducts = filtered.filter((product) => {
+          const productCollectionId =
+            product.collection_id || product.collection?.collection_id;
+          const productCollectionName =
+            product.collection?.name || product.collection_name || "";
+          const collectionNameLower = productCollectionName
+            .toString()
+            .toLowerCase();
+          const targetNameLower =
+            collectionName?.toString().toLowerCase() || "";
+          
+          // Check by collection ID first (most reliable)
+          if (
+            collectionId &&
+            productCollectionId &&
+            productCollectionId === collectionId
+          ) {
+            return true;
+          }
+          
+          // Check by collection name
+          if (
+            collectionNameLower === targetNameLower ||
+              collectionNameLower.includes(targetNameLower) || 
+            targetNameLower.includes(collectionNameLower)
+          ) {
+            return true;
+          }
+          
+          return false;
+        });
+        
+        if (validProducts.length === 0) {
+          setRawProducts([]);
+          setCollectionProducts([]);
+          return;
+        }
+        
+   
+        setRawProducts(validProducts);
+        
+        const transformedProducts = validProducts.map((product) => ({
+          id: product.id || product.product_id || product._id,
+          name: (product.name || "").toUpperCase() || "PRODUCT NAME",
+          collection: (
+            product.collection?.name ||
+            product.collection ||
+            collectionName ||
+            "COLLECTION"
+          ).toUpperCase(),
+          oldPrice: (() => {
+            if (product.original_price && product.current_price) {
+              const cleaned = product.original_price
+                .toString()
+                .replace(/[^\d.]/g, "");
+              const parsed = parseFloat(cleaned);
+              return !isNaN(parsed) && parsed > 0
+                ? `₱${parsed.toFixed(2)}`
+                : "";
+            }
+            return "";
+          })(),
+          price: (() => {
+            if (product.current_price) {
+              const cleaned = product.current_price
+                .toString()
+                .replace(/[^\d.]/g, "");
+              const parsed = parseFloat(cleaned);
+              return !isNaN(parsed) && parsed > 0
+                ? `₱${parsed.toFixed(2)}`
+                : "";
+            }
+            if (product.price) {
+              const cleaned = product.price.toString().replace(/[^\d.]/g, "");
+              const parsed = parseFloat(cleaned);
+              return !isNaN(parsed) && parsed > 0
+                ? `₱${parsed.toFixed(2)}`
+                : "";
+            }
+            if (product.original_price && !product.current_price) {
+              const cleaned = product.original_price
+                .toString()
+                .replace(/[^\d.]/g, "");
+              const parsed = parseFloat(cleaned);
+              return !isNaN(parsed) && parsed > 0
+                ? `₱${parsed.toFixed(2)}`
+                : "";
+            }
+            return "";
+          })(),
+          images: Array.isArray(product.images)
+              ? product.images
+            : typeof product.images === "string" && product.images
+                ? [product.images]
+                : [],
+          sku: product.sku,
+          description: product.description,
+          stock: product.stock,
+          size: product.size,
+        }));
+        console.debug(
+          "[CollectionPage] mapped products for ProductCard:",
+          transformedProducts
+        );
+        setCollectionProducts(transformedProducts);
+        return;
+      }
+
+      setRawProducts([]);
+      setCollectionProducts([]);
+    } catch (error) {
+      console.error("Error loading products:", error);
+      setRawProducts([]);
+      setCollectionProducts([]);
     }
   };
 
   
-  const loadCollectionProducts = async (collectionId, collectionName) => {
-    try {
-      const apiUrl = `${
-        import.meta.env.VITE_PRODUCT_API
-      }`;
-
-      console.log("Fetching products from:", apiUrl);
-      const response = await fetch(apiUrl);
-      if (response.ok) {
-        const allProducts = await response.json();
-        console.log("Loaded all products:", allProducts);
-
-        if (collectionId) {
-          // Filter products by collection_id
-          const collectionProducts = allProducts.filter(
-            (product) => product.collection_id === collectionId
-          );
-          console.log("Filtered collection products:", collectionProducts);
-
-          if (collectionProducts.length > 0) {
-            const transformedProducts = collectionProducts.map((product) => ({
-              id: product.id,
-              name: product.name?.toUpperCase() || "PRODUCT NAME",
-              collection: collectionName?.toUpperCase() || "COLLECTION",
-              oldPrice: product.original_price
-                ? `₱${product.original_price.toFixed(2)}`
-                : "₱790.00",
-              price: product.current_price
-                ? `₱${product.current_price.toFixed(2)}`
-                : "₱711.00",
-              images:
-                product.images && Array.isArray(product.images)
-                  ? product.images
-                  : [fallbackProducts[0].images[0]],
-              sku: product.sku,
-              description: product.description,
-              stock: product.stock,
-              size: product.size,
-            }));
-
-            setCollectionProducts(transformedProducts);
-            return;
-          }
-        }
-
-        // No collection ID or no products found - use fallback
-        console.log("No products found for this collection, using fallback");
-        const updatedProducts = fallbackProducts.map((product) => ({
-          ...product,
-          collection: collectionName?.toUpperCase() || "DYNAMIC COLLECTION",
-        }));
-        setCollectionProducts(updatedProducts);
-      } else {
-        console.log("Failed to fetch products, using fallback");
-        const updatedProducts = fallbackProducts.map((product) => ({
-          ...product,
-          collection: collectionName?.toUpperCase() || "DYNAMIC COLLECTION",
-        }));
-        setCollectionProducts(updatedProducts);
-      }
-    } catch (error) {
-      console.error("Error loading products:", error);
-      const updatedProducts = fallbackProducts.map((product) => ({
-        ...product,
-        collection: collectionName?.toUpperCase() || "DYNAMIC COLLECTION",
-      }));
-      setCollectionProducts(updatedProducts);
-    }
-  };
-
-  // Get hero images (from collection content or fallback)
   const getHeroImages = () => {
     if (
       collectionContent?.collection_image &&
@@ -427,7 +772,7 @@ const CollectionPage = () => {
     return fallbackHeroImages;
   };
 
-  // Get promo image (first promo image or fallback)
+ 
   const getPromoImage = () => {
     if (
       collectionContent?.promo_images &&
@@ -439,7 +784,7 @@ const CollectionPage = () => {
     return KidsCollHighNeckCrop; // fallback image
   };
 
-  // Get collection display name
+
   const getCollectionName = () => {
     return (
       currentCollection?.name?.toUpperCase() ||
@@ -447,7 +792,7 @@ const CollectionPage = () => {
     );
   };
 
-  // Event handlers
+ 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (!event.target.closest(".custom-dropdown")) {
@@ -481,7 +826,8 @@ const CollectionPage = () => {
   };
 
   // Carousel logic
-  const topPicksProducts = collectionProducts.slice(0, 8);
+
+  const topPicksProducts = [];
   const canPrev = carouselIndex > 0;
   const canNext = carouselIndex < topPicksProducts.length - maxVisible;
 
@@ -553,568 +899,105 @@ const CollectionPage = () => {
           <h2 className="text-4xl sm:text-5xl font-bold bebas mb-0 flex-shrink-0">
             {collectionName}
           </h2>
-          {/* Filters container */}
-          <div className="hidden sm:flex flex-row flex-wrap items-center gap-3 flex-1 min-w-0 justify-end">
-            {/* Collection */}
-            <div className="flex flex-col w-56 min-w-[14rem] ml-20">
-              <label className="text-xl bebas mb-1 uppercase tracking-wide">
-                Collection Name
-              </label>
-              <CustomDropdown
-                options={collectionOptions}
-                value={collectionValue}
-                onChange={setCollectionValue}
-                placeholder="Select a Collection..."
-                isOpen={openDropdown === "collection"}
-                onToggle={() =>
-                  setOpenDropdown(
-                    openDropdown === "collection" ? null : "collection"
-                  )
-                }
-              />
-            </div>
-            {/* Category */}
-            <div className="flex flex-col w-50 min-w-[12rem]">
-              <label className="text-xl bebas mb-1 uppercase tracking-wide">
-                Category
-              </label>
-              <CustomDropdown
-                options={categoryOptions}
-                value={categoryValue}
-                onChange={setCategoryValue}
-                placeholder="Select a category...."
-                isOpen={openDropdown === "category"}
-                onToggle={() =>
-                  setOpenDropdown(
-                    openDropdown === "category" ? null : "category"
-                  )
-                }
-              />
-            </div>
-            {/* Sort */}
-            <div className="flex flex-col w-50 min-w-[12rem]">
-              <label className="text-xl bebas mb-1 uppercase tracking-wide">
-                Sort
-              </label>
-              <CustomDropdown
-                options={sortOptions}
-                value={sortValue}
-                onChange={setSortValue}
-                isOpen={openDropdown === "sort"}
-                onToggle={() =>
-                  setOpenDropdown(openDropdown === "sort" ? null : "sort")
-                }
-              />
-            </div>
-            {/* Price Range */}
-            <div className="flex flex-col w-full max-w-[200px]">
-              <label className="text-xl bebas -mb-1 uppercase tracking-wide">
-                Price
-              </label>
-              <div className="relative w-full h-8 flex items-center">
-                {/* Track and sliders */}
-                <div className="absolute top-1/2 left-0 w-full h-[3px] bg-[#FFF7DC]/30 rounded-full -translate-y-1/2"></div>
-                <div
-                  className="absolute top-1/2 h-[3px] bg-[#FFF7DC] rounded-full -translate-y-1/2"
-                  style={{
-                    left: `${((minPrice - 300) / (1200 - 300)) * 100}%`,
-                    right: `${100 - ((maxPrice - 300) / (1200 - 300)) * 100}%`,
-                  }}
-                ></div>
-                <input
-                  type="range"
-                  min="300"
-                  max="1200"
-                  step="50"
-                  value={minPrice}
-                  onChange={(e) =>
-                    setMinPrice(Math.min(Number(e.target.value), maxPrice - 50))
-                  }
-                  className="absolute w-full appearance-none bg-transparent pointer-events-none
-                    [&::-webkit-slider-thumb]:appearance-none
-                    [&::-webkit-slider-thumb]:h-3
-                    [&::-webkit-slider-thumb]:w-3
-                    [&::-webkit-slider-thumb]:rounded-full
-                    [&::-webkit-slider-thumb]:bg-[#FFF7DC]
-                    [&::-webkit-slider-thumb]:cursor-pointer
-                    [&::-webkit-slider-thumb]:relative
-                    [&::-webkit-slider-thumb]:z-20"
-                  style={{ pointerEvents: "auto" }}
-                />
-                <input
-                  type="range"
-                  min="300"
-                  max="1200"
-                  step="50"
-                  value={maxPrice}
-                  onChange={(e) =>
-                    setMaxPrice(Math.max(Number(e.target.value), minPrice + 50))
-                  }
-                  className="absolute w-full appearance-none bg-transparent pointer-events-none
-                    [&::-webkit-slider-thumb]:appearance-none
-                    [&::-webkit-slider-thumb]:h-3
-                    [&::-webkit-slider-thumb]:w-3
-                    [&::-webkit-slider-thumb]:rounded-full
-                    [&::-webkit-slider-thumb]:bg-[#FFF7DC]
-                    [&::-webkit-slider-thumb]:cursor-pointer
-                    [&::-webkit-slider-thumb]:relative
-                    [&::-webkit-slider-thumb]:z-30"
-                  style={{ pointerEvents: "auto" }}
-                />
-              </div>
-              <div className="flex justify-between text-sm avant text-[#FFF7DC]/90 -mt-1">
-                <span>₱{minPrice}</span>
-                <span>₱{maxPrice}</span>
-              </div>
-            </div>
+          
+          {/* FilterComponent */}
+          <FilterComponent
+            collectionOptions={collectionOptions}
+            sortOptions={sortOptions}
+            showCategoryFilter={true}
+            categoryOptions={getCategoryOptions()}
+            collectionValue={collectionValue}
+            categoryValue={categoryValue}
+            sortValue={sortValue}
+            minPrice={minPrice}
+            maxPrice={maxPrice}
+            priceMin={0}
+            priceMax={10000}
+            onCollectionChange={handleCollectionChange}
+            onCategoryChange={setCategoryValue}
+            onSortChange={handleSortChange}
+            onPriceChange={handlePriceChange}
+            mobileFilterOpen={mobileFilterOpen}
+            setMobileFilterOpen={setMobileFilterOpen}
+            showMobileCollection={showMobileCollection}
+            setShowMobileCollection={setShowMobileCollection}
+            showMobileSort={showMobileSort}
+            setShowMobileSort={setShowMobileSort}
+            showMobileCategory={showMobileCategory}
+            setShowMobileCategory={setShowMobileCategory}
+          />
           </div>
-          {/* Mobile Filter Button */}
-          <div className="flex sm:hidden ml-auto">
-            <button
-              onClick={() => setMobileFilterOpen(true)}
-              className="flex items-center gap-2 border border-[#FFF7DC] rounded-md px-4 py-2 bg-[#232323] text-base avant shadow hover:bg-[#373737] transition"
-            >
-              <img src={FilterIcon} alt="Filter" className="w-5 h-5" />
-              Filter
-            </button>
-          </div>
-        </div>
-
-        {/* MOBILE FILTER MODAL */}
-        {mobileFilterOpen && (
-          <div
-            className="fixed bottom-0 left-0 w-full z-50 shadow-2xl rounded-t-[30px] p-6 flex flex-col gap-6 animate-slideUp overflow-y-auto"
-            style={{
-              minHeight: "70vh",
-              backgroundColor: "#FFF7DC",
-              color: "#1F1F21",
-              height: "60vh",
-            }}
-          >
-            <button
-              className="self-end text-2xl focus:outline-none text-[#232323]"
-              onClick={() => setMobileFilterOpen(false)}
-            >
-              &times;
-            </button>
-
-            {/* COLLECTION (Dropdown-like) */}
-            <div>
-              <button
-                className="w-full flex justify-between items-center cursor-pointer select-none"
-                onClick={() => {
-                  setShowMobileCollection((prev) => !prev);
-                  setShowMobileSort(false);
-                  setShowMobileCategory(false);
-                }}
-              >
-                <span
-                  className="text-2xl bebas uppercase tracking-wide"
-                  style={{ textShadow: "0 2px 6px #0001" }}
-                >
-                  COLLECTION
-                </span>
-                <img
-                  src={
-                    showMobileCollection ? DropUpIconBlack : DropDownIconBlack
-                  }
-                  alt="dropdown"
-                  className="ml-2 w-4 h-4"
-                />
-              </button>
-              {showMobileCollection && (
-                <div className="mt-4 space-y-2">
-                  {collectionOptions
-                    .filter((x) => x.value !== "none")
-                    .map((option) => (
-                      <div
-                        key={option.value}
-                        onClick={() => {
-                          setCollectionValue(option.value);
-                          setShowMobileCollection(false);
-                        }}
-                        className={`cursor-pointer avant text-[19px] tracking-wide ${
-                          collectionValue === option.value
-                            ? "font-bold underline"
-                            : ""
-                        }`}
-                        style={{ color: "#232323" }}
-                      >
-                        {option.label}
-                      </div>
-                    ))}
-                </div>
-              )}
-            </div>
-
-            <hr style={{ borderColor: "#23232340" }} className="my-2" />
-
-            {/* CATEGORY (Dropdown-like) */}
-            <div>
-              <button
-                className="w-full flex justify-between items-center cursor-pointer select-none"
-                onClick={() => {
-                  setShowMobileCategory((prev) => !prev);
-                  setShowMobileCollection(false);
-                  setShowMobileSort(false);
-                }}
-              >
-                <span
-                  className="text-2xl bebas uppercase tracking-wide"
-                  style={{ textShadow: "0 2px 6px #0001" }}
-                >
-                  CATEGORY
-                </span>
-                <img
-                  src={showMobileCategory ? DropUpIconBlack : DropDownIconBlack}
-                  alt="dropdown"
-                  className="ml-2 w-4 h-4"
-                />
-              </button>
-              {showMobileCategory && (
-                <div className="mt-4 space-y-2">
-                  {categoryOptions
-                    .filter((x) => x.value !== "none")
-                    .map((option) => (
-                      <div
-                        key={option.value}
-                        onClick={() => {
-                          setCategoryValue(option.value);
-                          setShowMobileCategory(false);
-                        }}
-                        className={`cursor-pointer avant text-[19px] tracking-wide ${
-                          categoryValue === option.value
-                            ? "font-bold underline"
-                            : ""
-                        }`}
-                        style={{ color: "#232323" }}
-                      >
-                        {option.label}
-                      </div>
-                    ))}
-                </div>
-              )}
-            </div>
-
-            <hr style={{ borderColor: "#23232340" }} className="my-2" />
-
-            {/* SORT (Dropdown-like) */}
-            <div>
-              <button
-                className="w-full flex justify-between items-center cursor-pointer select-none"
-                onClick={() => {
-                  setShowMobileSort((prev) => !prev);
-                  setShowMobileCollection(false);
-                  setShowMobileCategory(false);
-                }}
-              >
-                <span
-                  className="text-2xl bebas uppercase tracking-wide"
-                  style={{ textShadow: "0 2px 6px #0001" }}
-                >
-                  SORT
-                </span>
-                <img
-                  src={showMobileSort ? DropUpIconBlack : DropDownIconBlack}
-                  alt="dropdown"
-                  className="ml-2 w-4 h-4"
-                />
-              </button>
-              {showMobileSort && (
-                <div className="mt-4 space-y-2">
-                  {sortOptions.map((option) => (
-                    <div
-                      key={option.value}
-                      onClick={() => {
-                        setSortValue(option.value);
-                        setShowMobileSort(false);
-                      }}
-                      className={`cursor-pointer avant text-[19px] tracking-wide ${
-                        sortValue === option.value ? "font-bold underline" : ""
-                      }`}
-                      style={{ color: "#232323" }}
-                    >
-                      {option.label}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <hr style={{ borderColor: "#23232340" }} className="my-2" />
-
-            {/* PRICE (No Dropdown) */}
-            <div>
-              <div
-                className="text-2xl bebas uppercase tracking-wide mb-3"
-                style={{ color: "#232323", textShadow: "0 2px 6px #0001" }}
-              >
-                PRICE
-              </div>
-              <div className="relative w-full h-8 flex items-center">
-                <div className="absolute top-1/2 left-0 w-full h-[3px] bg-[#2323232a] rounded-full -translate-y-1/2"></div>
-                <div
-                  className="absolute top-1/2 h-[3px] bg-[#232] rounded-full -translate-y-1/2"
-                  style={{
-                    left: `${((minPrice - 300) / (1200 - 300)) * 100}%`,
-                    right: `${100 - ((maxPrice - 300) / (1200 - 300)) * 100}%`,
-                  }}
-                ></div>
-                <input
-                  type="range"
-                  min="300"
-                  max="1200"
-                  step="50"
-                  value={minPrice}
-                  onChange={(e) =>
-                    setMinPrice(Math.min(Number(e.target.value), maxPrice - 50))
-                  }
-                  className="absolute w-full appearance-none bg-transparent pointer-events-none
-                   [&::-webkit-slider-thumb]:appearance-none
-                   [&::-webkit-slider-thumb]:h-4
-                   [&::-webkit-slider-thumb]:w-4
-                   [&::-webkit-slider-thumb]:rounded-full
-                   [&::-webkit-slider-thumb]:bg-[#1F1F21]
-                   [&::-webkit-slider-thumb]:cursor-pointer
-                   [&::-webkit-slider-thumb]:relative
-                   [&::-webkit-slider-thumb]:z-20"
-                  style={{ pointerEvents: "auto" }}
-                />
-                <input
-                  type="range"
-                  min="300"
-                  max="1200"
-                  step="50"
-                  value={maxPrice}
-                  onChange={(e) =>
-                    setMaxPrice(Math.max(Number(e.target.value), minPrice + 50))
-                  }
-                  className="absolute w-full appearance-none bg-transparent pointer-events-none
-                     [&::-webkit-slider-thumb]:appearance-none
-                     [&::-webkit-slider-thumb]:h-4
-                     [&::-webkit-slider-thumb]:w-4
-                     [&::-webkit-slider-thumb]:rounded-full
-                     [&::-webkit-slider-thumb]:bg-[#1F1F21]
-                     [&::-webkit-slider-thumb]:cursor-pointer
-                     [&::-webkit-slider-thumb]:relative
-                     [&::-webkit-slider-thumb]:z-30"
-                  style={{ pointerEvents: "auto" }}
-                />
-              </div>
-              <div className="flex justify-between text-base avant text-[#1F1F21] mt-1">
-                <span>₱{minPrice}</span>
-                <span>₱{maxPrice}</span>
-              </div>
-            </div>
-            <button
-              className="-mt-2 w-full bg-[#1F1F21] text-[#FFF7DC] avantbold rounded-md py-2 text-lg tracking-wide "
-              onClick={() => setMobileFilterOpen(false)}
-            >
-              APPLY FILTERS
-            </button>
-          </div>
-        )}
+          
+        {/* Mobile filter modal is now handled by FilterComponent */}
       </section>
 
       {/* ===== ALL PRODUCTS GRID ===== */}
       <section className="bg-[#1f1f21] pt-1 pb-14 px-4">
         <div className="max-w-7xl mx-auto px-0">
-          {/* MOBILE Version */}
-          <div className="grid grid-cols-2 gap-4 md:hidden items-stretch">
-            {collectionProducts.map((item) => {
-              const mobileCollection = item.collection.replace(
-                / COLLECTION$/i,
-                ""
-              );
-              return (
-                <div
-                  key={item.id}
-                  className="relative bg-[#222] rounded-none overflow-hidden drop-shadow-[0_10px_15px_rgba(0,0,0,1)] cursor-pointer flex flex-col items-center w-full"
-                >
-                  {/* Product Image */}
-                  <div className="relative w-full h-[185px] flex items-center justify-center overflow-hidden bg-black">
-                    {/* Overlay Icons */}
-                    <div className="absolute top-2 left-2 right-2 flex justify-between items-center z-10">
-                      <img
-                        src={TryOnIcon}
-                        alt="Try On"
-                        className="w-4 h-4 cursor-pointer hover:opacity-80"
-                        draggable={false}
-                      />
-                      <img
-                        src={AddFavorite}
-                        alt="Favorite"
-                        className="w-4 h-4 cursor-pointer hover:opacity-80"
-                        draggable={false}
-                      />
-                    </div>
-                    <img
-                      src={item.images[0]}
-                      alt={item.name}
-                      className="object-cover w-full h-full rounded-none"
-                      draggable={false}
-                    />
-                  </div>
-                  {/* Card Info */}
-                  <div
-                    className="flex flex-col items-center py-1 px-1"
-                    style={{
-                      width: "100%",
-                      height: "50px",
-                      background:
-                        "linear-gradient(90deg, #000000 46%, #666666 100%)",
-                    }}
-                  >
-                    <span className="uppercase text-[#FFF7DC] tracking-widest text-[10px] avantbold leading-tight truncate">
-                      {item.name}
-                    </span>
-                    <span className="text-[10px] tracking-widest text-[#FFF7DC] avant truncate mt-[2px]">
-                      {mobileCollection}
-                    </span>
-                    <div className="flex justify-center items-center gap-1 text-[10px] avantbold mt-1">
-                      <span className="line-through text-[#FFF7DC] opacity-50 truncate">
-                        {item.oldPrice}
-                      </span>
-                      <span className="text-[#FFF7DC] truncate">
-                        {item.price}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          {/* Loading State */}
+          {loading && (
+            <div className="flex justify-center items-center py-20">
+              <div className="text-[#FFF7DC] text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FFF7DC] mx-auto mb-4"></div>
+                <p className="avant text-lg">Loading products...</p>
+              </div>
+            </div>
+          )}
 
-          {/* DESKTOP/TABLET Version */}
-          <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10">
-            {collectionProducts.map((item) => {
-              const isHovered = hoveredCardId === item.id;
-              const currentImageIndex = hoveredImageIndexes[item.id] ?? 0;
-              return (
-                <div
-                  key={item.id}
-                  onMouseEnter={() => {
-                    setHoveredCardId(item.id);
-                    setHoveredImageIndexes((prev) => ({
-                      ...prev,
-                      [item.id]: 0,
-                    }));
-                  }}
-                  onMouseLeave={() => {
-                    setHoveredCardId(null);
-                    setHoveredButtonId(null);
-                  }}
-                  className={`relative bg-[#222] rounded-none overflow-hidden drop-shadow-[0_10px_15px_rgba(0,0,0,1)] group transition-all transform ${
-                    isHovered ? "scale-105 z-10" : ""
-                  }`}
-                  style={{
-                    height: isHovered ? "440px" : "375px",
-                    transition: "height 0.3s ease, transform 0.3s ease",
-                  }}
-                >
-                  {/* Top icons */}
-                  <div className="w-full flex justify-between items-center px-6 pt-3 absolute top-0 left-0 z-10">
-                    <img
-                      src={TryOnIcon}
-                      alt="Try On"
-                      className="w-6 h-6 cursor-pointer hover:opacity-80"
-                      draggable={false}
+          {/* Empty State */}
+          {!loading && filteredProducts.length === 0 && (
+            <div className="flex justify-center items-center py-20">
+              <div className="text-[#FFF7DC] text-center">
+                <p className="avant text-lg mb-2">No products found</p>
+                <p className="avant text-sm opacity-70">
+                  This collection doesn't have any products yet.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Products Grid */}
+          {!loading && filteredProducts.length > 0 && (
+            <>
+              {/* MOBILE Version */}
+              <div className="grid grid-cols-2 gap-4 md:hidden items-stretch">
+                {filteredProducts.map((item) => (
+                  <ProductCard key={item.id} item={item} layout="mobile" />
+                ))}
+              </div>
+
+              {/* DESKTOP/TABLET Version */}
+              <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10">
+                {filteredProducts.map((item) => {
+                  const isHovered = hoveredCardId === item.id;
+                  const currentImageIndex = hoveredImageIndexes[item.id] ?? 0;
+                  return (
+                    <ProductCard
+                      key={item.id}
+                      item={item}
+                      layout="desktop"
+                      isHovered={isHovered}
+                      currentImageIndex={currentImageIndex}
+                      onMouseEnter={() => {
+                        setHoveredCardId(item.id);
+                        setHoveredImageIndexes((prev) => ({
+                          ...prev,
+                          [item.id]: 0,
+                        }));
+                      }}
+                      onMouseLeave={() => {
+                        setHoveredCardId(null);
+                        setHoveredButtonId(null);
+                      }}
+                      onImageChange={handleImageChange}
+                      hoveredButtonId={hoveredButtonId}
+                      setHoveredButtonId={setHoveredButtonId}
                     />
-                    <img
-                      src={AddFavorite}
-                      alt="Favorite"
-                      className="w-6 h-6 cursor-pointer hover:opacity-80"
-                      draggable={false}
-                    />
-                  </div>
-                  {/* Product Image */}
-                  <div className="relative w-full h-[300px] flex items-center justify-center overflow-hidden bg-black">
-                    <img
-                      src={
-                        isHovered
-                          ? item.images[currentImageIndex]
-                          : item.images[0]
-                      }
-                      alt={item.name}
-                      className="object-cover w-full h-full rounded-none transition-all duration-300"
-                      draggable={false}
-                    />
-                    {isHovered && item.images.length > 1 && (
-                      <>
-                        <img
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleImageChange(item.id, "prev");
-                          }}
-                          src={PrevIcon}
-                          alt="Previous"
-                          className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 cursor-pointer hover:opacity-80"
-                          draggable={false}
-                        />
-                        <img
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleImageChange(item.id, "next");
-                          }}
-                          src={NextIcon}
-                          alt="Next"
-                          className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 cursor-pointer hover:opacity-80"
-                          draggable={false}
-                        />
-                      </>
-                    )}
-                  </div>
-                  {/* Card Info + Button */}
-                  <div
-                    style={{
-                      background:
-                        "linear-gradient(90deg, #000000 46%, #666666 100%)",
-                    }}
-                    className="relative py-2 px-2 text-center flex flex-col items-center rounded-none min-h-[140px]"
-                  >
-                    <span className="uppercase text-[#FFF7DC] tracking-widest text-[13px] avantbold">
-                      {item.name}
-                    </span>
-                    <span className="text-[13px] tracking-widest text-[#FFF7DC] avant">
-                      {item.collection}
-                    </span>
-                    <div className="flex justify-center items-center gap-2 text-[14px] avantbold mt-1">
-                      <span className="line-through text-[#FFF7DC] opacity-50">
-                        {item.oldPrice}
-                      </span>
-                      <span className="text-[#FFF7DC]">{item.price}</span>
-                    </div>
-                    {isHovered && (
-                      <button
-                        style={{
-                          backgroundColor:
-                            hoveredButtonId === item.id
-                              ? "#FFF7DC"
-                              : "transparent",
-                          color:
-                            hoveredButtonId === item.id ? "#1F1F21" : "#FFF7DC",
-                          outline: "1px solid #FFF7DC",
-                          borderRadius: 5,
-                        }}
-                        onMouseEnter={() => setHoveredButtonId(item.id)}
-                        onMouseLeave={() => setHoveredButtonId(null)}
-                        className="mt-4 w-full flex items-center justify-center gap-2 border border-[#FFF7DC] py-2 px-4 font-bold text-md tracking-wide rounded-5 transition-all duration-300"
-                      >
-                        <img
-                          src={
-                            hoveredButtonId === item.id ? AddBagHover : AddBag
-                          }
-                          alt="Bag Icon"
-                          className="w-4 h-4"
-                        />
-                        ADD TO BAG
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
         </div>
       </section>
 
