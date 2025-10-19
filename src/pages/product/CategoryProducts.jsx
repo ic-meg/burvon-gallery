@@ -1,21 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Layout from "../../components/Layout";
+import ProductCard from "../../components/ProductCard";
+import FilterComponent from "../../components/FilterComponent";
 import { useCategory } from "../../contexts/CategoryContext";
 import { useProduct } from "../../contexts/ProductContext";
+import { useCollection } from "../../contexts/CollectionContext";
 
 import {
-  DropDownIcon,
-  DropDownIconBlack,
-  DropUpIconBlack,
-  DropUpIcon,
-  TryOnIcon,
-  AddFavorite,
-  AddBag,
-  AddBagHover,
   NextIcon,
   PrevIcon,
-  FilterIcon,
 } from "../../assets/index.js";
 
 const getDynamicHeroImages = (categoryData) => {
@@ -70,73 +64,11 @@ const getDynamicHeroImages = (categoryData) => {
   ];
 };
 
-const collectionOptions = [
-  { label: "Select a Collection...", value: "none" },
-  { label: "COLLECTION LABEL 1", value: "collection1" },
-  { label: "COLLECTION LABEL 2", value: "collection2" },
-  { label: "COLLECTION LABEL 3", value: "collection3" },
-];
-
 const sortOptions = [
   { label: "Latest", value: "latest" },
   { label: "Price: Low to High", value: "priceLowHigh" },
   { label: "Price: High to Low", value: "priceHighLow" },
 ];
-
-const CustomDropdown = ({
-  options,
-  value,
-  onChange,
-  placeholder = "Select...",
-  isOpen,
-  onToggle,
-}) => {
-  return (
-    <div className="custom-dropdown relative w-full">
-      <button
-        type="button"
-        onClick={onToggle}
-        className="avant w-full bg-transparent border border-[#FFF7DC]/70 text-[#FFF7DC] px-4 py-2 rounded-md flex justify-between items-center focus:outline-none focus:border-[#FFF7DC]"
-        aria-haspopup="listbox"
-        aria-expanded={isOpen}
-      >
-        {value && value !== "none"
-          ? options.find((o) => o.value === value)?.label
-          : placeholder}
-        <img
-          src={isOpen ? DropUpIcon : DropDownIcon}
-          alt="dropdown arrow"
-          className="w-4 h-4 opacity-80 pointer-events-none"
-        />
-      </button>
-      {isOpen && (
-        <ul
-          role="listbox"
-          tabIndex={-1}
-          className="avant absolute top-full left-0 w-full bg-[#181818] border border-[#FFF7DC] rounded-md mt-2 shadow-lg max-h-60 overflow-auto z-50"
-        >
-          {options.map((option) => (
-            <li
-              key={option.value}
-              role="option"
-              aria-selected={value === option.value}
-              onClick={() => {
-                onChange(option.value);
-                onToggle();
-              }}
-              tabIndex={0}
-              className={`px-4 py-2 cursor-pointer select-none hover:bg-[#232323] ${
-                value === option.value ? "bg-[#232323]" : ""
-              }`}
-            >
-              {option.label}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-};
 
 const CategoryProducts = () => {
   const navigate = useNavigate();
@@ -146,20 +78,26 @@ const CategoryProducts = () => {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [collectionValue, setCollectionValue] = useState("none");
   const [sortValue, setSortValue] = useState(sortOptions[0].value);
-  const [minPrice, setMinPrice] = useState(300);
-  const [maxPrice, setMaxPrice] = useState(1200);
+  
+
+  const [minPrice, setMinPrice] = useState(0);
+  const [maxPrice, setMaxPrice] = useState(2000);
   const [hoveredCardId, setHoveredCardId] = useState(null);
   const [hoveredButtonId, setHoveredButtonId] = useState(null);
   const [hoveredImageIndexes, setHoveredImageIndexes] = useState({});
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   const [showMobileCollection, setShowMobileCollection] = useState(false);
   const [showMobileSort, setShowMobileSort] = useState(false);
   const [carouselIndex, setCarouselIndex] = useState(0);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [showMobileCategory, setShowMobileCategory] = useState(false);
 
   const topScrollRef = React.useRef(null);
 
-  const { getCategoryBySlug, fetchCategoryBySlug, hasCategoryData } =
+  const { getCategoryBySlug, fetchCategoryBySlug, hasCategoryData, categories: allCategories } =
     useCategory();
+  const { collections } = useCollection();
   const {
     productsByCategory,
     fetchProductsByCategory,
@@ -174,15 +112,23 @@ const CategoryProducts = () => {
     ? categorySlug.charAt(0).toUpperCase() + categorySlug.slice(1)
     : "Products";
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (!event.target.closest(".custom-dropdown")) {
-        setOpenDropdown(null);
+  const getCollectionOptions = () => {
+    const collections = new Set();
+    formattedProducts.forEach(product => {
+      if (product.collection && product.collection !== "N/A") {
+        collections.add(product.collection);
       }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    });
+    
+    return [
+      { label: "Select a Collection...", value: "none" },
+      ...Array.from(collections).map(collection => ({
+        label: collection,
+        value: collection.toLowerCase()
+      }))
+    ];
+  };
+
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -220,31 +166,162 @@ const CategoryProducts = () => {
   const formatProductData = (product) => {
     if (!product) return null;
 
-    const productName = product.name || "Unnamed Product";
-    const collectionName = product.collection?.name || null;
 
-    return {
+    const productName = product.name || "Unnamed Product";
+    
+    let collectionName = null;
+    if (product.collection_id && collections) {
+      const collection = collections.find(c => c.collection_id === product.collection_id);
+      collectionName = collection?.name || null;
+    }
+    
+    let categoryName = null;
+    
+    if (categoryData && categoryData.category_id === product.category_id) {
+      categoryName = categoryData.title || categoryData.name;
+    } else if (product.category_id && allCategories) {
+      if (Array.isArray(allCategories)) {
+        const category = allCategories.find(c => c.category_id === product.category_id);
+        categoryName = category?.title || category?.name || null;
+      } else {
+        const category = Object.values(allCategories).find(c => c && c.category_id === product.category_id);
+        categoryName = category?.title || category?.name || null;
+      }
+    }
+
+    let oldPrice = '';
+    if (product.original_price) {
+      const cleanedOriginal = product.original_price.toString().replace(/[^\d.]/g, '');
+      const parsedOriginal = parseFloat(cleanedOriginal);
+      if (!isNaN(parsedOriginal) && parsedOriginal > 0) {
+        oldPrice = `₱${parsedOriginal.toFixed(2)}`;
+      }
+    }
+
+    let price = '';
+    if (product.current_price) {
+      const cleanedCurrent = product.current_price.toString().replace(/[^\d.]/g, '');
+      const parsedCurrent = parseFloat(cleanedCurrent);
+      if (!isNaN(parsedCurrent) && parsedCurrent > 0) {
+        price = `₱${parsedCurrent.toFixed(2)}`;
+      }
+    } else if (product.price) {
+      const cleanedPrice = product.price.toString().replace(/[^\d.]/g, '');
+      const parsedPrice = parseFloat(cleanedPrice);
+      if (!isNaN(parsedPrice) && parsedPrice > 0) {
+        price = `₱${parsedPrice.toFixed(2)}`;
+      }
+    } else if (product.original_price && !product.current_price) {
+      const cleanedOriginal = product.original_price.toString().replace(/[^\d.]/g, '');
+      const parsedOriginal = parseFloat(cleanedOriginal);
+      if (!isNaN(parsedOriginal) && parsedOriginal > 0) {
+        price = `₱${parsedOriginal.toFixed(2)}`;
+        oldPrice = ''; // Don't show as crossed out if it's the only price
+      }
+    }
+
+
+    const formattedProduct = {
       id: product.product_id || product.id,
       slug: product.slug || generateSlug(productName, collectionName),
       name: productName,
-      collection: product.collection?.name || product.collection || "N/A",
-      oldPrice: product.original_price
-        ? `₱${parseFloat(product.original_price).toFixed(2)}`
-        : null,
-      price: product.current_price
-        ? `₱${parseFloat(product.current_price).toFixed(2)}`
-        : product.original_price
-        ? `₱${parseFloat(product.original_price).toFixed(2)}`
-        : null,
+      collection: collectionName || "N/A",
+      category: categoryName || "N/A",
+      category_id: product.category_id || null,
+      oldPrice: oldPrice,
+      price: price,
       showStrikethrough: product.current_price && product.original_price, // Show strikethrough when current_price exists
+      stock: product.stock || 0,
       images:
         Array.isArray(product.images) && product.images.length > 0
           ? product.images
           : ["https://via.placeholder.com/400x400?text=No+Image"],
     };
+    
+
+    return formattedProduct;
   };
 
-  const formattedProducts = allProducts.map(formatProductData).filter(Boolean);
+  const formattedProducts = useMemo(() => {
+    return allProducts.map(formatProductData).filter(Boolean);
+  }, [allProducts]);
+
+  const applyFilters = useCallback(() => {
+    let filtered = [...formattedProducts];
+
+    if (collectionValue !== "none") {
+
+      filtered = filtered.filter(product => {
+        const productCollection = product.collection?.toLowerCase() || '';
+        const selectedCollection = collectionValue.toLowerCase();
+        const matches = productCollection === selectedCollection || 
+                       productCollection.includes(selectedCollection) || 
+                       selectedCollection.includes(productCollection);
+
+        return matches;
+      });
+
+    }
+
+ 
+    filtered = filtered.filter(product => {
+      const price = parseFloat(product.price?.replace(/[^\d.]/g, '') || '0');
+      
+      if (price === 0) {
+
+        return false;
+      }
+      
+      const inRange = price >= minPrice && price <= maxPrice;
+  
+      return inRange;
+    });
+   
+    
+    switch (sortValue) {
+      case 'priceLowHigh':
+        filtered.sort((a, b) => {
+          const priceA = parseFloat(a.price?.replace(/[^\d.]/g, '') || '0');
+          const priceB = parseFloat(b.price?.replace(/[^\d.]/g, '') || '0');
+          
+          if (isNaN(priceA) && isNaN(priceB)) return 0;
+          if (isNaN(priceA)) return 1;
+          if (isNaN(priceB)) return -1;
+          const result = priceA - priceB;
+         
+          return result;
+        });
+        break;
+      case 'priceHighLow':
+        filtered.sort((a, b) => {
+          const priceA = parseFloat(a.price?.replace(/[^\d.]/g, '') || '0');
+          const priceB = parseFloat(b.price?.replace(/[^\d.]/g, '') || '0');
+        
+          if (isNaN(priceA) && isNaN(priceB)) return 0;
+          if (isNaN(priceA)) return 1;
+          if (isNaN(priceB)) return -1;
+          const result = priceB - priceA;
+          
+          return result;
+        });
+        break;
+      case 'latest':
+      default:
+      
+        break;
+    }
+    
+    
+
+    setFilteredProducts(filtered);
+  }, [formattedProducts, collectionValue, sortValue, minPrice, maxPrice]);
+
+  useEffect(() => {
+    if (formattedProducts.length > 0) {
+      applyFilters();
+    }
+  }, [formattedProducts, applyFilters, sortValue, collectionValue, minPrice, maxPrice]);
+
 
   const handleImageChange = (cardId, direction) => {
     const card = formattedProducts.find((item) => item.id === cardId);
@@ -263,6 +340,15 @@ const CategoryProducts = () => {
 
   const handleCollectionChange = (value) => {
     setCollectionValue(value);
+  };
+
+  const handleSortChange = (value) => {
+    setSortValue(value);
+  };
+
+  const handlePriceChange = (newMinPrice, newMaxPrice) => {
+    setMinPrice(newMinPrice);
+    setMaxPrice(newMaxPrice);
   };
 
   const topPicks = formattedProducts.slice(0, 8);
@@ -329,282 +415,31 @@ const CategoryProducts = () => {
               {categoryDisplayName.toUpperCase()}
             </h2>
 
-            {/* Desktop Filters */}
-            <div className="hidden sm:flex flex-row flex-wrap items-center gap-8 flex-1 min-w-0">
-              <div className="flex flex-col w-56 min-w-[14rem] ml-20">
-                <label className="text-xl bebas mb-1 uppercase tracking-wide">
-                  Collection Name
-                </label>
-                <CustomDropdown
-                  options={collectionOptions}
-                  value={collectionValue}
-                  onChange={handleCollectionChange}
-                  placeholder="Select a Collection..."
-                  isOpen={openDropdown === "collection"}
-                  onToggle={() =>
-                    setOpenDropdown(
-                      openDropdown === "collection" ? null : "collection"
-                    )
-                  }
-                />
-              </div>
-
-              <div className="flex flex-col w-50 min-w-[12rem]">
-                <label className="text-xl bebas mb-1 uppercase tracking-wide">
-                  Sort
-                </label>
-                <CustomDropdown
-                  options={sortOptions}
-                  value={sortValue}
-                  onChange={setSortValue}
-                  isOpen={openDropdown === "sort"}
-                  onToggle={() =>
-                    setOpenDropdown(openDropdown === "sort" ? null : "sort")
-                  }
-                />
-              </div>
-
-              <div className="flex flex-col w-full max-w-[200px]">
-                <label className="text-xl bebas -mb-1 uppercase tracking-wide">
-                  Price
-                </label>
-                <div className="relative w-full h-8 flex items-center">
-                  <div className="absolute top-1/2 left-0 w-full h-[3px] bg-[#FFF7DC]/30 rounded-full -translate-y-1/2"></div>
-                  <div
-                    className="absolute top-1/2 h-[3px] bg-[#FFF7DC] rounded-full -translate-y-1/2"
-                    style={{
-                      left: `${((minPrice - 300) / (1200 - 300)) * 100}%`,
-                      right: `${
-                        100 - ((maxPrice - 300) / (1200 - 300)) * 100
-                      }%`,
-                    }}
-                  ></div>
-                  <input
-                    type="range"
-                    min="300"
-                    max="1200"
-                    step="50"
-                    value={minPrice}
-                    onChange={(e) =>
-                      setMinPrice(
-                        Math.min(Number(e.target.value), maxPrice - 50)
-                      )
-                    }
-                    className="absolute w-full appearance-none bg-transparent pointer-events-none
-                      [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3
-                      [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#FFF7DC]
-                      [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:z-20"
-                    style={{ pointerEvents: "auto" }}
-                  />
-                  <input
-                    type="range"
-                    min="300"
-                    max="1200"
-                    step="50"
-                    value={maxPrice}
-                    onChange={(e) =>
-                      setMaxPrice(
-                        Math.max(Number(e.target.value), minPrice + 50)
-                      )
-                    }
-                    className="absolute w-full appearance-none bg-transparent pointer-events-none
-                      [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3
-                      [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#FFF7DC]
-                      [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:z-30"
-                    style={{ pointerEvents: "auto" }}
-                  />
-                </div>
-                <div className="flex justify-between text-sm avant text-[#FFF7DC]/90 -mt-1">
-                  <span>₱{minPrice}</span>
-                  <span>₱{maxPrice}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Mobile Filter Button */}
-            <div className="flex sm:hidden">
-              <button
-                onClick={() => setMobileFilterOpen(true)}
-                className="flex items-center gap-2 border border-[#FFF7DC] rounded-md px-4 py-2 text-base avant transition focus:outline-none"
-              >
-                <img src={FilterIcon} alt="Filter" className="w-5 h-5" />
-                Filter
-              </button>
-            </div>
+            <FilterComponent
+              collectionOptions={getCollectionOptions()}
+              sortOptions={sortOptions}
+              showCategoryFilter={false}
+              collectionValue={collectionValue}
+              sortValue={sortValue}
+              minPrice={minPrice}
+              maxPrice={maxPrice}
+              priceMin={0}
+              priceMax={2000}
+              onCollectionChange={handleCollectionChange}
+              onSortChange={handleSortChange}
+              onPriceChange={handlePriceChange}
+              mobileFilterOpen={mobileFilterOpen}
+              setMobileFilterOpen={setMobileFilterOpen}
+              showMobileCollection={showMobileCollection}
+              setShowMobileCollection={setShowMobileCollection}
+              showMobileSort={showMobileSort}
+              setShowMobileSort={setShowMobileSort}
+              showMobileCategory={showMobileCategory}
+              setShowMobileCategory={setShowMobileCategory}
+            />
           </div>
         </div>
 
-        {/* Mobile Filter Modal */}
-        {mobileFilterOpen && (
-          <div
-            className="fixed bottom-0 left-0 w-full z-50 shadow-2xl rounded-t-[30px] p-6 flex flex-col gap-6 animate-slideUp overflow-y-auto"
-            style={{
-              minHeight: "70vh",
-              backgroundColor: "#FFF7DC",
-              color: "#1F1F21",
-              height: "60vh",
-            }}
-          >
-            <button
-              className="self-end text-2xl focus:outline-none text-[#232323]"
-              onClick={() => setMobileFilterOpen(false)}
-            >
-              &times;
-            </button>
-
-            <div>
-              <button
-                className="w-full flex justify-between items-center cursor-pointer select-none"
-                onClick={() => {
-                  setShowMobileCollection((prev) => !prev);
-                  setShowMobileSort(false);
-                }}
-              >
-                <span
-                  className="text-2xl bebas uppercase tracking-wide"
-                  style={{ textShadow: "0 2px 6px #0001" }}
-                >
-                  COLLECTION NAME
-                </span>
-                <img
-                  src={
-                    showMobileCollection ? DropUpIconBlack : DropDownIconBlack
-                  }
-                  alt="dropdown"
-                  className="ml-2 w-4 h-4"
-                />
-              </button>
-              {showMobileCollection && (
-                <div className="mt-4 space-y-2">
-                  {collectionOptions
-                    .filter((x) => x.value !== "none")
-                    .map((option) => (
-                      <div
-                        key={option.value}
-                        onClick={() => {
-                          setCollectionValue(option.value);
-                          setShowMobileCollection(false);
-                        }}
-                        className={`cursor-pointer avant text-[19px] tracking-wide ${
-                          collectionValue === option.value
-                            ? "font-bold underline"
-                            : ""
-                        }`}
-                        style={{ color: "#232323" }}
-                      >
-                        {option.label}
-                      </div>
-                    ))}
-                </div>
-              )}
-            </div>
-
-            <hr style={{ borderColor: "#23232340" }} className="my-2" />
-
-            <div>
-              <button
-                className="w-full flex justify-between items-center cursor-pointer select-none"
-                onClick={() => {
-                  setShowMobileSort((prev) => !prev);
-                  setShowMobileCollection(false);
-                }}
-              >
-                <span
-                  className="text-2xl bebas uppercase tracking-wide"
-                  style={{ textShadow: "0 2px 6px #0001" }}
-                >
-                  SORT
-                </span>
-                <img
-                  src={showMobileSort ? DropUpIconBlack : DropDownIconBlack}
-                  alt="dropdown"
-                  className="ml-2 w-4 h-4"
-                />
-              </button>
-              {showMobileSort && (
-                <div className="mt-4 space-y-2">
-                  {sortOptions.map((option) => (
-                    <div
-                      key={option.value}
-                      onClick={() => {
-                        setSortValue(option.value);
-                        setShowMobileSort(false);
-                      }}
-                      className={`cursor-pointer avant text-[19px] tracking-wide ${
-                        sortValue === option.value ? "font-bold underline" : ""
-                      }`}
-                      style={{ color: "#232323" }}
-                    >
-                      {option.label}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <hr style={{ borderColor: "#23232340" }} className="my-2" />
-
-            <div>
-              <div
-                className="text-2xl bebas uppercase tracking-wide mb-3"
-                style={{ color: "#232323", textShadow: "0 2px 6px #0001" }}
-              >
-                PRICE
-              </div>
-              <div className="relative w-full h-8 flex items-center">
-                <div className="absolute top-1/2 left-0 w-full h-[3px] bg-[#2323232a] rounded-full -translate-y-1/2"></div>
-                <div
-                  className="absolute top-1/2 h-[3px] bg-[#232] rounded-full -translate-y-1/2"
-                  style={{
-                    left: `${((minPrice - 300) / (1200 - 300)) * 100}%`,
-                    right: `${100 - ((maxPrice - 300) / (1200 - 300)) * 100}%`,
-                  }}
-                ></div>
-                <input
-                  type="range"
-                  min="300"
-                  max="1200"
-                  step="50"
-                  value={minPrice}
-                  onChange={(e) =>
-                    setMinPrice(Math.min(Number(e.target.value), maxPrice - 50))
-                  }
-                  className="absolute w-full appearance-none bg-transparent pointer-events-none
-                    [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4
-                    [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#1F1F21]
-                    [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:z-20"
-                  style={{ pointerEvents: "auto" }}
-                />
-                <input
-                  type="range"
-                  min="300"
-                  max="1200"
-                  step="50"
-                  value={maxPrice}
-                  onChange={(e) =>
-                    setMaxPrice(Math.max(Number(e.target.value), minPrice + 50))
-                  }
-                  className="absolute w-full appearance-none bg-transparent pointer-events-none
-                    [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4
-                    [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#1F1F21]
-                    [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:z-30"
-                  style={{ pointerEvents: "auto" }}
-                />
-              </div>
-              <div className="flex justify-between text-base avant text-[#1F1F21] mt-1">
-                <span>₱{minPrice}</span>
-                <span>₱{maxPrice}</span>
-              </div>
-            </div>
-
-            <button
-              className="-mt-2 w-full bg-[#1F1F21] text-[#FFF7DC] avantbold rounded-md py-2 text-lg tracking-wide"
-              onClick={() => setMobileFilterOpen(false)}
-            >
-              APPLY FILTERS
-            </button>
-          </div>
-        )}
       </section>
 
       {/* Products Grid */}
@@ -616,96 +451,51 @@ const CategoryProducts = () => {
                 Loading products...
               </div>
             </div>
-          ) : formattedProducts.length === 0 ? (
+          ) : filteredProducts.length === 0 ? (
             <div className="flex justify-center items-center py-20">
-              <div className="text-[#FFF7DC] avant text-lg">
-                No products available at the moment.
+              <div className="text-[#FFF7DC] avant text-lg text-center">
+                {collectionValue !== "none" || (minPrice !== 0 || maxPrice !== 2000) ? (
+                  <div>
+                    <div className="text-xl avantbold mb-2">No products match your filters</div>
+                    <div className="text-sm opacity-80">
+                      {collectionValue !== "none" && `Collection: ${collectionValue}`}
+                      {collectionValue !== "none" && (minPrice !== 0 || maxPrice !== 2000) && " • "}
+                      {(minPrice !== 0 || maxPrice !== 2000) && `Price: ₱${minPrice} - ₱${maxPrice}`}
+                    </div>
+                    <div className="text-xs mt-2 opacity-60">
+                      Try adjusting your filters to see more products
+                    </div>
+                  </div>
+                ) : (
+                  "No products available at the moment."
+                )}
               </div>
             </div>
           ) : (
             <>
               {/* Mobile Grid */}
-              <div className="grid grid-cols-2 gap-4 md:hidden items-stretch ">
-                {formattedProducts.map((item) => {
-                  const mobileCollection = item.collection.replace(
-                    / COLLECTION$/i,
-                    ""
-                  );
-                  return (
-                    <div
+              <div className="grid grid-cols-2 gap-4 md:hidden items-stretch">
+                {filteredProducts.map((item) => (
+                  <ProductCard
                       key={item.id}
-                      onClick={() => navigate(`/product/${item.slug}`)}
-                      className="relative bg-[#222] rounded-none overflow-hidden drop-shadow-[0_10px_15px_rgba(0,0,0,1)] cursor-pointer flex flex-col items-center w-full"
-                    >
-                      <div className="relative w-full h-[185px] overflow-hidden bg-black">
-                        <div className="absolute top-2 left-2 right-2 flex justify-between items-center z-10">
-                          <img
-                            src={TryOnIcon}
-                            alt="Try On"
-                            className="w-4 h-4 cursor-pointer hover:opacity-80"
-                            draggable={false}
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                          <img
-                            src={AddFavorite}
-                            alt="Favorite"
-                            className="w-4 h-4 cursor-pointer hover:opacity-80"
-                            draggable={false}
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                        </div>
-                        <img
-                          src={item.images[0]}
-                          alt={item.name}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.target.src =
-                              "https://via.placeholder.com/400x400?text=No+Image";
-                          }}
-                        />
-                      </div>
-                      <div
-                        className="flex flex-col items-center py-1 px-1"
-                        style={{
-                          width: "100%",
-                          height: "50px",
-                          background:
-                            "linear-gradient(90deg, #000000 46%, #666666 100%)",
-                        }}
-                      >
-                        <span className="uppercase text-[#FFF7DC] tracking-widest text-[10px] avantbold leading-tight truncate">
-                          {item.name}
-                        </span>
-                        <span className="text-[10px] tracking-widest text-[#FFF7DC] avant truncate mt-[2px] uppercase">
-                          {mobileCollection}
-                        </span>
-                        <div className="flex justify-center items-center gap-1 text-[10px] avantbold mt-1">
-                          {item.showStrikethrough && item.oldPrice && (
-                            <span className="line-through text-[#FFF7DC] opacity-50 truncate">
-                              {item.oldPrice}
-                            </span>
-                          )}
-                          {item.price && (
-                            <span className="text-[#FFF7DC] truncate">
-                              {item.price}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+                    item={item}
+                    layout="mobile"
+                  />
+                ))}
               </div>
 
               {/* Desktop Grid */}
               <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10">
-                {formattedProducts.map((item) => {
+                {filteredProducts.map((item) => {
                   const isHovered = hoveredCardId === item.id;
                   const currentImageIndex = hoveredImageIndexes[item.id] ?? 0;
                   return (
-                    <div
+                    <ProductCard
                       key={item.id}
-                      onClick={() => navigate(`/product/${item.slug}`)}
+                      item={item}
+                      layout="desktop"
+                      isHovered={isHovered}
+                      currentImageIndex={currentImageIndex}
                       onMouseEnter={() => {
                         setHoveredCardId(item.id);
                         setHoveredImageIndexes((prev) => ({
@@ -717,124 +507,10 @@ const CategoryProducts = () => {
                         setHoveredCardId(null);
                         setHoveredButtonId(null);
                       }}
-                      className={`relative bg-[#222] rounded-none overflow-hidden drop-shadow-[0_10px_15px_rgba(0,0,0,1)] group transition-all transform cursor-pointer ${
-                        isHovered ? "scale-105 z-10" : ""
-                      }`}
-                      style={{
-                        height: isHovered ? "440px" : "375px",
-                        transition: "height 0.3s ease, transform 0.3s ease",
-                      }}
-                    >
-                      <div className="w-full flex justify-between items-center px-6 pt-6 absolute top-0 left-0 z-10">
-                        <img
-                          src={TryOnIcon}
-                          alt="Try On"
-                          className="w-6 h-6 cursor-pointer hover:opacity-80"
-                          draggable={false}
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                        <img
-                          src={AddFavorite}
-                          alt="Favorite"
-                          className="w-6 h-6 cursor-pointer hover:opacity-80"
-                          draggable={false}
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      </div>
-                      <div className="relative w-full h-[300px] overflow-hidden bg-black">
-                        <img
-                          src={
-                            isHovered
-                              ? item.images[currentImageIndex]
-                              : item.images[0]
-                          }
-                          alt={item.name}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.target.src =
-                              "https://via.placeholder.com/400x400?text=No+Image";
-                          }}
-                        />
-                        {isHovered && item.images.length > 1 && (
-                          <>
-                            <img
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleImageChange(item.id, "prev");
-                              }}
-                              src={PrevIcon}
-                              alt="Previous"
-                              className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 cursor-pointer hover:opacity-80"
-                              draggable={false}
-                            />
-                            <img
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleImageChange(item.id, "next");
-                              }}
-                              src={NextIcon}
-                              alt="Next"
-                              className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 cursor-pointer hover:opacity-80"
-                              draggable={false}
-                            />
-                          </>
-                        )}
-                      </div>
-                      <div
-                        style={{
-                          background:
-                            "linear-gradient(90deg, #000000 46%, #666666 100%)",
-                        }}
-                        className="relative py-2 px-2 text-center flex flex-col items-center rounded-none min-h-[140px]"
-                      >
-                        <span className="uppercase text-[#FFF7DC] tracking-widest text-[13px] avantbold">
-                          {item.name}
-                        </span>
-                        <span className="uppercase text-[13px] tracking-widest text-[#FFF7DC] avantbold">
-                          {item.collection}
-                        </span>
-                        <div className="flex justify-center items-center gap-2 text-[14px] avantbold mt-1">
-                          {item.showStrikethrough && item.oldPrice && (
-                            <span className="line-through text-[#FFF7DC] opacity-50">
-                              {item.oldPrice}
-                            </span>
-                          )}
-                          {item.price && (
-                            <span className="text-[#FFF7DC]">{item.price}</span>
-                          )}
-                        </div>
-                        {isHovered && (
-                          <button
-                            style={{
-                              backgroundColor:
-                                hoveredButtonId === item.id
-                                  ? "#FFF7DC"
-                                  : "transparent",
-                              color:
-                                hoveredButtonId === item.id
-                                  ? "#1F1F21"
-                                  : "#FFF7DC",
-                              outline: "1px solid #FFF7DC",
-                              borderRadius: 5,
-                            }}
-                            onMouseEnter={() => setHoveredButtonId(item.id)}
-                            onMouseLeave={() => setHoveredButtonId(null)}
-                            className="mt-4 w-full flex items-center justify-center gap-2 border border-[#FFF7DC] py-2 px-4 font-bold text-md tracking-wide rounded-5 transition-all duration-300"
-                          >
-                            <img
-                              src={
-                                hoveredButtonId === item.id
-                                  ? AddBagHover
-                                  : AddBag
-                              }
-                              alt="Bag Icon"
-                              className="w-4 h-4"
-                            />
-                            ADD TO BAG
-                          </button>
-                        )}
-                      </div>
-                    </div>
+                      onImageChange={handleImageChange}
+                      hoveredButtonId={hoveredButtonId}
+                      setHoveredButtonId={setHoveredButtonId}
+                    />
                   );
                 })}
               </div>
@@ -849,17 +525,20 @@ const CategoryProducts = () => {
           <div className="flex-1">
             {categoryData &&
             categoryData.promo_images &&
+            categoryData.promo_images.trim() !== "" &&
             !categoryData.promo_images.includes("PLACEHOLDER") ? (
               <img
                 src={categoryData.promo_images}
                 alt="Promotional"
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.nextSibling.style.display = 'block';
+                }}
               />
             ) : (
               <span className="text-[#FFF7DC] text-xl avant font-bold">
-                {categoryData && categoryData.promo_images
-                  ? categoryData.promo_images
-                  : "PROMO IMAGE PLACEHOLDER"}
+                PROMO IMAGE 
               </span>
             )}
           </div>
@@ -884,17 +563,20 @@ const CategoryProducts = () => {
           <div className="absolute inset-0 w-full h-full bg-[#1F1F21] flex items-center justify-center">
             {categoryData &&
             categoryData.promo_images &&
+            categoryData.promo_images.trim() !== "" &&
             !categoryData.promo_images.includes("PLACEHOLDER") ? (
               <img
                 src={categoryData.promo_images}
                 alt="Promotional"
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.nextSibling.style.display = 'block';
+                }}
               />
             ) : (
               <span className="text-[#FFF7DC] text-lg avant font-bold">
-                {categoryData && categoryData.promo_images
-                  ? categoryData.promo_images
-                  : "PROMO IMAGE PLACEHOLDER"}
+                PROMO IMAGE PLACEHOLDER
               </span>
             )}
           </div>
@@ -973,58 +655,13 @@ const CategoryProducts = () => {
               {topPicks.map((item) => (
                 <div
                   key={`top-pick-${item.id}`}
-                  className="relative bg-[#222] flex-shrink-0 transition-all duration-300 ease-in-out snap-center"
+                  className="flex-shrink-0 transition-all duration-300 ease-in-out snap-center"
                   style={{ width: "65vw", margin: "0 6px" }}
                 >
-                  <div className="relative w-full h-[260px] overflow-hidden bg-black">
-                    <div className="absolute top-4 left-4 right-4 flex justify-between items-center z-10">
-                      <img
-                        src={TryOnIcon}
-                        alt="Try On"
-                        className="w-6 h-6 cursor-pointer hover:opacity-80"
-                        draggable={false}
-                      />
-                      <img
-                        src={AddFavorite}
-                        alt="Favorite"
-                        className="w-6 h-6 cursor-pointer hover:opacity-80"
-                        draggable={false}
-                      />
-                    </div>
-                    <img
-                      src={item.images[0]}
-                      alt={item.name}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.target.src =
-                          "https://via.placeholder.com/400x400?text=No+Image";
-                      }}
-                    />
-                  </div>
-                  <div
-                    style={{
-                      background:
-                        "linear-gradient(90deg, #000000 46%, #666666 100%)",
-                    }}
-                    className="py-3 px-2 text-center flex flex-col items-center"
-                  >
-                    <span className="uppercase text-[#FFF7DC] tracking-widest text-sm avantbold">
-                      {item.name}
-                    </span>
-                    <span className="text-xs tracking-widest text-[#FFF7DC] avant mt-1">
-                      {item.collection}
-                    </span>
-                    <div className="flex justify-center items-center gap-2 text-sm avantbold mt-1">
-                      {item.showStrikethrough && item.oldPrice && (
-                        <span className="line-through text-[#FFF7DC] opacity-50">
-                          {item.oldPrice}
-                        </span>
-                      )}
-                      {item.price && (
-                        <span className="text-[#FFF7DC]">{item.price}</span>
-                      )}
-                    </div>
-                  </div>
+                  <ProductCard
+                    item={item}
+                    layout="mobile"
+                  />
                 </div>
               ))}
             </div>
@@ -1038,9 +675,12 @@ const CategoryProducts = () => {
                   const isHovered = hoveredCardId === item.id;
                   const currentImageIndex = hoveredImageIndexes[item.id] ?? 0;
                   return (
-                    <div
+                    <ProductCard
                       key={`top-pick-${item.id}`}
-                      onClick={() => navigate(`/product/${item.slug}`)}
+                      item={item}
+                      layout="desktop"
+                      isHovered={isHovered}
+                      currentImageIndex={currentImageIndex}
                       onMouseEnter={() => {
                         setHoveredCardId(item.id);
                         setHoveredImageIndexes((prev) => ({
@@ -1052,125 +692,10 @@ const CategoryProducts = () => {
                         setHoveredCardId(null);
                         setHoveredButtonId(null);
                       }}
-                      className={`relative bg-[#222] rounded-none overflow-hidden drop-shadow-[0_10px_15px_rgba(0,0,0,1)] group transition-all transform cursor-pointer ${
-                        isHovered ? "scale-105 z-10" : ""
-                      }`}
-                      style={{
-                        height: isHovered ? "440px" : "375px",
-                        transition: "height 0.3s ease, transform 0.3s ease",
-                      }}
-                    >
-                      <div className="w-full flex justify-between items-center px-6 pt-3 absolute top-0 left-0 z-10">
-                        <img
-                          src={TryOnIcon}
-                          alt="Try On"
-                          className="w-6 h-6 cursor-pointer hover:opacity-80"
-                          draggable={false}
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                        <img
-                          src={AddFavorite}
-                          alt="Favorite"
-                          className="w-6 h-6 cursor-pointer hover:opacity-80"
-                          draggable={false}
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      </div>
-                      <div className="relative w-full h-[300px] flex items-center justify-center overflow-hidden bg-black">
-                        <img
-                          src={
-                            isHovered
-                              ? item.images[currentImageIndex]
-                              : item.images[0]
-                          }
-                          alt={item.name}
-                          className="object-cover w-full h-full rounded-none transition-all duration-300"
-                          draggable={false}
-                          onError={(e) => {
-                            e.target.src =
-                              "https://via.placeholder.com/400x400?text=No+Image";
-                          }}
-                        />
-                        {isHovered && item.images.length > 1 && (
-                          <>
-                            <img
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleImageChange(item.id, "prev");
-                              }}
-                              src={PrevIcon}
-                              alt="Previous"
-                              className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 cursor-pointer hover:opacity-80"
-                              draggable={false}
-                            />
-                            <img
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleImageChange(item.id, "next");
-                              }}
-                              src={NextIcon}
-                              alt="Next"
-                              className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 cursor-pointer hover:opacity-80"
-                              draggable={false}
-                            />
-                          </>
-                        )}
-                      </div>
-                      <div
-                        style={{
-                          background:
-                            "linear-gradient(90deg, #000000 46%, #666666 100%)",
-                        }}
-                        className="relative py-2 px-2 text-center flex flex-col items-center rounded-none min-h-[140px]"
-                      >
-                        <span className="uppercase text-[#FFF7DC] tracking-widest text-[13px] avantbold">
-                          {item.name}
-                        </span>
-                        <span className="text-[13px] tracking-widest text-[#FFF7DC] avantbold">
-                          {item.collection}
-                        </span>
-                        <div className="flex justify-center items-center gap-2 text-[14px] avantbold mt-1">
-                          {item.showStrikethrough && item.oldPrice && (
-                            <span className="line-through text-[#FFF7DC] opacity-50">
-                              {item.oldPrice}
-                            </span>
-                          )}
-                          {item.price && (
-                            <span className="text-[#FFF7DC]">{item.price}</span>
-                          )}
-                        </div>
-                        {isHovered && (
-                          <button
-                            style={{
-                              backgroundColor:
-                                hoveredButtonId === item.id
-                                  ? "#FFF7DC"
-                                  : "transparent",
-                              color:
-                                hoveredButtonId === item.id
-                                  ? "#1F1F21"
-                                  : "#FFF7DC",
-                              outline: "1px solid #FFF7DC",
-                              borderRadius: 5,
-                            }}
-                            onMouseEnter={() => setHoveredButtonId(item.id)}
-                            onMouseLeave={() => setHoveredButtonId(null)}
-                            className="mt-4 w-full flex items-center justify-center gap-2 border border-[#FFF7DC] py-2 px-4 font-bold text-md tracking-wide rounded-5 transition-all duration-300"
-                          >
-                            <img
-                              src={
-                                hoveredButtonId === item.id
-                                  ? AddBagHover
-                                  : AddBag
-                              }
-                              alt="Bag Icon"
-                              className="w-4 h-4"
-                            />
-                            ADD TO BAG
-                          </button>
-                        )}
-                      </div>
-                    </div>
+                      onImageChange={handleImageChange}
+                      hoveredButtonId={hoveredButtonId}
+                      setHoveredButtonId={setHoveredButtonId}
+                    />
                   );
                 })}
             </div>
