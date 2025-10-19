@@ -1,6 +1,7 @@
 // assets/index.js
 
 // ICONS
+import Icon3D from './icons/cube.png';
 import IconSearch from './icons/search.svg';
 import IconUser from './icons/profile.svg';
 import IconHeart from './icons/heart.svg';
@@ -331,5 +332,6 @@ export {
   Add3D,
   AddVideo,
   AddVideoCream,
-  editIcon
+  editIcon,
+  Icon3D
 };
