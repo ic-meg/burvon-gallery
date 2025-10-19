@@ -18,6 +18,7 @@ import {
 
 import SearchOverlay from "./SearchOverlay";
 import { useContent } from "../contexts/ContentContext";
+import { useCart } from "../contexts/CartContext";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -26,6 +27,7 @@ const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const navigate = useNavigate();
   const { homepageContent } = useContent();
+  const { getCartItemCount } = useCart();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -141,12 +143,19 @@ const Header = () => {
             onClose={() => setSearchOpen(false)}
           />
 
-          <img
-            src={BagWhite}
-            alt="Cart"
-            className="w-6 h-6 cursor-pointer"
-            onClick={() => navigate("/shopping-bag")}
-          />
+          <div className="relative">
+            <img
+              src={BagWhite}
+              alt="Cart"
+              className="w-6 h-6 cursor-pointer"
+              onClick={() => navigate("/shopping-bag")}
+            />
+            {getCartItemCount() > 0 && (
+              <span className="absolute -top-2 -right-2 metallic-bg cream-text text-xs rounded-full w-5 h-5 flex items-center justify-center avantbold">
+                {getCartItemCount()}
+              </span>
+            )}
+          </div>
           <div
             role="button"
             tabIndex={0}
@@ -354,12 +363,19 @@ const Header = () => {
               className="w-6 h-6 hover:opacity-80 cursor-pointer cream-text"
               onClick={() => navigate("/wishlist")}
             />
-            <img
-              src={IconBag}
-              alt="Cart"
-              className="w-6 h-6 hover:opacity-80 cursor-pointer cream-text"
-              onClick={() => navigate("/shopping-bag")}
-            />
+            <div className="relative">
+              <img
+                src={IconBag}
+                alt="Cart"
+                className="w-6 h-6 hover:opacity-80 cursor-pointer cream-text"
+                onClick={() => navigate("/shopping-bag")}
+              />
+              {getCartItemCount() > 0 && (
+                <span className="absolute -top-2 -right-2 metallic-bg cream-text text-xs rounded-full w-5 h-5 flex items-center justify-center avantbold">
+                  {getCartItemCount()}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </header>
