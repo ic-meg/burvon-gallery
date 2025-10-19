@@ -22,20 +22,28 @@ export const ProductProvider = ({ children }) => {
   const uploadProductImages = async (imageFiles, productName) => {
     try {
       const uploadResults = [];
-      const cleanProductName = productName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+      const cleanProductName = productName
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "-");
 
       for (let i = 0; i < imageFiles.length; i++) {
         const file = imageFiles[i];
         if (file) {
-          const filePath = storageService.generateFilePath(file, `products/${cleanProductName}/image_${i}`);
-          const result = await storageService.uploadCategoryImage(file, `products/${cleanProductName}/image_${i}`);
-          
+          const filePath = storageService.generateFilePath(
+            file,
+            `products/${cleanProductName}/image_${i}`
+          );
+          const result = await storageService.uploadCategoryImage(
+            file,
+            `products/${cleanProductName}/image_${i}`
+          );
+
           if (result.success) {
             uploadResults.push({
               index: i,
               url: storageService.getImageUrl(result.filePath),
               filePath: result.filePath,
-              success: true
+              success: true,
             });
           } else {
             uploadResults.push({
@@ -43,7 +51,7 @@ export const ProductProvider = ({ children }) => {
               url: null,
               filePath: null,
               success: false,
-              error: result.error
+              error: result.error,
             });
           }
         } else {
@@ -51,7 +59,7 @@ export const ProductProvider = ({ children }) => {
             index: i,
             url: null,
             filePath: null,
-            success: true
+            success: true,
           });
         }
       }
@@ -75,8 +83,8 @@ export const ProductProvider = ({ children }) => {
         setProducts([]);
       } else if (response.data) {
         let productsData = response.data;
-        
-        if (typeof productsData === 'string') {
+
+        if (typeof productsData === "string") {
           try {
             productsData = JSON.parse(productsData);
           } catch (parseError) {
@@ -86,13 +94,13 @@ export const ProductProvider = ({ children }) => {
         }
 
         if (productsData && productsData.products) {
-          // console.log(' Products fetched:', productsData.products.length);
-          setProducts(Array.isArray(productsData.products) ? productsData.products : []);
+          setProducts(
+            Array.isArray(productsData.products) ? productsData.products : []
+          );
         } else if (Array.isArray(productsData)) {
-          // console.log(' Products fetched (array):', productsData.length);
           setProducts(productsData);
         } else {
-          console.warn('Unexpected products data structure:', productsData);
+          console.warn("Unexpected products data structure:", productsData);
           setProducts([]);
         }
       } else {
@@ -119,8 +127,8 @@ export const ProductProvider = ({ children }) => {
         return null;
       } else if (response.data) {
         let productData = response.data;
-        
-        if (typeof productData === 'string') {
+
+        if (typeof productData === "string") {
           try {
             productData = JSON.parse(productData);
           } catch (parseError) {
@@ -150,13 +158,16 @@ export const ProductProvider = ({ children }) => {
       const response = await productApi.fetchProductsByCategory(categorySlug);
 
       if (response.error) {
-        console.warn(`Products API error for category ${categorySlug}:`, response.error);
-        setProductsByCategory(prev => ({ ...prev, [categorySlug]: [] }));
+        console.warn(
+          `Products API error for category ${categorySlug}:`,
+          response.error
+        );
+        setProductsByCategory((prev) => ({ ...prev, [categorySlug]: [] }));
         return [];
       } else if (response.data) {
         let productsData = response.data;
-        
-        if (typeof productsData === 'string') {
+
+        if (typeof productsData === "string") {
           try {
             productsData = JSON.parse(productsData);
           } catch (parseError) {
@@ -165,25 +176,33 @@ export const ProductProvider = ({ children }) => {
           }
         }
 
-   
         let products = [];
-        if (productsData && productsData.products && Array.isArray(productsData.products)) {
+        if (
+          productsData &&
+          productsData.products &&
+          Array.isArray(productsData.products)
+        ) {
           products = productsData.products;
         } else if (Array.isArray(productsData)) {
-     
           products = productsData;
         }
-        
-        setProductsByCategory(prev => ({ ...prev, [categorySlug]: products }));
+
+        setProductsByCategory((prev) => ({
+          ...prev,
+          [categorySlug]: products,
+        }));
         return products;
       }
 
-      setProductsByCategory(prev => ({ ...prev, [categorySlug]: [] }));
+      setProductsByCategory((prev) => ({ ...prev, [categorySlug]: [] }));
       return [];
     } catch (err) {
-      console.error(`Failed to fetch products for category ${categorySlug}:`, err);
+      console.error(
+        `Failed to fetch products for category ${categorySlug}:`,
+        err
+      );
       setError(err.message);
-      setProductsByCategory(prev => ({ ...prev, [categorySlug]: [] }));
+      setProductsByCategory((prev) => ({ ...prev, [categorySlug]: [] }));
       return [];
     } finally {
       setLoading(false);
@@ -198,27 +217,45 @@ export const ProductProvider = ({ children }) => {
       const response = await productApi.fetchProductsByCollection(collectionId);
 
       if (response.error) {
-        console.warn(`Products API error for collection ${collectionId}:`, response.error);
-        setProductsByCollection(prev => ({ ...prev, [collectionId]: [] }));
+        console.warn(
+          `Products API error for collection ${collectionId}:`,
+          response.error
+        );
+        setProductsByCollection((prev) => ({ ...prev, [collectionId]: [] }));
         return [];
       } else if (response.data) {
         let productsData = response.data;
 
-        if (typeof productsData === 'string') {
+        if (typeof productsData === "string") {
           try {
             productsData = JSON.parse(productsData);
           } catch (parseError) {
-            console.warn("Failed to parse collection products data:", parseError);
-            productsData = [];
+            console.warn(
+              "Failed to parse collection products data:",
+              parseError
+            );
+            productsData = { products: [] };
           }
         }
 
         let products = [];
+
+        // Handle different response structures
         if (Array.isArray(productsData)) {
           products = productsData;
         } else if (productsData && Array.isArray(productsData.products)) {
           products = productsData.products;
-        } else if (productsData && productsData.products && typeof productsData.products === 'object') {
+        } else if (
+          productsData &&
+          productsData.data &&
+          Array.isArray(productsData.data.products)
+        ) {
+          products = productsData.data.products;
+        } else if (
+          productsData &&
+          productsData.products &&
+          typeof productsData.products === "object"
+        ) {
           try {
             products = Object.values(productsData.products).flat();
           } catch (e) {
@@ -226,16 +263,22 @@ export const ProductProvider = ({ children }) => {
           }
         }
 
-        setProductsByCollection(prev => ({ ...prev, [collectionId]: products }));
+        setProductsByCollection((prev) => ({
+          ...prev,
+          [collectionId]: products,
+        }));
         return products;
       }
 
-      setProductsByCollection(prev => ({ ...prev, [collectionId]: [] }));
+      setProductsByCollection((prev) => ({ ...prev, [collectionId]: [] }));
       return [];
     } catch (err) {
-      console.error(`Failed to fetch products for collection ${collectionId}:`, err);
+      console.error(
+        `Failed to fetch products for collection ${collectionId}:`,
+        err
+      );
       setError(err.message);
-      setProductsByCollection(prev => ({ ...prev, [collectionId]: [] }));
+      setProductsByCollection((prev) => ({ ...prev, [collectionId]: [] }));
       return [];
     } finally {
       setLoading(false);
@@ -250,17 +293,22 @@ export const ProductProvider = ({ children }) => {
       let finalProductData = { ...productData };
 
       if (imageFiles && imageFiles.length > 0) {
-        const imageUploadResults = await uploadProductImages(imageFiles, productData.name);
-        
-        const imageUrls = imageUploadResults.map(result => result.success ? result.url : null);
+        const imageUploadResults = await uploadProductImages(
+          imageFiles,
+          productData.name
+        );
+
+        const imageUrls = imageUploadResults.map((result) =>
+          result.success ? result.url : null
+        );
         finalProductData.images = imageUrls;
-        
-        finalProductData.imagePaths = imageUploadResults.map(result => result.success ? result.filePath : null);
+
+        finalProductData.imagePaths = imageUploadResults.map((result) =>
+          result.success ? result.filePath : null
+        );
       }
 
-      console.log('Creating product with data:', finalProductData);
       const response = await productApi.createProduct(finalProductData);
-      console.log(' Create product response:', response);
 
       if (response.error) {
         console.warn("Create product API error:", response.error);
@@ -269,7 +317,6 @@ export const ProductProvider = ({ children }) => {
         }
         return { success: false, error: response.error };
       } else if (response.data) {
-        // console.log('Product created, refreshing list...');
         await fetchAllProducts();
         return { success: true, data: response.data };
       }
@@ -293,12 +340,17 @@ export const ProductProvider = ({ children }) => {
 
       if (imageFiles && imageFiles.length > 0) {
         const oldProduct = await fetchProductById(id);
-        
-        const imageUploadResults = await uploadProductImages(imageFiles, productData.name);
-        
-        const imageUrls = imageUploadResults.map(result => result.success ? result.url : null);
+
+        const imageUploadResults = await uploadProductImages(
+          imageFiles,
+          productData.name
+        );
+
+        const imageUrls = imageUploadResults.map((result) =>
+          result.success ? result.url : null
+        );
         finalProductData.images = imageUrls;
-        
+
         if (oldProduct && oldProduct.imagePaths) {
           await storageService.cleanupOldImages(oldProduct.imagePaths);
         }
@@ -390,8 +442,8 @@ export const ProductProvider = ({ children }) => {
         return [];
       } else if (response.data) {
         let productsData = response.data;
-        
-        if (typeof productsData === 'string') {
+
+        if (typeof productsData === "string") {
           try {
             productsData = JSON.parse(productsData);
           } catch (parseError) {
@@ -425,8 +477,8 @@ export const ProductProvider = ({ children }) => {
         return [];
       } else if (response.data) {
         let productsData = response.data;
-        
-        if (typeof productsData === 'string') {
+
+        if (typeof productsData === "string") {
           try {
             productsData = JSON.parse(productsData);
           } catch (parseError) {
@@ -462,13 +514,21 @@ export const ProductProvider = ({ children }) => {
     setProductsByCollection({});
   };
 
+  const clearProductsByCollection = (collectionId) => {
+    setProductsByCollection((prev) => {
+      const updated = { ...prev };
+      delete updated[collectionId];
+      return updated;
+    });
+  };
+
   const value = {
     products,
     productsByCategory,
     productsByCollection,
     loading,
     error,
-    
+
     fetchAllProducts,
     fetchProductById,
     fetchProductsByCategory,
@@ -479,17 +539,16 @@ export const ProductProvider = ({ children }) => {
     updateProductStock,
     searchProducts,
     filterProducts,
-    
+
     getProductsByCategory,
     getProductsByCollection,
     clearProducts,
+    clearProductsByCollection,
     uploadProductImages,
   };
 
   return (
-    <ProductContext.Provider value={value}>
-      {children}
-    </ProductContext.Provider>
+    <ProductContext.Provider value={value}>{children}</ProductContext.Provider>
   );
 };
 
