@@ -29,6 +29,10 @@ const ShoppingBagMobile = ({
   hoveredCheckout,
   setHoveredCheckout,
   navigate,
+  toggleItemSelection,
+  isItemSelected,
+  getSelectedItemsTotal,
+  getSelectedItemsCount,
 }) => (
   <div className="lg:hidden w-full min-h-screen bg-[#181818] px-5 pt-2 text-[#fff7dc] relative">
  
@@ -185,13 +189,48 @@ const ShoppingBagMobile = ({
                   </span>
                 </div>
               </div>
-              {/* Remove button */}
-              <button 
-                onClick={() => removeFromCart(item.id)}
-                className="absolute top-4 right-2 z-10"
-              >
-                <img src={XWhite} alt="Remove" className="w-4 h-4" />
-              </button>
+              {/* Selection checkbox */}
+              <div className="absolute top-4 right-2 z-10">
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    checked={isItemSelected(item.id)}
+                    onChange={() => toggleItemSelection(item.id)}
+                    className="w-4 h-4 accent-[#FFF7DC] cursor-pointer"
+                    style={{
+                      appearance: 'none',
+                      WebkitAppearance: 'none',
+                      MozAppearance: 'none',
+                      border: '2px solid #FFF7DC',
+                      borderRadius: '4px',
+                      backgroundColor: isItemSelected(item.id) ? '#FFF7DC' : 'transparent',
+                      position: 'relative'
+                    }}
+                  />
+                  {isItemSelected(item.id) && (
+                    <div 
+                      className="absolute top-0 left-0 w-4 h-4 flex items-center justify-center z-10"
+                      style={{ pointerEvents: 'none' }}
+                    >
+                      <svg 
+                        width="8" 
+                        height="8" 
+                        viewBox="0 0 8 8" 
+                        fill="none"
+                        className="text-[#181818]"
+                      >
+                        <path 
+                          d="M2 5L4 7L6 3" 
+                          stroke="currentColor" 
+                          strokeWidth="1.5" 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
             {/* Divider line between products */}
             {i < cart.length - 1 && (
@@ -203,8 +242,8 @@ const ShoppingBagMobile = ({
       {/* sticky checkout content */}
       <div className="sticky w-full bg-[#181818] p-6 z-30 mt-4 mx-auto">
         <div className="flex justify-between mb-2 avantbold text-sm">
-          <span>Subtotal ( {itemCount} items )</span>
-          <span>₱ {subtotal.toFixed(2)}</span>
+          <span>Subtotal ( {getSelectedItemsCount()} items )</span>
+          <span>₱ {getSelectedItemsTotal().toFixed(2)}</span>
         </div>
         <div className="flex justify-between mb-2 avantbold text-sm">
           <span>Discount</span>
@@ -218,13 +257,14 @@ const ShoppingBagMobile = ({
         <button 
           onMouseEnter={() => setHoveredCheckout(true)}
           onMouseLeave={() => setHoveredCheckout(false)}
+          disabled={getSelectedItemsCount() === 0}
           style={{
-            backgroundColor: hoveredCheckout ? "transparent" : "#FFF7DC",
-            color: hoveredCheckout ? "#FFF7DC" : "#181818",
+            backgroundColor: getSelectedItemsCount() === 0 ? "#666" : (hoveredCheckout ? "transparent" : "#FFF7DC"),
+            color: getSelectedItemsCount() === 0 ? "#999" : (hoveredCheckout ? "#FFF7DC" : "#181818"),
             outline: "1px solid #FFF7DC",
             borderRadius: 5,
           }}
-          className="w-full py-3 rounded avantbold text-sm tracking-wide shadow transition-all duration-300"
+          className="w-full py-3 rounded avantbold text-sm tracking-wide shadow transition-all duration-300 disabled:cursor-not-allowed"
           onClick={() => navigate('/user/cart/checkout')}
         >
           PROCEED TO CHECKOUT
@@ -255,7 +295,21 @@ const ShoppingBagMobile = ({
 )
 
 const ShoppingBag = () => {
-  const { cart, removeFromCart, updateQuantity, updateSize, getCartTotal, getCartItemCount, isAtMaxStock } = useCart();
+  const { 
+    cart, 
+    removeFromCart, 
+    updateQuantity, 
+    updateSize, 
+    getCartTotal, 
+    getCartItemCount, 
+    isAtMaxStock,
+    toggleItemSelection,
+    isItemSelected,
+    getSelectedItemsTotal,
+    getSelectedItemsCount,
+    selectAllItems,
+    deselectAllItems
+  } = useCart();
 
   const [modalOpen, setModalOpen] = useState(false)
   const [modalImg, setModalImg] = useState(null)
@@ -427,7 +481,54 @@ const ShoppingBag = () => {
           <div className="flex-[2.2] overflow-y-auto custom-scrollbar ml-2" style={{ maxHeight: '70vh', background: 'rgba(24,24,24,0.98)', overflowX: 'visible' }}>
             {/* product title */}
             <div className="grid grid-cols-5 avant text-xl border-b border-[#fff7dc]/30 pb-2 mb-2 sticky top-0 bg-[#181818] z-10">
-              <div className="pl-2">Item/s</div>
+              <div className="pl-2 flex items-center gap-3">
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    checked={cart.length > 0 && cart.every(item => isItemSelected(item.id))}
+                    onChange={() => {
+                      if (cart.every(item => isItemSelected(item.id))) {
+                        deselectAllItems();
+                      } else {
+                        selectAllItems();
+                      }
+                    }}
+                    className="w-4 h-4 accent-[#FFF7DC] cursor-pointer"
+                    style={{
+                      appearance: 'none',
+                      WebkitAppearance: 'none',
+                      MozAppearance: 'none',
+                      border: '2px solid #FFF7DC',
+                      borderRadius: '4px',
+                      backgroundColor: (cart.length > 0 && cart.every(item => isItemSelected(item.id))) ? '#FFF7DC' : 'transparent',
+                      position: 'relative'
+                    }}
+                  />
+                  {(cart.length > 0 && cart.every(item => isItemSelected(item.id))) && (
+                    <div 
+                      className="absolute top-0 left-0 w-4 h-4 flex items-center justify-center z-10"
+                      style={{ pointerEvents: 'none' }}
+                    >
+                      <svg 
+                        width="8" 
+                        height="8" 
+                        viewBox="0 -3 8 8" 
+                        fill="none"
+                        className="text-[#181818]"
+                      >
+                        <path 
+                          d="M2 6L4 5L6 4" 
+                          stroke="currentColor" 
+                          strokeWidth="1.5" 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                <span>Item/s</span>
+              </div>
               <div className="pl-53">Size</div> {/* Size column */}
               <div className="pl-53">Price</div> {/* dito meg start ka dito pero title lang mauusog hindi buong column */}
               <div className="pl-36">Quantity</div> {/* adjust mo na lang mga pl */}
@@ -436,13 +537,46 @@ const ShoppingBag = () => {
             {cart && cart.map((item, i) => (
               <div key={item.id} className="grid grid-cols-5 items-center border-b border-[#fff7dc]/10 py-6 hover:bg-[#232323] transition-all duration-200">
                 <div className="flex items-center gap-5 min-w-[340px]">
-                  {/* remove button */}
-                  <button 
-                    onClick={() => removeFromCart(item.id)}
-                    className="mr-2 flex-shrink-0 hover:bg-[#fff7dc]/10 rounded-full p-1 transition"
-                  >
-                    <img src={XWhite} alt="Remove" className="w-5 h-5" />
-                  </button>
+                  {/* selection checkbox */}
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      checked={isItemSelected(item.id)}
+                      onChange={() => toggleItemSelection(item.id)}
+                      className="w-4 h-4 accent-[#FFF7DC] cursor-pointer"
+                      style={{
+                        appearance: 'none',
+                        WebkitAppearance: 'none',
+                        MozAppearance: 'none',
+                        border: '2px solid #FFF7DC',
+                        borderRadius: '4px',
+                        backgroundColor: isItemSelected(item.id) ? '#FFF7DC' : 'transparent',
+                        position: 'relative'
+                      }}
+                    />
+                    {isItemSelected(item.id) && (
+                      <div 
+                        className="absolute top-0 left-0 w-4 h-4 flex items-center justify-center z-10"
+                        style={{ pointerEvents: 'none' }}
+                      >
+                        <svg 
+                          width="8" 
+                          height="8" 
+                          viewBox="0 0 8 8" 
+                          fill="none"
+                          className="text-[#181818]"
+                        >
+                          <path 
+                            d="M2 5L4 7L6 3" 
+                            stroke="currentColor" 
+                            strokeWidth="1.5" 
+                            strokeLinecap="round" 
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
                   {/* product image and details */}
                   <img
                     src={item.image}
@@ -583,8 +717,8 @@ const ShoppingBag = () => {
             <div className="flex flex-col gap-2 bg-[#181818] p-8 rounded-lg">
               {/* subtotal */}
               <div className="flex justify-between mb-2 avantbold text-lg">
-                <span>Subtotal ( {itemCount} items )</span>
-                <span>₱ {subtotal.toFixed(2)}</span>
+                <span>Subtotal ( {getSelectedItemsCount()} items )</span>
+                <span>₱ {getSelectedItemsTotal().toFixed(2)}</span>
               </div>
               {/* discount */}
               <div className="flex justify-between mb-2 avantbold text-lg">
@@ -602,13 +736,14 @@ const ShoppingBag = () => {
               <button 
                 onMouseEnter={() => setHoveredCheckout(true)}
                 onMouseLeave={() => setHoveredCheckout(false)}
+                disabled={getSelectedItemsCount() === 0}
                 style={{
-                  backgroundColor: hoveredCheckout ? "transparent" : "#FFF7DC",
-                  color: hoveredCheckout ? "#FFF7DC" : "#181818",
+                  backgroundColor: getSelectedItemsCount() === 0 ? "#666" : (hoveredCheckout ? "transparent" : "#FFF7DC"),
+                  color: getSelectedItemsCount() === 0 ? "#999" : (hoveredCheckout ? "#FFF7DC" : "#181818"),
                   outline: "1px solid #FFF7DC",
                   borderRadius: 5,
                 }}
-                className="w-full mt-3 py-4 rounded-xl cursor-pointer avantbold text-lg tracking-wide shadow-md transition-all duration-300"
+                className="w-full mt-3 py-4 rounded-xl cursor-pointer avantbold text-lg tracking-wide shadow-md transition-all duration-300 disabled:cursor-not-allowed"
                 onClick={() => navigate('/user/cart/checkout')}
               >
                 PROCEED TO CHECKOUT
@@ -658,6 +793,10 @@ const ShoppingBag = () => {
         hoveredCheckout={hoveredCheckout}
         setHoveredCheckout={setHoveredCheckout}
         navigate={navigate}
+        toggleItemSelection={toggleItemSelection}
+        isItemSelected={isItemSelected}
+        getSelectedItemsTotal={getSelectedItemsTotal}
+        getSelectedItemsCount={getSelectedItemsCount}
       />
     </Layout>
   )
