@@ -84,6 +84,7 @@ button:focus-visible {
   /* Ensure proper scroll behavior on mobile */
   main {
     -webkit-overflow-scrolling: touch;
+    overflow-scrolling: touch;
   }
   
   /* Fix for iOS Safari scroll issues */
@@ -157,4 +158,8 @@ vite-error-overlay {
 /* Slight hover effect */
 .image-remove-btn:hover {
   transform: scale(1.08);
+}
+
+.placeholder-avant::placeholder {
+  font-family: 'Avant Garde', sans-serif;
 }

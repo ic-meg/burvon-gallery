@@ -69,7 +69,7 @@ const EditProfileModal = ({ open, onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50"
+      className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50"
       onClick={onClose}
     >
       <div
@@ -121,6 +121,7 @@ const ProfileDesktop = ({ openModal, onEditProfile }) => {
   const [activeTab, setActiveTab] = useState('RETURN/REFUND') 
   const orders = ordersByTab[activeTab] || []
   const selectedOrder = orders[0]
+  const navigate = useNavigate();
 
   return (
     <div className="hidden md:block min-h-screen bg-[#181818] px-0 py-34 text-[#fff7dc]">
@@ -215,7 +216,7 @@ const ProfileDesktop = ({ openModal, onEditProfile }) => {
                   {/* Order details and actions */}
                   {idx === 0 && (
                     <div className="flex flex-row items-center justify-between w-full ml-8">
-                      <div className="flex flex-col gap-1 ml-45 mr-12">
+                      <div className="flex flex-col gap-1 ml-45 mt-[-40px] mr-12">
                         <div className="flex gap-20"> {/* gap between order date and expected delivery */}
                           <div>
                             <div className="bebas cream-text text-md">TOTAL AMOUNT:</div>
@@ -229,7 +230,11 @@ const ProfileDesktop = ({ openModal, onEditProfile }) => {
                       </div>
                       <div className="flex gap-2 mb-17">
                         <button className="avantbold cream-text px-4 py-2 cursor-pointer">REVIEW IN PROGRESS</button>
-                        <button className="avantbold cream-bg metallic-text px-4 py-2 rounded border border-[#FFF7DC] cursor-pointer">VIEW DETAILS</button>
+                        <button className="avantbold cream-bg metallic-text px-4 py-2 rounded border border-[#FFF7DC] cursor-pointer"
+                        onClick={() => navigate('/profile/reviewdetails')}
+                        >
+                          VIEW DETAILS
+                        </button>
                       </div>
                     </div>
                   )}
@@ -332,7 +337,11 @@ const ProfileMobile = ({ openModal, onEditProfile }) => {
         </div>
         <div className="flex justify-end gap-2 mt-6 mb-2">
           <button className="avantbold cream-text px-4 py-3 text-sm">REVIEW IN PROGRESS</button>
-          <button className="avantbold cream-bg metallic-text px-4 py-0 rounded border border-[#FFF7DC] text-sm">VIEW DETAILS</button>
+          <button className="avantbold cream-bg metallic-text px-4 py-0 rounded border border-[#FFF7DC] text-sm"
+          onClick={() => navigate('/profile/reviewdetails')}
+          >
+            VIEW DETAILS
+          </button>
         </div>
         <div className="w-full h-[1px] bg-[#FFF7DC] mt-4" />
       </div>

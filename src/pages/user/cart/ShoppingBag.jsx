@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import Layout from '../../../components/Layout'
-import { Link, Navigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useCart } from '../../../contexts/CartContext'
 import ShoppingBagEmpty from './ShoppingBag-Empty'
 import productApi from '../../../api/productApi'
@@ -28,6 +28,7 @@ const ShoppingBagMobile = ({
   isAtMaxStock,
   hoveredCheckout,
   setHoveredCheckout,
+  navigate,
 }) => (
   <div className="lg:hidden w-full min-h-screen bg-[#181818] px-5 pt-2 text-[#fff7dc] relative">
  
@@ -224,6 +225,7 @@ const ShoppingBagMobile = ({
             borderRadius: 5,
           }}
           className="w-full py-3 rounded avantbold text-sm tracking-wide shadow transition-all duration-300"
+          onClick={() => navigate('/user/cart/checkout')}
         >
           PROCEED TO CHECKOUT
         </button>
@@ -261,6 +263,7 @@ const ShoppingBag = () => {
   const [productData, setProductData] = useState({})
   const [categories, setCategories] = useState([])
   const [ringCategoryId, setRingCategoryId] = useState(null)
+  const navigate = useNavigate()
 
   const openModal = (img) => {
     setModalImg(img)
@@ -606,12 +609,15 @@ const ShoppingBag = () => {
                   borderRadius: 5,
                 }}
                 className="w-full mt-3 py-4 rounded-xl cursor-pointer avantbold text-lg tracking-wide shadow-md transition-all duration-300"
+                onClick={() => navigate('/user/cart/checkout')}
               >
                 PROCEED TO CHECKOUT
               </button>
-              <Link to="/" className="text-center mt-6 avantbold text-lg text-[#fff7dc] hover:underline block">
+              <div className="text-center mt-6 avantbold cursor-pointer text-lg text-[#fff7dc]"
+              onClick={() => navigate('/')}
+              >
                 CONTINUE SHOPPING...
-              </Link>
+              </div>
               <div className="text-center text-[#fff7dc] mt-5 avant text-xs">
                 Shipping and discounts are calculated at checkout
               </div>
@@ -651,6 +657,7 @@ const ShoppingBag = () => {
         isAtMaxStock={isAtMaxStock}
         hoveredCheckout={hoveredCheckout}
         setHoveredCheckout={setHoveredCheckout}
+        navigate={navigate}
       />
     </Layout>
   )
