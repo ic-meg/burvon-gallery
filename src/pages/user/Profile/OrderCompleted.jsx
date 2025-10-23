@@ -1,7 +1,7 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import Layout from '../../../components/Layout.jsx'
-import { Friden, Odyssey } from '../../../assets/index.js'
+import Layout from '../../../components/Layout'
+import { Friden, Odyssey, checkIcon } from '../../../assets/index.js'
 
 const order = {
   id: '38940123',
@@ -35,7 +35,7 @@ const order = {
   },
 }
 
-const ViewOrderDesktop = ({ openCancelModal }) => {
+const ViewOrderDesktop = () => {
   const navigate = useNavigate()
   return (
     <div className="hidden md:block min-h-screen bg-[#181818] text-[#fff7dc] px-0 py-0">
@@ -43,14 +43,17 @@ const ViewOrderDesktop = ({ openCancelModal }) => {
       <div className="flex items-center justify-between px-12 pt-28 pb-2">
         <div
           className="avantbold cream-text text-lg cursor-pointer relative z-50"
-          onClick={() => navigate('/profile/inprogress')}
+          onClick={() => navigate('/profile')}
         >
           &larr; GO BACK
         </div>
         <div style={{ width: 120 }}></div>
       </div>
-      <div className="bebas cream-text text-center text-5xl mt-15 mb-2">VIEW ORDER</div>
-      <div className="avantbold cream-text text-2xl text-center mb-1">ORDER ID : #{order.id}</div>
+      {/* Check icon above heading */}
+      <div className="flex flex-col items-center mt-10 mb-2">
+        <img src={checkIcon} alt="Order Completed" className="w-15 h-15 mb-4" />
+        <div className="bebas cream-text text-center text-5xl">YOUR ORDER IS COMPLETED!</div>
+      </div>
       <div className="avant cream-text text-center text-sm mb-10">THANK YOU. YOUR ORDER HAS BEEN RECEIVED.</div>
       {/* Table Header */}
       <div className="w-full px-12">
@@ -125,25 +128,18 @@ const ViewOrderDesktop = ({ openCancelModal }) => {
             <span>Total</span>
             <span>₱ {order.total.toLocaleString(undefined, {minimumFractionDigits:2})}</span>
           </div>
-          <div className="flex gap-2 self-end mt-2">
-            <button className="avantbold rounded border border-[#FFF7DC] cream-text px-4 py-2 text-md cursor-pointer"
-              onClick={openCancelModal}
-            >
-              CANCEL ORDER
-            </button>
-            <button className="avantbold cream-bg metallic-text px-4 py-2 rounded text-md cursor-pointer"
-            onClick={() => navigate('/customer-care/track-order')}
-            >
-              TRACK ORDER
-            </button>
-          </div>
+          <button className="avantbold cream-bg metallic-text px-3 py-2 rounded mt-4 text-md self-end cursor-pointer"
+          onClick={() => navigate('/')}
+          >
+            SHOP AGAIN
+        </button>
         </div>
       </div>
     </div>
   )
 }
 
-const ViewOrderMobile = ({ openCancelModal }) => {
+const ViewOrderMobile = () => {
   const navigate = useNavigate()
   return (
     <div className="md:hidden w-full min-h-screen bg-[#181818] text-[#fff7dc] px-2 pt-4">
@@ -151,14 +147,17 @@ const ViewOrderMobile = ({ openCancelModal }) => {
       <div className="flex items-center justify-between mt-15 mb-2">
         <div
           className="avantbold cream-text text-sm cursor-pointer"
-          onClick={() => navigate('/profile/inprogress')}
+          onClick={() => navigate('/profile')}
         >
           &larr; GO BACK
         </div>
         <div style={{ width: 40 }}></div>
       </div>
-      <div className="bebas cream-text text-center text-3xl mt-2 mb-1">VIEW ORDER</div>
-      <div className="avantbold cream-text text-lg text-center mb-1">ORDER ID : #{order.id}</div>
+      {/* Check icon above heading */}
+      <div className="flex flex-col items-center mt-6 mb-1">
+        <img src={checkIcon} alt="Order Completed" className="w-12 h-12 mb-2" />
+        <div className="bebas cream-text text-center text-3xl">YOUR ORDER IS COMPLETED!</div>
+      </div>
       <div className="avant cream-text text-center text-xs mb-4">THANK YOU. YOUR ORDER HAS BEEN RECEIVED.</div>
       {/* Items */}
       {order.items.map((item, idx) => (
@@ -218,185 +217,22 @@ const ViewOrderMobile = ({ openCancelModal }) => {
               <span className="avantbold cream-text text-md">Total</span>
               <span className="avantbold cream-text text-md">₱ {order.total.toLocaleString(undefined, {minimumFractionDigits:2})}</span>
           </div>
-          <div className="flex gap-2 self-end mt-2">
-            <button className="avantbold rounded border border-[#FFF7DC] cream-text px-3 py-2 text-xs" 
-            onClick={openCancelModal}
-            >
-              CANCEL ORDER
-            </button>
-            <button className="avantbold cream-bg metallic-text px-3 py-2 rounded text-xs"
-            onClick={() => navigate('/customer-care/track-order')}
-            >
-              TRACK ORDER
-            </button>
-          </div>
+          <button className="avantbold cream-bg metallic-text px-4 py-2 rounded text-sm self-end cursor-pointer"
+          onClick={() => navigate('/')}
+          >
+            SHOP AGAIN
+        </button>
         </div>
       </div>
     </div>
   )
 }
 
-const CancelOrderModal = ({ open, onClose, order, onConfirm }) => {
-  const [selectedReason, setSelectedReason] = useState('Ordered wrong item.');
-  const reasons = [
-    'Ordered wrong item.',
-    'Ordered wrong size.',
-    'Changed mind.',
-    'Payment issue or error.',
-    'Incorrect shipping information provided.',
-  ];
+const OrderCompleted = () => (
+  <Layout full>
+    <ViewOrderDesktop />
+    <ViewOrderMobile />
+  </Layout>
+)
 
-  if (!open) return null;
-
-  return (
-    <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
-      {/* Desktop */}
-      <div className="hidden md:flex bg-[#181818] rounded-2xl p-10 min-w-[700px] max-w-[90vw] gap-12 relative">
-        {/* Close button */}
-        <button
-          className="absolute top-6 right-8 text-3xl cream-text cursor-pointer"
-          onClick={onClose}
-        >
-          &times;
-        </button>
-        {/* Left: Products */}
-        <div className="flex flex-col gap-6 min-w-[320px]">
-          <div className="bebas cream-text text-2xl mb-2">REQUEST CANCELLATION</div>
-          {order.items.map((item, idx) => (
-            <div key={idx} className="flex gap-4 items-center">
-              <img src={item.image} alt={item.variant} className="w-22 h-22 object-cover rounded-md" />
-              <div>
-                <div className="avantbold cream-text text-lg leading-tight">
-                  {item.name}
-                  <br />
-                  <span className="avantbold cream-text text-md">(Elegant Pendant Jewelry)</span>
-                </div>
-                <div className="bebas text-md mt-1" style={{color: '#959595'}}>{item.variant} - ₱ {item.price.toLocaleString(undefined, {minimumFractionDigits:2})}</div>
-                <div className="avant text-md" style={{color: '#959595'}}>Quantity: {item.quantity}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-        {/* Right: Reason & Actions */}
-        <div className="flex flex-col justify-between min-w-[320px]">
-          <div>
-            <div className="bebas cream-text text-2xl mb-4">REASON</div>
-            <div className="flex flex-col gap-3">
-              {reasons.map((reason, idx) => (
-                <label key={reason} className="flex items-center cursor-pointer">
-                  <input
-                    type="radio"
-                    name="cancel-reason"
-                    value={reason}
-                    checked={selectedReason === reason}
-                    onChange={() => setSelectedReason(reason)}
-                    className="form-radio accent-[#FFF7DC] w-5 h-5 mr-3"
-                  />
-                  <span className={`avantbold text-md ${selectedReason === reason ? 'cream-text' : 'text-[#959595]'}`}>{reason}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-          <div className="flex gap-4 mt-8">
-            <button
-              className="avantbold px-8 py-3 rounded-lg text-md border border-[#FFF7DC] cream-text bg-transparent cursor-pointer"
-              onClick={onClose}
-            >
-              CANCEL
-            </button>
-            <button
-              className="avantbold cream-bg metallic-text px-8 py-3 rounded-lg text-md cursor-pointer"
-              onClick={() => onConfirm(selectedReason)}
-            >
-              CONFIRM
-            </button>
-          </div>
-        </div>
-      </div>
-      {/* Mobile */}
-      <div className="md:hidden flex flex-col bg-[#181818] rounded-2xl p-6 w-[95vw] max-w-[400px] relative">
-        {/* Close button */}
-        <button
-          className="absolute top-4 right-6 text-2xl cream-text"
-          onClick={onClose}
-        >
-          &times;
-        </button>
-        <div className="bebas cream-text text-xl mb-4 items-start">REQUEST CANCELLATION</div>
-        {/* Products */}
-        <div className="flex flex-col gap-4 mb-4">
-          {order.items.map((item, idx) => (
-            <div key={idx} className="flex gap-3 items-center">
-              <img src={item.image} alt={item.variant} className="w-17 h-17 object-cover rounded-md" />
-              <div>
-                <div className="avantbold cream-text text-xs leading-tight">
-                  {item.name}
-                  <br />
-                  <span className="avantbold cream-text text-xs">(Elegant Pendant Jewelry)</span>
-                </div>
-                <div className="bebas text-xs mt-1" style={{color: '#959595'}}>{item.variant} - ₱ {item.price.toLocaleString(undefined, {minimumFractionDigits:2})}</div>
-                <div className="avant text-xs" style={{color: '#959595'}}>Quantity: {item.quantity}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-        {/* Reason */}
-        <div>
-          <div className="bebas cream-text text-lg mb-2">REASON</div>
-          <div className="flex flex-col gap-2">
-            {reasons.map((reason, idx) => (
-              <label key={reason} className="flex items-center cursor-pointer">
-                <input
-                  type="radio"
-                  name="cancel-reason-mobile"
-                  value={reason}
-                  checked={selectedReason === reason}
-                  onChange={() => setSelectedReason(reason)}
-                  className="form-radio accent-[#FFF7DC] w-4 h-4 mr-2"
-                />
-                <span className={`avantbold text-xs ${selectedReason === reason ? 'cream-text' : 'text-[#959595]'}`}>{reason}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-        {/* Actions */}
-        <div className="flex gap-2 mt-6">
-          <button
-            className="avantbold px-4 py-2 rounded-lg text-xs border border-[#FFF7DC] cream-text bg-transparent cursor-pointer flex-1"
-            onClick={onClose}
-          >
-            CANCEL
-          </button>
-          <button
-            className="avantbold cream-bg metallic-text px-4 py-2 rounded-lg text-xs cursor-pointer flex-1"
-            onClick={() => onConfirm(selectedReason)}
-          >
-            CONFIRM
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const ViewOrderInProgress = () => {
-  const [cancelOpen, setCancelOpen] = useState(false);
-
-  return (
-    <Layout full>
-      <ViewOrderDesktop openCancelModal={() => setCancelOpen(true)} />
-      <ViewOrderMobile openCancelModal={() => setCancelOpen(true)} />
-      <CancelOrderModal
-        open={cancelOpen}
-        onClose={() => setCancelOpen(false)}
-        order={order}
-        onConfirm={(reason) => {
-          // handle confirm logic here
-          setCancelOpen(false);
-        }}
-      />
-    </Layout>
-  );
-}
-
-export default ViewOrderInProgress
+export default OrderCompleted

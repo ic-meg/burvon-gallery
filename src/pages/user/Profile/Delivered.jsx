@@ -71,7 +71,7 @@ const EditProfileModal = ({ open, onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50"
+      className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50"
       onClick={onClose}
     >
       <div
@@ -127,7 +127,7 @@ const RateProductModal = ({ open, onClose, products }) => {
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50" onClick={onClose}>
+    <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50" onClick={onClose}>
       <div
         className="bg-[#181818] rounded-2xl p-8 min-w-[700px] max-w-[95vw] flex flex-col gap-6"
         style={{ boxShadow: '0 0 32px #000' }}
@@ -152,7 +152,7 @@ const RateProductModal = ({ open, onClose, products }) => {
           <div className="flex flex-col gap-6">
             {products.map((item, idx) => (
               <div key={idx} className="flex gap-4 items-center">
-                <img src={item.image} alt={item.variant} className="w-32 h-32 object-cover rounded-md" />
+                <img src={item.image} alt={item.variant} className="w-28 h-28 object-cover rounded-md" />
                 <div>
                   <div className="avantbold cream-text text-lg leading-tight">{item.name} <span className="text-sm"><br/>(Elegant Pendant Jewelry)</span></div>
                   <div className="bebas cream-text text-md mt-1" style={{ color: '#959595' }}>{item.variant}</div>
@@ -164,7 +164,7 @@ const RateProductModal = ({ open, onClose, products }) => {
           <div className="flex-1 flex flex-col gap-4">
             
             <textarea
-              className="w-full h-24 rounded-lg bg-transparent border-2 border-[#FFF7DC] avant cream-text text-md p-3"
+              className="w-full h-34 rounded-lg bg-transparent border-2 border-[#FFF7DC] avant cream-text text-md p-3"
               placeholder="Share your experience (optional)"
               value={review}
               onChange={e => setReview(e.target.value)}
@@ -176,11 +176,11 @@ const RateProductModal = ({ open, onClose, products }) => {
               <button className="w-16 h-16 border-2 border-dashed border-[#FFF7DC] rounded-lg flex items-center justify-center">
                 <img src={AddVideoCream} alt="Add Video" className="w-8 h-8" />
               </button>
-              <button className="w-16 h-16 border-2 border-dashed border-[#FFF7DC] rounded-lg flex items-center justify-center">
+              <button className="w-16 h-16 border-2 border-dashed border-[#FFF7DC] rounded-lg flex items-center justify-center ">
                 <span className="text-3xl cream-text">+</span>
               </button>
             </div>
-            <label className="flex items-center gap-2 mt-2 avant cream-text text-md">
+            <label className="flex items-center gap-2 mt-2 avant cream-text text-md cursor-pointer">
               <input
                 type="checkbox"
                 checked={showUsername}
@@ -191,13 +191,13 @@ const RateProductModal = ({ open, onClose, products }) => {
             </label>
             <div className="flex gap-4 mt-4">
               <button
-                className="avantbold px-8 py-3 rounded-lg text-md border-2 border-[#FFF7DC] cream-text bg-transparent cursor-pointer"
+                className="avantbold px-8 py-3 rounded-lg text-md border-2 border-[#FFF7DC] cream-text bg-transparent" style={{ cursor: 'pointer' }}
                 onClick={onClose}
               >
                 CANCEL
               </button>
               <button
-                className="avantbold cream-bg metallic-text px-8 py-3 rounded-lg text-md cursor-pointer"
+                className="avantbold cream-bg metallic-text px-8 py-3 rounded-lg text-md" style={{ cursor: 'pointer' }}
                 onClick={() => {/* handle confirm */}}
               >
                 CONFIRM
@@ -219,7 +219,7 @@ const RateProductModalMobile = ({ open, onClose, products }) => {
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50" onClick={onClose}>
+    <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50" onClick={onClose}>
       <div
         className="bg-[#181818] rounded-2xl p-4 w-[95vw] max-w-[420px] flex flex-col gap-4"
         style={{ boxShadow: '0 0 32px #000' }}
@@ -258,7 +258,7 @@ const RateProductModalMobile = ({ open, onClose, products }) => {
         </div>
         {/* Review */}
         <textarea
-          className="w-full h-16 rounded-lg bg-transparent border-2 border-[#FFF7DC] avant cream-text text-sm p-2 mt-2"
+          className="w-full h-30 rounded-lg bg-transparent border-1 border-[#FFF7DC] avant cream-text text-sm p-2 mt-2"
           placeholder="Share your experience (optional)"
           value={review}
           onChange={e => setReview(e.target.value)}
@@ -310,6 +310,7 @@ const ProfileDesktop = ({ openModal, onEditProfile, openRateModal }) => {
   const [activeTab, setActiveTab] = useState('DELIVERED') 
   const orders = ordersByTab[activeTab] || []
   const selectedOrder = orders[0]
+  const navigate = useNavigate(); 
 
   return (
     <div className="hidden md:block min-h-screen bg-[#181818] px-0 py-34 text-[#fff7dc]">
@@ -427,7 +428,12 @@ const ProfileDesktop = ({ openModal, onEditProfile, openRateModal }) => {
                         </div>
                       </div>
                       <div className="flex gap-2 mb-17">
-                        <button className="avantbold rounded border border-[#FFF7DC] cream-text px-4 py-2 cursor-pointer">RETURN/REFUND</button>
+                        <button
+                          className="avantbold rounded border border-[#FFF7DC] cream-text px-4 py-2 cursor-pointer"
+                          onClick={() => navigate('/profile/requestreturn')}
+                        >
+                          RETURN/REFUND
+                        </button>
                         <button className="avantbold cream-bg metallic-text px-4 py-2 rounded border border-[#FFF7DC] cursor-pointer" onClick={openRateModal}>
                           RATE
                         </button>
@@ -532,7 +538,11 @@ const ProfileMobile = ({ openModal, onEditProfile, openRateModal }) => {
           </div>
         </div>
         <div className="flex justify-end gap-2 mt-6 mb-2">
-          <button className="avantbold rounded border border-[#FFF7DC] cream-text px-4 py-3 text-sm">RETURN/REFUND</button>
+          <button className="avantbold rounded border border-[#FFF7DC] cream-text px-4 py-3 text-sm"
+          onClick={() => navigate('/profile/requestreturn')}
+          >
+            RETURN/REFUND
+            </button>
           <button className="avantbold cream-bg metallic-text px-4 py-0 rounded border border-[#FFF7DC] text-sm" onClick={openRateModal}>
             RATE
           </button>
@@ -580,8 +590,18 @@ const Delivered = () => {
         </div>
       )}
       <EditProfileModal open={editProfileOpen} onClose={closeEditProfile} />
-      <RateProductModal open={rateModalOpen} onClose={closeRateModal} products={ordersByTab['DELIVERED'][0]?.items || []} />
-      <RateProductModalMobile open={rateModalOpen} onClose={closeRateModal} products={ordersByTab['DELIVERED'][0]?.items || []} />
+      {rateModalOpen && (
+        <>
+          {/* Desktop only */}
+          <div className="hidden md:block">
+            <RateProductModal open={rateModalOpen} onClose={closeRateModal} products={ordersByTab['DELIVERED'][0]?.items || []} />
+          </div>
+          {/* Mobile only */}
+          <div className="md:hidden">
+            <RateProductModalMobile open={rateModalOpen} onClose={closeRateModal} products={ordersByTab['DELIVERED'][0]?.items || []} />
+          </div>
+        </>
+      )}
     </Layout>
   )
 }

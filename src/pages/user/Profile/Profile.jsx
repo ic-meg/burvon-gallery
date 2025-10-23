@@ -69,7 +69,7 @@ const EditProfileModal = ({ open, onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50"
+      className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50"
       onClick={onClose}
     >
       <div
@@ -192,6 +192,7 @@ const ProfileDesktop = ({ openModal, onEditProfile }) => {
                       className="w-25 h-25 object-cover rounded-md cursor-pointer"
                       onClick={() => openModal(item.image)}
                     />
+            
                     <div>
                       <div className="avantbold cream-text text-lg text-nowrap">{item.name}</div>
                       <div className="bebas cream-text text-lg">{item.variant}</div>
@@ -215,22 +216,22 @@ const ProfileDesktop = ({ openModal, onEditProfile }) => {
                       <div className="flex flex-col gap-1 ml-45 mr-12">
                         <div className="flex gap-20">
                           <div>
-                            <div className="avantbold cream-text text-md">ORDER DATE:</div>
-                            <div className="avantbold cream-text text-lg">{selectedOrder.date}</div>
+                            <div className="bebas cream-text text-md">ORDER DATE:</div>
+                            <div className="avant cream-text text-lg">{selectedOrder.date}</div>
                           </div>
                           <div>
-                            <div className="avantbold cream-text text-md">EXPECTED DELIVERY:</div>
-                            <div className="avantbold cream-text text-lg">{selectedOrder.delivery}</div>
+                            <div className="bebas cream-text text-md">EXPECTED DELIVERY:</div>
+                            <div className="avant cream-text text-lg">{selectedOrder.delivery}</div>
                           </div>
                         </div>
                         <div className="flex gap-14 mt-2">
                           <div>
-                            <div className="avantbold cream-text text-md">TOTAL QUANTITY:</div>
-                            <div className="avantbold cream-text text-lg">{selectedOrder.totalQty}</div>
+                            <div className="bebas cream-text text-md">TOTAL QUANTITY:</div>
+                            <div className="avant cream-text text-lg">{selectedOrder.totalQty}</div>
                           </div>
                           <div>
-                            <div className="avantbold cream-text text-md">SUBTOTAL:</div>
-                            <div className="avantbold cream-text text-lg">₱ {selectedOrder.subtotal.toLocaleString(undefined, {minimumFractionDigits:2})}</div>
+                            <div className="bebas cream-text text-md">SUBTOTAL:</div>
+                            <div className="avant cream-text text-lg">₱ {selectedOrder.subtotal.toLocaleString(undefined, {minimumFractionDigits:2})}</div>
                           </div>
                         </div>
                       </div>

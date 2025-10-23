@@ -28,12 +28,14 @@ import Wishlist from "./pages/user/Wishlist";
 import WishlistEmpty from "./pages/user/Wishlist-Empty";
 import Login from "./pages/main/Login/Login";
 import ShoppingBag from "./pages/user/cart/ShoppingBag";
+import Checkout from "./pages/user/cart/Checkout";
 import ShoppingBagEmpty from "./pages/user/cart/ShoppingBag-Empty";
 import Verification from "./pages/main/Login/Verification";
 
 //product
 import CategoryProducts from "./pages/product/CategoryProducts";
 import ProductDesc from "./pages/product/ProductDesc";
+import TryOn from "/src/pages/product/tryon/TryOn";
 
 //collections
 import CollectionPage from "./pages/product/collections/CollectionPage";
@@ -46,6 +48,9 @@ import Cancelled from "./pages/user/Profile/Cancelled";
 import Refund from "./pages/user/Profile/Refund";
 import ViewOrder from "./pages/user/Profile/ViewOrder";
 import ViewOrderInProgress from "./pages/user/Profile/ViewOrder-InProgress";
+import RequestReturn from "./pages/user/Profile/Return";
+import ReviewDetails from "./pages/user/Profile/ReviewDetails";
+import OrderCompleted from "./pages/user/Profile/OrderCompleted";
 
 //admin
 import AdminDashboard from "./admin/pages/AdminDashboard";
@@ -117,6 +122,7 @@ const App = () => {
                   />
                   <Route path="/login" element={<Login />} />
                   <Route path="/shopping-bag" element={<ShoppingBag />} />
+                  <Route path="/user/cart/checkout" element={<Checkout />} />
                   <Route
                     path="/user/cart/ShoppingBag-Empty"
                     element={<ShoppingBagEmpty />}
@@ -133,6 +139,7 @@ const App = () => {
                     path="/product/:productSlug"
                     element={<ProductDesc />}
                   />
+                  <Route path="/tryon" element={<TryOn />} />
 
                   {/*Collections - Dynamic Route */}
                   <Route
@@ -151,6 +158,9 @@ const App = () => {
                     path="/profile/vieworder-inprogress"
                     element={<ViewOrderInProgress />}
                   />
+                  <Route path="/profile/requestreturn" element={<RequestReturn />} />
+                  <Route path="/profile/reviewdetails" element={<ReviewDetails />} />
+                  <Route path="/profile/ordercompleted" element={<OrderCompleted />} />
 
                   {/*Admin */}
                   <Route path="/admin/dashboard" element={<AdminDashboard />} />

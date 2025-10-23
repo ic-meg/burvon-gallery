@@ -82,6 +82,22 @@ import Add3D from './icons/Add3D.svg';
 import AddVideo from './icons/AddVideo.png';
 import AddVideoCream from './icons/AddVideo-cream.png';
 import editIcon from './icons/editIcon.png';
+import visa from './icons/visa.png';
+import mastercard from './icons/mastercard.png';
+import paymongo from './icons/paymongo.png';
+import gcash from './icons/gcash.jpeg';
+import maya from './icons/maya.png';
+import again from './icons/again.png';
+import camera from './icons/camera.png';
+import download from './icons/download.png';
+import bracelet from './icons/bracelet.png';
+import earrings from './icons/earrings.png';
+import necklace from './icons/necklace.png';
+import rings from './icons/rings.png';
+import necklaceBlack from './icons/necklaceBlack.png';
+import earringsBlack from './icons/earringsBlack.png';
+import braceletBlack from './icons/braceletBlack.png';
+import ringsBlack from './icons/ringsBlack.png';
  
 // IMAGES
 import LogoImage from './logo/black_brv.png';
@@ -119,7 +135,17 @@ import wishlistBG from './images/wishlistBG.png';
 import Odyssey from './images/Odyssey.jpg';
 import Friden from './images/Friden.jpg';
 import wishlistBGMobile from './images/wishlistBG-mobile.png';
-
+import hand from './images/hand.png';
+import ring_onhand from './images/ring_onhand.png';
+import sample_image from './images/sample_image.png';
+import friden_tryon from './images/friden_tryon.png';
+import iliao_tryon from './images/iliao_tryon.png';
+import neid_tryon from './images/neid_tryon.png';
+import ringThumb from './images/ringThumb.png';
+import ringIndex from './images/ringIndex.png';
+import ringMiddle from './images/ringMiddle.png';
+import ringPinky from './images/ringPinky.png';
+import ringRing from './images/ringRing.png';
 
 //Hero Section
 import KidsCollectionBanner from './images/KidsCollection.png';
@@ -333,5 +359,32 @@ export {
   AddVideo,
   AddVideoCream,
   editIcon,
-  Icon3D
+  Icon3D,
+  visa,
+  mastercard,
+  paymongo,
+  gcash,
+  maya,
+  again,
+  camera,
+  download,
+  bracelet,
+  earrings,
+  necklace,
+  rings,
+  hand,
+  ring_onhand,
+  sample_image,
+  friden_tryon,
+  iliao_tryon,
+  neid_tryon,
+  necklaceBlack,
+  earringsBlack,
+  braceletBlack,
+  ringsBlack,
+  ringThumb,
+  ringIndex,
+  ringMiddle,
+  ringPinky,
+  ringRing
 };
