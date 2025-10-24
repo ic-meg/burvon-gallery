@@ -520,7 +520,7 @@ const Checkout = () => {
     setFormData(prev => ({
       ...prev,
       city_municipality: selectedCity,
-      barangay: ''//resert
+      barangay: ''
     }));
     
     if (selectedProvince && selectedCity) {
@@ -535,7 +535,11 @@ const Checkout = () => {
             foundBarangays = provinceData[selectedCity];
             break;
           } else if (Array.isArray(provinceData)) {
-            foundBarangays = [];
+            // City list is disabled for NCR; barangays will be looked up via province-as-city
+            const ncr = philippineLocations['National Capital Region'];
+            if (ncr && Array.isArray(ncr[selectedProvince])) {
+              foundBarangays = ncr[selectedProvince];
+            }
             break;
           }
         }
@@ -557,14 +561,20 @@ const Checkout = () => {
   const handleProvinceChange = (e) => {
     const selectedProvince = e.target.value;
     
+    // Detect NCR city-as-province and auto-select city
+    const ncr = philippineLocations['National Capital Region'];
+    const isNCRProvince = !!(ncr && Array.isArray(ncr[selectedProvince]));
+    const autoCity = isNCRProvince ? selectedProvince : '';
+    const autoBarangays = isNCRProvince ? (ncr[selectedProvince] || []) : [];
+    
     setFormData(prev => ({
       ...prev,
       province_region: selectedProvince,
-      city_municipality: '', // Reset city 
-      barangay: '' // Reset barangay 
+      city_municipality: autoCity,
+      barangay: ''
     }));
     
-    setAvailableBarangays([]);
+    setAvailableBarangays(autoBarangays);
     
     if (errors.province_region) {
       setErrors(prev => ({
@@ -669,7 +679,6 @@ const Checkout = () => {
           return;
         }
 
-       t
         const orderData = {
           ...paymongoData,
           checkout_session_id: sessionId
