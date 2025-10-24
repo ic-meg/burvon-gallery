@@ -263,6 +263,7 @@ export const ProductProvider = ({ children }) => {
           }
         }
 
+
         setProductsByCollection((prev) => ({
           ...prev,
           [collectionId]: products,
