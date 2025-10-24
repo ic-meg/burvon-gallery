@@ -247,6 +247,7 @@ export class ProductService {
       },
     });
 
+
     return { products, category };
   }
 
@@ -274,6 +275,7 @@ export class ProductService {
         created_at: 'desc',
       },
     });
+
 
     return { products, collection };
   }
