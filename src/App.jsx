@@ -8,6 +8,7 @@ import { CategoryProvider } from "./contexts/CategoryContext";
 import { CollectionProvider } from "./contexts/CollectionContext";
 import { ProductProvider } from "./contexts/ProductContext";
 import { CartProvider } from "./contexts/CartContext";
+import { WishlistProvider } from "./contexts/WishlistContext";
 
 //about
 import ContactUs from "./pages/about/ContactUs";
@@ -75,6 +76,7 @@ const App = () => {
           <ProductProvider>
             <Router>
               <CartProvider>
+                <WishlistProvider>
               <ScrollToTop />
               <div>
                 
@@ -123,6 +125,7 @@ const App = () => {
                   <Route path="/login" element={<Login />} />
                   <Route path="/shopping-bag" element={<ShoppingBag />} />
                   <Route path="/user/cart/checkout" element={<Checkout />} />
+                  <Route path="/order-completed" element={<OrderCompleted />} />
                   <Route
                     path="/user/cart/ShoppingBag-Empty"
                     element={<ShoppingBagEmpty />}
@@ -204,6 +207,7 @@ const App = () => {
                   <Route path="/admin/user" element={<UserManagement />} />
                 </Routes>
               </div>
+                </WishlistProvider>
               </CartProvider>
             </Router>
           </ProductProvider>
