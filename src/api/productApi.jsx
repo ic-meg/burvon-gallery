@@ -29,6 +29,7 @@ const fetchProductBySlug = async (slug) => {
 const fetchProductsByCategory = async (categorySlug) => {
   if (!apiURL) return missing("VITE_PRODUCT_API");
   if (!categorySlug) return missing("category slug");
+  
   return await apiRequest(`${baseUrl}category/${categorySlug}`, null);
 };
 
