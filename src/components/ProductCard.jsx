@@ -1,9 +1,11 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
+import { useWishlist } from "../contexts/WishlistContext";
 import {
   TryOnIcon,
   AddFavorite,
+  AddedFavorites,
   PrevIcon,
   NextIcon,
   AddBag,
@@ -23,6 +25,7 @@ export default function ProductCard({
 }) {
   const navigate = useNavigate();
   const { addToCart, isInCart } = useCart();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const mobile = layout === "mobile";
 
   // Generate slug for navigation (same logic as CategoryProducts.jsx)
@@ -45,9 +48,31 @@ export default function ProductCard({
     navigate(`/product/${productSlug}`);
   };
 
+
+  const isOutOfStock = () => {
+    if (
+      item.category_id === 4 ||
+      (item.category &&
+        (item.category.toLowerCase() === "ring" ||
+          item.category.toLowerCase() === "rings" ||
+          item.category.toLowerCase().includes("ring collection")))
+    ) {
+      if (item.sizeStocks && item.sizeStocks.length > 0) {
+        const totalStock = item.sizeStocks.reduce((total, sizeStock) => {
+          return total + (sizeStock.stock || 0);
+        }, 0);
+        return totalStock === 0;
+      }
+      // Fallback to general stock
+      return item.stock === 0 || item.stock === "0";
+    }
+   
+    return item.stock === 0 || item.stock === "0";
+  };
+
   const handleAddToCart = (e) => {
     e.stopPropagation();
-    if (item.stock === 0 || item.stock === "0") return;
+    if (isOutOfStock()) return;
 
     const productData = {
       id: item.id,
@@ -74,6 +99,28 @@ export default function ProductCard({
     }
   };
 
+  const handleWishlistToggle = (e) => {
+    e.stopPropagation();
+    
+    const productData = {
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      images: item.images,
+      variant: item.variant,
+      stock: item.stock,
+      collection: item.collection,
+      category: item.category,
+      category_id: item.category_id,
+    };
+
+    if (isInWishlist(item.id)) {
+      removeFromWishlist(item.id);
+    } else {
+      addToWishlist(productData);
+    }
+  };
+
   if (mobile) {
     const mobileCollection = item.collection.replace(/ COLLECTION$/i, "");
 
@@ -86,7 +133,7 @@ export default function ProductCard({
       >
         <div
           className={`relative w-full h-[185px] overflow-hidden ${
-            item.stock === 0 || item.stock === "0" ? "bg-gray-800" : "bg-black"
+            isOutOfStock() ? "bg-gray-800" : "bg-black"
           }`}
         >
           <div className="absolute top-2 left-2 right-2 flex justify-between items-center z-10">
@@ -98,18 +145,18 @@ export default function ProductCard({
               onClick={(e) => e.stopPropagation()}
             />
             <img
-              src={AddFavorite}
+              src={isInWishlist(item.id) ? AddedFavorites : AddFavorite}
               alt="Favorite"
               className="w-4 h-4 cursor-pointer hover:opacity-80"
               draggable={false}
-              onClick={(e) => e.stopPropagation()}
+              onClick={handleWishlistToggle}
             />
           </div>
           <img
             src={item.images[0]}
             alt={item.name}
             className={`w-full h-full object-cover ${
-              item.stock === 0 || item.stock === "0"
+              isOutOfStock()
                 ? "blur-[1px] brightness-50"
                 : ""
             }`}
@@ -118,7 +165,7 @@ export default function ProductCard({
                 "https://via.placeholder.com/400x400?text=No+Image";
             }}
           />
-          {(item.stock === 0 || item.stock === "0") && (
+          {isOutOfStock() && (
             <div className="absolute inset-0 bg-opacity-30 flex items-center justify-center z-20">
               <div className="text-center">
                 <div className="cream-text px-4 py-2 rounded avantbold text-sm tracking-wider uppercase shadow-lg">
@@ -160,7 +207,7 @@ export default function ProductCard({
   // desktop/large card
   return (
     <div
-      className={`relative bg-[#222] rounded-none overflow-hidden drop-shadow-[0_10px_15px_rgba(0,0,0,1)] group transition-all transform ${
+      className={`relative bg-[#222] rounded-none overflow-hidden drop-shadow-[0_10px_15px_rgba(0,0,0,1)] group transition-all transform cursor-pointer ${
         isHovered ? "scale-105 z-10" : ""
       }`}
       style={{
@@ -181,24 +228,24 @@ export default function ProductCard({
           onClick={(e) => e.stopPropagation()}
         />
         <img
-          src={AddFavorite}
+          src={isInWishlist(item.id) ? AddedFavorites : AddFavorite}
           alt="Favorite"
           className="w-6 h-6 cursor-pointer hover:opacity-80"
           draggable={false}
-          onClick={(e) => e.stopPropagation()}
+          onClick={handleWishlistToggle}
         />
       </div>
       {/* product image */}
       <div
         className={`relative w-full h-[300px] flex items-center justify-center overflow-hidden ${
-          item.stock === 0 || item.stock === "0" ? "bg-gray-800" : "bg-black"
+          isOutOfStock() ? "bg-gray-800" : "bg-black"
         }`}
       >
         <img
           src={isHovered ? item.images[currentImageIndex] : item.images[0]}
           alt={item.name}
           className={`object-cover w-full h-full rounded-none transition-all duration-300 ${
-            item.stock === 0 || item.stock === "0"
+            isOutOfStock()
               ? "blur-[2px] brightness-50"
               : ""
           }`}
@@ -207,7 +254,7 @@ export default function ProductCard({
             e.target.src = "https://via.placeholder.com/400x400?text=No+Image";
           }}
         />
-        {(item.stock === 0 || item.stock === "0") && (
+        {isOutOfStock() && (
           <div className="absolute inset-0 bg-opacity-30 flex items-center justify-center z-20">
             <div className="text-center">
               <div className="cream-text px-6 py-3 rounded-lg avantbold text-lg tracking-wider uppercase shadow-lg">
@@ -218,8 +265,7 @@ export default function ProductCard({
         )}
         {isHovered &&
           item.images.length > 1 &&
-          item.stock !== 0 &&
-          item.stock !== "0" && (
+          !isOutOfStock() && (
             <>
               <img
                 onClick={(e) => {
@@ -268,7 +314,7 @@ export default function ProductCard({
         {/* Add to Bag Button */}
         {isHovered && (
           <button
-            disabled={item.stock === 0 || item.stock === "0"}
+            disabled={isOutOfStock()}
             onClick={handleAddToCart}
             style={{
               backgroundColor:
@@ -276,9 +322,9 @@ export default function ProductCard({
               color: hoveredButtonId === item.id ? "#1F1F21" : "#FFF7DC",
               outline: "1px solid #FFF7DC",
               borderRadius: 5,
-              opacity: item.stock === 0 || item.stock === "0" ? 0.5 : 1,
+              opacity: isOutOfStock() ? 0.5 : 1,
               cursor:
-                item.stock === 0 || item.stock === "0"
+                isOutOfStock()
                   ? "not-allowed"
                   : "pointer",
             }}
@@ -291,7 +337,7 @@ export default function ProductCard({
               alt="Bag Icon"
               className="w-4 h-4"
             />
-            {item.stock === 0 || item.stock === "0"
+            {isOutOfStock()
               ? "OUT OF STOCK"
               : "ADD TO BAG"}
           </button>
