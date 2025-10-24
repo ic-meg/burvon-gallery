@@ -14,6 +14,7 @@ export const useCart = () => {
 
 export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
+  const [selectedItems, setSelectedItems] = useState([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
@@ -266,6 +267,11 @@ export const CartProvider = ({ children }) => {
     setCart([]);
   };
 
+  const clearSelectedItems = () => {
+    setCart(prevCart => prevCart.filter(item => !selectedItems.includes(item.id)));
+    setSelectedItems([]);
+  };
+
   const getCartTotal = () => {
     return cart.reduce((total, item) => {
       const price = parseFloat(item.price.replace(/[^\d.]/g, "")) || 0;
@@ -316,14 +322,54 @@ export const CartProvider = ({ children }) => {
     navigate("/shopping-bag");
   };
 
+  // Selection functions
+  const toggleItemSelection = (itemId) => {
+    setSelectedItems(prev => {
+      if (prev.includes(itemId)) {
+        return prev.filter(id => id !== itemId);
+      } else {
+        return [...prev, itemId];
+      }
+    });
+  };
+
+  const selectAllItems = () => {
+    setSelectedItems(cart.map(item => item.id));
+  };
+
+  const deselectAllItems = () => {
+    setSelectedItems([]);
+  };
+
+  const isItemSelected = (itemId) => {
+    return selectedItems.includes(itemId);
+  };
+
+  const getSelectedItems = () => {
+    return cart.filter(item => selectedItems.includes(item.id));
+  };
+
+  const getSelectedItemsTotal = () => {
+    return getSelectedItems().reduce((total, item) => {
+      const price = parseFloat(item.price.replace(/[^\d.]/g, "")) || 0;
+      return total + price * item.quantity;
+    }, 0);
+  };
+
+  const getSelectedItemsCount = () => {
+    return getSelectedItems().reduce((total, item) => total + item.quantity, 0);
+  };
+
   const value = {
     cart,
+    selectedItems,
     isLoggedIn,
     addToCart,
     removeFromCart,
     updateQuantity,
     updateSize,
     clearCart,
+    clearSelectedItems,
     getCartTotal,
     getCartItemCount,
     isInCart,
@@ -331,6 +377,13 @@ export const CartProvider = ({ children }) => {
     isAtMaxStock,
     handleLogin,
     handleLogout,
+    toggleItemSelection,
+    selectAllItems,
+    deselectAllItems,
+    isItemSelected,
+    getSelectedItems,
+    getSelectedItemsTotal,
+    getSelectedItemsCount,
   };
 
   return (
