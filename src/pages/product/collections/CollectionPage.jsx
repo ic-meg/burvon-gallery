@@ -267,54 +267,58 @@ const CollectionPage = () => {
       }
     });
 
-    const transformedProducts = filtered.map((product) => ({
-      id: product.id || product.product_id || product._id,
-      name: (product.name || "").toUpperCase() || "PRODUCT NAME",
-      collection: currentCollection?.name?.toUpperCase() || "COLLECTION",
-      oldPrice: (() => {
-        if (product.original_price && product.current_price) {
-          const cleaned = product.original_price
-            .toString()
-            .replace(/[^\d.]/g, "");
-          const parsed = parseFloat(cleaned);
-          return !isNaN(parsed) && parsed > 0 ? `₱${parsed.toFixed(2)}` : "";
-        }
-        return "";
-      })(),
-      price: (() => {
-        if (product.current_price) {
-          const cleaned = product.current_price
-            .toString()
-            .replace(/[^\d.]/g, "");
-          const parsed = parseFloat(cleaned);
-          return !isNaN(parsed) && parsed > 0 ? `₱${parsed.toFixed(2)}` : "";
-        }
-        if (product.price) {
-          const cleaned = product.price.toString().replace(/[^\d.]/g, "");
-          const parsed = parseFloat(cleaned);
-          return !isNaN(parsed) && parsed > 0 ? `₱${parsed.toFixed(2)}` : "";
-        }
-        if (product.original_price && !product.current_price) {
-          const cleaned = product.original_price
-            .toString()
-            .replace(/[^\d.]/g, "");
-          const parsed = parseFloat(cleaned);
-          return !isNaN(parsed) && parsed > 0 ? `₱${parsed.toFixed(2)}` : "";
-        }
-        return "";
-      })(),
-      images: Array.isArray(product.images)
-          ? product.images
-        : typeof product.images === "string" && product.images
-            ? [product.images]
-            : [],
-      sku: product.sku,
-      description: product.description,
-      stock: product.stock,
-      size: product.size,
-      category: product.category?.name || product.category || null,
-      category_id: product.category_id || null,
-    }));
+    const transformedProducts = filtered.map((product) => {
+      
+      return {
+        id: product.id || product.product_id || product._id,
+        name: (product.name || "").toUpperCase() || "PRODUCT NAME",
+        collection: currentCollection?.name?.toUpperCase() || "COLLECTION",
+        oldPrice: (() => {
+          if (product.original_price && product.current_price) {
+            const cleaned = product.original_price
+              .toString()
+              .replace(/[^\d.]/g, "");
+            const parsed = parseFloat(cleaned);
+            return !isNaN(parsed) && parsed > 0 ? `₱${parsed.toFixed(2)}` : "";
+          }
+          return "";
+        })(),
+        price: (() => {
+          if (product.current_price) {
+            const cleaned = product.current_price
+              .toString()
+              .replace(/[^\d.]/g, "");
+            const parsed = parseFloat(cleaned);
+            return !isNaN(parsed) && parsed > 0 ? `₱${parsed.toFixed(2)}` : "";
+          }
+          if (product.price) {
+            const cleaned = product.price.toString().replace(/[^\d.]/g, "");
+            const parsed = parseFloat(cleaned);
+            return !isNaN(parsed) && parsed > 0 ? `₱${parsed.toFixed(2)}` : "";
+          }
+          if (product.original_price && !product.current_price) {
+            const cleaned = product.original_price
+              .toString()
+              .replace(/[^\d.]/g, "");
+            const parsed = parseFloat(cleaned);
+            return !isNaN(parsed) && parsed > 0 ? `₱${parsed.toFixed(2)}` : "";
+          }
+          return "";
+        })(),
+        images: Array.isArray(product.images)
+            ? product.images
+          : typeof product.images === "string" && product.images
+              ? [product.images]
+              : [],
+        sku: product.sku,
+        description: product.description,
+        stock: product.stock,
+        size: product.size,
+        sizeStocks: product.sizeStocks || [],
+        category: product.category?.name || product.category || null,
+        category_id: product.category_id || null,
+      };
+    });
 
     if (transformedProducts.length === 0 && sourceProducts.length > 0) {
       const fallbackProducts = sourceProducts.map((product) => ({
@@ -362,6 +366,7 @@ const CollectionPage = () => {
         description: product.description,
         stock: product.stock,
         size: product.size,
+        sizeStocks: product.sizeStocks || [],
         category: product.category?.name || product.category || null,
         category_id: product.category_id || null,
       }));
@@ -543,13 +548,7 @@ const CollectionPage = () => {
   const loadCollectionProducts = async (collectionId, collectionName) => {
     try {
       let fetched = [];
-      console.debug("[CollectionPage] Using collectionId:", collectionId);
-      console.debug("[CollectionPage] Collection name:", collectionName);
-      console.debug(
-        "[CollectionPage] fetchProductsByCollection function:",
-        fetchProductsByCollection
-      );
-      
+
       if (collectionId && fetchProductsByCollection) {
         try {
           fetched = await fetchProductsByCollection(collectionId);
@@ -569,11 +568,6 @@ const CollectionPage = () => {
         if (contextFetchAllProducts) {
           await contextFetchAllProducts();
           fetched = Array.isArray(products) ? products : [];
-          console.debug(
-            "[CollectionPage] fetchAllProducts fallback result:",
-            fetched
-          );
-          console.debug("[CollectionPage] All products count:", fetched.length);
         }
       }
 
@@ -734,11 +728,9 @@ const CollectionPage = () => {
           description: product.description,
           stock: product.stock,
           size: product.size,
+          sizeStocks: product.sizeStocks || [],
         }));
-        console.debug(
-          "[CollectionPage] mapped products for ProductCard:",
-          transformedProducts
-        );
+
         setCollectionProducts(transformedProducts);
         return;
       }
