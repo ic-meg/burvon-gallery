@@ -232,6 +232,7 @@ const CategoryProducts = () => {
       price: price,
       showStrikethrough: product.current_price && product.original_price, // Show strikethrough when current_price exists
       stock: product.stock || 0,
+      sizeStocks: product.sizeStocks || [],
       images:
         Array.isArray(product.images) && product.images.length > 0
           ? product.images
