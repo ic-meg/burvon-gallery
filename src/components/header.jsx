@@ -19,6 +19,7 @@ import {
 import SearchOverlay from "./SearchOverlay";
 import { useContent } from "../contexts/ContentContext";
 import { useCart } from "../contexts/CartContext";
+import { useWishlist } from "../contexts/WishlistContext";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -28,6 +29,9 @@ const Header = () => {
   const navigate = useNavigate();
   const { homepageContent } = useContent();
   const { getCartItemCount } = useCart();
+  const { getWishlistCount } = useWishlist();
+  
+
 
   useEffect(() => {
     const handleScroll = () => {
@@ -151,7 +155,7 @@ const Header = () => {
               onClick={() => navigate("/shopping-bag")}
             />
             {getCartItemCount() > 0 && (
-              <span className="absolute -top-2 -right-2 metallic-bg cream-text text-xs rounded-full w-5 h-5 flex items-center justify-center avantbold">
+              <span className="absolute -top-1 -right-1 metallic-bg cream-text text-xs rounded-full w-3 h-3 flex items-center justify-center avantbold">
                 {getCartItemCount()}
               </span>
             )}
@@ -249,11 +253,18 @@ const Header = () => {
                 style={{ padding: "0.6rem 0.5rem" }}
               >
                 <span className="metallic-text bebas text-lg">Wishlist</span>
-                <img
-                  src={Heart}
-                  alt="Wishlist"
-                  className="w-5 h-5 hover:opacity-80 ml-auto"
-                />
+                <div className="relative">
+                  <img
+                    src={Heart}
+                    alt="Wishlist"
+                    className="w-5 h-5 hover:opacity-80 cursor-pointer"
+                  />
+                  {getWishlistCount() > 0 && (
+                    <span className="absolute -top-1 -right-1 metallic-bg cream-text text-xs rounded-full w-3 h-3 flex items-center justify-center avantbold">
+                      {getWishlistCount()}
+                    </span>
+                  )}
+                </div>
               </button>
             </div>
             {/* spacer to ensure menu content above footer isn't hidden */}
@@ -357,12 +368,19 @@ const Header = () => {
               className="w-6 h-6 hover:opacity-80 cursor-pointer cream-text"
               onClick={() => navigate("/login")}
             />
-            <img
-              src={IconHeart}
-              alt="Heart"
-              className="w-6 h-6 hover:opacity-80 cursor-pointer cream-text"
-              onClick={() => navigate("/wishlist")}
-            />
+            <div className="relative">
+              <img
+                src={IconHeart}
+                alt="Heart"
+                className="w-6 h-6 hover:opacity-80 cursor-pointer cream-text"
+                onClick={() => navigate("/wishlist")}
+              />
+              {getWishlistCount() > 0 && (
+                <span className="absolute -top-2 -right-2 metallic-bg cream-text text-sm rounded-full w-4 h-4 flex items-center justify-center avantbold">
+                  {getWishlistCount()}
+                </span>
+              )}
+            </div>
             <div className="relative">
               <img
                 src={IconBag}
@@ -371,7 +389,7 @@ const Header = () => {
                 onClick={() => navigate("/shopping-bag")}
               />
               {getCartItemCount() > 0 && (
-                <span className="absolute -top-2 -right-2 metallic-bg cream-text text-xs rounded-full w-5 h-5 flex items-center justify-center avantbold">
+                <span className="absolute -top-2 -right-2 metallic-bg cream-text text-sm rounded-full w-4 h-4 flex items-center justify-center avantbold">
                   {getCartItemCount()}
                 </span>
               )}
