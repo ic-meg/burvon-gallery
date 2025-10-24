@@ -25,6 +25,13 @@ const AddressDropdowns = ({
     backgroundSize: arrowSize
   };
 
+  // Treat NCR cities as province selections with direct barangays
+  const isNCRProvince = (() => {
+    if (!formData.province_region) return false;
+    const ncr = philippineLocations['National Capital Region'];
+    return !!(ncr && Array.isArray(ncr[formData.province_region]));
+  })();
+
   if (isMobile) {
     return (
       <>
@@ -54,8 +61,8 @@ const AddressDropdowns = ({
           onChange={handleCityChange}
           className={`${inputClass} border avant ${textClass} mb-2 appearance-none cursor-pointer ${
             errors.city_municipality ? 'border-red-500 bg-[#2a2a2a] text-red-400' : 'border-[#FFF7DC] bg-[#181818] text-[#FFF7DC]'
-          } ${!formData.province_region ? 'opacity-50 cursor-not-allowed' : ''}`}
-          disabled={!formData.province_region}
+          } ${!formData.province_region || isNCRProvince ? 'opacity-50 cursor-not-allowed' : ''}`}
+          disabled={!formData.province_region || isNCRProvince}
           style={dropdownStyle}
         >
           <option value="" className="text-[#FFF7DC] bg-[#181818]">Select your City/Municipality</option>
@@ -66,7 +73,13 @@ const AddressDropdowns = ({
                 const regionData = philippineLocations[regionName];
                 if (regionData[formData.province_region]) {
                   const provinceData = regionData[formData.province_region];
-                  // Check if it's an object with cities (like NCR) or an array of municipalities
+                  // NCR city-as-province: only option is the selected province (city)
+                  if (isNCRProvince) {
+                    return [
+                      <option key={formData.province_region} value={formData.province_region} className="text-[#FFF7DC] bg-[#181818]">{formData.province_region}</option>
+                    ];
+                  }
+                  // Check if it's an object with cities (like CALABARZON) or an array of municipalities
                   if (typeof provinceData === 'object' && !Array.isArray(provinceData)) {
                     return Object.keys(provinceData).map(city => (
                       <option key={city} value={city} className="text-[#FFF7DC] bg-[#181818]">{city}</option>
@@ -86,21 +99,35 @@ const AddressDropdowns = ({
         {errors.city_municipality && <p className={errorClass}>{errors.city_municipality}</p>}
         
         <label className={labelClass}>BARANGAY</label>
-        <select 
-          name="barangay"
-          value={formData.barangay}
-          onChange={handleInputChange}
-          className={`${inputClass} border avant ${textClass} mb-2 appearance-none cursor-pointer ${
-            errors.barangay ? 'border-red-500 bg-[#2a2a2a] text-red-400' : 'border-[#FFF7DC] bg-[#181818] text-[#FFF7DC]'
-          } ${!formData.city_municipality || !Array.isArray(availableBarangays) || availableBarangays.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
-          disabled={!formData.city_municipality || !Array.isArray(availableBarangays) || availableBarangays.length === 0}
-          style={dropdownStyle}
-        >
-          <option value="" className="text-[#FFF7DC] bg-[#181818]">Select your Barangay</option>
-          {Array.isArray(availableBarangays) && availableBarangays.map(barangay => (
-            <option key={barangay} value={barangay} className="text-[#FFF7DC] bg-[#181818]">{barangay}</option>
-          ))}
-        </select>
+        {Array.isArray(availableBarangays) && availableBarangays.length > 0 ? (
+          <select 
+            name="barangay"
+            value={formData.barangay}
+            onChange={handleInputChange}
+            className={`${inputClass} border avant ${textClass} mb-2 appearance-none cursor-pointer ${
+              errors.barangay ? 'border-red-500 bg-[#2a2a2a] text-red-400' : 'border-[#FFF7DC] bg-[#181818] text-[#FFF7DC]'
+            } ${!formData.city_municipality ? 'opacity-50 cursor-not-allowed' : ''}`}
+            disabled={!formData.city_municipality}
+            style={dropdownStyle}
+          >
+            <option value="" className="text-[#FFF7DC] bg-[#181818]">Select your Barangay</option>
+            {availableBarangays.map(barangay => (
+              <option key={barangay} value={barangay} className="text-[#FFF7DC] bg-[#181818]">{barangay}</option>
+            ))}
+          </select>
+        ) : (
+          <input 
+            type="text"
+            name="barangay"
+            value={formData.barangay}
+            onChange={handleInputChange}
+            className={`${inputClass} border avant ${textClass} mb-2 ${
+              errors.barangay ? 'border-red-500 bg-[#2a2a2a] text-red-400' : 'border-[#FFF7DC] bg-[#181818] text-[#FFF7DC]'
+            } ${!formData.city_municipality ? 'opacity-50 cursor-not-allowed' : ''}`}
+            placeholder="Enter your Barangay"
+            disabled={!formData.city_municipality}
+          />
+        )}
         {errors.barangay && <p className={errorClass}>{errors.barangay}</p>}
       </>
     );
@@ -140,8 +167,8 @@ const AddressDropdowns = ({
             onChange={handleCityChange}
             className={`${inputClass} border avant ${textClass} mb-2 appearance-none cursor-pointer ${
               errors.city_municipality ? 'border-red-500 bg-[#2a2a2a] text-red-400' : 'border-[#FFF7DC] bg-[#181818] text-[#FFF7DC]'
-            } ${!formData.province_region ? 'opacity-50 cursor-not-allowed' : ''}`}
-            disabled={!formData.province_region}
+            } ${!formData.province_region || isNCRProvince ? 'opacity-50 cursor-not-allowed' : ''}`}
+            disabled={!formData.province_region || isNCRProvince}
             style={dropdownStyle}
           >
             <option value="" className="text-[#FFF7DC] bg-[#181818]">Select your City/Municipality</option>
@@ -152,7 +179,13 @@ const AddressDropdowns = ({
                   const regionData = philippineLocations[regionName];
                   if (regionData[formData.province_region]) {
                     const provinceData = regionData[formData.province_region];
-                    // Check if it's an object with cities (like NCR) or an array of municipalities
+                    // NCR city-as-province: only option is the selected province (city)
+                    if (isNCRProvince) {
+                      return [
+                        <option key={formData.province_region} value={formData.province_region} className="text-[#FFF7DC] bg-[#181818]">{formData.province_region}</option>
+                      ];
+                    }
+                    // Check if it's an object with cities (like CALABARZON) or an array of municipalities
                     if (typeof provinceData === 'object' && !Array.isArray(provinceData)) {
                       return Object.keys(provinceData).map(city => (
                         <option key={city} value={city} className="text-[#FFF7DC] bg-[#181818]">{city}</option>
@@ -173,21 +206,35 @@ const AddressDropdowns = ({
         </div>
         <div className="flex-1">
           <label className={labelClass}>BARANGAY</label>
-          <select 
-            name="barangay"
-            value={formData.barangay}
-            onChange={handleInputChange}
-            className={`${inputClass} border avant ${textClass} mb-2 appearance-none cursor-pointer ${
-              errors.barangay ? 'border-red-500 bg-[#2a2a2a] text-red-400' : 'border-[#FFF7DC] bg-[#181818] text-[#FFF7DC]'
-            } ${!formData.city_municipality || !Array.isArray(availableBarangays) || availableBarangays.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
-            disabled={!formData.city_municipality || !Array.isArray(availableBarangays) || availableBarangays.length === 0}
-            style={dropdownStyle}
-          >
-            <option value="" className="text-[#FFF7DC] bg-[#181818]">Select your Barangay</option>
-            {Array.isArray(availableBarangays) && availableBarangays.map(barangay => (
-              <option key={barangay} value={barangay} className="text-[#FFF7DC] bg-[#181818]">{barangay}</option>
-            ))}
-          </select>
+          {Array.isArray(availableBarangays) && availableBarangays.length > 0 ? (
+            <select 
+              name="barangay"
+              value={formData.barangay}
+              onChange={handleInputChange}
+              className={`${inputClass} border avant ${textClass} mb-2 appearance-none cursor-pointer ${
+                errors.barangay ? 'border-red-500 bg-[#2a2a2a] text-red-400' : 'border-[#FFF7DC] bg-[#181818] text-[#FFF7DC]'
+              } ${!formData.city_municipality ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={!formData.city_municipality}
+              style={dropdownStyle}
+            >
+              <option value="" className="text-[#FFF7DC] bg-[#181818]">Select your Barangay</option>
+              {availableBarangays.map(barangay => (
+                <option key={barangay} value={barangay} className="text-[#FFF7DC] bg-[#181818]">{barangay}</option>
+              ))}
+            </select>
+          ) : (
+            <input 
+              type="text"
+              name="barangay"
+              value={formData.barangay}
+              onChange={handleInputChange}
+              className={`${inputClass} border avant ${textClass} mb-2 ${
+                errors.barangay ? 'border-red-500 bg-[#2a2a2a] text-red-400' : 'border-[#FFF7DC] bg-[#181818] text-[#FFF7DC]'
+              } ${!formData.city_municipality ? 'opacity-50 cursor-not-allowed' : ''}`}
+              placeholder="Enter your Barangay"
+              disabled={!formData.city_municipality}
+            />
+          )}
           {errors.barangay && <p className={errorClass}>{errors.barangay}</p>}
         </div>
       </div>
