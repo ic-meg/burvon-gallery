@@ -1,6 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import Layout from "../../components/Layout";
 import { useNavigate } from "react-router-dom";
+import { useContent } from "../../contexts/ContentContext";
+import { useCollection } from "../../contexts/CollectionContext";
 
 import {
   KidsCollectionBanner,
@@ -20,18 +22,8 @@ import {
   CelineWebp,
   AddBag,
   AddBagHover,
-  ClassicCollectionImg,
-  RebellionCollectionImg,
-  LoveLanguageCollectionImg,
-  PearlCollectionImg,
-  PearlCollectionWebp,
-  ClassicCollectionWebp,
-  RebellionCollectionWebp,
-  LoveLanguageCollectionWebp,
   ClashCollectionWebp,
   KidsCollectionWebp,
-  StyleItImg,
-  StyleItWebP,
   FastShipIcon,
   SecureIcon,
   ReturnIcon,
@@ -75,72 +67,74 @@ const heroImages = [
   { src: ClashCollectionBanner, webp: ClashCollectionWebp },
 ];
 
+// Placeholder data for when server is down - will be replaced with dynamic content
 const rebelsTopPicks = [
   {
     id: 1,
-    images: [LyricImage, ClashCollectionBanner],
-    webpImages: [LyricWebp, ClashCollectionWebp],
-    name: "LYRIC",
-    collection: "LOVE LANGUAGE COLLECTION",
-    originalPrice: "₱790.00",
-    salePrice: "₱711.00",
+    images: ["PRODUCT IMAGE ", "PRODUCT IMAGE "],
+    webpImages: ["PRODUCT IMAGE ", "PRODUCT IMAGE "],
+    name: "PRODUCT NAME ",
+    collection: "COLLECTION NAME ",
+    originalPrice: "ORIGINAL PRICE ",
+    salePrice: "SALE PRICE ",
   },
   {
     id: 2,
-    images: [AgathaImage, KidsCollectionBanner],
-    webpImages: [AgathaWebp, KidsCollectionWebp],
-    name: "AGATHA",
-    collection: "CLASH COLLECTION",
-    originalPrice: "₱790.00",
-    salePrice: "₱711.00",
+    images: ["PRODUCT IMAGE ", "PRODUCT IMAGE "],
+    webpImages: ["PRODUCT IMAGE ", "PRODUCT IMAGE "],
+    name: "PRODUCT NAME ",
+    collection: "COLLECTION NAME ",
+    originalPrice: "ORIGINAL PRICE ",
+    salePrice: "SALE PRICE ",
   },
   {
     id: 3,
-    images: [RiomImage, ClashCollectionBanner],
-    webpImages: [RiomWebp, ClashCollectionWebp],
-    name: "RIOM",
-    collection: "THE REBELLION COLLECTION",
-    originalPrice: "₱790.00",
-    salePrice: "₱711.00",
+    images: ["PRODUCT IMAGE ", "PRODUCT IMAGE "],
+    webpImages: ["PRODUCT IMAGE ", "PRODUCT IMAGE "],
+    name: "PRODUCT NAME ",
+    collection: "COLLECTION NAME ",
+    originalPrice: "ORIGINAL PRICE ",
+    salePrice: "SALE PRICE ",
   },
   {
     id: 4,
-    images: [CelineImage, KidsCollectionBanner],
-    webpImages: [CelineWebp, KidsCollectionWebp],
-    name: "CELINE",
-    collection: "THE REBELLION COLLECTION",
-    originalPrice: "₱790.00",
-    salePrice: "₱711.00",
+    images: ["PRODUCT IMAGE ", "PRODUCT IMAGE "],
+    webpImages: ["PRODUCT IMAGE", "PRODUCT IMAGE "],
+    name: "PRODUCT NAME ",
+    collection: "COLLECTION NAME ",
+    originalPrice: "ORIGINAL PRICE ",
+    salePrice: "SALE PRICE ",
   },
   {
     id: 5,
-    images: [LyricImage, ClashCollectionBanner],
-    webpImages: [LyricWebp, ClashCollectionWebp],
-    name: "LYRIC 2",
-    collection: "LOVE LANGUAGE COLLECTION",
-    originalPrice: "₱790.00",
-    salePrice: "₱711.00",
+    images: ["PRODUCT IMAGE ", "PRODUCT IMAGE "],
+    webpImages: ["PRODUCT IMAGE", "PRODUCT IMAGE "],
+    name: "PRODUCT NAME ",
+    collection: "COLLECTION NAME ",
+    originalPrice: "ORIGINAL PRICE ",
+    salePrice: "SALE PRICE ",
   },
   {
     id: 6,
-    images: [CelineImage, KidsCollectionBanner],
-    webpImages: [CelineWebp, KidsCollectionWebp],
-    name: "CELINE",
-    collection: "THE REBELLION COLLECTION",
-    originalPrice: "₱790.00",
-    salePrice: "₱711.00",
+    images: ["PRODUCT IMAGE ", "PRODUCT IMAGE "],
+    webpImages: ["PRODUCT IMAGE ", "PRODUCT IMAGE "],
+    name: "PRODUCT NAME ",
+    collection: "COLLECTION NAME ",
+    originalPrice: "ORIGINAL PRICE ",
+    salePrice: "SALE PRICE",
   },
 ];
 
+// Placeholder data for when server is down - will be replaced with dynamic content
 const burvonsCollections = [
-  { id: 1, image: ClassicCollectionImg, webp: ClassicCollectionWebp, path: "/collections/classic" },
-  { id: 2, image: RebellionCollectionImg, webp: RebellionCollectionWebp, path: "/collections/rebellion" },
-  { id: 3, image: LoveLanguageCollectionImg, webp: LoveLanguageCollectionWebp, path: "/collections/love-language" },
-  { id: 4, image: PearlCollectionImg, webp: PearlCollectionWebp, path: "/collections/pearl" },
-  { id: 5, image: RebellionCollectionImg, webp: RebellionCollectionWebp, path: "/collections/rebellion" },
+  { id: 1, image: "COLLECTION IMAGE ", webp: "COLLECTION IMAGE ", path: "/collections/collection" },
+  { id: 2, image: "COLLECTION IMAGE ", webp: "COLLECTION IMAGE ", path: "/collections/collection" },
+  { id: 3, image: "COLLECTION IMAGE ", webp: "COLLECTION IMAGE ", path: "/collections/collection" },
+  { id: 4, image: "COLLECTION IMAGE ", webp: "COLLECTION IMAGE ", path: "/collections/collection" },
+  { id: 5, image: "COLLECTION IMAGE ", webp: "COLLECTION IMAGE ", path: "/collections/collection" },
 ];
 
-const BASE_HEIGHT = 320; // compact height for collapsed (mobile)
+const BASE_HEIGHT = 320; 
 const HOMEPAGE_COLLECTION_VISIBLE_DESKTOP = 4;
 const HOMEPAGE_COLLECTION_VISIBLE_MOBILE = 1; // For one card per swipe on mobile
 
@@ -162,7 +156,7 @@ const faqs = [
   },
 ];
 
-const SCROLL_STEP = 320; // Adjust for full card width per swipe
+const SCROLL_STEP = 320; 
 
 const Homepage = () => {
   const navigate = useNavigate();
@@ -181,6 +175,13 @@ const Homepage = () => {
 
   const [isMobile, setIsMobile] = useState(false);
   const [openIndex, setOpenIndex] = useState(null);
+  const [dynamicCollections, setDynamicCollections] = useState([]);
+
+  // Homepage content from admin context
+  const { homepageContent, loading: contentLoading } = useContent();
+  
+  // Collections from admin context
+  const { collections, loading: collectionsLoading, fetchAllCollections } = useCollection();
 
   const rebelsScrollRef = useRef(null);
   const burvonScrollRef = useRef(null);
@@ -202,12 +203,52 @@ const Homepage = () => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % heroImages.length);
+      const totalImages = getDynamicHeroImages()?.length || heroImages.length;
+      setCurrentIndex((prev) => (prev + 1) % totalImages);
     }, 4000);
     return () => clearInterval(interval);
-  }, []);
+  }, [homepageContent]);
 
-  // Preload critical images for better performance
+  // Fetch collections on component mount
+  useEffect(() => {
+    const loadCollections = async () => {
+      try {
+        // console.log('Starting to fetch collections for homepage...');
+        const collectionsData = await fetchAllCollections();
+        // console.log('Fetched collections for homepage:', collectionsData);
+        // console.log('Collections data type:', typeof collectionsData);
+        // console.log('Is collections array?', Array.isArray(collectionsData));
+        
+        if (collectionsData && Array.isArray(collectionsData) && collectionsData.length > 0) {
+          // Transform collections data to match homepage format
+          const transformedCollections = collectionsData.map((collection, index) => {
+            // console.log(`Processing collection ${index}:`, collection);
+            return {
+              id: collection.collection_id || collection.id || index + 1,
+              name: collection.name || `Collection ${index + 1}`,
+              image: collection.collection_image || "COLLECTION IMAGE PLACEHOLDER",
+              webp: collection.collection_image || "COLLECTION IMAGE PLACEHOLDER", 
+              path: `/collections/${collection.name?.toLowerCase().replace(/\s+/g, '-') || 'placeholder'}`
+            };
+          });
+          
+          // console.log('Transformed collections:', transformedCollections);
+          setDynamicCollections(transformedCollections);
+        } else {
+          // console.log('No collections data or empty array, using fallback');
+          setDynamicCollections([]);
+        }
+      } catch (error) {
+        console.error('Error loading collections for homepage:', error);
+        // Keep using placeholder data on error
+        setDynamicCollections([]);
+      }
+    };
+
+    loadCollections();
+  }, [fetchAllCollections]);
+
+
   useEffect(() => {
     const preloadImages = () => {
       const criticalImages = [
@@ -229,7 +270,7 @@ const Homepage = () => {
       });
     };
 
-    // Preload after a short delay to not block initial render
+   
     const timer = setTimeout(preloadImages, 100);
     return () => clearTimeout(timer);
   }, []);
@@ -319,9 +360,12 @@ const Homepage = () => {
 
   const showNextCollection = () => {
     if (!atEndBurvon) {
-      setCollectionIndex((prev) =>
-        Math.min(prev + 1, burvonsCollections.length - MAX_VISIBLE_BURVON)
-      );
+      const collections = getDynamicCollections();
+      if (collections.length > MAX_VISIBLE_BURVON) {
+        setCollectionIndex((prev) =>
+          Math.min(prev + 1, collections.length - MAX_VISIBLE_BURVON)
+        );
+      }
     }
   };
 
@@ -362,13 +406,21 @@ const Homepage = () => {
   };
 
   const burvonVisibleCards = () => {
+    const collections = getDynamicCollections();
     let visibleCount = isMobile
       ? HOMEPAGE_COLLECTION_VISIBLE_MOBILE
       : HOMEPAGE_COLLECTION_VISIBLE_DESKTOP;
+    
+    // Don't show more cards than we have collections
+    const actualCount = Math.min(visibleCount, collections.length);
     const visible = [];
     const start = isMobile ? 0 : collectionIndex; // mobile controlled by scroll
-    for (let i = 0; i < visibleCount; i++) {
-      visible.push(burvonsCollections[(start + i) % burvonsCollections.length]);
+    
+    for (let i = 0; i < actualCount; i++) {
+      const index = start + i;
+      if (index < collections.length) {
+        visible.push(collections[index]);
+      }
     }
     return visible;
   };
@@ -426,8 +478,37 @@ const Homepage = () => {
 
   const MAX_VISIBLE_BURVON = HOMEPAGE_COLLECTION_VISIBLE_DESKTOP; // 4
   const atStartBurvon = collectionIndex === 0;
-  const atEndBurvon =
-    collectionIndex === burvonsCollections.length - MAX_VISIBLE_BURVON;
+
+  // Get dynamic hero images from admin content or fallback to static
+  const getDynamicHeroImages = () => {
+    if (homepageContent?.hero_images && Array.isArray(homepageContent.hero_images) && homepageContent.hero_images.length > 0) {
+      return homepageContent.hero_images.map(url => ({ src: url, webp: url }));
+    }
+    return heroImages; // fallback to static images
+  };
+
+  // Get dynamic collections from API or fallback to placeholder data
+  const getDynamicCollections = () => {
+    // console.log('getDynamicCollections called');
+    // console.log('dynamicCollections:', dynamicCollections);
+    // console.log('dynamicCollections length:', dynamicCollections?.length);
+    // console.log('collectionsLoading:', collectionsLoading);
+    
+    if (dynamicCollections && dynamicCollections.length > 0) {
+      // console.log('Using dynamic collections:', dynamicCollections);
+      return dynamicCollections;
+    }
+    // console.log('Using fallback placeholder data');
+    return burvonsCollections; // fallback to placeholder data
+  };
+
+  // Calculate atEndBurvon after getDynamicCollections is defined
+  const atEndBurvon = useMemo(() => {
+    const collections = getDynamicCollections();
+    // If we have fewer collections than max visible, we're always at the end
+    if (collections.length <= MAX_VISIBLE_BURVON) return true;
+    return collectionIndex >= collections.length - MAX_VISIBLE_BURVON;
+  }, [collectionIndex, dynamicCollections]);
 
   return (
     <Layout full>
@@ -442,9 +523,9 @@ const Homepage = () => {
           style={{ transform: `translateX(-${currentIndex * 100}%)` }}
           aria-live="polite"
         >
-          {heroImages.map((image, index) => (
+          {getDynamicHeroImages().map((image, index) => (
             <picture key={index} className="flex-shrink-0 w-full h-full">
-              <source srcSet={image.webp} type="image/webp" />
+              <source src={image.webp} type="image/webp" />
               <img
                 src={image.src}
                 alt={`Burvon homepage banner collection ${index + 1}`}
@@ -455,7 +536,7 @@ const Homepage = () => {
           ))}
         </div>
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex space-x-1 z-20">
-          {heroImages.map((_, index) => (
+          {getDynamicHeroImages().map((_, index) => (
             <span
               key={index}
               className={`w-2 h-2 rounded-full border border-[#FFF7DC] ${
@@ -474,6 +555,8 @@ const Homepage = () => {
           ))}
         </div>
       </section>
+
+      
 
       {/* Rebels Top Picks */}
       <section className="bg-[#1f1f21] py-14">
@@ -559,26 +642,38 @@ const Homepage = () => {
                   draggable={false}
                 />
               </div>
-              {imageLoadingStates[`${item.id}-0`] === "loading" && (
-                <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
-                  <div className="w-8 h-8 border-2 border-[#FFF7DC] border-t-transparent rounded-full animate-spin"></div>
+
+             { /*Hero image */ }
+              {item.images[0].includes('PLACEHOLDER') ? (
+                <div className="w-full h-full bg-[#1F1F21] flex items-center justify-center p-4">
+                  <span className="text-[#FFF7DC] text-sm avant text-center leading-tight">
+                    {item.images[0]}
+                  </span>
                 </div>
+              ) : (
+                <>
+                  {imageLoadingStates[`${item.id}-0`] === "loading" && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-[#1F1F21]">
+                      <div className="w-8 h-8 border-2 border-[#FFF7DC] border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                  )}
+                  <picture className="w-full h-full">
+                    {item.webpImages[0] && !item.webpImages[0].includes('PLACEHOLDER') && (
+                      <source src={item.webpImages[0]} type="image/webp" />
+                    )}
+                    <img
+                      src={item.images[0]}
+                      alt={item.name}
+                      className="object-cover w-full h-full rounded-none select-none transition-opacity duration-300"
+                      draggable={false}
+                      loading="lazy"
+                      onLoad={() => handleImageLoad(`${item.id}-0`)}
+                      onError={() => handleImageError(`${item.id}-0`)}
+                      onLoadStart={() => handleImageStart(`${item.id}-0`)}
+                    />
+                  </picture>
+                </>
               )}
-              <picture className="w-full h-full">
-                {item.webpImages[0] && (
-                  <source srcSet={item.webpImages[0]} type="image/webp" />
-                )}
-                <img
-                  src={item.images[0]}
-                  alt={item.name}
-                  className="object-cover w-full h-full rounded-none select-none transition-opacity duration-300"
-                  draggable={false}
-                  loading="lazy"
-                  onLoad={() => handleImageLoad(`${item.id}-0`)}
-                  onError={() => handleImageError(`${item.id}-0`)}
-                  onLoadStart={() => handleImageStart(`${item.id}-0`)}
-                />
-              </picture>
             </div>
 
                   {/* Text */}
@@ -646,54 +741,64 @@ const Homepage = () => {
 
                     {/* Product Image */}
                     <div className="relative w-full h-[300px] flex items-center justify-center overflow-hidden bg-black">
-                      {imageLoadingStates[
-                        `${item.id}-${isHovered ? hoveredImageIndex : 0}`
-                      ] === "loading" && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-gray-800 z-10">
-                          <div className="w-8 h-8 border-2 border-[#FFF7DC] border-t-transparent rounded-full animate-spin"></div>
+                      {(isHovered ? item.images[hoveredImageIndex] : item.images[0]).includes('PLACEHOLDER') ? (
+                        <div className="w-full h-full bg-[#1F1F21] flex items-center justify-center p-4">
+                          <span className="text-[#FFF7DC] text-sm avant text-center leading-tight">
+                            {isHovered ? item.images[hoveredImageIndex] : item.images[0]}
+                          </span>
                         </div>
+                      ) : (
+                        <>
+                          {imageLoadingStates[
+                            `${item.id}-${isHovered ? hoveredImageIndex : 0}`
+                          ] === "loading" && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-[#1F1F21] z-10">
+                              <div className="w-8 h-8 border-2 border-[#FFF7DC] border-t-transparent rounded-full animate-spin"></div>
+                            </div>
+                          )}
+                          <picture className="w-full h-full">
+                            {item.webpImages[isHovered ? hoveredImageIndex : 0] && !item.webpImages[isHovered ? hoveredImageIndex : 0].includes('PLACEHOLDER') && (
+                              <source
+                                src={
+                                  item.webpImages[isHovered ? hoveredImageIndex : 0]
+                                }
+                                type="image/webp"
+                              />
+                            )}
+                            <img
+                              src={
+                                isHovered
+                                  ? item.images[hoveredImageIndex]
+                                  : item.images[0]
+                              }
+                              alt={item.name}
+                              className={`object-cover w-full h-full rounded-none transition-all duration-300 ${
+                                loadedImages.has(
+                                  `${item.id}-${isHovered ? hoveredImageIndex : 0}`
+                                )
+                                  ? "opacity-100"
+                                  : "opacity-0"
+                              }`}
+                              loading="lazy"
+                              onLoad={() =>
+                                handleImageLoad(
+                                  `${item.id}-${isHovered ? hoveredImageIndex : 0}`
+                                )
+                              }
+                              onError={() =>
+                                handleImageError(
+                                  `${item.id}-${isHovered ? hoveredImageIndex : 0}`
+                                )
+                              }
+                              onLoadStart={() =>
+                                handleImageStart(
+                                  `${item.id}-${isHovered ? hoveredImageIndex : 0}`
+                                )
+                              }
+                            />
+                          </picture>
+                        </>
                       )}
-                      <picture className="w-full h-full">
-                        {item.webpImages[isHovered ? hoveredImageIndex : 0] && (
-                          <source
-                            srcSet={
-                              item.webpImages[isHovered ? hoveredImageIndex : 0]
-                            }
-                            type="image/webp"
-                          />
-                        )}
-                        <img
-                          src={
-                            isHovered
-                              ? item.images[hoveredImageIndex]
-                              : item.images[0]
-                          }
-                          alt={item.name}
-                          className={`object-cover w-full h-full rounded-none transition-all duration-300 ${
-                            loadedImages.has(
-                              `${item.id}-${isHovered ? hoveredImageIndex : 0}`
-                            )
-                              ? "opacity-100"
-                              : "opacity-0"
-                          }`}
-                          loading="lazy"
-                          onLoad={() =>
-                            handleImageLoad(
-                              `${item.id}-${isHovered ? hoveredImageIndex : 0}`
-                            )
-                          }
-                          onError={() =>
-                            handleImageError(
-                              `${item.id}-${isHovered ? hoveredImageIndex : 0}`
-                            )
-                          }
-                          onLoadStart={() =>
-                            handleImageStart(
-                              `${item.id}-${isHovered ? hoveredImageIndex : 0}`
-                            )
-                          }
-                        />
-                      </picture>
                       {isHovered && item.images.length > 1 && (
                         <>
                           <img
@@ -841,26 +946,34 @@ const Homepage = () => {
                 WebkitOverflowScrolling: "touch",
               }}
             >
-              {burvonsCollections.map((col) => (
+              {getDynamicCollections().map((col) => (
                 <div
                   key={col.id}
                   className="bg-[#111] drop-shadow-lg rounded-none flex-shrink-0 md:flex-shrink md:w-auto cursor-pointer"
                   style={{
-                    width: "65vw", // 👈 unified size
-                    margin: "0 6px", // 👈 same margins
+                    width: "65vw", //  unified size
+                    margin: "0 6px", //  same margins
                     scrollSnapAlign: "center",
                   }}
                   onClick={() => navigate(col.path)}
                 >
-                  <picture>
-                    <source srcSet={col.webp} type="image/webp" />
-                    <img
-                      src={col.image}
-                      alt={`Burvon Collection ${col.id}`}
-                      className="w-full h-full object-cover"
-                      draggable={false}
-                    />
-                  </picture>
+                  {col.image.includes('PLACEHOLDER') ? (
+                    <div className="w-full h-full bg-[#1F1F21] flex items-center justify-center p-4">
+                      <span className="text-[#FFF7DC] text-sm avant text-center leading-tight">
+                        {col.image}
+                      </span>
+                    </div>
+                  ) : (
+                    <picture>
+                      <source src={col.webp} type="image/webp" />
+                      <img
+                        src={col.image}
+                        alt={`Burvon Collection ${col.id}`}
+                        className="w-full h-full object-cover"
+                        draggable={false}
+                      />
+                    </picture>
+                  )}
                 </div>
               ))}
             </div>
@@ -886,19 +999,27 @@ const Homepage = () => {
                       transformOrigin: "center",
                       transition: "transform 0.3s ease, box-shadow 0.3s ease",
                       transform: isHovered ? "scale(1.03)" : "scale(1)",
-                      borderRadius: 0, // explicitly remove border radius
+                      borderRadius: 0, //  remove border radius
                     }}
                   >
-                    <picture className="w-full">
-                      <source srcSet={col.webp} type="image/webp" />
-                      <img
-                        src={col.image}
-                        alt={`Burvon Collection ${col.id}`}
-                        className="w-full h-auto object-cover select-none transition-transform duration-300"
-                        draggable={false}
-                        style={{ display: "block", borderRadius: 3 }} // remove rounding on img
-                      />
-                    </picture>
+                    {col.image.includes('PLACEHOLDER') ? (
+                      <div className="w-full h-[200px] bg-[#1F1F21] flex items-center justify-center p-4">
+                        <span className="text-[#FFF7DC] text-sm avant text-center leading-tight">
+                          {col.image}
+                        </span>
+                      </div>
+                    ) : (
+                      <picture className="w-full">
+                        <source src={col.webp} type="image/webp" />
+                        <img
+                          src={col.image}
+                          alt={`Burvon Collection ${col.id}`}
+                          className="w-full h-auto object-cover select-none transition-transform duration-300"
+                          draggable={false}
+                          style={{ display: "block", borderRadius: 3 }} // remove rounding on img
+                        />
+                      </picture>
+                    )}
                   </div>
                 );
               })}
@@ -907,13 +1028,12 @@ const Homepage = () => {
         </div>
       </section>
 
-      {/* Style It On You Section */}
-      <section className="relative w-full bg-[#1F1F21] mt-16 md:mt-24 lg:mt-15">
-        <picture className="w-full">
-          <source srcSet={StyleItWebP} type="image/webp" />
+      {/* Dynamic Try-On Section */}
+      {homepageContent && homepageContent.promo_image && (
+        <section className="relative w-full bg-[#1F1F21] mt-16 md:mt-24 lg:mt-15">
           <img
-            src={StyleItImg}
-            alt="Style It On You"
+            src={homepageContent.promo_image}
+            alt={homepageContent.title || "Try On Feature"}
             className={`w-full object-cover ${
               isMobile ? "h-[400px]" : "h-[500px] md:h-[600px] lg:h-[650px]"
             }`}
@@ -922,39 +1042,41 @@ const Homepage = () => {
               objectPosition: isMobile ? "center bottom" : "center center",
             }}
           />
-        </picture>
 
-        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"></div>
 
-        <div className="absolute inset-0 flex items-center">
-          <div className="max-w-7xl mx-auto w-full px-4 sm:px-10 md:px-10 lg:px-5">
-            {/* Removed mx-auto to align left */}
-            <div className="flex flex-col items-center text-center max-w-md md:items-start md:text-left">
-              <h2 className="font-bold text-2xl md:text-3xl lg:text-4xl mb-4 tracking-wide text-[#fff7dc] bebas">
-                STYLE IT ON YOU
-              </h2>
-              <p className="mb-8 text-sm md:text-base lg:text-lg text-[#fff7dc] opacity-90 avant leading-snug">
-                Experience our virtual try-on feature and see <br />
-                how each piece looks on you.
-              </p>
-              <button
-                style={{
-                  backgroundColor:
-                    hoveredButtonId === "try" ? "#FFF7DC" : "transparent",
-                  color: hoveredButtonId === "try" ? "#1F1F21" : "#FFF7DC",
-                  outline: "2px solid #FFF7DC",
-                  borderRadius: 5,
-                }}
-                onMouseEnter={() => setHoveredButtonId("try")}
-                onMouseLeave={() => setHoveredButtonId(null)}
-                className="flex items-center justify-center gap-2 py-3 px-6 avant text-base tracking-wide transition-colors duration-300 outline-none cursor-pointer"
-              >
-                TRY NOW
-              </button>
+          <div className="absolute inset-0 flex items-center">
+            <div className="max-w-7xl mx-auto w-full px-4 sm:px-10 md:px-10 lg:px-5">
+              <div className="flex flex-col items-center text-center max-w-md md:items-start md:text-left">
+                {homepageContent.title && (
+                  <h2 className="font-bold text-2xl md:text-3xl lg:text-4xl mb-4 tracking-wide text-[#fff7dc] bebas">
+                    {homepageContent.title.toUpperCase()}
+                  </h2>
+                )}
+                {homepageContent.description && (
+                  <p className="mb-8 text-sm md:text-base lg:text-lg text-[#fff7dc] opacity-90 avant leading-snug">
+                    {homepageContent.description}
+                  </p>
+                )}
+                <button
+                  style={{
+                    backgroundColor:
+                      hoveredButtonId === "try" ? "#FFF7DC" : "transparent",
+                    color: hoveredButtonId === "try" ? "#1F1F21" : "#FFF7DC",
+                    outline: "2px solid #FFF7DC",
+                    borderRadius: 5,
+                  }}
+                  onMouseEnter={() => setHoveredButtonId("try")}
+                  onMouseLeave={() => setHoveredButtonId(null)}
+                  className="flex items-center justify-center gap-2 py-3 px-6 avant text-base tracking-wide transition-colors duration-300 outline-none cursor-pointer"
+                >
+                  TRY NOW
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Services Highlights Section */}
       <section className="bg-[#1F1F21] py-20 flex justify-center">
@@ -1062,7 +1184,7 @@ const Homepage = () => {
                     src={openIndex === index ? DropUp : DropDown}
                     alt="toggle"
                     className="w-4 h-4"
-                    style={{ marginRight: "15px" }} // adjust spacing as needed
+                    style={{ marginRight: "15px" }} 
                   />
                 </button>
                 {openIndex === index && (

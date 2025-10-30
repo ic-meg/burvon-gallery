@@ -14,7 +14,7 @@ const FloatingChatButton = () => {
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        console.log("Footer intersection:", entry.isIntersecting); // Debug 
+        
         setOverFooter(entry.isIntersecting);
       },
       {
@@ -26,10 +26,10 @@ const FloatingChatButton = () => {
 
     const footerEl = document.getElementById("footer");
     if (footerEl) {
-      console.log("Footer element found:", footerEl); 
+      // console.log("Footer element found:", footerEl); 
       observer.observe(footerEl);
     } else {
-      console.log("Footer element not found"); 
+      // console.log("Footer element not found"); 
     }
 
     return () => {
@@ -62,7 +62,7 @@ const FloatingChatButton = () => {
   }, []);
 
   useEffect(() => {
-    console.log("Over footer state:", overFooter);
+    // console.log("Over footer state:", overFooter);
   }, [overFooter]);
 
   // Hide floating chat when menu or search overlay is open
