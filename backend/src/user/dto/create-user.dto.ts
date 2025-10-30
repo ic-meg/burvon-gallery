@@ -1,5 +1,7 @@
-import { IsEmail, IsEnum, IsOptional, IsString } from 'class-validator';
-import { UserRole, UserStatus } from '@prisma/client'; 
+import { IsEmail, IsIn, IsOptional, IsString } from 'class-validator';
+
+const ALLOWED_USER_ROLES = ['customer', 'admin', 'manager', 'csr', 'clerk'] as const;
+const ALLOWED_USER_STATUS = ['active', 'inactive', 'suspended'] as const;
 
 export class CreateUserDto {
   @IsString()
@@ -14,12 +16,13 @@ export class CreateUserDto {
   @IsOptional()
   password_hash: string;
 
-  @IsEnum(UserRole)
-  @IsOptional() 
-  role?: UserRole;
-
+  @IsIn([...ALLOWED_USER_ROLES])
   @IsOptional()
-  status?: UserStatus; 
+  role?: (typeof ALLOWED_USER_ROLES)[number];
+
+  @IsIn([...ALLOWED_USER_STATUS])
+  @IsOptional()
+  status?: (typeof ALLOWED_USER_STATUS)[number];
 
   @IsOptional()
   can_access?: any; 
