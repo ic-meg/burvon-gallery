@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { DatabaseService } from 'src/database/database.service';
+import { DatabaseService } from '../database/database.service';
 import { HomepageCreateDto } from './dto/create-homepage.dto';
 import { UpdateHomepageDto } from './dto/update-homepage.dto';
 import { CreateCollectionDto } from './dto/create-collection.dto';
