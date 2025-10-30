@@ -4,7 +4,7 @@ import { ExpressAdapter } from '@nestjs/platform-express';
 import express from 'express';
 import serverless from 'serverless-http';
 
-export const config = { runtime: 'nodejs20.x' }; 
+export const config = { runtime: 'nodejs' };
 
 const server = express();
 
