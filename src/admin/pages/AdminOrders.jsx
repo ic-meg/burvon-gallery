@@ -1,5 +1,7 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import AdminHeader from "../../components/admin/AdminHeader";
+import orderApi from "../../api/orderApi";
+import Toast from "../../components/Toast";
 
 import {
 NextIConBlack,
@@ -8,136 +10,139 @@ DropDownIconBlack,
 DropUpIconBlack 
 } from '../../assets/index.js'
 
-// Single Modal Component that handles all statuses
-const ViewDetailsModal = ({ isOpen, onClose, order }) => {
+
+const ViewDetailsModal = ({ isOpen, onClose, order, showToast }) => {
   if (!isOpen || !order) return null;
 
-  // Handle click outside modal to close
+
   const handleOverlayClick = (e) => {
-    // Only close if the click is on the overlay, not on the modal content
     if (e.target === e.currentTarget) {
       onClose();
     }
   };
 
-  // Dynamic order details based on status
-  const getOrderDetails = (status) => {
+  // Dynamic order details heree
+  const getOrderDetails = (order) => {
+    if (!order) return null;
+
     const baseOrder = {
-      id: "#38940123",
-      orderDate: "Sep 26, 2025",
-      items: [
-        {
-          id: 1,
-          image: "/api/placeholder/80/80",
-          name: "Clash Collection Necklaces",
-          sku: "NCK-CLSH-ODV-GLD-001",
-          quantity: 1,
-          size: "One Size",
-          price: "₱ 590.00",
-          subtotal: "₱ 590.00"
-        }
-      ],
+      id: order.id,
+      orderDate: order.date,
+      items: (order.items || []).map(item => ({
+        id: item.order_item_id || item.id,
+        image: item.product?.images?.[0] || "/api/placeholder/80/80",
+        name: item.name || "Product Name",
+        sku: item.product?.sku || item.sku || "N/A",
+        quantity: item.quantity || 1,
+        size: item.size || "One Size",
+        price: `₱ ${parseFloat(item.price || 0).toFixed(2)}`,
+        subtotal: `₱ ${(parseFloat(item.price || 0) * (item.quantity || 1)).toFixed(2)}`
+      })),
       pricing: {
-        subtotal: "₱ 590.00",
-        shipping: "₱ 80.00",
+        subtotal: `₱ ${parseFloat(order.rawTotalPrice || 0).toFixed(2)}`,
+        shipping: `₱ 80.00`,
         discount: "-",
-        total: "₱ 670.00"
+        total: order.amount || "₱ 0.00"
       },
       customer: {
-        name: "Giuliani Calais",
-        email: "gilcalais@gmail.com",
-        phone: "+63926484997"
+        name: order.customer,
+        email: order.email || "N/A",
+        phone: order.phone || "N/A"
       },
       shipping: {
-        name: "Giuliani Calais",
-        address: "Blk 2 Lot 37 Greenfields",
-        barangay: "Mambog 2",
-        city: "Bacoor City",
-        province: "Cavite",
-        postalCode: "4102"
+        name: order.shipping?.name || order.customer,
+        address: order.shipping?.address || "N/A",
+        barangay: order.shipping?.barangay || "N/A",
+        city: order.shipping?.city || "N/A",
+        province: order.shipping?.province || "N/A",
+        postalCode: order.shipping?.postalCode || "N/A"
       },
       payment: {
-        method: "Gcash",
-        status: "PAID",
-        transactionId: "GC-789456123",
-        paymentDate: "2025-09-26 10:30 AM"
+        method: order.payment?.method || "N/A",
+        status: order.payment?.status || "PAID",
+        transactionId: order.payment?.transactionId || "N/A",
+        paymentDate: order.payment?.paymentDate || order.date
       },
-      notes: "Please avoid putting the price tag inside the package (it's a gift)."
+      notes: order.notes || "No special instructions"
     };
 
-    // Add status-specific fields
-    switch (status) {
-      case 'Processing':
+    const orderStatus = order.status?.toLowerCase();
+    
+    switch (orderStatus) {
+      case 'processing':
         return {
           ...baseOrder,
           status: 'Processing',
           processing: {
             currentStage: "Packaging",
-            estimatedShipping: "Oct 08, 2025",
-            courier: "JnT Express"
+            estimatedShipping: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {
+              month: 'short',
+              day: '2-digit',
+              year: 'numeric'
+            }),
+            courier: "Standard Shipping"
           }
         };
-      case 'Shipped':
+      case 'shipped':
         return {
           ...baseOrder,
           status: 'Shipped',
           shipping: {
             ...baseOrder.shipping,
-            trackingNumber: "JT789456123",
-            courier: "JnT Express",
-            shippedDate: "Oct 08, 2025",
-            estimatedDelivery: "Oct 12, 2025"
+            trackingNumber: order.shipping?.trackingNumber || 'TRK' + Math.random().toString(36).substr(2, 9).toUpperCase(),
+            courier: order.shipping?.courier || "Standard Shipping",
+            shippedDate: order.shipping?.shippedDate || new Date().toLocaleDateString('en-US', {
+              month: 'short',
+              day: '2-digit',
+              year: 'numeric'
+            }),
+            estimatedDelivery: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {
+              month: 'short',
+              day: '2-digit',
+              year: 'numeric'
+            })
           }
         };
-      case 'Completed':
+      case 'completed':
+      case 'delivered':
         return {
           ...baseOrder,
           status: 'Completed',
           completion: {
-            deliveredDate: "Oct 10, 2025",
-            receivedBy: "Giuliani Calais"
+            deliveredDate: order.deliveredDate || new Date().toLocaleDateString('en-US', {
+              month: 'short',
+              day: '2-digit',
+              year: 'numeric'
+            }),
+            receivedBy: order.receivedBy || order.customer
           }
         };
-      case 'Return/Refund':
+      case 'return':
+      case 'refund':
         return {
           ...baseOrder,
           status: 'Return/Refund',
           returnRefund: {
-            deliveredDate: "Oct 10, 2025 2:30 PM",
-            requestDate: "Oct 15, 2025 9:15 AM",
-            reason: "Product defect - necklace chain broke after first wear",
-            refundAmount: "₱ 590.00"
+            deliveredDate: order.returnRefund?.deliveredDate || "N/A",
+            requestDate: order.returnRefund?.requestDate || "N/A",
+            reason: order.returnRefund?.reason || "No reason provided",
+            refundAmount: order.returnRefund?.refundAmount || baseOrder.pricing.total
           },
-          returnItems: [
-            {
-              id: 1,
-              name: "Clash Collection Necklaces",
-              subtitle: "(Elegant Pendant Jewelry)",
-              quantity: 1,
-              size: "One Size", 
-              sku: "NCK-CLSH-ODV-GLD-001",
-              subtotal: "₱ 590.00"
-            }
-          ],
-          returnDescription: "The necklace chain broke after wearing it for the first time. Customer reported that the clasp mechanism was faulty and came apart during normal use. Product shows signs of manufacturing defect.",
+          returnItems: order.returnItems || baseOrder.items,
+          returnDescription: order.returnDescription || "No description provided",
           returnProof: {
-            images: [
-              "/api/placeholder/150/150",
-              "/api/placeholder/150/150", 
-              "/api/placeholder/150/150"
-            ],
-            videos: [
-              "/api/placeholder/video1.mp4"
-            ]
+            images: order.returnProof?.images || [],
+            videos: order.returnProof?.videos || []
           }
         };
-      case 'Cancellation':
+      case 'cancellation':
+      case 'cancelled':
         return {
           ...baseOrder,
           status: 'Cancellation',
           cancellation: {
-            reason: "Customer request",
-            cancelledDate: "Sep 27, 2025"
+            reason: order.cancellation?.reason || "Customer request",
+            cancelledDate: order.cancellation?.cancelledDate || order.date
           }
         };
       default:
@@ -145,7 +150,7 @@ const ViewDetailsModal = ({ isOpen, onClose, order }) => {
     }
   };
 
-  const orderDetails = getOrderDetails(order.status);
+  const orderDetails = getOrderDetails(order);
 
   // Get status-specific styling
   const getStatusStyle = (status) => {
@@ -160,7 +165,6 @@ const ViewDetailsModal = ({ isOpen, onClose, order }) => {
     return styles[status] || styles['Pending'];
   };
 
-  // Render status-specific right column
   const renderRightColumn = () => {
     switch (orderDetails.status) {
       case 'Processing':
@@ -311,18 +315,38 @@ const ViewDetailsModal = ({ isOpen, onClose, order }) => {
 
   // Render action buttons based on status
   const renderActionButtons = () => {
+    const handleStatusUpdate = async (newStatus) => {
+      try {
+        const response = await orderApi.updateOrderStatus(order.orderId, newStatus);
+        if (response.error) {
+          if (newStatus === 'Shipped' && response.error.includes('tracking')) {
+            showToast(`Cannot mark as shipped: ${response.error}`, 'error');
+          } else {
+            showToast(`Failed to update order: ${response.error}`, 'error');
+          }
+        } else {
+          showToast(`Order marked as ${newStatus}`, 'success');
+          setTimeout(() => {
+            onClose(); 
+          }, 500);
+        }
+      } catch (error) {
+        showToast('Error updating order status', 'error');
+      }
+    };
+
     switch (orderDetails.status) {
       case 'Pending':
         return (
           <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-4">
             <button 
-              onClick={onClose}
+              onClick={() => handleStatusUpdate('Cancelled')}
               className="px-6 py-2 bg-transparent border-2 border-black text-black rounded-lg hover:bg-black hover:text-white transition-colors avant text-sm font-medium"
             >
               CANCEL ORDER
             </button>
             <button 
-              onClick={onClose}
+              onClick={() => handleStatusUpdate('Processing')}
               className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors avant text-sm font-medium"
             >
               ACCEPT ORDER
@@ -346,7 +370,7 @@ const ViewDetailsModal = ({ isOpen, onClose, order }) => {
               Print Waybill
             </button>
             <button 
-              onClick={onClose}
+              onClick={() => handleStatusUpdate('Shipped')}
               className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors avant text-sm font-medium"
             >
               MARK AS SHIPPED
@@ -364,7 +388,7 @@ const ViewDetailsModal = ({ isOpen, onClose, order }) => {
               Cancel
             </button>
             <button 
-              onClick={onClose}
+              onClick={() => handleStatusUpdate('Delivered')}
               className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors avant text-sm font-medium"
             >
               MARK AS DELIVERED
@@ -376,13 +400,13 @@ const ViewDetailsModal = ({ isOpen, onClose, order }) => {
         return (
           <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-4">
             <button 
-              onClick={onClose}
+              onClick={() => handleStatusUpdate('Rejected')}
               className="px-6 py-2 bg-transparent border-2 border-black text-black rounded-lg hover:bg-black hover:text-white transition-colors avant text-sm font-medium"
             >
               Reject
             </button>
             <button 
-              onClick={onClose}
+              onClick={() => handleStatusUpdate('Refunded')}
               className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors avant text-sm font-medium"
             >
               Approve
@@ -395,7 +419,6 @@ const ViewDetailsModal = ({ isOpen, onClose, order }) => {
     }
   };
 
-  // Render Return/Refund specific layout
   const renderReturnRefundLayout = () => {
     if (orderDetails.status !== 'Return/Refund') {
       return (
@@ -665,27 +688,33 @@ const ViewDetailsModal = ({ isOpen, onClose, order }) => {
               <div className="text-center">SUBTOTAL</div>
             </div>
 
-            {orderDetails.items.map((item) => (
-              <div key={item.id} className="grid grid-cols-6 gap-4 items-center py-4 border-b border-gray-100">
+            {orderDetails.items && orderDetails.items.length > 0 ? (
+              orderDetails.items.map((item, index) => (
+                <div key={item.id || index} className="grid grid-cols-6 gap-4 items-center py-4 border-b border-gray-100">
                 <div className="col-span-2 flex items-center space-x-4">
                   <div className="w-20 h-20 bg-gray-200 rounded-lg flex-shrink-0">
                     <img 
-                      src={item.image} 
-                      alt={item.name}
+                        src={item.image || item.product?.image || "/api/placeholder/80/80"} 
+                        alt={item.name || item.product?.name || "Product"}
                       className="w-full h-full object-cover rounded-lg"
                     />
                   </div>
                   <div>
-                    <h4 className="font-medium text-black avant">{item.name}</h4>
+                      <h4 className="font-medium text-black avant">{item.name || item.product?.name || "Product Name"}</h4>
                     {item.size && <p className="text-sm text-gray-500 avant uppercase">SIZE: {item.size}</p>}
                   </div>
                 </div>
-                <div className="text-center text-sm text-gray-600 avant uppercase">{item.sku}</div>
-                <div className="text-center font-medium text-black avant">{item.quantity}</div>
-                <div className="text-center font-medium text-black avant">{item.price}</div>
-                <div className="text-center font-medium text-black avant">{item.subtotal}</div>
+                  <div className="text-center text-sm text-gray-600 avant uppercase">{item.sku || item.product?.sku || "N/A"}</div>
+                  <div className="text-center font-medium text-black avant">{item.quantity || 1}</div>
+                  <div className="text-center font-medium text-black avant">{item.price || item.product?.price || "₱ 0.00"}</div>
+                  <div className="text-center font-medium text-black avant">{item.subtotal || item.total || "₱ 0.00"}</div>
               </div>
-            ))}
+              ))
+            ) : (
+              <div className="py-8 text-center text-gray-500 avant">
+                No items found for this order
+              </div>
+            )}
           </div>
 
           {/* Dynamic layout based on status */}
@@ -713,75 +742,191 @@ const AdminOrders = () => {
   const [showViewDetailsModal, setShowViewDetailsModal] = useState(false);
   const [selectedOrderForDetails, setSelectedOrderForDetails] = useState(null);
 
+  // Dynamic data state
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 5,
+    total: 0,
+    totalPages: 0
+  });
+
+  // Toast state
+  const [toast, setToast] = useState({
+    show: false,
+    message: '',
+    type: 'success'
+  });
+
   const itemsPerPage = 5;
 
-  // Simplified orders data - only one per status
-  const allOrders = [
-    {
-      id: "#38940123",
-      customer: "Giuliani Calais",
-      amount: "₱ 670.00",
-      status: "Pending",
-      date: "Sep 26, 2025"
-    },
-    {
-      id: "#38940124", 
-      customer: "John Doe",
-      amount: "₱ 670.00",
-      status: "Processing",
-      date: "Sep 25, 2025"
-    },
-    {
-      id: "#38940125",
-      customer: "Jane Smith", 
-      amount: "₱ 670.00",
-      status: "Shipped",
-      date: "Sep 24, 2025"
-    },
-    {
-      id: "#38940126",
-      customer: "Mike Johnson",
-      amount: "₱ 670.00", 
-      status: "Completed",
-      date: "Sep 23, 2025"
-    },
-    {
-      id: "#38940127",
-      customer: "Sarah Wilson",
-      amount: "₱ 670.00",
-      status: "Return/Refund", 
-      date: "Sep 22, 2025"
-    },
-    {
-      id: "#38940128",
-      customer: "Tom Brown",
-      amount: "₱ 670.00",
-      status: "Cancellation",
-      date: "Sep 21, 2025"
-    }
-  ];
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+  };
 
-  // Handle view details click - now uses single modal
+  const hideToast = () => {
+    setToast({ show: false, message: '', type: 'success' });
+  };
+
+  const fetchOrders = async (status = 'all', page = 1) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      let response;
+      if (status === 'all') {
+        response = await orderApi.fetchAllOrders();
+      } else {
+        response = await orderApi.fetchOrdersByStatus(status);
+      }
+
+      if (response.error) {
+        setError(response.error);
+        setOrders([]);
+        showToast(`Failed to fetch orders: ${response.error}`, 'error');
+      } else {
+        let allOrders = [];
+        
+        if (Array.isArray(response.data)) {
+          allOrders = response.data;
+        } else if (response.data && Array.isArray(response.data.data)) {
+          allOrders = response.data.data;
+        } else if (response.data && Array.isArray(response.data.orders)) {
+          allOrders = response.data.orders;
+        }
+        
+        const transformedOrders = allOrders.map(order => transformOrderData(order));
+        
+        setOrders(transformedOrders);
+        setPagination({
+          page: 1,
+          limit: itemsPerPage,
+          total: transformedOrders.length,
+          totalPages: Math.ceil(transformedOrders.length / itemsPerPage)
+        });
+       
+      }
+    } catch (err) {
+      setError('Failed to fetch orders');
+      setOrders([]);
+      showToast('Network error: Failed to fetch orders', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders('all', 1);
+  }, [activeTab, currentPage]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchOrders('all', currentPage);
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, [currentPage]);
+
+  // Handle tab changes
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+    setCurrentPage(1); // Reset to first page when changing tabs
+   
+  };
+
+  // Transform order data for display
+  const transformOrderData = (order) => {
+    
+    const itemsArray = Array.isArray(order.items) ? order.items : [];
+    const computedSubtotal = itemsArray.reduce((sum, item) => {
+      const price = parseFloat(item?.price ?? 0);
+      const qty = parseInt(item?.quantity ?? 1);
+      return sum + (isNaN(price) ? 0 : price) * (isNaN(qty) ? 1 : qty);
+    }, 0);
+
+    const totalPriceFromOrder = parseFloat(order.total_price || 0);
+    const subtotalToUse = computedSubtotal > 0 ? computedSubtotal : totalPriceFromOrder;
+
+    const shippingCost = parseFloat(order.shipping_cost || 0);
+    const totalAmount = subtotalToUse + shippingCost;
+    
+    const customerName = order.user ? 
+      `${order.user.first_name || ''} ${order.user.last_name || ''}`.trim() : 
+      `${order.first_name || ''} ${order.last_name || ''}`.trim();
+    
+    const orderId = order.order_id || order.id || 'N/A';
+    const transformedOrder = {
+      id: `#${orderId}`,
+      customer: customerName || 'N/A',
+      amount: `₱ ${totalAmount.toFixed(2)}`,
+      status: order.status || 'Pending',
+      date: new Date(order.created_at || Date.now()).toLocaleDateString('en-US', {
+        month: 'short',
+        day: '2-digit',
+        year: 'numeric'
+      }),
+      orderId: orderId,
+      email: order.email || 'N/A',
+      phone: order.phone || 'N/A',
+      items: itemsArray,
+      shipping: {
+        name: `${order.first_name || ''} ${order.last_name || ''}`.trim() || 'N/A',
+        address: order.street_address || 'N/A',
+        barangay: order.barangay || 'N/A',
+        city: order.city_municipality || 'N/A',
+        province: order.province_region || 'N/A',
+        postalCode: order.postal_code || 'N/A',
+        cost: shippingCost.toFixed(2),
+        trackingNumber: order.tracking_number || 'N/A',
+        shippedDate: order.shipped_date ? new Date(order.shipped_date).toLocaleDateString('en-US', {
+          month: 'short',
+          day: '2-digit',
+          year: 'numeric'
+        }) : 'N/A',
+        courier: order.courier || 'Standard Shipping'
+      },
+      notes: order.notes || 'No special instructions',
+      payment: {
+        method: order.payment_method || 'N/A',
+        status: 'PAID',
+        transactionId: order.checkout_session_id || 'N/A',
+        paymentDate: new Date(order.created_at || Date.now()).toLocaleString('en-US', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit'
+        })
+      },
+     rawTotalPrice: subtotalToUse.toFixed(2)
+    };
+    
+    return transformedOrder;
+  };
+
   const handleViewDetails = (order) => {
     setSelectedOrderForDetails(order);
     setShowViewDetailsModal(true);
+    showToast(`Viewing details for order ${order.id}`, 'success');
   };
 
-  // Filter and sort orders based on active tab, search query, and date sort
   const filteredOrders = useMemo(() => {
-    let filtered = allOrders;
+    let filtered = [...orders];
 
-    // Filter by status (tab)
+    // Filter by active tab status
     if (activeTab !== 'all') {
-      const statusMap = {
-        'pending': 'Pending',
-        'processing': 'Processing', 
-        'shipped': 'Shipped',
-        'completed': 'Completed',
-        'return': 'Return/Refund',
-        'cancellation': 'Cancellation'
-      };
-      filtered = filtered.filter(order => order.status === statusMap[activeTab]);
+      filtered = filtered.filter(order => {
+        const orderStatus = order.status?.toLowerCase();
+        if (activeTab === 'pending') return orderStatus === 'pending';
+        if (activeTab === 'processing') return orderStatus === 'processing';
+        if (activeTab === 'shipped') return orderStatus === 'shipped';
+        if (activeTab === 'completed') return orderStatus === 'completed' || orderStatus === 'delivered';
+        if (activeTab === 'return') return orderStatus === 'return' || orderStatus === 'refund';
+        if (activeTab === 'cancellation') return orderStatus === 'cancellation' || orderStatus === 'cancelled';
+        return true;
+      });
     }
 
     // Filter by search query
@@ -806,8 +951,13 @@ const AdminOrders = () => {
       }
     });
 
-    return filtered;
-  }, [activeTab, searchQuery, dateSort]);
+    // Apply pagination
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedFiltered = filtered.slice(startIndex, endIndex);
+
+    return paginatedFiltered;
+  }, [orders, activeTab, searchQuery, dateSort, currentPage]);
 
   // Close dropdown when clicking outside
   React.useEffect(() => {
@@ -823,16 +973,42 @@ const AdminOrders = () => {
     };
   }, []);
 
-  // Calculate counts for each tab
+  // Calculate counts for each tab based on all orders (not filtered)
   const getTabCounts = () => {
+    if (!orders || orders.length === 0) {
     return {
-      all: allOrders.length,
-      pending: allOrders.filter(o => o.status === 'Pending').length,
-      processing: allOrders.filter(o => o.status === 'Processing').length,
-      shipped: allOrders.filter(o => o.status === 'Shipped').length,
-      completed: allOrders.filter(o => o.status === 'Completed').length,
-      return: allOrders.filter(o => o.status === 'Return/Refund').length,
-      cancellation: allOrders.filter(o => o.status === 'Cancellation').length,
+        all: 0,
+        pending: 0,
+        processing: 0,
+        shipped: 0,
+        completed: 0,
+        return: 0,
+        cancellation: 0,
+      };
+    }
+
+    // Count orders by status (orders are already transformed)
+    const counts = orders.reduce((acc, order) => {
+      const status = order.status?.toLowerCase();
+      if (status === 'pending') acc.pending++;
+      else if (status === 'processing') acc.processing++;
+      else if (status === 'shipped') acc.shipped++;
+      else if (status === 'completed' || status === 'delivered') acc.completed++;
+      else if (status === 'return' || status === 'refund') acc.return++;
+      else if (status === 'cancellation' || status === 'cancelled') acc.cancellation++;
+      return acc;
+    }, {
+      pending: 0,
+      processing: 0,
+      shipped: 0,
+      completed: 0,
+      return: 0,
+      cancellation: 0,
+    });
+
+    return {
+      all: orders.length,
+      ...counts
     };
   };
 
@@ -850,17 +1026,48 @@ const AdminOrders = () => {
   ];
 
   // Pagination calculations
-  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
-  const paginatedOrders = filteredOrders.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const allFilteredOrders = useMemo(() => {
+    let filtered = [...orders];
+
+    // Filter by active tab status
+    if (activeTab !== 'all') {
+      filtered = filtered.filter(order => {
+        const orderStatus = order.status?.toLowerCase();
+        if (activeTab === 'pending') return orderStatus === 'pending';
+        if (activeTab === 'processing') return orderStatus === 'processing';
+        if (activeTab === 'shipped') return orderStatus === 'shipped';
+        if (activeTab === 'completed') return orderStatus === 'completed' || orderStatus === 'delivered';
+        if (activeTab === 'return') return orderStatus === 'return' || orderStatus === 'refund';
+        if (activeTab === 'cancellation') return orderStatus === 'cancellation' || orderStatus === 'cancelled';
+        return true;
+      });
+    }
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      filtered = filtered.filter(order => 
+        order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        order.customer.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        order.status.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        order.amount.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    return filtered;
+  }, [orders, activeTab, searchQuery]);
+
+  const totalPages = Math.ceil(allFilteredOrders.length / itemsPerPage);
+  const paginatedOrders = filteredOrders;
 
   // Reset to page 1 when tab, search, or sort changes
   React.useEffect(() => {
     setCurrentPage(1);
     setSelectAll(false);
     setSelectedOrders([]);
+    
+    // Show toast for search changes
+    if (searchQuery.trim()) {
+    }
   }, [activeTab, searchQuery, dateSort]);
 
   // Handle select all functionality
@@ -877,29 +1084,91 @@ const AdminOrders = () => {
   const handleOrderSelect = (orderId) => {
     if (selectedOrders.includes(orderId)) {
       setSelectedOrders(selectedOrders.filter(id => id !== orderId));
+      showToast('Order deselected', 'success');
     } else {
       setSelectedOrders([...selectedOrders, orderId]);
+      showToast('Order selected', 'success');
     }
   };
 
   // Handle accept order functionality
-  const handleAcceptOrder = () => {
-    console.log('Accepting orders:', selectedOrders);
+  const handleAcceptOrder = async () => {
+    try {
+      const selectedCount = selectedOrders.length;
+      for (const orderId of selectedOrders) {
+        const response = await orderApi.updateOrderStatus(orderId, 'Processing');
+        if (response.error) {
+          showToast(`Failed to update order ${orderId}: ${response.error}`, 'error');
+          return;
+        }
+      }
+      setSelectedOrders([]);
+      setSelectAll(false);
+      showToast(`Successfully accepted ${selectedCount} order(s)`, 'success');
+      
+      // Add a small delay to ensure database update is complete, then refresh
+      setTimeout(async () => {
+        await fetchOrders('all', 1);
+      }, 500);
+    } catch (error) {
+      console.error('Error accepting orders:', error);
+      showToast('Error accepting orders', 'error');
+    }
   };
 
   // Handle print waybill functionality
   const handlePrintWaybill = () => {
-    console.log('Printing waybills for orders:', selectedOrders);
+    showToast(`Printing waybills for ${selectedOrders.length} order(s)`, 'success');
   };
 
   // Handle mark as shipped functionality
-  const handleMarkAsShipped = () => {
-    console.log('Marking orders as shipped:', selectedOrders);
+  const handleMarkAsShipped = async () => {
+    try {
+      const selectedCount = selectedOrders.length;
+      for (const orderId of selectedOrders) {
+        const response = await orderApi.updateOrderStatus(orderId, 'Shipped');
+        if (response.error) {
+          showToast(`Failed to update order ${orderId}: ${response.error}`, 'error');
+          return;
+        }
+      }
+      setSelectedOrders([]);
+      setSelectAll(false);
+      showToast(`Successfully marked ${selectedCount} order(s) as shipped`, 'success');
+      
+      // Add a small delay to ensure database update is complete, then refresh
+      setTimeout(async () => {
+        await fetchOrders('all', 1);
+      }, 500);
+    } catch (error) {
+      console.error('Error marking orders as shipped:', error);
+      showToast('Error marking orders as shipped', 'error');
+    }
   };
 
   // Handle mark as delivered functionality
-  const handleMarkAsDelivered = () => {
-    console.log('Marking orders as delivered:', selectedOrders);
+  const handleMarkAsDelivered = async () => {
+    try {
+      const selectedCount = selectedOrders.length;
+      for (const orderId of selectedOrders) {
+        const response = await orderApi.updateOrderStatus(orderId, 'Delivered');
+        if (response.error) {
+          showToast(`Failed to update order ${orderId}: ${response.error}`, 'error');
+          return;
+        }
+      }
+      setSelectedOrders([]);
+      setSelectAll(false);
+      showToast(`Successfully marked ${selectedCount} order(s) as delivered`, 'success');
+      
+      // Add a small delay to ensure database update is complete, then refresh
+      setTimeout(async () => {
+        await fetchOrders('all', 1);
+      }, 500);
+    } catch (error) {
+      console.error('Error marking orders as delivered:', error);
+      showToast('Error marking orders as delivered', 'error');
+    }
   };
 
   // Get status badge styling
@@ -939,7 +1208,7 @@ const AdminOrders = () => {
                 <button
                   type="button"
                   onClick={() => setShowSortDropdown(!showSortDropdown)}
-                  className="flex items-center justify-between px-4 py-2 border-2 border-gray-300 rounded-lg bg-white focus:outline-none focus:border-black avant text-sm select-none w-36"
+                  className="flex items-center justify-between px-4 py-2 border-2 metallic-text border-gray-300 rounded-lg bg-white focus:outline-none focus:border-black avant text-sm select-none w-36"
                 >
                   <span>{dateSort === "newest" ? "Newest First" : "Oldest First"}</span>
                   <img
@@ -955,7 +1224,7 @@ const AdminOrders = () => {
                         setDateSort("newest");
                         setShowSortDropdown(false);
                       }}
-                      className={`w-full px-4 py-2 text-left text-sm avant hover:bg-gray-50 transition-colors rounded-t-lg ${
+                      className={`w-full px-4 py-2 text-left text-sm avant metallic-text hover:bg-gray-50 transition-colors rounded-t-lg ${
                         dateSort === "newest" ? "bg-gray-100 font-medium" : ""
                       }`}
                       type="button"
@@ -967,7 +1236,7 @@ const AdminOrders = () => {
                         setDateSort("oldest");
                         setShowSortDropdown(false);
                       }}
-                      className={`w-full px-4 py-2 text-left text-sm avant hover:bg-gray-50 transition-colors rounded-b-lg ${
+                      className={`w-full px-4 py-2 text-left text-sm avant metallic-text hover:bg-gray-50 transition-colors rounded-b-lg ${
                         dateSort === "oldest" ? "bg-gray-100 font-medium" : ""
                       }`}
                       type="button"
@@ -985,7 +1254,7 @@ const AdminOrders = () => {
                   placeholder="Search Orders"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-80 px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant"
+                  className="w-80 px-4 py-2 border-2 metallic-text border-gray-300 rounded-lg focus:outline-none focus:border-black avant"
                 />
               </div>
             </div>
@@ -1010,7 +1279,7 @@ const AdminOrders = () => {
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
+                    onClick={() => handleTabChange(tab.id)}
                     className={`flex items-center space-x-2 pb-3 relative transition-colors duration-200 ${
                       activeTab === tab.id
                         ? 'text-black'
@@ -1142,7 +1411,15 @@ const AdminOrders = () => {
 
             {/* Table Body */}
             <div className="divide-y divide-gray-200">
-              {paginatedOrders.length > 0 ? (
+              {loading ? (
+                <div className="px-6 py-8 text-center text-gray-500 avant">
+                  Loading orders...
+                </div>
+              ) : error ? (
+                <div className="px-6 py-8 text-center text-red-500 avant">
+                  Error: {error}
+                </div>
+              ) : paginatedOrders.length > 0 ? (
                 paginatedOrders.map((order, index) => (
                   <div key={index} className="px-6 py-4 hover:bg-gray-50 transition-colors">
                     <div className={`grid gap-4 items-center ${
@@ -1153,8 +1430,8 @@ const AdminOrders = () => {
                         <div>
                           <input
                             type="checkbox"
-                            checked={selectedOrders.includes(order.id)}
-                            onChange={() => handleOrderSelect(order.id)}
+                            checked={selectedOrders.includes(order.orderId)}
+                            onChange={() => handleOrderSelect(order.orderId)}
                             className="w-4 h-4 border-2 border-black rounded checked:bg-black checked:border-black checked:accent-black cursor-pointer transition"
                           />
                         </div>
@@ -1213,7 +1490,10 @@ const AdminOrders = () => {
                 style={{ height: 44 }}
               >
                 <button
-                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  onClick={() => {
+                    setCurrentPage(Math.max(1, currentPage - 1));
+                    showToast(`Navigated to page ${Math.max(1, currentPage - 1)}`, 'success');
+                  }}
                   disabled={currentPage === 1}
                   aria-label="Previous Page"
                   className="flex items-center justify-center border-r border-black bg-white transition disabled:opacity-40 disabled:cursor-not-allowed"
@@ -1236,7 +1516,10 @@ const AdminOrders = () => {
                   {currentPage} OF {totalPages}
                 </div>
                 <button
-                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  onClick={() => {
+                    setCurrentPage(Math.min(totalPages, currentPage + 1));
+                    showToast(`Navigated to page ${Math.min(totalPages, currentPage + 1)}`, 'success');
+                  }}
                   disabled={currentPage === totalPages}
                   aria-label="Next Page"
                   className="flex items-center justify-center border-l border-black bg-white transition disabled:opacity-40 disabled:cursor-not-allowed"
@@ -1261,6 +1544,16 @@ const AdminOrders = () => {
         isOpen={showViewDetailsModal}
         onClose={() => setShowViewDetailsModal(false)}
         order={selectedOrderForDetails}
+        showToast={showToast}
+      />
+
+      {/* Toast Component */}
+      <Toast
+        show={toast.show}
+        message={toast.message}
+        type={toast.type}
+        onClose={hideToast}
+        duration={3000}
       />
     </div>
   );

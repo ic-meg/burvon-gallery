@@ -84,6 +84,7 @@ button:focus-visible {
   /* Ensure proper scroll behavior on mobile */
   main {
     -webkit-overflow-scrolling: touch;
+    overflow-scrolling: touch;
   }
   
   /* Fix for iOS Safari scroll issues */
@@ -134,6 +135,29 @@ button:focus-visible {
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #fff7dc;
+}
+
+/* Force Vite error overlay above modals */
+vite-error-overlay {
+  z-index: 99999 !important;
+}
+
+/* Image remove button placed outside top-right corner */
+.image-remove-btn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+/* Slight hover effect */
+.image-remove-btn:hover {
+  transform: scale(1.08);
 }
 
 .placeholder-avant::placeholder {

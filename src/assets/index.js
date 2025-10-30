@@ -1,6 +1,7 @@
 // assets/index.js
 
 // ICONS
+import Icon3D from './icons/cube.png';
 import IconSearch from './icons/search.svg';
 import IconUser from './icons/profile.svg';
 import IconHeart from './icons/heart.svg';
@@ -358,6 +359,7 @@ export {
   AddVideo,
   AddVideoCream,
   editIcon,
+  Icon3D,
   visa,
   mastercard,
   paymongo,

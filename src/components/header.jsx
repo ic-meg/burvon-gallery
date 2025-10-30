@@ -17,6 +17,9 @@ import {
 } from "../assets/index";
 
 import SearchOverlay from "./SearchOverlay";
+import { useContent } from "../contexts/ContentContext";
+import { useCart } from "../contexts/CartContext";
+import { useWishlist } from "../contexts/WishlistContext";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -24,6 +27,11 @@ const Header = () => {
 
   const [isScrolled, setIsScrolled] = useState(false);
   const navigate = useNavigate();
+  const { homepageContent } = useContent();
+  const { getCartItemCount } = useCart();
+  const { getWishlistCount } = useWishlist();
+  
+
 
   useEffect(() => {
     const handleScroll = () => {
@@ -47,10 +55,8 @@ const Header = () => {
       document.body.style.right = "0";
       document.body.style.width = "100%";
 
-    
       document.documentElement.style.scrollBehavior = "auto";
     } else {
-   
       const scrollY = parseInt(document.body.dataset.scrollY || "0");
 
       // Remove fixed positioning
@@ -122,7 +128,7 @@ const Header = () => {
       >
         {/* Logo */}
         <img
-          src={WhiteLogo}
+          src={homepageContent?.logo_url || WhiteLogo}
           alt="BURVON Logo"
           className="max-h-[80px] w-auto object-contain"
           onClick={() => navigate("/")}
@@ -135,18 +141,25 @@ const Header = () => {
             className="w-6 h-6 cursor-pointer"
             onClick={() => setSearchOpen(true)}
           />
-        
+
           <SearchOverlay
             isOpen={searchOpen}
             onClose={() => setSearchOpen(false)}
           />
 
-          <img
-            src={BagWhite}
-            alt="Cart"
-            className="w-6 h-6 cursor-pointer"
-            onClick={() => navigate("/shopping-bag")}
-          />
+          <div className="relative">
+            <img
+              src={BagWhite}
+              alt="Cart"
+              className="w-6 h-6 cursor-pointer"
+              onClick={() => navigate("/shopping-bag")}
+            />
+            {getCartItemCount() > 0 && (
+              <span className="absolute -top-1 -right-1 metallic-bg cream-text text-xs rounded-full w-3 h-3 flex items-center justify-center avantbold">
+                {getCartItemCount()}
+              </span>
+            )}
+          </div>
           <div
             role="button"
             tabIndex={0}
@@ -195,10 +208,10 @@ const Header = () => {
             style={{ paddingTop: "2.5rem" }}
           >
             {[
-              { label: "Necklaces", path: "/necklace" },
-              { label: "Earrings", path: "/earrings" },
-              { label: "Rings", path: "/rings" },
-              { label: "Bracelets", path: "/bracelet" },
+              { label: "Necklaces", path: "/products/necklaces" },
+              { label: "Earrings", path: "/products/earrings" },
+              { label: "Rings", path: "/products/rings" },
+              { label: "Bracelets", path: "/products/bracelets" },
             ].map(({ label, path }, index) => (
               <div key={label} className="flex flex-col items-center w-full">
                 <div
@@ -240,11 +253,18 @@ const Header = () => {
                 style={{ padding: "0.6rem 0.5rem" }}
               >
                 <span className="metallic-text bebas text-lg">Wishlist</span>
-                <img
-                  src={Heart}
-                  alt="Wishlist"
-                  className="w-5 h-5 hover:opacity-80 ml-auto"
-                />
+                <div className="relative">
+                  <img
+                    src={Heart}
+                    alt="Wishlist"
+                    className="w-5 h-5 hover:opacity-80 cursor-pointer"
+                  />
+                  {getWishlistCount() > 0 && (
+                    <span className="absolute -top-1 -right-1 metallic-bg cream-text text-xs rounded-full w-3 h-3 flex items-center justify-center avantbold">
+                      {getWishlistCount()}
+                    </span>
+                  )}
+                </div>
               </button>
             </div>
             {/* spacer to ensure menu content above footer isn't hidden */}
@@ -268,13 +288,13 @@ const Header = () => {
           }`}
         >
           <span
-            onClick={() => navigate("/necklace")}
+            onClick={() => navigate("/products/necklaces")}
             className="hover:opacity-60 cursor-pointer"
           >
             Necklaces
           </span>
           <span
-            onClick={() => navigate("/earrings")}
+            onClick={() => navigate("/products/earrings")}
             className="hover:opacity-60 cursor-pointer"
           >
             Earrings
@@ -297,7 +317,7 @@ const Header = () => {
           }}
         >
           <img
-            src={LogoImage}
+            src={homepageContent?.logo_url || LogoImage}
             alt="BURVON Logo"
             className="h-[173px] w-auto object-contain mt-4"
           />
@@ -311,13 +331,13 @@ const Header = () => {
             }`}
           >
             <span
-              onClick={() => navigate("/rings")}
+              onClick={() => navigate("/products/rings")}
               className="hover:opacity-60 cursor-pointer"
             >
               Rings
             </span>
             <span
-              onClick={() => navigate("/bracelet")}
+              onClick={() => navigate("/products/bracelets")}
               className="hover:opacity-60 cursor-pointer"
             >
               Bracelets
@@ -348,18 +368,32 @@ const Header = () => {
               className="w-6 h-6 hover:opacity-80 cursor-pointer cream-text"
               onClick={() => navigate("/login")}
             />
-            <img
-              src={IconHeart}
-              alt="Heart"
-              className="w-6 h-6 hover:opacity-80 cursor-pointer cream-text"
-              onClick={() => navigate("/wishlist")}
-            />
-            <img
-              src={IconBag}
-              alt="Cart"
-              className="w-6 h-6 hover:opacity-80 cursor-pointer cream-text"
-              onClick={() => navigate("/shopping-bag")}
-            />
+            <div className="relative">
+              <img
+                src={IconHeart}
+                alt="Heart"
+                className="w-6 h-6 hover:opacity-80 cursor-pointer cream-text"
+                onClick={() => navigate("/wishlist")}
+              />
+              {getWishlistCount() > 0 && (
+                <span className="absolute -top-2 -right-2 metallic-bg cream-text text-sm rounded-full w-4 h-4 flex items-center justify-center avantbold">
+                  {getWishlistCount()}
+                </span>
+              )}
+            </div>
+            <div className="relative">
+              <img
+                src={IconBag}
+                alt="Cart"
+                className="w-6 h-6 hover:opacity-80 cursor-pointer cream-text"
+                onClick={() => navigate("/shopping-bag")}
+              />
+              {getCartItemCount() > 0 && (
+                <span className="absolute -top-2 -right-2 metallic-bg cream-text text-sm rounded-full w-4 h-4 flex items-center justify-center avantbold">
+                  {getCartItemCount()}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </header>
