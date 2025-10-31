@@ -18,12 +18,10 @@ let isBooting = false;
 
 async function bootstrap() {
   if (isBooting) {
-    console.log('Bootstrap already in progress, waiting...');
   }
   
   try {
     isBooting = true;
-    console.log('Starting NestJS bootstrap...');
     
     const bootstrapTimeout = setTimeout(() => {
       console.error('Bootstrap timeout after 30 seconds');
@@ -45,7 +43,6 @@ async function bootstrap() {
     await app.init();
     clearTimeout(bootstrapTimeout);
     
-    console.log('NestJS app initialized successfully');
     isBooting = false;
     
     return serverless(server);
@@ -59,7 +56,6 @@ async function bootstrap() {
 export default async function handler(req: Request, res: Response) {
   try {
     if (!cachedHandler) {
-      console.log('Initializing handler...');
       cachedHandler = await bootstrap();
     }
     return cachedHandler(req, res);
