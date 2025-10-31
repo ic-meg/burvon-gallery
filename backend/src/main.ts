@@ -8,6 +8,7 @@ import { ExpressAdapter } from '@nestjs/platform-express';
 import * as express from 'express';
 
 const server = express.default();
+const PORT = process.env.PORT || 3000;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, new ExpressAdapter(server));
@@ -21,9 +22,16 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
-  await app.init(); 
+  await app.init();
+  
+
+  await app.listen(PORT);
+  console.log(`Application is running on port ${PORT}`);
 }
 
-bootstrap();
+bootstrap().catch((error) => {
+  console.error('Failed to start application:', error);
+  process.exit(1);
+});
 
 export default server; 
