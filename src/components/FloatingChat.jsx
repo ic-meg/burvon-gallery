@@ -26,10 +26,8 @@ const FloatingChatButton = () => {
 
     const footerEl = document.getElementById("footer");
     if (footerEl) {
-      // console.log("Footer element found:", footerEl); 
       observer.observe(footerEl);
     } else {
-      // console.log("Footer element not found"); 
     }
 
     return () => {
