@@ -277,7 +277,6 @@ const LiveChat = () => {
     
     if (newFiles.length > 0) {
       setSelectedFiles(prev => [...prev, ...newFiles].slice(0, 4));
-      console.log('Files selected:', newFiles);
     }
   };
 
