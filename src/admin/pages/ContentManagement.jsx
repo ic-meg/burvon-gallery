@@ -379,11 +379,6 @@ const ContentManagement = () => {
                                   (col.collection_id || col.id) === option.id
                               );
 
-                              console.log(
-                                "Navigating with collection data:",
-                                fullCollectionData
-                              );
-
                               // Navigate to the collection content route with full collection data
                               navigate(
                                 `/admin/content/collections/${option.value}`,
