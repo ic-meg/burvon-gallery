@@ -220,7 +220,6 @@ const UserManagement = () => {
     };
     
     setAllUsers(prev => [...prev, newUserData]);
-    console.log('Adding user:', newUserData);
     
     setShowAddUserModal(false);
     setNewUser({
