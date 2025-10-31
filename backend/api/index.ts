@@ -17,11 +17,29 @@ server.get('/favicon.ico', (_req, res) => {
   res.status(204).end();
 });
 
+server.get('/health', (_req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
 let cachedHandler: any;
+let isBooting = false;
 
 async function bootstrap() {
+  if (isBooting) {
+    console.log('Bootstrap already in progress, waiting...');
+  }
+  
   try {
-    const app = await NestFactory.create(AppModule, new ExpressAdapter(server));
+    isBooting = true;
+    console.log('Starting NestJS bootstrap...');
+    
+    const bootstrapTimeout = setTimeout(() => {
+      console.error('Bootstrap timeout after 30 seconds');
+    }, 30000);
+
+    const app = await NestFactory.create(AppModule, new ExpressAdapter(server), {
+      logger: ['error', 'warn'],
+    });
     
     app.enableCors({
       origin: true,
@@ -33,18 +51,27 @@ async function bootstrap() {
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
     
     await app.init();
-    console.log('NestJS app initialized successfully');
+    clearTimeout(bootstrapTimeout);
+    
+    console.log('✅ NestJS app initialized successfully');
+    isBooting = false;
     
     return serverless(server);
   } catch (error) {
+    isBooting = false;
     console.error('Failed to bootstrap app:', error);
     throw error;
   }
 }
 
 export default async function handler(req: any, res: any) {
-  if (!cachedHandler) {
-    cachedHandler = await bootstrap();
+  try {
+    if (!cachedHandler) {
+      cachedHandler = await bootstrap();
+    }
+    return cachedHandler(req, res);
+  } catch (error) {
+    console.error('Handler error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
-  return cachedHandler(req, res);
 }
