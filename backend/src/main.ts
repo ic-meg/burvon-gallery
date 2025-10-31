@@ -26,7 +26,6 @@ async function bootstrap() {
   
 
   await app.listen(PORT);
-  console.log(`Application is running on port ${PORT}`);
 }
 
 bootstrap().catch((error) => {
