@@ -1,10 +1,6 @@
 {
   "version": 2,
   "buildCommand": "npm run build",
-  "env": {
-    "DATABASE_URL": "@database_url",
-    "NODE_ENV": "production"
-  },
   "builds": [
     {
       "src": "dist/api/index.js",
