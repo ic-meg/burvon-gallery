@@ -3,7 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../src/app.module';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
-import express from 'express';
+import express, { Request, Response } from 'express';
 import serverless from 'serverless-http';
 import { config as dotenvConfig } from 'dotenv';
 
@@ -12,14 +12,6 @@ dotenvConfig();
 export const config = { runtime: 'nodejs20.x' };
 
 const server = express();
-
-server.get('/favicon.ico', (_req, res) => {
-  res.status(204).end();
-});
-
-server.get('/health', (_req, res) => {
-  res.status(200).json({ status: 'ok' });
-});
 
 let cachedHandler: any;
 let isBooting = false;
@@ -64,14 +56,15 @@ async function bootstrap() {
   }
 }
 
-export default async function handler(req: any, res: any) {
+export default async function handler(req: Request, res: Response) {
   try {
     if (!cachedHandler) {
+      console.log('Initializing handler...');
       cachedHandler = await bootstrap();
     }
     return cachedHandler(req, res);
   } catch (error) {
     console.error('Handler error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Internal server error', message: error instanceof Error ? error.message : 'Unknown error' });
   }
 }
