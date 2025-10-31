@@ -87,6 +87,7 @@ export const WishlistProvider = ({ children }) => {
 
   const value = {
     wishlist,
+    isInitialized,
     addToWishlist,
     removeFromWishlist,
     clearWishlist,
