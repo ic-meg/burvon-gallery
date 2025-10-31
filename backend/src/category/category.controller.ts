@@ -17,17 +17,22 @@ export class CategoryController {
         return this.categoryService.getCategory();
     }
 
+    @Get('id/:id')
+    findOne(@Param('id', ParseIntPipe) id: number) {
+        return this.categoryService.findOne(id);
+    }
+
     @Get(':slug')
     findBySlug(@Param('slug') slug: string) {
         return this.categoryService.findBySlug(slug);
     }
 
-    @Patch(':category_id')
+    @Patch('id/:category_id')
     update(@Param('category_id', ParseIntPipe) category_id: number, @Body() updateCategoryDto: UpdateCategoryDto) {
         return this.categoryService.update(category_id, updateCategoryDto);
     }
 
-    @Delete(':category_id')
+    @Delete('id/:category_id')
     delete(@Param('category_id', ParseIntPipe) category_id: number) {
         return this.categoryService.remove(category_id);
     }
