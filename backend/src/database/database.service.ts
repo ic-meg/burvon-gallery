@@ -1,15 +1,36 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';  
 
-
 @Injectable()
 export class DatabaseService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   contentManagement: any;
+  private connectionAttempted = false;
+
   async onModuleInit() {
-    await this.$connect();
+    if (this.connectionAttempted) return;
+    this.connectionAttempted = true;
+
+    try {
+      console.log('Attempting to connect to database...');
+      
+    
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Database connection timeout')), 15000)
+      );
+
+      await Promise.race([this.$connect(), timeoutPromise]);
+      console.log(' Database connected successfully');
+    } catch (error) {
+      console.error(' Database connection warning:', error);
+     
+    }
   }
 
   async onModuleDestroy() {
-    await this.$disconnect();
+    try {
+      await this.$disconnect();
+    } catch (error) {
+      console.error('Error disconnecting from database:', error);
+    }
   }
 }
