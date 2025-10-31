@@ -139,25 +139,22 @@ class StorageService {
   // Delete all files in a folder
   async deleteFolder(folderPath) {
     try {
-      console.log('Listing files in folder:', folderPath);
       const listResult = await this.listFiles(folderPath);
       
       if (!listResult.success) {
-        console.log('Could not list files in folder:', folderPath, listResult.error);
+   
         return { success: false, error: listResult.error };
       }
 
       const files = listResult.files;
-      console.log(`Found ${files.length} files in ${folderPath}:`, files);
 
       if (files.length === 0) {
-        console.log('No files to delete in folder:', folderPath);
+
         return { success: true, deletedCount: 0 };
       }
 
       // Delete all files in the folder
       const filePaths = files.map(file => `${folderPath}/${file.name}`);
-      console.log('Deleting file paths:', filePaths);
       
       const { error } = await supabase.storage
         .from('burvon-images')
@@ -168,7 +165,6 @@ class StorageService {
         return { success: false, error: error.message, deletedCount: 0 };
       }
 
-      console.log(`Successfully deleted ${files.length} files from ${folderPath}`);
       return { success: true, deletedCount: files.length };
     } catch (error) {
       console.error('Delete folder error:', error);
