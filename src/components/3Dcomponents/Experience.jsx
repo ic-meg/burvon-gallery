@@ -168,11 +168,11 @@ export const Experience = ({ modelPath }) => {
             (mat.isMeshStandardMaterial || mat.isMeshPhysicalMaterial)
           ) {
             mat.envMap = scene.environment;
-            mat.envMapIntensity = 2;
-            mat.roughness = 0.02;
-            mat.metalness = 0;
+            mat.envMapIntensity = 2.5;
+            mat.roughness = 0.1;
+            mat.metalness = 0.9;
             mat.clearcoat = 1;
-            mat.clearcoatRoughness = 0;
+            mat.clearcoatRoughness = 0.05;
             if (makeDoubleSide) mat.side = THREE.DoubleSide;
             mat.needsUpdate = true;
             lowestMesh.material = mat;
@@ -181,11 +181,11 @@ export const Experience = ({ modelPath }) => {
               map: mat.map,
               color: mat.color ? mat.color.clone() : new THREE.Color(0xffffff),
               envMap: scene.environment,
-              envMapIntensity: 2,
-              roughness: 0.02,
-              metalness: 0,
+              envMapIntensity: 2.5,
+              roughness: 0.1,
+              metalness: 0.9,
               clearcoat: 1,
-              clearcoatRoughness: 0,
+              clearcoatRoughness: 0.05,
               side: makeDoubleSide ? THREE.DoubleSide : THREE.FrontSide,
             });
           }
