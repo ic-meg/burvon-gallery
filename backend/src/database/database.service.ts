@@ -11,7 +11,6 @@ export class DatabaseService extends PrismaClient implements OnModuleInit, OnMod
     this.connectionAttempted = true;
 
     try {
-      console.log('Attempting to connect to database...');
       
     
       const timeoutPromise = new Promise((_, reject) =>
@@ -19,7 +18,6 @@ export class DatabaseService extends PrismaClient implements OnModuleInit, OnMod
       );
 
       await Promise.race([this.$connect(), timeoutPromise]);
-      console.log(' Database connected successfully');
     } catch (error) {
       console.error(' Database connection warning:', error);
      
