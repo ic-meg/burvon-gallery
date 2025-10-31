@@ -19,11 +19,14 @@ const Wishlist = () => {
   const [hoveredImageIndex, setHoveredImageIndex] = useState(0);
   const [startIndex, setStartIndex] = useState(0);
   const navigate = useNavigate();
-  const { wishlist, removeFromWishlist } = useWishlist();
+  const { wishlist, isInitialized } = useWishlist();
   const { addToCart } = useCart();
 
   const visibleCards = wishlist.slice(startIndex, startIndex + MAX_VISIBLE);
 
+  if (!isInitialized) {
+    return <Layout><div className="bg-[#181818] min-h-screen"></div></Layout>;
+  }
 
   if (wishlist.length === 0) {
     navigate('/user/Wishlist-Empty');
