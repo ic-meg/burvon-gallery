@@ -2,7 +2,6 @@ import { Canvas } from "@react-three/fiber";
 import { Suspense } from "react";
 import { Experience } from "./Experience";
 import GuidedOverlay from "./GuidedOverlay";
-import { ACESFilmicToneMapping } from "three";
 
 export default function ThreePage({ modelPath }) {
   return (
@@ -11,9 +10,9 @@ export default function ThreePage({ modelPath }) {
         style={{ width: "100%", height: "100%" }}
         gl={{ 
           antialias: true,
-          toneMapping: ACESFilmicToneMapping,
-          toneMappingExposure: 1,
-          pixelRatio: typeof window !== 'undefined' ? window.devicePixelRatio : 1,
+          alpha: true,
+          precision: "highp",
+          powerPreference: "high-performance",
         }}
         shadows
         camera={{ position: [3, 3, 3], fov: 30 }}
