@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import Layout from "../../components/Layout";
 import { useProduct } from "../../contexts/ProductContext";
 import { useCart } from "../../contexts/CartContext";
+import { useWishlist } from "../../contexts/WishlistContext";
 import productApi from "../../api/productApi";
 import categoryApi from "../../api/categoryApi";
 import Toast from "../../components/Toast";
@@ -46,6 +47,7 @@ const ProductDesc = () => {
 
   const { products } = useProduct();
   const { addToCart } = useCart();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -646,6 +648,32 @@ const ProductDesc = () => {
     addToCart(productData, quantity, selectedSize);
   };
 
+  const handleAddToWishlist = () => {
+    if (getAvailableStock() === 0) return;
+
+    const productData = {
+      id: formattedProduct.id,
+      name: formattedProduct.name,
+      price: formattedProduct.price,
+      images: formattedProduct.images,
+      stock: formattedProduct.stock,
+      collection: formattedProduct.collection,
+      category: formattedProduct.category,
+      category_id: formattedProduct.category_id,
+    };
+
+    if (isInWishlist(formattedProduct.id)) {
+      removeFromWishlist(formattedProduct.id);
+      setIsFavorited(false);
+      setToastMessage("Product removed from wishlist.");
+    } else {
+      addToWishlist(productData);
+      setIsFavorited(true);
+      setToastMessage("Product added to wishlist.");
+    }
+    setShowToast(true);
+  };
+
   const renderStars = (rating) => {
     return Array.from({ length: 5 }, (_, i) => (
       <img
@@ -801,10 +829,7 @@ const ProductDesc = () => {
                     </button>
                     <button
                       type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setIsFavorited(!isFavorited);
-                      }}
+                      onClick={handleAddToWishlist}
                       className="w-6 h-6 p-0 opacity-100 hover:opacity-80 transition-opacity"
                     >
                       <img
@@ -1070,10 +1095,7 @@ const ProductDesc = () => {
 
                   <button
                     type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setIsFavorited(!isFavorited);
-                    }}
+                    onClick={handleAddToWishlist}
                     className="w-8 h-8 p-0 opacity-100 hover:opacity-80 transition-opacity"
                   >
                     <img
