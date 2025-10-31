@@ -45,7 +45,7 @@ async function bootstrap() {
     await app.init();
     clearTimeout(bootstrapTimeout);
     
-    console.log('✅ NestJS app initialized successfully');
+    console.log('NestJS app initialized successfully');
     isBooting = false;
     
     return serverless(server);
