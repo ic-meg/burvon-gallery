@@ -5,11 +5,11 @@ import { ExpressAdapter } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
 import express from 'express';
 import serverless from 'serverless-http';
-import { config } from 'dotenv';
+import { config as dotenvConfig } from 'dotenv';
 
-config();
+dotenvConfig();
 
-export const runtime = 'nodejs20.x';
+export const config = { runtime: 'nodejs20.x' };
 
 const server = express();
 
@@ -37,7 +37,7 @@ async function bootstrap() {
     
     return serverless(server);
   } catch (error) {
-    console.error('❌ Failed to bootstrap app:', error);
+    console.error('Failed to bootstrap app:', error);
     throw error;
   }
 }
