@@ -57,6 +57,7 @@ const ProductDesc = () => {
   const [categories, setCategories] = useState([]);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+  const [toastType, setToastType] = useState("success");
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -630,6 +631,7 @@ const ProductDesc = () => {
     if (isRing && !selectedSize) {
       // Show toast notification if no size is selected
       setToastMessage("Please select a size before adding to cart");
+      setToastType("error");
       setShowToast(true);
       return;
     }
@@ -666,10 +668,12 @@ const ProductDesc = () => {
       removeFromWishlist(formattedProduct.id);
       setIsFavorited(false);
       setToastMessage("Product removed from wishlist.");
+      setToastType("warning");
     } else {
       addToWishlist(productData);
       setIsFavorited(true);
       setToastMessage("Product added to wishlist.");
+      setToastType("success");
     }
     setShowToast(true);
   };
@@ -830,7 +834,7 @@ const ProductDesc = () => {
                     <button
                       type="button"
                       onClick={handleAddToWishlist}
-                      className="w-6 h-6 p-0 opacity-100 hover:opacity-80 transition-opacity"
+                      className="w-6 h-6 p-0 opacity-100 hover:opacity-80 transition-opacity cursor-pointer"
                     >
                       <img
                         src={isFavorited ? AddedFavorites : AddFavorite}
@@ -1096,7 +1100,7 @@ const ProductDesc = () => {
                   <button
                     type="button"
                     onClick={handleAddToWishlist}
-                    className="w-8 h-8 p-0 opacity-100 hover:opacity-80 transition-opacity"
+                    className="w-8 h-8 p-0 opacity-100 hover:opacity-80 transition-opacity cursor-pointer"
                   >
                     <img
                       src={isFavorited ? AddedFavorites : AddFavorite}
@@ -1346,7 +1350,7 @@ const ProductDesc = () => {
       <Toast
         show={showToast}
         message={toastMessage}
-        type="warning"
+        type={toastType}
         onClose={() => setShowToast(false)}
         duration={3000}
       />
