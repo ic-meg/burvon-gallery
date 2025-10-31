@@ -96,19 +96,16 @@ export class OrderController {
     @Body('status') status: string,
   ) {
     try {
-      console.log(`[Order Controller] Received request to update order ${orderId} to status: ${status}`);
       const order = await this.orderService.updateOrderStatus(
         parseInt(orderId),
         status,
       );
-      console.log(`[Order Controller] Order ${orderId} updated successfully`);
       return {
         success: true,
         data: order,
         message: 'Order status updated successfully',
       };
     } catch (error) {
-      console.log(`[Order Controller] Error updating order ${orderId}:`, error.message);
       return {
         success: false,
         error: error.message,
