@@ -4,6 +4,7 @@ import Homepage from "./pages/main/Homepage";
 
 import Template from "./pages/Template";
 import ScrollToTop from "./components/ScrollToTop";
+import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 import { ContentProvider } from "./contexts/ContentContext";
 import { CategoryProvider } from "./contexts/CategoryContext";
 import { CollectionProvider } from "./contexts/CollectionContext";
@@ -29,6 +30,7 @@ import JewelryCare from "./pages/customer-care/JewelryCare";
 import Wishlist from "./pages/user/Wishlist";
 import WishlistEmpty from "./pages/user/Wishlist-Empty";
 import Login from "./pages/main/Login/Login";
+import AdminLogin from "./pages/main/Login/AdminLogin";
 import ShoppingBag from "./pages/user/cart/ShoppingBag";
 import Checkout from "./pages/user/cart/Checkout";
 import ShoppingBagEmpty from "./pages/user/cart/ShoppingBag-Empty";
@@ -125,6 +127,7 @@ const App = () => {
                       element={<WishlistEmpty />}
                     />
                     <Route path="/login" element={<Login />} />
+                    <Route path="/admin-login" element={<AdminLogin />} />
                     <Route path="/shopping-bag" element={<ShoppingBag />} />
                     <Route path="/user/cart/checkout" element={<Checkout />} />
                     <Route path="/order-completed" element={<OrderCompleted />} />
@@ -169,19 +172,17 @@ const App = () => {
                     <Route path="/profile/ordercompleted" element={<OrderCompleted />} />
 
                     {/*Admin */}
-                    <Route path="/admin/dashboard" element={<AdminDashboard />} />
-                    <Route path="/admin/orders" element={<AdminOrders />} />
-                    <Route path="/admin/products" element={<AdminProducts />} />
+                    <Route path="/admin/dashboard" element={<ProtectedAdminRoute requiredPage="Dashboard"><AdminDashboard /></ProtectedAdminRoute>} />
+                    <Route path="/admin/orders" element={<ProtectedAdminRoute requiredPage="Order Management"><AdminOrders /></ProtectedAdminRoute>} />
+                    <Route path="/admin/products" element={<ProtectedAdminRoute requiredPage="Product Management"><AdminProducts /></ProtectedAdminRoute>} />
                     <Route
                       path="/admin/collection"
-                      element={<CollectionManagement />}
+                      element={<ProtectedAdminRoute requiredPage="Collections Management"><CollectionManagement /></ProtectedAdminRoute>}
                     />
-                    <Route path="/admin/live-chat" element={<LiveChat />} />
-                    <Route path="/admin/content" element={<ContentManagement />}>
+                    <Route path="/admin/live-chat" element={<ProtectedAdminRoute requiredPage="Live Chat"><LiveChat /></ProtectedAdminRoute>} />
+                    <Route path="/admin/content" element={<ProtectedAdminRoute requiredPage="Content Management"><ContentManagement /></ProtectedAdminRoute>}>
                       <Route index element={<HomepageContent />} />
                       <Route path="homepage" element={<HomepageContent />} />
-                      {/* Admin Content Management Homepage */}
-                      {/* (now nested under /admin/content) */}
                       <Route path="categories" element={<CategoriesContent />} />
                       <Route
                         path="categories/necklaces"
@@ -197,7 +198,6 @@ const App = () => {
                         element={<CategoriesContent />}
                       />
 
-                      {/* Collections - Dynamic routing for any collection */}
                       <Route
                         path="collections"
                         element={<CollectionsContent />}
@@ -207,7 +207,7 @@ const App = () => {
                         element={<CollectionsContent />}
                       />
                     </Route>
-                    <Route path="/admin/user" element={<UserManagement />} />
+                    <Route path="/admin/user" element={<ProtectedAdminRoute requiredPage="User Management"><UserManagement /></ProtectedAdminRoute>} />
                   </Routes>
                 </div>
                   </WishlistProvider>
