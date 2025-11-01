@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import { Link, useNavigate } from 'react-router-dom';
 import { useWishlist } from '../../contexts/WishlistContext';
@@ -24,13 +24,14 @@ const Wishlist = () => {
 
   const visibleCards = wishlist.slice(startIndex, startIndex + MAX_VISIBLE);
 
+  useEffect(() => {
+    if (wishlist.length === 0) {
+      navigate('/user/Wishlist-Empty');
+    }
+  }, [wishlist.length, navigate]);
+
   if (!isInitialized) {
     return <Layout><div className="bg-[#181818] min-h-screen"></div></Layout>;
-  }
-
-  if (wishlist.length === 0) {
-    navigate('/user/Wishlist-Empty');
-    return null;
   }
 
   return (
