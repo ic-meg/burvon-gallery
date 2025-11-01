@@ -1,9 +1,11 @@
 import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { OAuth2Client } from 'google-auth-library';
+import * as bcrypt from 'bcrypt';
 import { DatabaseService } from '../database/database.service';
 import { EmailService } from '../email/email.service';
 import { LoginAuthDto } from './dto/login-auth.dto';
+import { AdminLoginDto } from './dto/admin-login.dto';
 import { GoogleAuthDto } from './dto/google-auth.dto';
 
 @Injectable()
@@ -161,6 +163,54 @@ export class AuthService {
     } catch (error) {
       console.error('Google auth error:', error.message);
       throw new UnauthorizedException('Google authentication failed');
+    }
+  }
+
+  async adminLogin(adminLoginDto: AdminLoginDto) {
+    const { email, password } = adminLoginDto;
+
+    try {
+      const user = await this.db.userAccount.findUnique({
+        where: { email },
+      });
+
+      if (!user) {
+        throw new UnauthorizedException('Invalid email or password');
+      }
+
+      const isAdmin = ['super_admin', 'admin', 'manager', 'csr', 'clerk'].includes(user.role);
+      if (!isAdmin) {
+        throw new UnauthorizedException('Only admin users can login here');
+      }
+
+      if (!user.password_hash) {
+        throw new UnauthorizedException('Account not properly configured');
+      }
+
+      const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+      if (!isPasswordValid) {
+        throw new UnauthorizedException('Invalid email or password');
+      }
+
+      const sessionToken = this.jwtService.sign(
+        { user_id: user.user_id, email: user.email, role: user.role },
+        { expiresIn: '30d' }
+      );
+
+      return {
+        success: true,
+        token: sessionToken,
+        user: {
+          user_id: user.user_id,
+          email: user.email,
+          full_name: user.full_name,
+          role: user.role,
+          can_access: user.can_access || [],
+        },
+      };
+    } catch (error) {
+      console.error('Admin login error:', error.message);
+      throw new UnauthorizedException(error.message || 'Admin login failed');
     }
   }
 }
