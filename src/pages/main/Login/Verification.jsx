@@ -1,22 +1,76 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Login.css';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import loginBG from "../../../assets/images/loginBG.png";
 import white_brv from "../../../assets/logo/white_brv.png";
 import loginVector from "../../../assets/images/loginVector.png";
+import { verifyToken, sendMagicLink } from '../../../services/authService';
 
 const Verification = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [showTermsScreen, setShowTermsScreen] = useState(false);
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [resendCounter, setResendCounter] = useState(0);
 
-  // Simulate verification success after 3 seconds
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowTermsScreen(true);
-    }, 3000);
-    return () => clearTimeout(timer);
+  useEffect(() => {
+    const token = searchParams.get('token');
+    const emailFromState = location.state?.email;
+
+    if (emailFromState) {
+      setEmail(emailFromState);
+    }
+
+    if (token) {
+      verifyTokenHandler(token);
+    } else if (emailFromState) {
+      setLoading(false);
+    } else {
+      setError('Invalid verification link');
+      setLoading(false);
+    }
   }, []);
+
+  const verifyTokenHandler = async (token) => {
+    try {
+      const result = await verifyToken(token);
+
+      if (result.success) {
+        setShowTermsScreen(true);
+      } else {
+        setError(result.error || 'Invalid or expired token');
+      }
+    } catch (err) {
+      setError('An error occurred during verification');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    if (resendCounter > 0) return;
+
+    const result = await sendMagicLink(email);
+    if (result.success) {
+      setResendCounter(60);
+    } else {
+      setError(result.error || 'Failed to resend link');
+    }
+  };
+
+  useEffect(() => {
+    let interval;
+    if (resendCounter > 0) {
+      interval = setInterval(() => {
+        setResendCounter((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [resendCounter]);
 
   if (!showTermsScreen) {
     return (
@@ -34,28 +88,54 @@ const Verification = () => {
             <div className="absolute top-0 left-0 w-full h-full bg-black opacity-50 z-10"></div>
             {/* white overlay */}
             <div className="absolute top-0 left-0 w-full h-full bg-white opacity-8 z-10"></div>
-
           </div>
           {/* Content */}
-          <div className="relative z-20 flex flex-col items-center w-full">
+          <div className="relative z-20 flex flex-col items-center w-full px-6">
             <img src={white_brv} alt="BURVON Logo" className="mb-4 w-40" style={{ marginTop: "-110px" }} />
             <p className="avant text-white text-base mb-2" style={{ marginTop: "-65px" }}>REVELED BY ALL</p>
-            <p className="avant text-sm text-white mb-1 text-center">
-              Use the verification link sent to your email
-            </p>
-            <p className="avant text-white text-sm mb-6 text-center">
-              youremail@gmail.com
-            </p>
-            <button
-              className="py-3 px-6 font-semibold avant border border-black"
-              style={{
-                borderRadius: "8px",
-                backgroundColor: "#FFF7DC",
-                color: "black",
-              }}
-            >
-              Didn't receive a link? Resend (51)
-            </button>
+            
+            {loading ? (
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 border-4 border-[#FFF7DC] border-t-transparent rounded-full animate-spin mb-4"></div>
+                <p className="avant text-sm text-white text-center">Verifying your email...</p>
+              </div>
+            ) : error ? (
+              <div className="flex flex-col items-center">
+                <p className="avant text-sm text-red-500 text-center mb-4">{error}</p>
+                <button
+                  className="py-3 px-6 font-semibold avant border border-black"
+                  style={{
+                    borderRadius: "8px",
+                    backgroundColor: "#FFF7DC",
+                    color: "black",
+                  }}
+                  onClick={() => navigate('/login')}
+                >
+                  Go back to login
+                </button>
+              </div>
+            ) : (
+              <>
+                <p className="avant text-sm text-white mb-1 text-center">
+                  Use the verification link sent to your email
+                </p>
+                <p className="avant text-white text-sm mb-6 text-center">
+                  {email}
+                </p>
+                <button
+                  className="py-3 px-6 font-semibold avant border border-black disabled:opacity-50"
+                  style={{
+                    borderRadius: "8px",
+                    backgroundColor: "#FFF7DC",
+                    color: "black",
+                  }}
+                  onClick={handleResend}
+                  disabled={resendCounter > 0}
+                >
+                  {resendCounter > 0 ? `Resend (${resendCounter})` : "Didn't receive a link? Resend"}
+                </button>
+              </>
+            )}
           </div>
         </div>
 
@@ -96,22 +176,49 @@ const Verification = () => {
                 <p className="avant" style={{ color: "#ffffffff", marginTop: "-79px", marginBottom: "16px", fontSize: "20px" }}>
                   REVELED BY ALL
                 </p>
-                <p className="avant" style={{ color: "#ffffffff", fontSize: "20px", marginBottom: "8px", marginTop: "30px" }}>
-                    Use the verification link sent to your email
-                </p>
-                <p className="avant" style={{ color: "#ffffffff", fontSize: "20px", marginBottom: "30px", marginTop: "-12px" }}>
-                    youremail@gmail.com
-                </p>
-                <button
-                    className="py-3 px-6 font-semibold avant border border-black"
-                    style={{
-                    borderRadius: "8px",
-                    backgroundColor: "#FFF7DC",
-                    color: "black",
-                    }}
-                >
-                    Didn't receive a link? Resend (51)
-                </button>
+                
+                {loading ? (
+                  <div className="flex flex-col items-center py-8">
+                    <div className="w-16 h-16 border-4 border-[#FFF7DC] border-t-transparent rounded-full animate-spin mb-4"></div>
+                    <p className="avant text-white">Verifying your email...</p>
+                  </div>
+                ) : error ? (
+                  <div className="flex flex-col items-center py-8">
+                    <p className="avant text-red-500 text-lg mb-6">{error}</p>
+                    <button
+                      className="py-3 px-6 font-semibold avant border border-black"
+                      style={{
+                        borderRadius: "8px",
+                        backgroundColor: "#FFF7DC",
+                        color: "black",
+                      }}
+                      onClick={() => navigate('/login')}
+                    >
+                      Go back to login
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <p className="avant" style={{ color: "#ffffffff", fontSize: "20px", marginBottom: "8px", marginTop: "30px" }}>
+                      Use the verification link sent to your email
+                    </p>
+                    <p className="avant" style={{ color: "#ffffffff", fontSize: "20px", marginBottom: "30px", marginTop: "-12px" }}>
+                      {email}
+                    </p>
+                    <button
+                      className="py-3 px-6 font-semibold avant border border-black disabled:opacity-50"
+                      style={{
+                        borderRadius: "8px",
+                        backgroundColor: "#FFF7DC",
+                        color: "black",
+                      }}
+                      onClick={handleResend}
+                      disabled={resendCounter > 0}
+                    >
+                      {resendCounter > 0 ? `Resend (${resendCounter})` : "Didn't receive a link? Resend"}
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>

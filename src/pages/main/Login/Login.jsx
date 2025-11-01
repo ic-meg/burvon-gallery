@@ -1,13 +1,37 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import './Login.css';
 import googleLoginIcon from "../../../assets/icons/googleLoginIcon.png";
 import loginBG from "../../../assets/images/loginBG.png";
 import white_brv from "../../../assets/logo/white_brv.png";
 import loginVector from "../../../assets/images/loginVector.png";
+import { sendMagicLink } from '../../../services/authService';
 
 const Login = () => {
   const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleContinue = async () => {
+    if (!email || !email.includes('@')) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    const result = await sendMagicLink(email);
+    
+    if (result.success) {
+      navigate('/verification', { state: { email } });
+    } else {
+      setError(result.error || 'Failed to send magic link');
+    }
+
+    setLoading(false);
+  };
 
   return (
     <>
@@ -53,12 +77,10 @@ const Login = () => {
                 id="email"
                 type="email"
                 placeholder="Enter your email address"
-                onChange={(e) => {
-                  if (e.target.value === 'admin') {
-                    navigate('/admin/dashboard');
-                  }
-                }}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
+              {error && <p className="text-red-500 text-sm mt-2 avant">{error}</p>}
             </div>
 
             {/* buttons */}
@@ -69,9 +91,10 @@ const Login = () => {
                 backgroundColor: "#FFF7DC",
                 color: "black",
               }}
-              onClick={() => navigate('/verification')}
+              onClick={handleContinue}
+              disabled={loading}
             >
-              CONTINUE
+              {loading ? 'SENDING...' : 'CONTINUE'}
             </button>
             <div className="flex items-center justify-center mb-8 w-full max-w-sm mx-auto">
               <div className="avant" style={{ borderTop: "2px solid #FFF7DC", width: "60px", height: "0" }}></div>
@@ -147,12 +170,10 @@ const Login = () => {
                 id="email"
                 type="email"
                 placeholder="Enter your email address"
-                onChange={(e) => {
-                  if (e.target.value === 'admin') {
-                    navigate('/admin/dashboard');
-                  }
-                }}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
+              {error && <p className="text-red-500 text-sm mt-2 avant">{error}</p>}
             </div>
 
             {/* buttons */}
@@ -163,9 +184,10 @@ const Login = () => {
                 backgroundColor: "#FFF7DC",
                 color: "black",
               }}
-              onClick={() => navigate('/verification')}
+              onClick={handleContinue}
+              disabled={loading}
             >
-              CONTINUE
+              {loading ? 'SENDING...' : 'CONTINUE'}
             </button>
             <div className="flex items-center justify-center mb-6">
               <div className="avant" style={{ borderTop: "2px solid #FFF7DC", width: "50px", height: "0" }}></div>

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../../components/Layout";
 import { useProduct } from "../../contexts/ProductContext";
 import { useCart } from "../../contexts/CartContext";
@@ -44,6 +44,7 @@ const fallbackImages = [
 
 const ProductDesc = () => {
   const { productSlug } = useParams();
+  const navigate = useNavigate();
 
   const { products } = useProduct();
   const { addToCart } = useCart();
@@ -702,6 +703,14 @@ const ProductDesc = () => {
     ));
   };
 
+  // Check if product is Espoir for try-on feature
+  const isEspoirProduct = () => {
+    if (!formattedProduct) return false;
+    const productName = formattedProduct.name?.toLowerCase() || '';
+    const collectionName = formattedProduct.collectionName?.toLowerCase() || '';
+    return productName.includes('espoir') || collectionName.includes('love language');
+  };
+
   if (loading) {
     return (
       <Layout full noPadding>
@@ -828,9 +837,14 @@ const ProductDesc = () => {
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <button className="p-1.5 opacity-100 hover:opacity-80 transition-opacity">
-                      <img src={TryOnIcon} alt="Try On" className="w-6 h-6" />
-                    </button>
+                    {isEspoirProduct() && (
+                      <button 
+                        onClick={() => navigate('/tryon')}
+                        className="p-1.5 opacity-100 hover:opacity-80 transition-opacity cursor-pointer"
+                      >
+                        <img src={TryOnIcon} alt="Try On" className="w-6 h-6" />
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={handleAddToWishlist}
@@ -1093,9 +1107,14 @@ const ProductDesc = () => {
                   {formattedProduct.collectionName} {formattedProduct.name}
                 </h2>
                 <div className="flex items-center gap-3">
-                  <button className="p-2 opacity-100 hover:opacity-80 transition-opacity">
-                    <img src={TryOnIcon} alt="Try On" className="w-8 h-8" />
-                  </button>
+                  {isEspoirProduct() && (
+                    <button 
+                      onClick={() => navigate('/tryon')}
+                      className="p-2 opacity-100 hover:opacity-80 transition-opacity cursor-pointer"
+                    >
+                      <img src={TryOnIcon} alt="Try On" className="w-8 h-8" />
+                    </button>
+                  )}
 
                   <button
                     type="button"
