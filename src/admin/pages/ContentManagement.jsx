@@ -6,7 +6,7 @@ import { useCollection } from "../../contexts/CollectionContext";
 
 import { DropDownIconBlack, DropUpIconBlack } from "../../assets/index.js";
 
-const ContentManagement = () => {
+const ContentManagement = ({ hasAccess = true }) => {
   const [activeTab, setActiveTab] = useState("homepage");
   const [selectedCategory, setSelectedCategory] = useState("necklaces");
   const [selectedCollection, setSelectedCollection] = useState("kids");

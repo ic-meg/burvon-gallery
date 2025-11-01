@@ -5,7 +5,7 @@ import storageService from "../../services/storageService.js";
 import Toast from "../../components/Toast";
 import { AddImage, Remove } from "../../assets/index.js";
 
-const Categories = () => {
+const Categories = ({ hasAccess = true }) => {
   const { categorySlug } = useParams();
   const location = useLocation();
 
@@ -202,6 +202,10 @@ const Categories = () => {
   };
 
   const saveContent = async () => {
+    if (!hasAccess) {
+      showToast('You do not have permission to perform this action', 'error');
+      return;
+    }
     setSaving(true);
     try {
       // Check any new images to upload
@@ -292,6 +296,10 @@ const Categories = () => {
   };
 
   const deleteContent = async () => {
+    if (!hasAccess) {
+      showToast('You do not have permission to perform this action', 'error');
+      return;
+    }
     if (
       !window.confirm(
         `Are you sure you want to delete all ${currentCategory.name.toLowerCase()} content? This action cannot be undone.`
@@ -707,7 +715,8 @@ const Categories = () => {
           </button>
           <button
             onClick={handleSaveChanges}
-            disabled={loading || saving || uploading}
+            disabled={loading || saving || uploading || !hasAccess}
+            title={!hasAccess ? 'You do not have permission to perform this action' : ''}
             className="px-6 py-2 bg-black text-white rounded-xl hover:bg-gray-800 transition-colors avantbold text-sm disabled:opacity-50"
           >
             {saving
@@ -719,7 +728,8 @@ const Categories = () => {
           {hasExistingContent && (
             <button
               onClick={deleteContent}
-              disabled={loading || saving}
+              disabled={loading || saving || !hasAccess}
+              title={!hasAccess ? 'You do not have permission to perform this action' : ''}
               className="px-6 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors avantbold text-sm disabled:opacity-50"
             >
               DELETE CONTENT

@@ -5,7 +5,7 @@ import storageService from "../../services/storageService";
 import { AddImage, Remove } from "../../assets/index.js";
 import Toast from "../../components/Toast";
 
-const Homepage = () => {
+const Homepage = ({ hasAccess = true }) => {
   const [formData, setFormData] = useState({
     logo: null,
     logoUrl: null, // Supabase URL
@@ -180,6 +180,10 @@ const Homepage = () => {
   };
 
   const saveContent = async () => {
+    if (!hasAccess) {
+      showToast('You do not have permission to perform this action', 'error');
+      return;
+    }
     setSaving(true);
     try {
       const hasNewImages =
@@ -258,6 +262,10 @@ const Homepage = () => {
   };
 
   const deleteContent = async () => {
+    if (!hasAccess) {
+      showToast('You do not have permission to perform this action', 'error');
+      return;
+    }
     if (
       !window.confirm(
         "Are you sure you want to delete all homepage content? This action cannot be undone."
@@ -447,6 +455,7 @@ const Homepage = () => {
   // EVENT HANDLERS
 
   const handleLogoUpload = (e) => {
+    if (!hasAccess) return;
     const file = e.target.files[0];
     if (file) {
       setFormData((prev) => ({ ...prev, logo: file }));
@@ -455,11 +464,13 @@ const Homepage = () => {
   };
 
   const handleLogoRemove = () => {
+    if (!hasAccess) return;
     setFormData((prev) => ({ ...prev, logo: null, logoUrl: null }));
     setHasUnsavedChanges(true);
   };
 
   const handleHeroImageUpload = (index, e) => {
+    if (!hasAccess) return;
     const file = e.target.files[0];
     if (file) {
       setFormData((prev) => {
@@ -472,6 +483,7 @@ const Homepage = () => {
   };
 
   const handleHeroImageRemove = (index) => {
+    if (!hasAccess) return;
     setFormData((prev) => {
       const newHeroImages = [...prev.heroImages];
       const newHeroImageUrls = [...prev.heroImageUrls];
@@ -487,6 +499,7 @@ const Homepage = () => {
   };
 
   const handleTryOnImageUpload = (e) => {
+    if (!hasAccess) return;
     const file = e.target.files[0];
     if (file) {
       setFormData((prev) => ({ ...prev, tryOnImage: file }));
@@ -495,16 +508,19 @@ const Homepage = () => {
   };
 
   const handleTryOnImageRemove = () => {
+    if (!hasAccess) return;
     setFormData((prev) => ({ ...prev, tryOnImage: null, tryOnImageUrl: null }));
     setHasUnsavedChanges(true);
   };
 
   const handleTitleChange = (value) => {
+    if (!hasAccess) return;
     setFormData((prev) => ({ ...prev, tryOnTitle: value }));
     setHasUnsavedChanges(true);
   };
 
   const handleDescriptionChange = (value) => {
+    if (!hasAccess) return;
     setFormData((prev) => ({ ...prev, tryOnDescription: value.slice(0, 100) }));
     setHasUnsavedChanges(true);
   };
@@ -574,13 +590,15 @@ const Homepage = () => {
                   className="hidden"
                   accept="image/*"
                   onChange={handleLogoUpload}
+                  disabled={!hasAccess}
                 />
               </label>
-              {/* Remove button for logo */}
               {(formData.logo || formData.logoUrl) && (
                 <button
                   onClick={handleLogoRemove}
-                  className="absolute -top-2 -right-2 w-6 h-6 bg-transparent rounded-full flex items-center justify-center cursor-pointer transition-all duration-150 hover:scale-125"
+                  disabled={!hasAccess}
+                  title={!hasAccess ? 'You do not have permission to perform this action' : ''}
+                  className="absolute -top-2 -right-2 w-6 h-6 bg-transparent rounded-full flex items-center justify-center cursor-pointer transition-all duration-150 hover:scale-125 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <img src={Remove} alt="Remove" className="w-4 h-4" />
                 </button>
@@ -590,7 +608,7 @@ const Homepage = () => {
             {/* Align button with the box */}
             <div className="flex flex-col justify-center h-24">
               <label className="block">
-                <span className="px-4 py-3 bg-black text-white rounded-lg cursor-pointer uppercase hover:bg-gray-800 transition-colors avantbold text-sm">
+                <span className={`px-4 py-3 bg-black text-white rounded-lg cursor-pointer uppercase hover:bg-gray-800 transition-colors avantbold text-sm ${!hasAccess ? 'opacity-50 cursor-not-allowed' : ''}`}>
                   Upload New Logo
                 </span>
                 <input
@@ -598,6 +616,7 @@ const Homepage = () => {
                   className="hidden"
                   accept="image/*"
                   onChange={handleLogoUpload}
+                  disabled={!hasAccess}
                 />
               </label>
               <p className="text-xs text-gray-500 avant mt-2">
@@ -641,13 +660,15 @@ const Homepage = () => {
                       className="hidden"
                       accept="image/*"
                       onChange={(e) => handleHeroImageUpload(index, e)}
+                      disabled={!hasAccess}
                     />
                   </label>
-                  {/* Remove button for hero images */}
                   {(image || formData.heroImageUrls[index]) && (
                     <button
                       onClick={() => handleHeroImageRemove(index)}
-                      className="absolute -top-2 -right-2 w-6 h-6 bg-transparent rounded-full flex items-center justify-center cursor-pointer transition-all duration-150 hover:scale-125"
+                      disabled={!hasAccess}
+                      title={!hasAccess ? 'You do not have permission to perform this action' : ''}
+                      className="absolute -top-2 -right-2 w-6 h-6 bg-transparent rounded-full flex items-center justify-center cursor-pointer transition-all duration-150 hover:scale-125 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <img src={Remove} alt="Remove" className="w-4 h-4" />
                     </button>
@@ -679,7 +700,8 @@ const Homepage = () => {
                   type="text"
                   value={formData.tryOnTitle}
                   onChange={(e) => handleTitleChange(e.target.value)}
-                  className="w-64 px-3 py-2 border-2 border-black rounded-lg focus:outline-none avant text-sm text-black"
+                  disabled={!hasAccess}
+                  className="w-64 px-3 py-2 border-2 border-black rounded-lg focus:outline-none avant text-sm text-black disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -694,8 +716,9 @@ const Homepage = () => {
                   value={formData.tryOnDescription}
                   onChange={(e) => handleDescriptionChange(e.target.value)}
                   maxLength={100}
+                  disabled={!hasAccess}
                   rows={3}
-                  className="w-80 px-3 py-2 border-2 border-black rounded-lg focus:outline-none avant text-sm text-black resize-none"
+                  className="w-80 px-3 py-2 border-2 border-black rounded-lg focus:outline-none avant text-sm text-black resize-none disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 <div className="text-xs text-gray-500 mt-1">
                   {formData.tryOnDescription.length}/100 characters
@@ -732,13 +755,15 @@ const Homepage = () => {
                   className="hidden"
                   accept="image/*"
                   onChange={handleTryOnImageUpload}
+                  disabled={!hasAccess}
                 />
               </label>
-              {/* Remove button for try-on image */}
               {(formData.tryOnImage || formData.tryOnImageUrl) && (
                 <button
                   onClick={handleTryOnImageRemove}
-                  className="absolute -top-2 left-12 w-6 h-6 bg-transparent rounded-full flex items-center justify-center cursor-pointer transition-all duration-150 hover:scale-125"
+                  disabled={!hasAccess}
+                  title={!hasAccess ? 'You do not have permission to perform this action' : ''}
+                  className="absolute -top-2 left-12 w-6 h-6 bg-transparent rounded-full flex items-center justify-center cursor-pointer transition-all duration-150 hover:scale-125 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <img src={Remove} alt="Remove" className="w-4 h-4" />
                 </button>
@@ -762,7 +787,8 @@ const Homepage = () => {
 
           <button
             onClick={saveContent}
-            disabled={loading || saving || uploading}
+            disabled={loading || saving || uploading || !hasAccess}
+            title={!hasAccess ? 'You do not have permission to perform this action' : ''}
             className="px-6 py-2 bg-black text-white rounded-xl hover:bg-gray-800 transition-colors avantbold text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
           >
             {(saving || uploading) && (
@@ -790,7 +816,8 @@ const Homepage = () => {
           {hasExistingContent && (
             <button
               onClick={deleteContent}
-              disabled={loading || saving || uploading}
+              disabled={loading || saving || uploading || !hasAccess}
+              title={!hasAccess ? 'You do not have permission to perform this action' : ''}
               className="px-6 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors avantbold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
               DELETE ALL

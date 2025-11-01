@@ -6,7 +6,7 @@ import storageService from "../../../services/storageService";
 import { AddImage, Remove } from "../../../assets/index.js";
 import Toast from "../../../components/Toast";
 
-const CollectionsContent = () => {
+const CollectionsContent = ({ hasAccess = true }) => {
   const { collectionSlug } = useParams();
   const location = useLocation();
   const { collections } = useCollection();
@@ -331,6 +331,10 @@ const CollectionsContent = () => {
   };
 
   const saveContent = async () => {
+    if (!hasAccess) {
+      showToast('You do not have permission to perform this action', 'error');
+      return;
+    }
     // Check if collection data is available
     if (!collectionData) {
       showToast(
@@ -594,6 +598,10 @@ const CollectionsContent = () => {
 
   // Delete collection content
   const deleteContent = async () => {
+    if (!hasAccess) {
+      showToast('You do not have permission to perform this action', 'error');
+      return;
+    }
     if (!collectionData) {
       showToast(
         "Collection data is not loaded. Cannot delete content.",
@@ -905,7 +913,8 @@ const CollectionsContent = () => {
 
           <button
             onClick={saveContent}
-            disabled={loading || isSaving || uploading}
+            disabled={loading || isSaving || uploading || !hasAccess}
+            title={!hasAccess ? 'You do not have permission to perform this action' : ''}
             className="px-6 py-2 bg-black text-white rounded-xl hover:bg-gray-800 transition-colors avantbold text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
           >
             {(isSaving || uploading) && (
@@ -925,7 +934,8 @@ const CollectionsContent = () => {
           {hasExistingContent && (
             <button
               onClick={deleteContent}
-              disabled={loading || isSaving || uploading}
+              disabled={loading || isSaving || uploading || !hasAccess}
+              title={!hasAccess ? 'You do not have permission to perform this action' : ''}
               className="px-6 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors avantbold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
               DELETE ALL

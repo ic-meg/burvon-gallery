@@ -729,7 +729,7 @@ const ViewDetailsModal = ({ isOpen, onClose, order, showToast }) => {
   );
 };
 
-const AdminOrders = () => {
+const AdminOrders = ({ hasAccess = true }) => {
   const [activeTab, setActiveTab] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
@@ -1320,7 +1320,8 @@ const AdminOrders = () => {
                   </button>
                   <button
                     onClick={handleAcceptOrder}
-                    disabled={selectedOrders.length === 0}
+                    disabled={selectedOrders.length === 0 || !hasAccess}
+                    title={!hasAccess ? 'You do not have permission to perform this action' : ''}
                     className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors avantbold text-sm"
                   >
                     ACCEPT ORDER
@@ -1334,7 +1335,8 @@ const AdminOrders = () => {
                   <div className="flex flex-col items-end">
                     <button
                       onClick={handlePrintWaybill}
-                      disabled={selectedOrders.length === 0}
+                      disabled={selectedOrders.length === 0 || !hasAccess}
+                      title={!hasAccess ? 'You do not have permission to perform this action' : ''}
                       className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors avantbold text-sm whitespace-nowrap mb-2"
                     >
                       PRINT WAYBILL
@@ -1354,7 +1356,8 @@ const AdminOrders = () => {
                       </button>
                       <button
                         onClick={handleMarkAsShipped}
-                        disabled={selectedOrders.length === 0}
+                        disabled={selectedOrders.length === 0 || !hasAccess}
+                        title={!hasAccess ? 'You do not have permission to perform this action' : ''}
                         className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors avantbold text-sm whitespace-nowrap"
                       >
                         MARK AS SHIPPED
@@ -1381,7 +1384,8 @@ const AdminOrders = () => {
                   </button>
                   <button
                     onClick={handleMarkAsDelivered}
-                    disabled={selectedOrders.length === 0}
+                    disabled={selectedOrders.length === 0 || !hasAccess}
+                    title={!hasAccess ? 'You do not have permission to perform this action' : ''}
                     className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors avantbold text-sm font-medium"
                   >
                     MARK AS DELIVERED
