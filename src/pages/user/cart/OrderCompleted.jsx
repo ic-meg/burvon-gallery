@@ -18,9 +18,10 @@ const OrderCompleted = () => {
   useEffect(() => {
     
     const fetchOrderData = async () => {
+      const apiUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, '');
       if (sessionId) {
         try {
-          const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/session/${sessionId}`);
+          const response = await fetch(`${apiUrl}/orders/session/${sessionId}`);
           const data = await response.json();
           if (data.success) {
             setOrderData(data.data);
@@ -30,7 +31,7 @@ const OrderCompleted = () => {
         }
       } else {
         try {
-          const response = await fetch(`${import.meta.env.VITE_API_URL}/orders`);
+          const response = await fetch(`${apiUrl}/orders`);
           const data = await response.json();
           if (data.success && data.data.length > 0) {
             const latestOrder = data.data[0];
