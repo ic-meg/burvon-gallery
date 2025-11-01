@@ -508,7 +508,6 @@ export class OrderService {
           items: orderDataTyped.items || [],
         };
 
-        console.log('[ORDER SERVICE] Order created successfully:', order?.id);
         const order = await this.createOrder(finalOrderData);
 
         // Clean up temporary data
