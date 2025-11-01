@@ -328,7 +328,7 @@ const OrderCompleted = () => {
         }
 
         // Development fallback: Auto-create order if not found (for development only)
-        if (!order && actualSessionId && import.meta.env.DEV) {
+        if (!order && actualSessionId) {
           try {
 
             const devResponse = await fetch(`${apiUrl}/orders/dev/complete-payment/${actualSessionId}`, {
