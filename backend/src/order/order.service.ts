@@ -401,7 +401,11 @@ export class OrderService {
       }
 
       console.log('[ORDER SERVICE] ✅ Returning temp order data');
-      return tempOrder.order_data;
+      // Parse if it's a string (JSON was stringified)
+      const orderData = typeof tempOrder.order_data === 'string' 
+        ? JSON.parse(tempOrder.order_data) 
+        : tempOrder.order_data;
+      return orderData;
     } catch (error) {
       console.error('[ORDER SERVICE] ❌ Error getting temp order:', error.message);
       return null;
