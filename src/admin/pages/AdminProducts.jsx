@@ -18,7 +18,7 @@ import {
   DropUpIconBlack,
 } from "../../assets/index.js";
 
-const AdminProducts = () => {
+const AdminProducts = ({ hasAccess = true }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -1792,7 +1792,9 @@ const AdminProducts = () => {
             <div>
               <button
                 onClick={() => setShowAddProductModal(true)}
-                className="px-6 py-2 bg-black text-white uppercase rounded-lg hover:bg-gray-800 transition-colors avantbold text-sm font-medium"
+                disabled={!hasAccess}
+                title={!hasAccess ? 'You do not have permission to perform this action' : ''}
+                className="px-6 py-2 bg-black text-white uppercase rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors avantbold text-sm font-medium"
               >
                 Add New Product
               </button>
@@ -1902,13 +1904,17 @@ const AdminProducts = () => {
                         <div className="flex space-x-2">
                           <button
                             onClick={() => handleEditClick(product)}
-                            className="flex-1 px-3 py-1 bg-transparent border border-black text-black rounded text-xs avant font-medium hover:bg-black hover:text-white transition-colors"
+                            disabled={!hasAccess}
+                            title={!hasAccess ? 'You do not have permission to perform this action' : ''}
+                            className="flex-1 px-3 py-1 bg-transparent border border-black text-black rounded text-xs avant font-medium hover:bg-black hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                           >
                             EDIT
                           </button>
                           <button
                             onClick={() => handleStockClick(product)}
-                            className="flex-1 px-3 py-1 bg-transparent border border-black text-black rounded text-xs avant font-medium hover:bg-black hover:text-white transition-colors"
+                            disabled={!hasAccess}
+                            title={!hasAccess ? 'You do not have permission to perform this action' : ''}
+                            className="flex-1 px-3 py-1 bg-transparent border border-black text-black rounded text-xs avant font-medium hover:bg-black hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                           >
                             STOCKS
                           </button>
