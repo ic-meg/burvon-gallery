@@ -303,8 +303,9 @@ const OrderCompleted = () => {
         }
 
         // Primary method: Get order by checkout session ID (most secure)
+        const apiUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, '');
         if (actualSessionId && actualSessionId !== '{CHECKOUT_SESSION_ID}') {
-          const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/session/${actualSessionId}`);
+          const response = await fetch(`${apiUrl}/orders/session/${actualSessionId}`);
           const data = await response.json();
           if (data.success && data.data) {
             order = data.data;
@@ -313,7 +314,7 @@ const OrderCompleted = () => {
 
         // Fallback method: Get order by order ID (if session ID not available)
         if (!order && orderId) {
-          const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/${orderId}`);
+          const response = await fetch(`${apiUrl}/orders/${orderId}`);
           const data = await response.json();
           if (data.success && data.data) {
             order = data.data;
@@ -324,7 +325,7 @@ const OrderCompleted = () => {
         if (!order && actualSessionId && import.meta.env.DEV) {
           try {
 
-            const devResponse = await fetch(`${import.meta.env.VITE_API_URL}/orders/dev/complete-payment/${actualSessionId}`, {
+            const devResponse = await fetch(`${apiUrl}/orders/dev/complete-payment/${actualSessionId}`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ payment_method: 'PayMongo' })
@@ -334,7 +335,7 @@ const OrderCompleted = () => {
               const devData = await devResponse.json();
               if (devData.success) {
                 // Retry fetching the order after creation
-                const retryResponse = await fetch(`${import.meta.env.VITE_API_URL}/orders/session/${actualSessionId}`);
+                const retryResponse = await fetch(`${apiUrl}/orders/session/${actualSessionId}`);
                 const retryData = await retryResponse.json();
 
                 if (retryData.success && retryData.data) {

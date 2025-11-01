@@ -6,8 +6,7 @@ const API_BASE_URL = 'https://api.paymongo.com/v1';
 
 export const createCheckoutSession = async (orderData) => {
   try {
-    const apiUrl = import.meta.env.VITE_API_URL;
-    
+    const apiUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, ''); // Remove trailing slash
     
     const response = await fetch(`${apiUrl}/orders/create-checkout-session`, {
       method: 'POST',
