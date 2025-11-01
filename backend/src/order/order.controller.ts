@@ -331,6 +331,7 @@ export class OrderController {
         throw new Error('PayMongo secret key is not configured');
       }
 
+      const frontendUrl = (process.env.VITE_FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, ''); 
       const requestBody = {
         data: {
           attributes: {
@@ -346,8 +347,8 @@ export class OrderController {
               'grab_pay',
               'paymaya'
             ],
-            success_url: `${process.env.VITE_FRONTEND_URL || 'http://localhost:5173'}/profile/ordercompleted?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${process.env.VITE_FRONTEND_URL || 'http://localhost:5173'}/user/cart/checkout`,
+            success_url: `${frontendUrl}/profile/ordercompleted?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${frontendUrl}/user/cart/checkout`,
             send_email_receipt: false
           }
         }
