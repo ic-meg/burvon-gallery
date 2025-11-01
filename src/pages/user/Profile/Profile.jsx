@@ -7,6 +7,7 @@ import {
   editIcon, 
   DropDown 
 } from '../../../assets/index.js'
+import { logout } from '../../../services/authService'
 
 const ordersByTab = {
   'TO SHIP': [
@@ -123,6 +124,11 @@ const ProfileDesktop = ({ openModal, onEditProfile }) => {
   const selectedOrder = orders[0]
   const navigate = useNavigate() 
 
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  }
+
   return (
     <div className="hidden md:block min-h-screen bg-[#181818] px-0 py-34 text-[#fff7dc]">
       <div className="bebas cream-text text-center text-7xl mt-10 mb-2">HI, REBELS!</div>
@@ -131,10 +137,15 @@ const ProfileDesktop = ({ openModal, onEditProfile }) => {
         <div className="bebas cream-text text-2xl tracking-wide">
           SHOPPING HISTORY / <span className="font-bold">{activeTab}</span>
         </div>
-        <button className="avant cream-text text-md flex items-center gap-1 cursor-pointer" onClick={onEditProfile}>
-          <span>Edit Profile</span>
-          <img src={editIcon} alt="Edit" className="w-5 h-5" />
-        </button>
+        <div className="flex gap-4">
+          <button className="avant cream-text text-md flex items-center gap-1 cursor-pointer" onClick={onEditProfile}>
+            <span>Edit Profile</span>
+            <img src={editIcon} alt="Edit" className="w-5 h-5" />
+          </button>
+          <button className="avant cream-text text-md cursor-pointer hover:opacity-80" onClick={handleLogout}>
+            Logout
+          </button>
+        </div>
       </div>
       {/* Cream horizontal line */}
       <div className="w-full px-12">

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { getAuthToken } from "../services/authService";
 
 //icons and logo
 import {
@@ -30,7 +31,15 @@ const Header = () => {
   const { homepageContent } = useContent();
   const { getCartItemCount } = useCart();
   const { getWishlistCount } = useWishlist();
-  
+
+  const handleProfileClick = () => {
+    const token = getAuthToken();
+    if (token) {
+      navigate('/profile');
+    } else {
+      navigate('/login');
+    }
+  };
 
 
   useEffect(() => {
@@ -188,7 +197,7 @@ const Header = () => {
               src={User}
               alt="User"
               className="w-6 h-6 hover:opacity-80 cursor-pointer"
-              onClick={() => navigate("/login")}
+              onClick={handleProfileClick}
             />
             <div
               role="button"
@@ -366,7 +375,7 @@ const Header = () => {
               src={IconUser}
               alt="User"
               className="w-6 h-6 hover:opacity-80 cursor-pointer cream-text"
-              onClick={() => navigate("/login")}
+              onClick={handleProfileClick}
             />
             <div className="relative">
               <img

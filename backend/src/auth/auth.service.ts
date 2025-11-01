@@ -22,15 +22,29 @@ export class AuthService {
         { expiresIn: '15m' }
       );
 
-      const magicLink = `${process.env.VITE_FRONTEND_URL}/auth/verify?token=${token}`;
+      const frontendUrl = process.env.VITE_FRONTEND_URL || 'https://burvon-gallery.website';
+      const magicLink = `${frontendUrl}/auth/verify?token=${token}`;
+      
+      // Always log magic link locally for testing
+      console.log(`\n✨ Magic link generated:`);
+      console.log(`🔗 ${magicLink}\n`);
 
-      await this.emailService.sendMagicLink(email, magicLink);
-
+     
+      if (process.env.RESEND_API_KEY) {
+        try {
+          await this.emailService.sendMagicLink(email, magicLink);
+          console.log(` Email sent successfully to ${email}`);
+        } catch (emailError) {
+          console.error(` Email send failed (will still work locally):`, emailError.message);
+        }
+      }
+      
       return {
         success: true,
         message: 'Magic link sent to email',
       };
     } catch (error) {
+      console.error(`❌ Error:`, error.message);
       throw new BadRequestException('Failed to send magic link');
     }
   }

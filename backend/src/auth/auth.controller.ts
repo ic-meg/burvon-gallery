@@ -1,11 +1,28 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, Get } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginAuthDto } from './dto/login-auth.dto';
 import { GoogleAuthDto } from './dto/google-auth.dto';
+import { EmailService } from '../email/email.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly emailService: EmailService,
+  ) {}
+
+  @Get('test-email')
+  async testEmail() {
+    try {
+      await this.emailService.sendMagicLink(
+        'test@example.com',
+        'http://localhost:5173/auth/verify?token=test123',
+      );
+      return { success: true, message: 'Test email sent!' };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
 
   @Post('login')
   async login(@Body() loginDto: LoginAuthDto) {
