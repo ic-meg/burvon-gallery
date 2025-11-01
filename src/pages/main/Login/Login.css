@@ -16,3 +16,35 @@ input::placeholder {
 .veri-gray {
   background-color: #1F1F21 !important;
 }
+
+/* Style GoogleLogin button to match CONTINUE button */
+.google-login-wrapper {
+  width: 100% !important;
+}
+
+.google-login-wrapper div[role="button"] {
+  background-color: #FFF7DC !important;
+  color: black !important;
+  border: 1px solid black !important;
+  border-radius: 15px !important;
+  width: 100% !important;
+  padding: 12px 16px !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.google-login-wrapper div[role="button"],
+.google-login-wrapper div[role="button"] > div {
+  font-family: 'AvantGarde Bk BT', sans-serif !important;
+}
+
+.google-login-wrapper div[role="button"] > div {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+}

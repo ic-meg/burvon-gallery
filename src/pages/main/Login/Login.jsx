@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useGoogleLogin } from '@react-oauth/google';
 import './Login.css';
 import googleLoginIcon from "../../../assets/icons/googleLoginIcon.png";
 import loginBG from "../../../assets/images/loginBG.png";
 import white_brv from "../../../assets/logo/white_brv.png";
 import loginVector from "../../../assets/images/loginVector.png";
-import { sendMagicLink } from '../../../services/authService';
+import { sendMagicLink, googleAuth } from '../../../services/authService';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -32,6 +33,32 @@ const Login = () => {
 
     setLoading(false);
   };
+
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (credentialResponse) => {
+      try {
+        setLoading(true);
+        setError('');
+ 
+        const result = await googleAuth(credentialResponse.access_token);
+        
+        if (result.success) {
+          navigate('/profile');
+        } else {
+          setError(result.error || 'Google login failed');
+        }
+      } catch (err) {
+        console.error('Error:', err);
+        setError('Google login error: ' + err.message);
+      } finally {
+        setLoading(false);
+      }
+    },
+    onError: (error) => {
+      console.error('Google login error:', error);
+      setError('Google login failed');
+    },
+  });
 
   return (
     <>
@@ -101,17 +128,21 @@ const Login = () => {
               <span className="mx-4 text-base avant" style={{ color: "#FFF7DC" }}>OR</span>
               <div className="avant" style={{ borderTop: "2px solid #FFF7DC", width: "60px", height: "0" }}></div>
             </div>
-            <button
-              className="w-full max-w-sm mx-auto flex items-center justify-center py-3 font-semibold avant border border-black"
-              style={{
-                borderRadius: "15px",
-                backgroundColor: "#FFF7DC",
-                color: "black",
-              }}
-            >
-              <img src={googleLoginIcon} alt="Google" className="w-6 h-6 mr-2" />
-              CONTINUE WITH GOOGLE
-            </button>
+            <div className="w-full max-w-sm mx-auto google-login-wrapper">
+              <button
+                onClick={googleLogin}
+                className="w-full py-3 font-semibold mb-6 avant border border-black flex items-center justify-center cursor-pointer"
+                style={{
+                  borderRadius: "15px",
+                  backgroundColor: "#FFF7DC",
+                  color: "black",
+                }}
+                disabled={loading}
+              >
+                <img src={googleLoginIcon} alt="Google Login" className="mr-2 w-5 h-5" />
+                {loading ? 'SENDING...' : 'CONTINUE WITH GOOGLE'}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -194,17 +225,21 @@ const Login = () => {
               <span className="mx-4 text-base avant" style={{ color: "#FFF7DC" }}>OR</span>
               <div className="avant" style={{ borderTop: "2px solid #FFF7DC", width: "50px", height: "0" }}></div>
             </div>
-            <button
-              className="w-full flex items-center justify-center py-2 font-semibold hover:bg-[#f5e6c6] transition avant border border-black custom-btn-bg"
-              style={{
-                borderRadius: "12px",
-                backgroundColor: "#FFF7DC",
-                color: "black",
-              }}
-            >
-              <img src={googleLoginIcon} alt="Google" className="w-6 h-6 mr-2" />
-              CONTINUE WITH GOOGLE
-            </button>
+            <div className="w-full google-login-wrapper">
+              <button
+                onClick={googleLogin}
+                className="w-full py-2 font-semibold avant border border-black hover:bg-[#f5e6c6] transition flex items-center justify-center cursor-pointer custom-btn-bg"
+                style={{
+                  borderRadius: "12px",
+                  backgroundColor: "#FFF7DC",
+                  color: "black",
+                }}
+                disabled={loading}
+              >
+                <img src={googleLoginIcon} alt="Google Login" className="mr-2 w-5 h-5" />
+                {loading ? 'SENDING...' : 'CONTINUE WITH GOOGLE'}
+              </button>
+            </div>
           </div>
         </div>
       </div>
