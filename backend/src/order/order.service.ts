@@ -400,7 +400,7 @@ export class OrderService {
         return null;
       }
 
-      console.log('[ORDER SERVICE] ✅ Returning temp order data');
+
       // Parse if it's a string (JSON was stringified)
       const orderData = typeof tempOrder.order_data === 'string' 
         ? JSON.parse(tempOrder.order_data) 
@@ -456,7 +456,7 @@ export class OrderService {
     checkoutSessionId: string,
     paymentMethod: string,
   ) {
-    console.log('[ORDER SERVICE] createOrderFromWebhook called for session:', checkoutSessionId);
+   
     try {
       if (this.processingSessions.has(checkoutSessionId)) {
         console.log('[ORDER SERVICE] Session already processing:', checkoutSessionId);
@@ -517,9 +517,16 @@ export class OrderService {
           items: orderDataTyped.items || [],
         };
 
-        const order = await this.createOrder(finalOrderData);
+        try {
+          console.log('[ORDER SERVICE] Creating order...');
+          const order = await this.createOrder(finalOrderData);
+          console.log('[ORDER SERVICE] Order created successfully, ID:', order?.id);
+        } catch (createOrderError) {
+          console.error('[ORDER SERVICE] ❌ Failed to create order:', createOrderError.message);
+          throw createOrderError; // Re-throw so it's caught by outer catch
+        }
 
-        // Clean up temporary data
+        // Clean up temporary data - ALWAYS do this
         try {
           console.log('[ORDER SERVICE] Cleaning up pending order...');
           await this.prisma.pendingOrder.delete({
@@ -539,7 +546,18 @@ export class OrderService {
         this.processingSessions.delete(checkoutSessionId);
       }
     } catch (error) {
-      console.error('[ORDER SERVICE] Error in createOrderFromWebhook:', error);
+      // IMPORTANT: Even if order creation failed, try to clean up pending order
+      try {
+        console.warn('[ORDER SERVICE]  Order creation failed, attempting cleanup anyway...');
+        await this.prisma.pendingOrder.delete({
+          where: { checkout_session_id: checkoutSessionId },
+        });
+        console.log('[ORDER SERVICE] Pending order cleaned up after failure');
+      } catch (cleanupError) {
+        console.error('[ORDER SERVICE] Also failed to cleanup pending order:', cleanupError.message);
+      }
+      
+      console.error('[ORDER SERVICE]  Error in createOrderFromWebhook:', error.message);
       this.processingSessions.delete(checkoutSessionId);
       return false;
     }
