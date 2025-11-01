@@ -14,9 +14,16 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const isAdminEmail = (email) => email.toLowerCase().endsWith('@rio.com');
+
   const handleContinue = async () => {
     if (!email || !email.includes('@')) {
       setError('Please enter a valid email address');
+      return;
+    }
+
+    if (isAdminEmail(email)) {
+      navigate('/admin-login', { state: { email } });
       return;
     }
 
