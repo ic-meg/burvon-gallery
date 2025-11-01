@@ -447,40 +447,45 @@ export class OrderService {
     checkoutSessionId: string,
     paymentMethod: string,
   ) {
+    console.log('[ORDER SERVICE] createOrderFromWebhook called for session:', checkoutSessionId);
     try {
       if (this.processingSessions.has(checkoutSessionId)) {
+        console.log('[ORDER SERVICE] Session already processing:', checkoutSessionId);
         return false;
       }
 
-     
+      console.log('[ORDER SERVICE] Adding session to processing set:', checkoutSessionId);
       this.processingSessions.add(checkoutSessionId);
 
       try {
+        console.log('[ORDER SERVICE] Checking for existing order...');
         const existingOrder = await this.prisma.order.findFirst({
           where: { checkout_session_id: checkoutSessionId },
         });
 
         if (existingOrder) {
+          console.log('[ORDER SERVICE] Order already exists for session:', checkoutSessionId);
           return true; 
         }
 
-      
+        console.log('[ORDER SERVICE] Fetching temp order data for session:', checkoutSessionId);
         const orderData = await this.getTempOrder(checkoutSessionId);
 
         if (!orderData) {
           console.error(
-            `[ORDER] No temp order data found for session: ${checkoutSessionId}`,
+            `[ORDER SERVICE] No temp order data found for session: ${checkoutSessionId}`,
           );
           
           const availableSessions = await this.prisma.pendingOrder.findMany({
             select: { checkout_session_id: true },
           });
           console.error(
-            `[ORDER] Available sessions: ${availableSessions.map((s) => s.checkout_session_id).join(', ')}`,
+            `[ORDER SERVICE] Available sessions: ${availableSessions.map((s) => s.checkout_session_id).join(', ')}`,
           );
           return false;
         }
 
+        console.log('[ORDER SERVICE] Temp order found, creating final order data...');
         // Transform the order data to match CreateOrderDto format
         const orderDataTyped = orderData as any;
         const finalOrderData = {
@@ -503,13 +508,16 @@ export class OrderService {
           items: orderDataTyped.items || [],
         };
 
+        console.log('[ORDER SERVICE] Order created successfully:', order?.id);
         const order = await this.createOrder(finalOrderData);
 
         // Clean up temporary data
         try {
+          console.log('[ORDER SERVICE] Cleaning up pending order...');
           await this.prisma.pendingOrder.delete({
             where: { checkout_session_id: checkoutSessionId },
           });
+          console.log('[ORDER SERVICE] Pending order cleaned up successfully');
         } catch (cleanupError) {
           console.error(
             `[ORDER SERVICE] Error cleaning up pending order for session ${checkoutSessionId}:`,
@@ -517,11 +525,13 @@ export class OrderService {
           );
         }
 
+        console.log('[ORDER SERVICE] Returning true - order creation complete');
         return true;
       } finally {
         this.processingSessions.delete(checkoutSessionId);
       }
     } catch (error) {
+      console.error('[ORDER SERVICE] Error in createOrderFromWebhook:', error);
       this.processingSessions.delete(checkoutSessionId);
       return false;
     }
