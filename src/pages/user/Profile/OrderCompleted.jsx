@@ -8,15 +8,21 @@ const ViewOrderDesktop = ({ order, loading }) => {
   
   if (loading) {
     return (
-      <div className="md:hidden w-full min-h-screen bg-[#181818] text-[#fff7dc] flex items-center justify-center">
-        <div className="avant cream-text text-xl">Loading order details...</div>
+      <div className="w-full min-h-screen bg-[#181818] text-[#fff7dc] flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block">
+            <div className="w-16 h-16 border-4 border-[#fff7dc] border-t-transparent rounded-full animate-spin mb-4"></div>
+          </div>
+          <div className="avant cream-text text-lg">Processing your order...</div>
+          <div className="avant cream-text text-sm mt-2" style={{color: '#959595'}}>This may take a moment</div>
+        </div>
       </div>
     )
   }
 
   if (!order) {
     return (
-      <div className="hidden md:block min-h-screen bg-[#181818] text-[#fff7dc] px-0 py-0 flex items-center justify-center">
+      <div className="min-h-screen bg-[#181818] text-[#fff7dc] px-0 py-0 flex items-center justify-center">
         <div className="avant cream-text text-xl"> </div>
       </div>
     )
@@ -372,12 +378,15 @@ const OrderCompleted = () => {
   if (error) {
     return (
       <Layout full>
-        <div className="min-h-screen bg-[#181818] text-[#fff7dc] flex items-center justify-center">
+        <div className="min-h-screen bg-[#181818] text-[#fff7dc] flex items-center justify-center px-4">
           <div className="text-center">
-            <div className="avant cream-text text-xl mb-4">{error}</div>
-            
-           
-            
+            <div className="avant cream-text text-xl mb-6">{error}</div>
+            <button 
+              onClick={() => window.location.reload()}
+              className="bg-[#FFF7DC] text-[#181818] px-8 py-3 rounded avantbold text-lg hover:bg-[#ffe9b3] transition"
+            >
+              REFRESH PAGE
+            </button>
           </div>
         </div>
       </Layout>
