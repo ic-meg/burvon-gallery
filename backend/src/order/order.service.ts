@@ -378,21 +378,20 @@ export class OrderService {
   }
 
   async getTempOrder(checkoutSessionId: string) {
-    console.log('[ORDER SERVICE] getTempOrder called for session:', checkoutSessionId);
+    
     try {
       const tempOrder = await this.prisma.pendingOrder.findUnique({
         where: { checkout_session_id: checkoutSessionId },
       });
-      console.log('[ORDER SERVICE] Found temp order:', !!tempOrder);
+      
 
       if (!tempOrder) {
-        console.warn('[ORDER SERVICE] ❌ No temp order found for session:', checkoutSessionId);
+        
         return null;
       }
 
-      console.log('[ORDER SERVICE] Checking expiry...', 'expires_at:', tempOrder.expires_at, 'now:', new Date());
       if (new Date() > tempOrder.expires_at) {
-        console.warn('[ORDER SERVICE] ⏰ Temp order expired, deleting...');
+        
         // Delete expired order
         await this.prisma.pendingOrder.delete({
           where: { checkout_session_id: checkoutSessionId },
@@ -400,14 +399,14 @@ export class OrderService {
         return null;
       }
 
-
+      
       // Parse if it's a string (JSON was stringified)
       const orderData = typeof tempOrder.order_data === 'string' 
         ? JSON.parse(tempOrder.order_data) 
         : tempOrder.order_data;
       return orderData;
     } catch (error) {
-      console.error('[ORDER SERVICE] ❌ Error getting temp order:', error.message);
+      
       return null;
     }
   }
@@ -456,28 +455,28 @@ export class OrderService {
     checkoutSessionId: string,
     paymentMethod: string,
   ) {
-   
+    
     try {
       if (this.processingSessions.has(checkoutSessionId)) {
-        console.log('[ORDER SERVICE] Session already processing:', checkoutSessionId);
+        
         return false;
       }
 
-      console.log('[ORDER SERVICE] Adding session to processing set:', checkoutSessionId);
+      
       this.processingSessions.add(checkoutSessionId);
 
       try {
-        console.log('[ORDER SERVICE] Checking for existing order...');
+        
         const existingOrder = await this.prisma.order.findFirst({
           where: { checkout_session_id: checkoutSessionId },
         });
 
         if (existingOrder) {
-          console.log('[ORDER SERVICE] Order already exists for session:', checkoutSessionId);
+          
           return true; 
         }
 
-        console.log('[ORDER SERVICE] Fetching temp order data for session:', checkoutSessionId);
+        
         const orderData = await this.getTempOrder(checkoutSessionId);
 
         if (!orderData) {
@@ -494,7 +493,7 @@ export class OrderService {
           return false;
         }
 
-        console.log('[ORDER SERVICE] Temp order found, creating final order data...');
+        
         // Transform the order data to match CreateOrderDto format
         const orderDataTyped = orderData as any;
         const finalOrderData = {
@@ -517,22 +516,15 @@ export class OrderService {
           items: orderDataTyped.items || [],
         };
 
-        try {
-          console.log('[ORDER SERVICE] Creating order...');
-          const order = await this.createOrder(finalOrderData);
-          console.log('[ORDER SERVICE] Order created successfully, ID:', order);
-        } catch (createOrderError) {
-          console.error('[ORDER SERVICE] ❌ Failed to create order:', createOrderError.message);
-          throw createOrderError; // Re-throw so it's caught by outer catch
-        }
+        const order = await this.createOrder(finalOrderData);
 
-        // Clean up temporary data - ALWAYS do this
+        // Clean up temporary data
         try {
-          console.log('[ORDER SERVICE] Cleaning up pending order...');
+          
           await this.prisma.pendingOrder.delete({
             where: { checkout_session_id: checkoutSessionId },
           });
-          console.log('[ORDER SERVICE] Pending order cleaned up successfully');
+          
         } catch (cleanupError) {
           console.error(
             `[ORDER SERVICE] Error cleaning up pending order for session ${checkoutSessionId}:`,
@@ -540,24 +532,13 @@ export class OrderService {
           );
         }
 
-        console.log('[ORDER SERVICE] Returning true - order creation complete');
+        
         return true;
       } finally {
         this.processingSessions.delete(checkoutSessionId);
       }
     } catch (error) {
-      // IMPORTANT: Even if order creation failed, try to clean up pending order
-      try {
-        console.warn('[ORDER SERVICE]  Order creation failed, attempting cleanup anyway...');
-        await this.prisma.pendingOrder.delete({
-          where: { checkout_session_id: checkoutSessionId },
-        });
-        console.log('[ORDER SERVICE] Pending order cleaned up after failure');
-      } catch (cleanupError) {
-        console.error('[ORDER SERVICE] Also failed to cleanup pending order:', cleanupError.message);
-      }
       
-      console.error('[ORDER SERVICE]  Error in createOrderFromWebhook:', error.message);
       this.processingSessions.delete(checkoutSessionId);
       return false;
     }
@@ -779,3 +760,4 @@ export class OrderService {
     return order;
   }
 }
+
