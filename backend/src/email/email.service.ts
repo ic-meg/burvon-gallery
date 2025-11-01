@@ -6,30 +6,38 @@ export class EmailService {
   private resend: Resend;
 
   constructor() {
-    const apiKey = process.env.RESEND_API_KEY;
-    if (apiKey) {
+    const apiKey = process.env.RESEND_API_KEY || '';
+    
+    
+    if (apiKey && apiKey !== 're_test_key_here') {
       this.resend = new Resend(apiKey);
+    } else {
+      throw new BadRequestException('Email service not configured');
     }
   }
 
   async sendMagicLink(email: string, magicLink: string) {
+    
     if (!this.resend) {
-      console.warn('Resend API key not configured');
       throw new BadRequestException('Email service not configured');
     }
 
     try {
-      await this.resend.emails.send({
-        from: 'BURVON <onboarding@resend.dev>',
+      const fromAddress = process.env.RESEND_FROM_EMAIL || 'noreply@burvon-gallery.website';
+      const result = await this.resend.emails.send({
+        from: fromAddress,
         to: email,
         subject: 'Your BURVON Gallery Login Link',
         html: this.getMagicLinkTemplate(magicLink, email),
       });
 
+
       return { success: true, message: 'Magic link sent to email' };
     } catch (error) {
-      console.error('Resend error:', error);
-      throw new BadRequestException('Failed to send email');
+      console.error('❌ Resend error:', error);
+      console.error('Error details:', error.message);
+      console.error('Error stack:', error.stack);
+      throw new BadRequestException(`Failed to send email: ${error.message}`);
     }
   }
 

@@ -131,6 +131,7 @@ const App = () => {
                     element={<ShoppingBagEmpty />}
                   />
                   <Route path="/verification" element={<Verification />} />
+                  <Route path="/auth/verify" element={<Verification />} />
 
                   {/*Main nav */}
                   {/* Dynamic Category Products Route */}
