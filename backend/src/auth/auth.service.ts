@@ -1,6 +1,7 @@
 import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { DatabaseService } from '../database/database.service';
+import { EmailService } from '../email/email.service';
 import { LoginAuthDto } from './dto/login-auth.dto';
 import { GoogleAuthDto } from './dto/google-auth.dto';
 
@@ -9,6 +10,7 @@ export class AuthService {
   constructor(
     private readonly db: DatabaseService,
     private readonly jwtService: JwtService,
+    private readonly emailService: EmailService,
   ) {}
 
   async sendMagicLink(loginDto: LoginAuthDto) {
@@ -22,7 +24,7 @@ export class AuthService {
 
       const magicLink = `${process.env.VITE_FRONTEND_URL}/auth/verify?token=${token}`;
 
-      console.log(`🔗 Magic link for ${email}: ${magicLink}`);
+      await this.emailService.sendMagicLink(email, magicLink);
 
       return {
         success: true,
