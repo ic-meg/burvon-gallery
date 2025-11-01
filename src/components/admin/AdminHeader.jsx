@@ -3,12 +3,20 @@ import { useNavigate } from "react-router-dom";
 
 //icons and logo
 import { WhiteLogo, User } from "../../assets/index";
+import { logout } from "../../services/authService";
 
 const AdminHeader = () => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const [isScrolled, setIsScrolled] = useState(false);
   const navigate = useNavigate();
+
+  const handleLogout = () => {
+    if (window.confirm('Are you sure you want to logout?')) {
+      logout();
+      navigate('/login');
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -89,6 +97,17 @@ const AdminHeader = () => {
           className="max-h-[80px] w-auto object-contain"
           onClick={() => navigate("/admin/dashboard")}
         />
+        
+        {/* Logout Button */}
+        <button
+          onClick={handleLogout}
+          className="text-white hover:opacity-60 transition-opacity"
+          title="Logout"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+        </button>
       </header>
 
       {/* Desktop Header */}
@@ -167,6 +186,17 @@ const AdminHeader = () => {
               Content
             </span>
           </nav>
+          
+          {/* Logout Button */}
+          <button
+            onClick={handleLogout}
+            className="text-white hover:opacity-60 transition-opacity ml-auto"
+            title="Logout"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+          </button>
         </div>
       </header>
     </>
