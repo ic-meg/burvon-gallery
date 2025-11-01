@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import AdminHeader from "../../components/admin/AdminHeader";
 
 import {
@@ -8,7 +8,8 @@ import {
   DropUpIconBlack,
 } from '../../assets/index.js';
 
-const UserManagement = () => {
+const UserManagement = ({ hasAccess = true }) => {
+  const API_URL = import.meta.env.VITE_API_URL?.replace(/\/$/, '');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedRole, setSelectedRole] = useState('all');
@@ -18,126 +19,39 @@ const UserManagement = () => {
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [showEditUserModal, setShowEditUserModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [generatedPassword, setGeneratedPassword] = useState(null);
   const [newUser, setNewUser] = useState({
-    name: '',
+    full_name: '',
     email: '',
-    password: '',
     role: '',
-    status: 'Active',
-    pageAccess: {
-      orderManagement: false,
-      productManagement: false,
-      userManagement: false,
-      collectionsManagement: false,
-      liveChat: false,
-      content: false
-    }
+    status: 'active',
+    can_access: []
   });
   const [editUser, setEditUser] = useState({
-    id: null,
-    name: '',
+    user_id: null,
+    full_name: '',
     email: '',
-    password: '',
     role: '',
-    status: 'Active',
-    pageAccess: {
-      orderManagement: false,
-      productManagement: false,
-      userManagement: false,
-      collectionsManagement: false,
-      liveChat: false,
-      content: false
-    }
+    status: 'active',
+    can_access: []
   });
+  const [allUsers, setAllUsers] = useState([]);
 
   const itemsPerPage = 10;
 
-  // Sample users data - Removed Support Staff and Department
-  const [allUsers, setAllUsers] = useState([
-    {
-      id: 1,
-      name: "John Doe",
-      email: "john.doe@company.com",
-      password: "admin123",
-      role: "Admin",
-      status: "Active",
-      dateCreated: "2024-08-15",
-      lastLogin: "Oct 5, 2024 at 9:30 AM",
-      pageAccess: {
-        orderManagement: true,
-        productManagement: true,
-        userManagement: true,
-        collectionsManagement: true,
-        liveChat: true,
-        content: true
-      }
-    },
-    {
-      id: 2,
-      name: "Sarah Johnson",
-      email: "sarah.johnson@company.com",
-      password: "csr456",
-      role: "CSR",
-      status: "Active",
-      dateCreated: "2024-07-20",
-      lastLogin: "Oct 5, 2024 at 2:15 PM",
-      pageAccess: {
-        orderManagement: true,
-        productManagement: false,
-        userManagement: false,
-        collectionsManagement: false,
-        liveChat: true,
-        content: false
-      }
-    },
-    {
-      id: 3,
-      name: "Michael Chen",
-      email: "michael.chen@company.com",
-      password: "clerk789",
-      role: "Clerk",
-      status: "Active",
-      dateCreated: "2024-09-01",
-      lastLogin: "Oct 4, 2024 at 4:45 PM",
-      pageAccess: {
-        orderManagement: true,
-        productManagement: true,
-        userManagement: false,
-        collectionsManagement: true,
-        liveChat: false,
-        content: false
-      }
-    },
-    {
-      id: 4,
-      name: "Emily Rodriguez",
-      email: "emily.rodriguez@company.com",
-      password: "manager321",
-      role: "Manager",
-      status: "Active",
-      dateCreated: "2024-06-10",
-      lastLogin: "Oct 5, 2024 at 11:20 AM",
-      pageAccess: {
-        orderManagement: true,
-        productManagement: true,
-        userManagement: false,
-        collectionsManagement: true,
-        liveChat: true,
-        content: true
-      }
-    }
-  ]);
-
-  // User role options - Removed Support Staff
+  
   const roleOptions = [
     { value: 'all', label: 'All Roles' },
+    { value: 'super_admin', label: 'Super Admin' },
     { value: 'admin', label: 'Admin' },
     { value: 'manager', label: 'Manager' },
     { value: 'csr', label: 'CSR' },
     { value: 'clerk', label: 'Clerk' }
   ];
 
-  // Status options
+  
   const statusOptions = [
     { value: 'all', label: 'All Status' },
     { value: 'active', label: 'Active' },
@@ -145,160 +59,232 @@ const UserManagement = () => {
     { value: 'suspended', label: 'Suspended' }
   ];
 
-  // Available page options for access control
+  
   const pageOptions = [
-    { key: 'orderManagement', label: 'Order Management' },
-    { key: 'productManagement', label: 'Product Management' },
-    { key: 'userManagement', label: 'User Management' },
-    { key: 'collectionsManagement', label: 'Collections Management' },
-    { key: 'liveChat', label: 'Live Chat' },
-    { key: 'content', label: 'Content Management' }
+    { key: 'Order Management', label: 'Order Management' },
+    { key: 'Product Management', label: 'Product Management' },
+    { key: 'User Management', label: 'User Management' },
+    { key: 'Collections Management', label: 'Collections Management' },
+    { key: 'Live Chat', label: 'Live Chat' },
+    { key: 'Content Management', label: 'Content Management' }
   ];
 
-  // Helper function to close all dropdowns
+ 
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('authToken');
+    return {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    };
+  };
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await fetch(`${API_URL}/user/admin/all`, {
+        headers: getAuthHeaders()
+      });
+      const data = await response.json();
+      
+      if (response.ok) {
+        const transformedUsers = data
+          .filter(user => user.role !== 'customer')
+          .map(user => ({
+            ...user,
+            created_at: user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'
+          }));
+        setAllUsers(transformedUsers);
+      } else {
+        setError(data.message || 'Failed to fetch users');
+      }
+    } catch (err) {
+      setError('Error fetching users: ' + err.message);
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+ 
   const closeAllDropdowns = () => {
     setShowRoleDropdown(false);
     setShowStatusDropdown(false);
   };
 
-  // Handle user form changes for add user
+
   const handleUserChange = (field, value) => {
-    setNewUser(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    if (field === 'role') {
+      setNewUser(prev => ({
+        ...prev,
+        [field]: value,
+        can_access: value === 'super_admin' 
+          ? pageOptions.map(p => p.key)
+          : []
+      }));
+    } else {
+      setNewUser(prev => ({
+        ...prev,
+        [field]: value
+      }));
+    }
   };
 
-  // Handle page access change for add user
+ 
   const handlePageAccessChange = (pageKey, checked) => {
     setNewUser(prev => ({
       ...prev,
-      pageAccess: {
-        ...prev.pageAccess,
-        [pageKey]: checked
-      }
+      can_access: checked 
+        ? [...prev.can_access, pageKey]
+        : prev.can_access.filter(p => p !== pageKey)
     }));
   };
 
-  // Handle user form changes for edit user
+ 
   const handleEditUserChange = (field, value) => {
-    setEditUser(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    if (field === 'role') {
+      setEditUser(prev => ({
+        ...prev,
+        [field]: value,
+        can_access: value === 'super_admin' 
+          ? pageOptions.map(p => p.key)
+          : []
+      }));
+    } else {
+      setEditUser(prev => ({
+        ...prev,
+        [field]: value
+      }));
+    }
   };
 
-  // Handle page access change for edit user
+
   const handleEditPageAccessChange = (pageKey, checked) => {
     setEditUser(prev => ({
       ...prev,
-      pageAccess: {
-        ...prev.pageAccess,
-        [pageKey]: checked
-      }
+      can_access: checked 
+        ? [...prev.can_access, pageKey]
+        : prev.can_access.filter(p => p !== pageKey)
     }));
   };
 
-  // Handle add user
-  const handleAddUser = () => {
-    const currentDateTime = new Date();
-    const formattedDateTime = `${currentDateTime.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric', 
-      year: 'numeric' 
-    })} at ${currentDateTime.toLocaleTimeString('en-US', { 
-      hour: 'numeric', 
-      minute: '2-digit', 
-      hour12: true 
-    })}`;
 
-    const newUserData = {
-      ...newUser,
-      id: Date.now(),
-      dateCreated: new Date().toISOString().split('T')[0],
-      lastLogin: 'Never'
-    };
-    
-    setAllUsers(prev => [...prev, newUserData]);
-    
-    setShowAddUserModal(false);
-    setNewUser({
-      name: '',
-      email: '',
-      password: '',
-      role: '',
-      status: 'Active',
-      pageAccess: {
-        orderManagement: false,
-        productManagement: false,
-        userManagement: false,
-        collectionsManagement: false,
-        liveChat: false,
-        content: false
+  const handleAddUser = async () => {
+    if (!newUser.full_name || !newUser.email || !newUser.role) {
+      setError('Please fill in all required fields');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await fetch(`${API_URL}/user/admin/create`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(newUser)
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+
+        setGeneratedPassword(data.generated_password);
+      
+        await fetchUsers();
+      } else {
+        setError(data.message || 'Failed to create user');
       }
-    });
+    } catch (err) {
+      setError('Error creating user: ' + err.message);
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Handle edit user button click
   const handleEditClick = (user) => {
     setEditUser({
-      id: user.id,
-      name: user.name,
+      user_id: user.user_id,
+      full_name: user.full_name,
       email: user.email,
-      password: user.password || '',
       role: user.role,
       status: user.status,
-      pageAccess: user.pageAccess || {
-        orderManagement: false,
-        productManagement: false,
-        userManagement: false,
-        collectionsManagement: false,
-        liveChat: false,
-        content: false
-      }
+      can_access: user.can_access || []
     });
     setShowEditUserModal(true);
   };
 
   // Handle update user
-  const handleUpdateUser = () => {
-    setAllUsers(prev => 
-      prev.map(user => 
-        user.id === editUser.id 
-          ? { 
-              ...user, 
-              ...editUser,
-              password: editUser.password || user.password
-            }
-          : user
-      )
-    );
-    
-    console.log('Updating user:', editUser);
-    setShowEditUserModal(false);
-    setEditUser({
-      id: null,
-      name: '',
-      email: '',
-      password: '',
-      role: '',
-      status: 'Active',
-      pageAccess: {
-        orderManagement: false,
-        productManagement: false,
-        userManagement: false,
-        collectionsManagement: false,
-        liveChat: false,
-        content: false
+  const handleUpdateUser = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await fetch(`${API_URL}/user/admin/update/${editUser.user_id}`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          full_name: editUser.full_name,
+          email: editUser.email,
+          role: editUser.role,
+          status: editUser.status,
+          can_access: editUser.can_access
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        await fetchUsers();
+        setShowEditUserModal(false);
+        setEditUser({
+          user_id: null,
+          full_name: '',
+          email: '',
+          role: '',
+          status: 'active',
+          can_access: []
+        });
+      } else {
+        setError(data.message || 'Failed to update user');
       }
-    });
+    } catch (err) {
+      setError('Error updating user: ' + err.message);
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Handle remove user
-  const handleRemoveUser = (userId) => {
+  const handleRemoveUser = async (userId) => {
     if (window.confirm('Are you sure you want to remove this user? This action cannot be undone.')) {
-      setAllUsers(prev => prev.filter(user => user.id !== userId));
-      console.log('Removing user with ID:', userId);
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await fetch(`${API_URL}/user/admin/delete/${userId}`, {
+          method: 'DELETE',
+          headers: getAuthHeaders()
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          // Refresh users list
+          await fetchUsers();
+        } else {
+          setError(data.message || 'Failed to delete user');
+        }
+      } catch (err) {
+        setError('Error deleting user: ' + err.message);
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -320,7 +306,7 @@ const UserManagement = () => {
 
     if (searchQuery.trim()) {
       filtered = filtered.filter(user =>
-        user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.role.toLowerCase().includes(searchQuery.toLowerCase())
       );
@@ -358,13 +344,13 @@ const UserManagement = () => {
   // Get status badge styling
   const getStatusBadge = (status) => {
     const statusStyles = {
-      'Active': 'bg-green-500 text-white',
-      'Inactive': 'bg-yellow-500 text-white',
-      'Suspended': 'bg-red-500 text-white'
+      'active': 'bg-green-500 text-white',
+      'inactive': 'bg-yellow-500 text-white',
+      'suspended': 'bg-red-500 text-white'
     };
 
     return (
-      <span className={`px-3 py-1 rounded text-xs avantbold ${statusStyles[status] || 'bg-gray-100 text-gray-800'}`}>
+      <span className={`px-3 py-1 rounded text-xs avantbold capitalize ${statusStyles[status?.toLowerCase()] || 'bg-gray-100 text-gray-800'}`}>
         {status}
       </span>
     );
@@ -373,14 +359,15 @@ const UserManagement = () => {
   // Get role badge styling
   const getRoleBadge = (role) => {
     const roleStyles = {
-      'Admin': 'bg-purple-500 text-white',
-      'Manager': 'bg-blue-500 text-white',
-      'CSR': 'bg-green-500 text-white',
-      'Clerk': 'bg-orange-500 text-white'
+      'super_admin': 'bg-indigo-600 text-white',
+      'admin': 'bg-purple-500 text-white',
+      'manager': 'bg-blue-500 text-white',
+      'csr': 'bg-green-500 text-white',
+      'clerk': 'bg-orange-500 text-white'
     };
 
     return (
-      <span className={`px-2 py-1 rounded text-xs avant font-medium ${roleStyles[role] || 'bg-gray-100 text-gray-800'}`}>
+      <span className={`px-2 py-1 rounded text-xs avant font-medium capitalize ${roleStyles[role?.toLowerCase()] || 'bg-gray-100 text-gray-800'}`}>
         {role}
       </span>
     );
@@ -389,6 +376,23 @@ const UserManagement = () => {
   return (
     <div className="min-h-screen bg-white">
       <AdminHeader />
+
+      {/* Error Alert */}
+      {error && (
+        <div className="fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg z-50 animate-pulse">
+          {error}
+          <button onClick={() => setError(null)} className="ml-4 font-bold">×</button>
+        </div>
+      )}
+
+      {/* Generated Password Alert */}
+      {generatedPassword && (
+        <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg z-50 max-w-md">
+          <div className="font-bold mb-2">User Created Successfully!</div>
+          <div className="text-sm">Password: <span className="font-mono font-bold">{generatedPassword}</span></div>
+          <div className="text-xs mt-2">Share this password with the user. It won't be shown again.</div>
+        </div>
+      )}
 
       {/* Page Header with Search */}
       <div className="pt-24 px-6">
@@ -526,7 +530,9 @@ const UserManagement = () => {
             <div>
               <button 
                 onClick={() => setShowAddUserModal(true)}
-                className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors avantbold uppercase text-sm font-medium"
+                disabled={!hasAccess}
+                title={!hasAccess ? 'You do not have permission to perform this action' : ''}
+                className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors avantbold uppercase text-sm font-medium"
               >
                 Add New User
               </button>
@@ -553,29 +559,43 @@ const UserManagement = () => {
 
               {/* Table Body - Better spaced columns */}
               <div className="space-y-4 mb-6">
-                {paginatedUsers.map((user) => (
-                  <div key={user.id} className="grid gap-6 items-center p-4 bg-gray-50 rounded-lg" style={{ gridTemplateColumns: '1.5fr 2fr 1fr 1fr 1.5fr 1.5fr' }}>
-                    <div className="avantbold text-sm text-black">{user.name}</div>
+                {loading ? (
+                  <div className="text-center py-10">
+                    <p className="text-lg avantbold text-gray-600">Loading users...</p>
+                  </div>
+                ) : paginatedUsers.length === 0 ? (
+                  <div className="text-center py-10">
+                    <p className="text-lg avantbold text-gray-600">No users found.</p>
+                  </div>
+                ) : (
+                  paginatedUsers.map((user) => (
+                  <div key={user.user_id} className="grid gap-6 items-center p-4 bg-gray-50 rounded-lg" style={{ gridTemplateColumns: '1.5fr 2fr 1fr 1fr 1.5fr 1.5fr' }}>
+                    <div className="avantbold text-sm text-black">{user.full_name}</div>
                     <div className="avant text-sm text-gray-600">{user.email}</div>
                     <div>{getRoleBadge(user.role)}</div>
                     <div>{getStatusBadge(user.status)}</div>
-                    <div className="avant text-sm text-gray-600">{user.lastLogin}</div>
+                    <div className="avant text-sm text-gray-600">{user.created_at}</div>
                     <div className="flex justify-center space-x-2">
                       <button 
                         onClick={() => handleEditClick(user)}
-                        className="px-3 py-1 bg-transparent border border-black text-black rounded text-xs avant font-medium hover:bg-black hover:text-white transition-colors"
+                        disabled={!hasAccess}
+                        title={!hasAccess ? 'You do not have permission to perform this action' : ''}
+                        className="px-3 py-1 bg-transparent border border-black text-black rounded text-xs avant font-medium hover:bg-black hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
                         EDIT
                       </button>
                       <button 
-                        onClick={() => handleRemoveUser(user.id)}
-                        className="px-3 py-1 bg-red-600 text-white rounded text-xs avant font-medium hover:bg-red-700 transition-colors"
+                        onClick={() => handleRemoveUser(user.user_id)}
+                        disabled={!hasAccess}
+                        title={!hasAccess ? 'You do not have permission to perform this action' : ''}
+                        className="px-3 py-1 bg-red-600 text-white rounded text-xs avant font-medium hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
                         REMOVE
                       </button>
                     </div>
                   </div>
-                ))}
+                ))
+                )}
               </div>
 
               {/* Pagination */}
@@ -642,9 +662,14 @@ const UserManagement = () => {
           <div className="bg-white rounded-2xl border-2 border-black w-full max-w-2xl mx-4 shadow-2xl max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
             <div className="flex justify-between items-center p-6 border-b border-gray-200">
-              <h2 className="text-xl avantbold text-black">Add New User</h2>
+              <h2 className="text-xl avantbold text-black">
+                {generatedPassword ? 'User Created Successfully!' : 'Add New User'}
+              </h2>
               <button 
-                onClick={() => setShowAddUserModal(false)}
+                onClick={() => {
+                  setShowAddUserModal(false);
+                  setGeneratedPassword(null);
+                }}
                 className="text-2xl text-black hover:text-gray-600 transition-colors"
               >
                 ×
@@ -653,105 +678,162 @@ const UserManagement = () => {
 
             {/* Modal Content */}
             <div className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm avantbold text-black mb-2">FULL NAME</label>
-                  <input
-                    type="text"
-                    placeholder="Enter Full Name"
-                    value={newUser.name}
-                    onChange={(e) => handleUserChange('name', e.target.value)}
-                    className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm text-black placeholder:text-gray-400"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm avantbold text-black mb-2">EMAIL ADDRESS</label>
-                  <input
-                    type="email"
-                    placeholder="Enter Email Address"
-                    value={newUser.email}
-                    onChange={(e) => handleUserChange('email', e.target.value)}
-                    className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm text-black placeholder:text-gray-400"
-                  />
-                </div>
-              </div>
+              {generatedPassword ? (
+                // Success screen showing generated password
+                <div className="space-y-4">
+                  <div className="bg-green-50 border-2 border-green-500 rounded-lg p-6">
+                    <p className="text-green-700 avantbold mb-4">✅ User account has been created successfully!</p>
+                    
+                    <div className="bg-white border-2 border-green-300 rounded-lg p-4 mb-4">
+                      <p className="text-sm text-gray-600 mb-2">Share this password with the user. It will NOT be shown again:</p>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={generatedPassword}
+                          readOnly
+                          className="flex-1 px-3 py-2 border-2 border-gray-300 rounded-lg font-mono font-bold text-lg text-black bg-gray-100"
+                        />
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(generatedPassword);
+                            alert('Password copied to clipboard!');
+                          }}
+                          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition avant text-sm font-medium"
+                        >
+                          COPY
+                        </button>
+                      </div>
+                    </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm avantbold text-black mb-2">PASSWORD</label>
-                  <input
-                    type="text"
-                    placeholder="Enter Password"
-                    value={newUser.password}
-                    onChange={(e) => handleUserChange('password', e.target.value)}
-                    className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm text-black placeholder:text-gray-400"
-                  />
-                </div>
+                    <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3">
+                      <p className="text-xs text-yellow-700">
+                        ⚠️ <strong>Important:</strong> This password is temporary and for first login only. The user should change it on their first login.
+                      </p>
+                    </div>
+                  </div>
 
-                <div>
-                  <label className="block text-sm avantbold text-black mb-2">USER ROLE</label>
-                  <select
-                    value={newUser.role}
-                    onChange={(e) => handleUserChange('role', e.target.value)}
-                    className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm text-black"
-                  >
-                    <option value="">Select Role</option>
-                    <option value="Admin">Admin</option>
-                    <option value="Manager">Manager</option>
-                    <option value="CSR">CSR</option>
-                    <option value="Clerk">Clerk</option>
-                  </select>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        setShowAddUserModal(false);
+                        setGeneratedPassword(null);
+                        setNewUser({
+                          full_name: '',
+                          email: '',
+                          role: '',
+                          status: 'active',
+                          can_access: []
+                        });
+                      }}
+                      className="flex-1 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors avant text-sm font-medium"
+                    >
+                      CLOSE
+                    </button>
+                  </div>
                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-4">
-                <div>
-                  <label className="block text-sm avantbold text-black mb-2">STATUS</label>
-                  <select
-                    value={newUser.status}
-                    onChange={(e) => handleUserChange('status', e.target.value)}
-                    className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm text-black"
-                  >
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                    <option value="Suspended">Suspended</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm avantbold text-black mb-3">PAGE ACCESS PERMISSIONS</label>
-                <div className="grid grid-cols-3 gap-3">
-                  {pageOptions.map(page => (
-                    <label key={page.key} className="flex items-center space-x-2 cursor-pointer">
+              ) : (
+                // Add user form
+                <>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm avantbold text-black mb-2">FULL NAME</label>
                       <input
-                        type="checkbox"
-                        checked={newUser.pageAccess[page.key]}
-                        onChange={(e) => handlePageAccessChange(page.key, e.target.checked)}
-                        className="w-4 h-4 text-black border-2 border-gray-300 rounded focus:ring-0 focus:ring-offset-0"
+                        type="text"
+                        placeholder="Enter Full Name"
+                        value={newUser.full_name}
+                        onChange={(e) => handleUserChange('full_name', e.target.value)}
+                        className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm text-black placeholder:text-gray-400"
                       />
-                      <span className="text-sm avant text-black">{page.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm avantbold text-black mb-2">EMAIL ADDRESS</label>
+                      <input
+                        type="email"
+                        placeholder="Enter Email Address"
+                        value={newUser.email}
+                        onChange={(e) => handleUserChange('email', e.target.value)}
+                        className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm text-black placeholder:text-gray-400"
+                      />
+                    </div>
+                  </div>
 
-              {/* Action Buttons */}
-              <div className="flex space-x-4 pt-4">
-                <button
-                  onClick={() => setShowAddUserModal(false)}
-                  className="flex-1 px-4 py-2 bg-transparent border-2 border-black text-black rounded-lg hover:bg-black hover:text-white transition-colors avant text-sm font-medium"
-                >
-                  CANCEL
-                </button>
-                <button
-                  onClick={handleAddUser}
-                  className="flex-1 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors avant text-sm font-medium"
-                >
-                  ADD USER
-                </button>
-              </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm avantbold text-black mb-2">USER ROLE</label>
+                      <select
+                        value={newUser.role}
+                        onChange={(e) => handleUserChange('role', e.target.value)}
+                        className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm text-black"
+                      >
+                        <option value="">Select Role</option>
+                        <option value="super_admin">Super Admin</option>
+                        <option value="admin">Admin</option>
+                        <option value="manager">Manager</option>
+                        <option value="csr">CSR</option>
+                        <option value="clerk">Clerk</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm avantbold text-black mb-2">STATUS</label>
+                      <select
+                        value={newUser.status}
+                        onChange={(e) => handleUserChange('status', e.target.value)}
+                        className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm text-black"
+                      >
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="suspended">Suspended</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm avantbold text-black mb-3">PAGE ACCESS PERMISSIONS</label>
+                    <div className="grid grid-cols-3 gap-3">
+                      {pageOptions.map(page => (
+                        <label key={page.key} className={`flex items-center space-x-2 ${newUser.role === 'super_admin' ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}>
+                          <input
+                            type="checkbox"
+                            checked={newUser.can_access.includes(page.key)}
+                            onChange={(e) => handlePageAccessChange(page.key, e.target.checked)}
+                            disabled={newUser.role === 'super_admin'}
+                            className={`w-4 h-4 text-black border-2 border-gray-300 rounded focus:ring-0 focus:ring-offset-0 ${newUser.role === 'super_admin' ? 'opacity-60' : ''}`}
+                          />
+                          <span className="text-sm avant text-black">{page.label}</span>
+                        </label>
+                      ))}
+                    </div>
+
+                    <div className={`${newUser.role === 'super_admin' ? 'bg-purple-50 border-l-4 border-purple-400' : 'bg-blue-50 border-l-4 border-blue-400'} p-3 mt-3`}>
+                      <p className={`text-xs ${newUser.role === 'super_admin' ? 'text-purple-700' : 'text-blue-700'}`}>
+                        {newUser.role === 'super_admin' 
+                          ? '👑 Super Admin has access to all pages automatically.'
+                          : '✓ Password will be auto-generated and shown after user creation.'
+                        }
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex space-x-4 pt-4">
+                    <button
+                      onClick={() => setShowAddUserModal(false)}
+                      className="flex-1 px-4 py-2 bg-transparent border-2 border-black text-black rounded-lg hover:bg-black hover:text-white transition-colors avant text-sm font-medium"
+                    >
+                      CANCEL
+                    </button>
+                    <button
+                      onClick={handleAddUser}
+                      disabled={loading}
+                      className="flex-1 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors avant text-sm font-medium disabled:opacity-50"
+                    >
+                      {loading ? 'CREATING...' : 'CREATE USER'}
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -786,8 +868,8 @@ const UserManagement = () => {
                   <input
                     type="text"
                     placeholder="Enter Full Name"
-                    value={editUser.name}
-                    onChange={(e) => handleEditUserChange('name', e.target.value)}
+                    value={editUser.full_name}
+                    onChange={(e) => handleEditUserChange('full_name', e.target.value)}
                     className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm text-black placeholder:text-gray-400"
                   />
                 </div>
@@ -806,28 +888,17 @@ const UserManagement = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm avantbold text-black mb-2">PASSWORD</label>
-                  <input
-                    type="text"
-                    placeholder="Enter Password"
-                    value={editUser.password}
-                    onChange={(e) => handleEditUserChange('password', e.target.value)}
-                    className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm text-black placeholder:text-gray-400"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Password is visible for recovery purposes</p>
-                </div>
-
-                <div>
                   <label className="block text-sm avantbold text-black mb-2">USER ROLE</label>
                   <select
                     value={editUser.role}
                     onChange={(e) => handleEditUserChange('role', e.target.value)}
                     className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm text-black"
                   >
-                    <option value="Admin">Admin</option>
-                    <option value="Manager">Manager</option>
-                    <option value="CSR">CSR</option>
-                    <option value="Clerk">Clerk</option>
+                    <option value="super_admin">Super Admin</option>
+                    <option value="admin">Admin</option>
+                    <option value="manager">Manager</option>
+                    <option value="csr">CSR</option>
+                    <option value="clerk">Clerk</option>
                   </select>
                 </div>
               </div>
@@ -840,9 +911,9 @@ const UserManagement = () => {
                     onChange={(e) => handleEditUserChange('status', e.target.value)}
                     className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm text-black"
                   >
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                    <option value="Suspended">Suspended</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="suspended">Suspended</option>
                   </select>
                 </div>
               </div>
@@ -851,17 +922,26 @@ const UserManagement = () => {
                 <label className="block text-sm avantbold text-black mb-3">PAGE ACCESS PERMISSIONS</label>
                 <div className="grid grid-cols-3 gap-3">
                   {pageOptions.map(page => (
-                    <label key={page.key} className="flex items-center space-x-2 cursor-pointer">
+                    <label key={page.key} className={`flex items-center space-x-2 ${editUser.role === 'super_admin' ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}>
                       <input
                         type="checkbox"
-                        checked={editUser.pageAccess[page.key]}
+                        checked={editUser.can_access.includes(page.key)}
                         onChange={(e) => handleEditPageAccessChange(page.key, e.target.checked)}
-                        className="w-4 h-4 text-black border-2 border-gray-300 rounded focus:ring-0 focus:ring-offset-0"
+                        disabled={editUser.role === 'super_admin'}
+                        className={`w-4 h-4 text-black border-2 border-gray-300 rounded focus:ring-0 focus:ring-offset-0 ${editUser.role === 'super_admin' ? 'opacity-60' : ''}`}
                       />
                       <span className="text-sm avant text-black">{page.label}</span>
                     </label>
                   ))}
                 </div>
+
+                {editUser.role === 'super_admin' && (
+                  <div className="bg-purple-50 border-l-4 border-purple-400 p-3 mt-3">
+                    <p className="text-xs text-purple-700">
+                      👑 <strong>Super Admin</strong> has access to all pages automatically.
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Action Buttons */}
