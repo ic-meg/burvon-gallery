@@ -42,11 +42,16 @@ export class WebhookController {
   }
 
   private async handlePaymentPaid(data: any) {
+    console.log('[WEBHOOK] Payment paid received:', { checkoutSessionId: data.attributes.data?.checkout_session_id });
 
     const checkoutSessionId = data.attributes.data?.checkout_session_id;
     const amount = data.attributes.amount;
     const currency = data.attributes.currency;
 
+    if (!checkoutSessionId) {
+      console.error('[WEBHOOK] No checkout session ID found in payment.paid event');
+      return;
+    }
 
     let paymentMethod: string | null = null;
 
@@ -63,7 +68,7 @@ export class WebhookController {
       if (data.attributes[field]) {
         const method = data.attributes[field];
 
-       
+        console.log('[WEBHOOK] Found payment method field:', field, method);
         switch (method.toLowerCase()) {
           case 'gcash':
             paymentMethod = 'GCash';
@@ -86,6 +91,7 @@ export class WebhookController {
     }
 
     if (!methodFound) {
+      console.log('[WEBHOOK] No payment method found in attributes');
     }
 
     if (!methodFound && checkoutSessionId) {
@@ -95,21 +101,26 @@ export class WebhookController {
           paymentMethod = apiPaymentMethod;
         }
       } catch (error) {
+        console.error('[WEBHOOK] Error getting payment method from API:', error);
       }
     }
 
     if (checkoutSessionId) {
       try {
-
+        console.log('[WEBHOOK] Creating order from webhook for session:', checkoutSessionId, 'with method:', paymentMethod);
         // Create the order using stored temporary data
         const orderCreated = await this.orderService.createOrderFromWebhook(checkoutSessionId, paymentMethod || '');
 
         if (orderCreated) {
+          console.log('[WEBHOOK] Order created successfully for session:', checkoutSessionId);
         } else {
+          console.error('[WEBHOOK] Order creation returned false for session:', checkoutSessionId);
         }
       } catch (error) {
+        console.error('[WEBHOOK] Error creating order:', error);
       }
     } else {
+      console.error('[WEBHOOK] No checkout session ID available');
     }
   }
 
