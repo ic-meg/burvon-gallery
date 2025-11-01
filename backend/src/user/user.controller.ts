@@ -9,11 +9,6 @@ import { UserRole } from '@prisma/client';
 export class UserController {
     constructor (private readonly userService: UserService) { }
 
-    @Post()
-    create(@Body() createUserDto: CreateUserDto) {
-        return this.userService.createUser(createUserDto);
-    }
-
     @Get()
     findAll(UserRole?: UserRole) {
         return this.userService.getUser(UserRole);
