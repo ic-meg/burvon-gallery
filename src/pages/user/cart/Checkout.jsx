@@ -435,7 +435,7 @@ const CheckoutMobile = ({ onImageClick, products, subtotal, total, itemCount, fo
 );
 
 const Checkout = () => {
-  const { getSelectedItems, getSelectedItemsTotal, getSelectedItemsCount, clearSelectedItems } = useCart();
+  const { getSelectedItems, getSelectedItemsTotal, getSelectedItemsCount } = useCart();
   const [modalOpen, setModalOpen] = useState(false);
   const [modalImage, setModalImage] = useState(null);
   
@@ -723,8 +723,6 @@ const Checkout = () => {
           
           if (import.meta.env.DEV) {
           }
-          
-          clearSelectedItems();
           
           showToast('Redirecting to secure payment...', 'success');
           
