@@ -520,7 +520,7 @@ export class OrderService {
         try {
           console.log('[ORDER SERVICE] Creating order...');
           const order = await this.createOrder(finalOrderData);
-          console.log('[ORDER SERVICE] Order created successfully, ID:', order?.id);
+          console.log('[ORDER SERVICE] Order created successfully, ID:', order);
         } catch (createOrderError) {
           console.error('[ORDER SERVICE] ❌ Failed to create order:', createOrderError.message);
           throw createOrderError; // Re-throw so it's caught by outer catch
