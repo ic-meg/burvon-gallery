@@ -1,6 +1,7 @@
 import { Body, Controller, Post, Get } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginAuthDto } from './dto/login-auth.dto';
+import { AdminLoginDto } from './dto/admin-login.dto';
 import { GoogleAuthDto } from './dto/google-auth.dto';
 import { EmailService } from '../email/email.service';
 
@@ -37,5 +38,10 @@ export class AuthController {
   @Post('google')
   async googleAuth(@Body() googleAuthDto: GoogleAuthDto) {
     return this.authService.googleAuth(googleAuthDto);
+  }
+
+  @Post('admin-login')
+  async adminLogin(@Body() adminLoginDto: AdminLoginDto) {
+    return this.authService.adminLogin(adminLoginDto);
   }
 }
