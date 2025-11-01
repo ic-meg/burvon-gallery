@@ -32,7 +32,12 @@ async function bootstrap() {
     });
     
     app.enableCors({
-      origin: true,
+      origin: [
+        'https://burvon-gallery.website',
+        'http://localhost:5173',
+        'http://localhost:3000',
+        process.env.VITE_FRONTEND_URL || 'https://burvon-gallery.website'
+      ],
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
       credentials: true,
