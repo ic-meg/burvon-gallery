@@ -3,6 +3,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { DatabaseService } from '../database/database.service';
+import { EmailModule } from '../email/email.module';
 
 @Module({
   imports: [
@@ -10,6 +11,7 @@ import { DatabaseService } from '../database/database.service';
       secret: process.env.JWT_SECRET || 'your-secret-key-change-in-production',
       signOptions: { expiresIn: '30d' },
     }),
+    EmailModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, DatabaseService],
