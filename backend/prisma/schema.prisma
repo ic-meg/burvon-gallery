@@ -237,6 +237,7 @@ model CollectionContent {
 }
 
 enum UserRole {
+  super_admin
   customer
   admin
   manager
