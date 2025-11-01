@@ -58,14 +58,14 @@ export const verifyToken = async (token) => {
   }
 };
 
-export const googleAuth = async (idToken) => {
+export const googleAuth = async (token) => {
   try {
     const response = await fetch(`${API_URL}/auth/google`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ idToken }),
+      body: JSON.stringify({ accessToken: token }),
     });
 
     const data = await response.json();
