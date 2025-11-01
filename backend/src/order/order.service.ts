@@ -378,17 +378,21 @@ export class OrderService {
   }
 
   async getTempOrder(checkoutSessionId: string) {
+    console.log('[ORDER SERVICE] getTempOrder called for session:', checkoutSessionId);
     try {
       const tempOrder = await this.prisma.pendingOrder.findUnique({
         where: { checkout_session_id: checkoutSessionId },
       });
+      console.log('[ORDER SERVICE] Found temp order:', !!tempOrder);
 
       if (!tempOrder) {
+        console.warn('[ORDER SERVICE] ❌ No temp order found for session:', checkoutSessionId);
         return null;
       }
 
-    
+      console.log('[ORDER SERVICE] Checking expiry...', 'expires_at:', tempOrder.expires_at, 'now:', new Date());
       if (new Date() > tempOrder.expires_at) {
+        console.warn('[ORDER SERVICE] ⏰ Temp order expired, deleting...');
         // Delete expired order
         await this.prisma.pendingOrder.delete({
           where: { checkout_session_id: checkoutSessionId },
@@ -396,9 +400,10 @@ export class OrderService {
         return null;
       }
 
+      console.log('[ORDER SERVICE] ✅ Returning temp order data');
       return tempOrder.order_data;
     } catch (error) {
-      console.error('Error getting temp order:', error);
+      console.error('[ORDER SERVICE] ❌ Error getting temp order:', error.message);
       return null;
     }
   }

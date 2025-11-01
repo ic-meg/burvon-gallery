@@ -110,14 +110,15 @@ export class WebhookController {
         console.log('[WEBHOOK] Creating order from webhook for session:', checkoutSessionId, 'with method:', paymentMethod);
         // Create the order using stored temporary data
         const orderCreated = await this.orderService.createOrderFromWebhook(checkoutSessionId, paymentMethod || '');
+        console.log('[WEBHOOK] createOrderFromWebhook returned:', orderCreated);
 
         if (orderCreated) {
-          console.log('[WEBHOOK] Order created successfully for session:', checkoutSessionId);
+          console.log('[WEBHOOK] ✅ Order created successfully for session:', checkoutSessionId);
         } else {
-          console.error('[WEBHOOK] Order creation returned false for session:', checkoutSessionId);
+          console.error('[WEBHOOK] ❌ Order creation returned false for session:', checkoutSessionId);
         }
       } catch (error) {
-        console.error('[WEBHOOK] Error creating order:', error);
+        console.error('[WEBHOOK] ❌ Error creating order:', error.message, error.stack);
       }
     } else {
       console.error('[WEBHOOK] No checkout session ID available');
