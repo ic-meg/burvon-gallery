@@ -3,15 +3,14 @@ import Layout from "../../components/Layout";
 import { useNavigate } from "react-router-dom";
 import { useContent } from "../../contexts/ContentContext";
 import { useCollection } from "../../contexts/CollectionContext";
+import { useProduct } from "../../contexts/ProductContext";
+import ProductCard from "../../components/ProductCard";
 
 import {
   KidsCollectionBanner,
   ClashCollectionBanner,
   NextIcon,
   PrevIcon,
-  TryOnIcon,
-  AddFavorite,
-  AddedFavorites,
   LyricImage,
   LyricWebp,
   AgathaImage,
@@ -20,8 +19,6 @@ import {
   RiomWebp,
   CelineImage,
   CelineWebp,
-  AddBag,
-  AddBagHover,
   ClashCollectionWebp,
   KidsCollectionWebp,
   FastShipIcon,
@@ -169,9 +166,6 @@ const Homepage = () => {
   const [hoveredButtonId, setHoveredButtonId] = useState(null);
   const [burvonHoveredId, setBurvonHoveredId] = useState(null);
   const [collectionIndex, setCollectionIndex] = useState(0);
-  const [mobileImageIndexes, setMobileImageIndexes] = useState({});
-  const [loadedImages, setLoadedImages] = useState(new Set());
-  const [imageLoadingStates, setImageLoadingStates] = useState({});
 
   const [isMobile, setIsMobile] = useState(false);
   const [openIndex, setOpenIndex] = useState(null);
@@ -179,9 +173,13 @@ const Homepage = () => {
 
   // Homepage content from admin context
   const { homepageContent, loading: contentLoading } = useContent();
-  
+
   // Collections from admin context
   const { collections, loading: collectionsLoading, fetchAllCollections } = useCollection();
+
+  // Products from admin context
+  const { products, loading: productsLoading, fetchAllProducts } = useProduct();
+  const [topPicksProducts, setTopPicksProducts] = useState([]);
 
   const rebelsScrollRef = useRef(null);
   const burvonScrollRef = useRef(null);
@@ -218,7 +216,7 @@ const Homepage = () => {
         // console.log('Fetched collections for homepage:', collectionsData);
         // console.log('Collections data type:', typeof collectionsData);
         // console.log('Is collections array?', Array.isArray(collectionsData));
-        
+
         if (collectionsData && Array.isArray(collectionsData) && collectionsData.length > 0) {
           // Transform collections data to match homepage format
           const transformedCollections = collectionsData.map((collection, index) => {
@@ -227,11 +225,11 @@ const Homepage = () => {
               id: collection.collection_id || collection.id || index + 1,
               name: collection.name || `Collection ${index + 1}`,
               image: collection.collection_image || "COLLECTION IMAGE PLACEHOLDER",
-              webp: collection.collection_image || "COLLECTION IMAGE PLACEHOLDER", 
+              webp: collection.collection_image || "COLLECTION IMAGE PLACEHOLDER",
               path: `/collections/${collection.name?.toLowerCase().replace(/\s+/g, '-') || 'placeholder'}`
             };
           });
-          
+
           // console.log('Transformed collections:', transformedCollections);
           setDynamicCollections(transformedCollections);
         } else {
@@ -247,6 +245,74 @@ const Homepage = () => {
 
     loadCollections();
   }, [fetchAllCollections]);
+
+  // Fetch products and filter for top picks
+  useEffect(() => {
+    const loadTopPicks = async () => {
+      try {
+        await fetchAllProducts();
+      } catch (error) {
+        console.error('Error loading products for top picks:', error);
+      }
+    };
+
+    loadTopPicks();
+  }, [fetchAllProducts]);
+
+  // Filter products for top picks (Lyric, Tiana, Espoir, Soleil)
+  useEffect(() => {
+    if (products && Array.isArray(products) && products.length > 0) {
+      const targetNames = ['lyric', 'tiana', 'espoir', 'soleil'];
+      const filtered = products.filter(product =>
+        targetNames.some(name => product.name?.toLowerCase().includes(name))
+      );
+
+      // Transform to match ProductCard component format
+      const transformedProducts = filtered.map((product, index) => {
+        // Determine price display
+        const hasOriginalPrice = product.original_price && product.original_price > 0;
+        const hasSalePrice = product.sale_price && product.sale_price > 0;
+        const hasRegularPrice = product.price && product.price > 0;
+
+        let showStrikethrough = false;
+        let oldPrice = "";
+        let price = "";
+
+        if (hasSalePrice && hasOriginalPrice) {
+          // Product is on sale - show both prices
+          showStrikethrough = true;
+          oldPrice = `₱${product.original_price}`;
+          price = `₱${product.sale_price}`;
+        } else if (hasOriginalPrice) {
+          // Has original price but no sale - show original price
+          price = `₱${product.original_price}`;
+        } else if (hasRegularPrice) {
+          // Regular price only
+          price = `₱${product.price}`;
+        } else {
+          // Fallback
+          price = "PRICE NOT SET";
+        }
+
+        return {
+          id: product.product_id || product.id || index + 1,
+          images: product.images && product.images.length > 0 ? product.images : ["https://via.placeholder.com/400x400?text=No+Image"],
+          name: product.name || "PRODUCT NAME",
+          collection: product.collection?.name || product.collection_name || "COLLECTION NAME",
+          price,
+          oldPrice,
+          showStrikethrough,
+          stock: product.stock || 0,
+          variant: product.variant || null,
+          category: product.category?.name || product.category_name || "N/A",
+          category_id: product.category_id || product.category?.id || null,
+          slug: product.slug || null,
+        };
+      });
+
+      setTopPicksProducts(transformedProducts);
+    }
+  }, [products]);
 
 
   useEffect(() => {
@@ -275,39 +341,11 @@ const Homepage = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Handle image loading states
-  const handleImageLoad = (imageId) => {
-    setLoadedImages((prev) => new Set([...prev, imageId]));
-    setImageLoadingStates((prev) => ({ ...prev, [imageId]: "loaded" }));
-  };
-
-  const handleImageError = (imageId) => {
-    setImageLoadingStates((prev) => ({ ...prev, [imageId]: "error" }));
-  };
-
-  const handleImageStart = (imageId) => {
-    setImageLoadingStates((prev) => ({ ...prev, [imageId]: "loading" }));
-  };
-
-  const handleImageChangeMobile = (cardId, direction) => {
-    const images = rebelsTopPicks.find((item) => item.id === cardId).images;
-    setMobileImageIndexes((prev) => {
-      let currentIndex = prev[cardId] || 0;
-      if (direction === "next") {
-        currentIndex = (currentIndex + 1) % images.length;
-      } else {
-        currentIndex = (currentIndex - 1 + images.length) % images.length;
-      }
-      return {
-        ...prev,
-        [cardId]: currentIndex,
-      };
-    });
-  };
 
   const handleImageChangeDesktop = (cardId, direction) => {
     if (hoveredCardId !== cardId) return;
-    const images = rebelsTopPicks.find((item) => item.id === cardId).images;
+    const topPicks = getDynamicTopPicks();
+    const images = topPicks.find((item) => item.id === cardId)?.images || [];
     setHoveredImageIndex((idx) =>
       direction === "next"
         ? (idx + 1) % images.length
@@ -316,9 +354,10 @@ const Homepage = () => {
   };
 
   const nextRebelDesktop = () => {
+    const topPicks = getDynamicTopPicks();
     if (!atEndRebel) {
       setStartIndex((prev) =>
-        Math.min(prev + 1, rebelsTopPicks.length - MAX_VISIBLE_REBELS)
+        Math.min(prev + 1, topPicks.length - MAX_VISIBLE_REBELS)
       );
     }
   };
@@ -394,13 +433,16 @@ const Homepage = () => {
   };
 
   const rebelsVisibleCards = () => {
+    const topPicks = getDynamicTopPicks();
     let visibleCount = isMobile
       ? HOMEPAGE_COLLECTION_VISIBLE_MOBILE
       : HOMEPAGE_COLLECTION_VISIBLE_DESKTOP;
     const visible = [];
     const start = isMobile ? 0 : startIndex; // mobile handled by scroll not index
     for (let i = 0; i < visibleCount; i++) {
-      visible.push(rebelsTopPicks[(start + i) % rebelsTopPicks.length]);
+      if (topPicks.length > 0) {
+        visible.push(topPicks[(start + i) % topPicks.length]);
+      }
     }
     return visible;
   };
@@ -472,13 +514,6 @@ const Homepage = () => {
   // Infinite scroll effect for rebels top picks on mobile to loop left/right indefinitely
   // Removed because we handle natural scroll snapping now.
 
-  const MAX_VISIBLE_REBELS = HOMEPAGE_COLLECTION_VISIBLE_DESKTOP; // 4
-  const atStartRebel = startIndex === 0;
-  const atEndRebel = startIndex === rebelsTopPicks.length - MAX_VISIBLE_REBELS;
-
-  const MAX_VISIBLE_BURVON = HOMEPAGE_COLLECTION_VISIBLE_DESKTOP; // 4
-  const atStartBurvon = collectionIndex === 0;
-
   // Get dynamic hero images from admin content or fallback to static
   const getDynamicHeroImages = () => {
     if (homepageContent?.hero_images && Array.isArray(homepageContent.hero_images) && homepageContent.hero_images.length > 0) {
@@ -493,7 +528,7 @@ const Homepage = () => {
     // console.log('dynamicCollections:', dynamicCollections);
     // console.log('dynamicCollections length:', dynamicCollections?.length);
     // console.log('collectionsLoading:', collectionsLoading);
-    
+
     if (dynamicCollections && dynamicCollections.length > 0) {
       // console.log('Using dynamic collections:', dynamicCollections);
       return dynamicCollections;
@@ -501,6 +536,25 @@ const Homepage = () => {
     // console.log('Using fallback placeholder data');
     return burvonsCollections; // fallback to placeholder data
   };
+
+  // Get dynamic top picks from API or fallback to placeholder data
+  const getDynamicTopPicks = () => {
+    if (topPicksProducts && topPicksProducts.length > 0) {
+      return topPicksProducts;
+    }
+    return rebelsTopPicks; // fallback to placeholder data
+  };
+
+  const MAX_VISIBLE_REBELS = HOMEPAGE_COLLECTION_VISIBLE_DESKTOP; // 4
+  const atStartRebel = startIndex === 0;
+  const atEndRebel = useMemo(() => {
+    const topPicks = getDynamicTopPicks();
+    if (topPicks.length <= MAX_VISIBLE_REBELS) return true;
+    return startIndex >= topPicks.length - MAX_VISIBLE_REBELS;
+  }, [startIndex, topPicksProducts]);
+
+  const MAX_VISIBLE_BURVON = HOMEPAGE_COLLECTION_VISIBLE_DESKTOP; // 4
+  const atStartBurvon = collectionIndex === 0;
 
   // Calculate atEndBurvon after getDynamicCollections is defined
   const atEndBurvon = useMemo(() => {
@@ -615,272 +669,50 @@ const Homepage = () => {
           WebkitOverflowScrolling: "touch",
         }}
       >
-        {rebelsTopPicks.map((item) => (
+        {getDynamicTopPicks().map((item) => (
           <div
             key={item.id}
-            className="relative bg-[#222] drop-shadow-lg cursor-pointer flex-shrink-0 transition-all duration-300 ease-in-out md:flex-shrink md:w-auto"
+            className="flex-shrink-0"
             style={{
-              width: "65vw", // slightly smaller on mobile
+              width: "65vw",
               margin: "0 6px",
               scrollSnapAlign: "center",
             }}
           >
-            {/* Image */}
-            <div className="relative w-full min-h-[150px] sm:min-h-[200px] flex items-center justify-center overflow-hidden bg-black">
-              {/* Overlay Icons */}
-              <div className="absolute top-4 left-4 right-4 flex justify-between items-center z-10">
-                <img
-                  src={TryOnIcon}
-                  alt="Try On"
-                  className="w-6 h-6 cursor-pointer hover:opacity-80"
-                  draggable={false}
-                />
-                <img
-                  src={AddFavorite}
-                  alt="Favorite"
-                  className="w-6 h-6 cursor-pointer hover:opacity-80"
-                  draggable={false}
-                />
-              </div>
-
-             { /*Hero image */ }
-              {item.images[0].includes('PLACEHOLDER') ? (
-                <div className="w-full h-full bg-[#1F1F21] flex items-center justify-center p-4">
-                  <span className="text-[#FFF7DC] text-sm avant text-center leading-tight">
-                    {item.images[0]}
-                  </span>
-                </div>
-              ) : (
-                <>
-                  {imageLoadingStates[`${item.id}-0`] === "loading" && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-[#1F1F21]">
-                      <div className="w-8 h-8 border-2 border-[#FFF7DC] border-t-transparent rounded-full animate-spin"></div>
-                    </div>
-                  )}
-                  <picture className="w-full h-full">
-                    {item.webpImages[0] && !item.webpImages[0].includes('PLACEHOLDER') && (
-                      <source src={item.webpImages[0]} type="image/webp" />
-                    )}
-                    <img
-                      src={item.images[0]}
-                      alt={item.name}
-                      className="object-cover w-full h-full rounded-none select-none transition-opacity duration-300"
-                      draggable={false}
-                      loading="lazy"
-                      onLoad={() => handleImageLoad(`${item.id}-0`)}
-                      onError={() => handleImageError(`${item.id}-0`)}
-                      onLoadStart={() => handleImageStart(`${item.id}-0`)}
-                    />
-                  </picture>
-                </>
-              )}
-            </div>
-
-                  {/* Text */}
-                  <div
-                    style={{
-                      background:
-                        "linear-gradient(90deg, #000000 46%, #666666 100%)",
-                    }}
-                    className="w-full py-3 px-2 text-center flex flex-col items-center rounded-none"
-                  >
-                    <span className="uppercase text-[#FFF7DC] tracking-widest text-[13px] avantbold">
-                      {item.name}
-                    </span>
-                    <span className="text-[13px] tracking-widest text-[#FFF7DC] avant text-center break-words">
-                      {item.collection}
-                    </span>
-                    <div className="flex justify-center items-center gap-2 text-[14px] avantbold mt-1">
-                      <span className="line-through text-[#FFF7DC] opacity-50">
-                        {item.originalPrice}
-                      </span>
-                      <span className="text-[#FFF7DC]">{item.salePrice}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            /* Desktop Grid */
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10">
-              {rebelsVisibleCards().map((item) => {
-                const isHovered = hoveredCardId === item.id;
-                return (
-                  <div
-                    key={item.id}
-                    onMouseEnter={() => {
-                      setHoveredCardId(item.id);
-                      setHoveredImageIndex(0);
-                    }}
-                    onMouseLeave={() => {
-                      setHoveredCardId(null);
-                    }}
-                    className={`relative bg-[#222] rounded-none overflow-hidden drop-shadow-[0_10px_15px_rgba(0,0,0,1)] group transition-all transform ${
-                      isHovered ? "scale-105 z-10" : ""
-                    }`}
-                    style={{
-                      height: isHovered ? "440px" : "375px",
-                      transition: "height 0.3s ease, transform 0.3s ease",
-                    }}
-                  >
-                    {/* Top icons */}
-                    <div className="w-full flex justify-between items-center px-6 pt-6 absolute top-0 left-0 z-10">
-                      <img
-                        src={TryOnIcon}
-                        alt="Try On"
-                        className="w-6 h-6 cursor-pointer hover:opacity-80"
-                        draggable={false}
-                      />
-                      <img
-                        src={AddFavorite}
-                        alt="Favorite"
-                        className="w-6 h-6 cursor-pointer hover:opacity-80"
-                        draggable={false}
-                      />
-                    </div>
-
-                    {/* Product Image */}
-                    <div className="relative w-full h-[300px] flex items-center justify-center overflow-hidden bg-black">
-                      {(isHovered ? item.images[hoveredImageIndex] : item.images[0]).includes('PLACEHOLDER') ? (
-                        <div className="w-full h-full bg-[#1F1F21] flex items-center justify-center p-4">
-                          <span className="text-[#FFF7DC] text-sm avant text-center leading-tight">
-                            {isHovered ? item.images[hoveredImageIndex] : item.images[0]}
-                          </span>
-                        </div>
-                      ) : (
-                        <>
-                          {imageLoadingStates[
-                            `${item.id}-${isHovered ? hoveredImageIndex : 0}`
-                          ] === "loading" && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-[#1F1F21] z-10">
-                              <div className="w-8 h-8 border-2 border-[#FFF7DC] border-t-transparent rounded-full animate-spin"></div>
-                            </div>
-                          )}
-                          <picture className="w-full h-full">
-                            {item.webpImages[isHovered ? hoveredImageIndex : 0] && !item.webpImages[isHovered ? hoveredImageIndex : 0].includes('PLACEHOLDER') && (
-                              <source
-                                src={
-                                  item.webpImages[isHovered ? hoveredImageIndex : 0]
-                                }
-                                type="image/webp"
-                              />
-                            )}
-                            <img
-                              src={
-                                isHovered
-                                  ? item.images[hoveredImageIndex]
-                                  : item.images[0]
-                              }
-                              alt={item.name}
-                              className={`object-cover w-full h-full rounded-none transition-all duration-300 ${
-                                loadedImages.has(
-                                  `${item.id}-${isHovered ? hoveredImageIndex : 0}`
-                                )
-                                  ? "opacity-100"
-                                  : "opacity-0"
-                              }`}
-                              loading="lazy"
-                              onLoad={() =>
-                                handleImageLoad(
-                                  `${item.id}-${isHovered ? hoveredImageIndex : 0}`
-                                )
-                              }
-                              onError={() =>
-                                handleImageError(
-                                  `${item.id}-${isHovered ? hoveredImageIndex : 0}`
-                                )
-                              }
-                              onLoadStart={() =>
-                                handleImageStart(
-                                  `${item.id}-${isHovered ? hoveredImageIndex : 0}`
-                                )
-                              }
-                            />
-                          </picture>
-                        </>
-                      )}
-                      {isHovered && item.images.length > 1 && (
-                        <>
-                          <img
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleImageChangeDesktop(item.id, "prev");
-                            }}
-                            src={PrevIcon}
-                            alt="Previous"
-                            className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 cursor-pointer hover:opacity-80"
-                            draggable={false}
-                          />
-                          <img
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleImageChangeDesktop(item.id, "next");
-                            }}
-                            src={NextIcon}
-                            alt="Next"
-                            className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 cursor-pointer hover:opacity-80"
-                            draggable={false}
-                          />
-                        </>
-                      )}
-                    </div>
-
-                    {/* Text + Price + Button */}
-                    <div
-                      style={{
-                        background:
-                          "linear-gradient(90deg, #000000 46%, #666666 100%)",
-                      }}
-                      className="relative py-2 px-2 text-center flex flex-col items-center rounded-none min-h-[140px]"
-                    >
-                      <span className="uppercase text-[#FFF7DC] tracking-widest text-[13px] avantbold">
-                        {item.name}
-                      </span>
-                      <span className="text-[13px] tracking-widest text-[#FFF7DC] avant">
-                        {item.collection}
-                      </span>
-                      <div className="flex justify-center items-center gap-2 text-[14px] avantbold mt-1">
-                        <span className="line-through text-[#FFF7DC] opacity-50">
-                          {item.originalPrice}
-                        </span>
-                        <span className="text-[#FFF7DC]">{item.salePrice}</span>
-                      </div>
-
-                      {/* Add to Bag Button */}
-                      {isHovered && (
-                        <button
-                          style={{
-                            backgroundColor:
-                              hoveredButtonId === item.id
-                                ? "#FFF7DC"
-                                : "transparent",
-                            color:
-                              hoveredButtonId === item.id
-                                ? "#1F1F21"
-                                : "#FFF7DC",
-                            outline: "1px solid #FFF7DC",
-                            borderRadius: 5,
-                          }}
-                          onMouseEnter={() => setHoveredButtonId(item.id)}
-                          onMouseLeave={() => setHoveredButtonId(null)}
-                          className="mt-4 w-full flex items-center justify-center gap-2 border border-[#FFF7DC] py-2 px-4 font-bold text-md tracking-wide rounded-5 transition-all duration-300"
-                        >
-                          <img
-                            src={
-                              hoveredButtonId === item.id ? AddBagHover : AddBag
-                            }
-                            alt="Bag Icon"
-                            className="w-4 h-4"
-                          />
-                          ADD TO BAG
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+            <ProductCard
+              item={item}
+              layout="mobile"
+            />
+          </div>
+        ))}
+      </div>
+    ) : (
+      /* Desktop Grid */
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10">
+        {rebelsVisibleCards().map((item) => {
+          const isHovered = hoveredCardId === item.id;
+          return (
+            <ProductCard
+              key={item.id}
+              item={item}
+              layout="desktop"
+              isHovered={isHovered}
+              currentImageIndex={hoveredImageIndex}
+              onMouseEnter={() => {
+                setHoveredCardId(item.id);
+                setHoveredImageIndex(0);
+              }}
+              onMouseLeave={() => {
+                setHoveredCardId(null);
+              }}
+              onImageChange={handleImageChangeDesktop}
+              hoveredButtonId={hoveredButtonId}
+              setHoveredButtonId={setHoveredButtonId}
+            />
+          );
+        })}
+      </div>
+    )}
         </div>
       </section>
 
