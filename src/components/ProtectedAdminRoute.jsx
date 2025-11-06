@@ -1,8 +1,9 @@
 import React from 'react';
 
 const ProtectedAdminRoute = ({ children, requiredPage }) => {
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const token = localStorage.getItem('authToken');
+  // Use admin-specific localStorage keys
+  const user = JSON.parse(localStorage.getItem('adminUser') || '{}');
+  const token = localStorage.getItem('adminAuthToken');
 
   if (!token || !user.user_id) {
     return null;
