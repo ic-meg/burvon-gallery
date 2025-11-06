@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 //icons and logo
 import { WhiteLogo, User } from "../../assets/index";
-import { logout } from "../../services/authService";
+import { adminLogout } from "../../services/authService";
 
 const AdminHeader = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -13,8 +13,8 @@ const AdminHeader = () => {
 
   const handleLogout = () => {
     if (window.confirm('Are you sure you want to logout?')) {
-      logout();
-      navigate('/login');
+      adminLogout();
+      navigate('/admin-login');
     }
   };
 
