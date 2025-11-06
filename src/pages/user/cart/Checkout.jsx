@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Layout from '../../../components/Layout';
 import { useCart } from '../../../contexts/CartContext';
 import AddressDropdowns from '../../../components/AddressDropdowns';
@@ -435,7 +436,8 @@ const CheckoutMobile = ({ onImageClick, products, subtotal, total, itemCount, fo
 );
 
 const Checkout = () => {
-  const { getSelectedItems, getSelectedItemsTotal, getSelectedItemsCount } = useCart();
+  const navigate = useNavigate();
+  const { getSelectedItems, getSelectedItemsTotal, getSelectedItemsCount, clearSelectedItems } = useCart();
   const [modalOpen, setModalOpen] = useState(false);
   const [modalImage, setModalImage] = useState(null);
   
@@ -725,7 +727,10 @@ const Checkout = () => {
           }
           
           showToast('Redirecting to secure payment...', 'success');
-          
+
+          // Clear the cart before redirecting to payment
+          clearSelectedItems();
+
           setTimeout(() => {
             window.location.href = checkoutSession.data.attributes.checkout_url;
           }, 1000);
@@ -757,8 +762,8 @@ const Checkout = () => {
           <div className="text-center">
             <h1 className="bebas text-4xl mb-4">NO ITEMS SELECTED</h1>
             <p className="avant text-lg mb-8">Please go back to your cart and select items to checkout.</p>
-            <button 
-              onClick={() => window.history.back()}
+            <button
+              onClick={() => navigate('/shopping-bag')}
               className="bg-[#FFF7DC] text-[#181818] px-6 py-3 rounded avantbold text-lg hover:bg-[#ffe9b3] transition"
             >
               BACK TO CART
