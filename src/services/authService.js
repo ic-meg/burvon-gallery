@@ -101,3 +101,8 @@ export const logout = () => {
   localStorage.removeItem('authToken');
   localStorage.removeItem('user');
 };
+
+export const adminLogout = () => {
+  localStorage.removeItem('adminAuthToken');
+  localStorage.removeItem('adminUser');
+};
