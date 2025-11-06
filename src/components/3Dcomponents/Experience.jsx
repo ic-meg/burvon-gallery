@@ -10,6 +10,14 @@ export const Experience = ({ modelPath }) => {
   const [fetching, setFetching] = useState(false);
   const effectiveModelPath = blobUrl || null;
 
+  // Detect if this is an earring model (which needs pair rendering)
+  const isPairModel = modelPath?.toLowerCase().includes('/earrings/') ||
+                       modelPath?.toLowerCase().includes('earring');
+
+  // Detect if this is a bracelet model (needs darker gold material)
+  const isBracelet = modelPath?.toLowerCase().includes('/bracelets/') ||
+                     modelPath?.toLowerCase().includes('bracelet');
+
   useEffect(() => {
     let cancelled = false;
     if (!modelPath) {
@@ -163,13 +171,18 @@ export const Experience = ({ modelPath }) => {
           if (!lowestMesh) return;
           let mat = lowestMesh.material;
           if (mat && mat.clone) mat = mat.clone();
+
+          // Use darker material settings for bracelets
+          const envIntensity = isBracelet ? 1.2 : 2.5;
+          const roughness = isBracelet ? 0.15 : 0.1;
+
           if (
             mat &&
             (mat.isMeshStandardMaterial || mat.isMeshPhysicalMaterial)
           ) {
             mat.envMap = scene.environment;
-            mat.envMapIntensity = 2.5;
-            mat.roughness = 0.1;
+            mat.envMapIntensity = envIntensity;
+            mat.roughness = roughness;
             mat.metalness = 0.9;
             mat.clearcoat = 1;
             mat.clearcoatRoughness = 0.05;
@@ -181,8 +194,8 @@ export const Experience = ({ modelPath }) => {
               map: mat.map,
               color: mat.color ? mat.color.clone() : new THREE.Color(0xffffff),
               envMap: scene.environment,
-              envMapIntensity: 2.5,
-              roughness: 0.1,
+              envMapIntensity: envIntensity,
+              roughness: roughness,
               metalness: 0.9,
               clearcoat: 1,
               clearcoatRoughness: 0.05,
@@ -191,8 +204,15 @@ export const Experience = ({ modelPath }) => {
           }
         };
 
-        applyReflectiveToLowest(rightRef.current, false);
-        applyReflectiveToLowest(leftRef.current, false);
+        // Apply reflective material
+        if (isPairModel) {
+          // For earrings, apply to both models
+          applyReflectiveToLowest(rightRef.current, false);
+          applyReflectiveToLowest(leftRef.current, false);
+        } else {
+          // For single models (bracelets, necklaces, rings)
+          applyReflectiveToLowest(rightRef.current, false);
+        }
       } catch (err) {
         // Keep retrying until we can compute bounds safely.
         requestAnimationFrame(trySetup);
@@ -204,7 +224,7 @@ export const Experience = ({ modelPath }) => {
     return () => {
       mounted = false;
     };
-  }, [effectiveModelPath, camera, scene]);
+  }, [effectiveModelPath, camera, scene, isPairModel]);
 
   return (
     <>
@@ -220,6 +240,9 @@ export const Experience = ({ modelPath }) => {
       />
 
       <Environment preset="warehouse" background blur={0.6} />
+      {isBracelet && (
+        <Environment files="/hdri/Contrast-Black-Jewelry-HDRI-Vol2.hdr" background={false} />
+      )}
       <group
         ref={modelRef}
         onPointerOver={() => (document.body.style.cursor = "grab")}
@@ -231,9 +254,35 @@ export const Experience = ({ modelPath }) => {
         onPointerUp={() => (document.body.style.cursor = "grab")}
       >
         {effectiveModelPath ? (
-          <>
-            <group name="earring-right" ref={rightRef} position={[0.1, 0, 0.1]}>
-              {/* remove hard Y offset so grounding logic can place model on y=0 */}
+          isPairModel ? (
+            // Render pair for earrings
+            <>
+              <group name="earring-right" ref={rightRef} position={[0.1, 0, 0.1]}>
+                {/* remove hard Y offset so grounding logic can place model on y=0 */}
+                <Gltf
+                  src={effectiveModelPath}
+                  position-y={0}
+                  scale={0.5}
+                  castShadow
+                />
+              </group>
+              <group
+                name="earring-left"
+                ref={leftRef}
+                position={[0.12, 0, 0.03]}
+                rotation={[0, Math.PI, 0]}
+              >
+                <Gltf
+                  src={effectiveModelPath}
+                  position-y={0}
+                  scale={0.5}
+                  castShadow
+                />
+              </group>
+            </>
+          ) : (
+            // Render single model for bracelets, necklaces, rings
+            <group name="single-model" ref={rightRef} position={[0, 0, 0]}>
               <Gltf
                 src={effectiveModelPath}
                 position-y={0}
@@ -241,21 +290,8 @@ export const Experience = ({ modelPath }) => {
                 castShadow
               />
             </group>
-            <group
-              name="earring-left"
-              ref={leftRef}
-              position={[0.12, 0, 0.03]}
-              rotation={[0, Math.PI, 0]}
-            >
-              <Gltf
-                src={effectiveModelPath}
-                position-y={0}
-                scale={0.5}
-                castShadow
-              />
-            </group>
-          </>
-        ) : fetching ? 
+          )
+        ) : fetching ?
         null : (
           // harmless fallback if no model path is provided after probing
           <mesh position-y={0}>
