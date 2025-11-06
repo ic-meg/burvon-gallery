@@ -35,8 +35,9 @@ const AdminLogin = () => {
       const data = await response.json();
 
       if (response.ok && data.token) {
-        localStorage.setItem('authToken', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
+        // Use separate keys for admin authentication
+        localStorage.setItem('adminAuthToken', data.token);
+        localStorage.setItem('adminUser', JSON.stringify(data.user));
         navigate('/admin/dashboard');
       } else {
         if (data.message === 'Invalid email or password') {
