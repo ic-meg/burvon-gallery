@@ -75,7 +75,8 @@ const UserManagement = ({ hasAccess = true }) => {
   }, []);
 
   const getAuthHeaders = () => {
-    const token = localStorage.getItem('authToken');
+    // Use admin-specific token
+    const token = localStorage.getItem('adminAuthToken');
     return {
       'Content-Type': 'application/json',
       ...(token && { 'Authorization': `Bearer ${token}` })
