@@ -294,15 +294,30 @@ const ProductDesc = () => {
       const originalNoSpaces = raw.replace(/\s+/g, "");
       const originalHyphen = raw.replace(/\s+/g, "-");
 
+      // Get category name for category-specific paths
+      const categoryName = p.category || '';
+
+      // Base paths without category
+      const basePaths = [
+        `/models/${slug}.glb`,
+        `/models/${capitalized}.glb`,
+        `/models/${originalNoSpaces}.glb`,
+        `/models/${originalHyphen}.glb`,
+        `/models/${raw}.glb`,
+      ];
+
+      // Category-specific paths
+      const categoryPaths = categoryName ? [
+        `/models/${categoryName}/${slug}.glb`,
+        `/models/${categoryName}/${capitalized}.glb`,
+        `/models/${categoryName}/${originalNoSpaces}.glb`,
+        `/models/${categoryName}/${originalHyphen}.glb`,
+        `/models/${categoryName}/${raw}.glb`,
+      ] : [];
+
       const uniq = Array.from(
         new Set(
-          [
-            `/models/${slug}.glb`,
-            `/models/${capitalized}.glb`,
-            `/models/${originalNoSpaces}.glb`,
-            `/models/${originalHyphen}.glb`,
-            `/models/${raw}.glb`,
-          ].filter(Boolean)
+          [...categoryPaths, ...basePaths].filter(Boolean)
         )
       );
 
