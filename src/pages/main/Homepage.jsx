@@ -694,7 +694,7 @@ const Homepage = () => {
             className="flex-shrink-0"
             style={{
               width: "65vw",
-              margin: "0 6px",
+              margin: "0 8px",
               scrollSnapAlign: "center",
             }}
           >
@@ -802,8 +802,9 @@ const Homepage = () => {
                   key={col.id}
                   className="bg-[#111] drop-shadow-lg rounded-none flex-shrink-0 md:flex-shrink md:w-auto cursor-pointer"
                   style={{
-                    width: "65vw", //  unified size
-                    margin: "0 6px", //  same margins
+                    width: "65vw",
+                    height: "400px", 
+                    margin: "0 8px", 
                     scrollSnapAlign: "center",
                   }}
                   onClick={() => navigate(col.path)}
