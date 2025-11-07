@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useFaceLandmarks } from "../../../contexts/FaceLandmarksContext";
 import { useHandLandmarks } from "../../../contexts/HandLandmarksContext";
-// import { useControls } from "leva";
+import { useControls } from "leva";
 
 export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, useImageOverlay, jewelryType, selectedJewelryImage, videoReady }) => {
   const internalCanvasRef = useRef(null);
@@ -80,9 +80,9 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
   //     ],
   //     label: "Earring Image"
   //   },
-  //   necklaceWidthMultiplier: { value: 1.3, min: 1.0, max: 3.0, step: 0.1, label: "Necklace Width Multiplier" },
+  //   necklaceWidthMultiplier: { value: 1.0, min: 1.0, max: 3.0, step: 0.1, label: "Necklace Width Multiplier" },
   //   necklaceHeightRatio: { value: 0.80, min: 0.3, max: 0.8, step: 0.05, label: "Necklace Height Ratio" },
-  //   necklaceYOffset: { value: 40, min: 0, max: 100, step: 5, label: "Necklace Y Offset (px)" },
+  //   necklaceYOffset: { value: 30, min: 0, max: 100, step: 5, label: "Necklace Y Offset (px)" },
   //   ringSizeMultiplier: { value: 2, min: 0.8, max: 2.0, step: 0.1, label: "Ring Size Multiplier" },
   //   ringYOffset: { value: -4, min: -50, max: 50, step: 1, label: "Ring Y Offset (px)" },
   //   ringZOffset: { value: -3, min: -200, max: 200, step: 1, label: "Ring Z Offset (depth adjustment)" },
@@ -116,9 +116,9 @@ const braceletImage = jewelryType === "bracelet" && selectedJewelryImage ? selec
 const ringImage = jewelryType === "ring" && selectedJewelryImage ? selectedJewelryImage : "/image/Rings/TianaImage.png";
 const earringImage = jewelryType === "earrings" && selectedJewelryImage ? selectedJewelryImage : "/image/Earrings/EspoirImage.png";
 
-const necklaceWidthMultiplier = 1.3;
+const necklaceWidthMultiplier = 1.0;
 const necklaceHeightRatio = 0.80;
-const necklaceYOffset = 62;
+const necklaceYOffset = 30;
 const ringSizeMultiplier = 2.0;
 const ringYOffset = -4;
 const ringZOffset = -3;
