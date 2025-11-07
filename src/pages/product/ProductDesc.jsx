@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../../components/Layout";
+import ProductDescSkeleton from "../../components/ProductDescSkeleton";
 import { useProduct } from "../../contexts/ProductContext";
 import { useCart } from "../../contexts/CartContext";
 import { useWishlist } from "../../contexts/WishlistContext";
 import productApi from "../../api/productApi";
 import categoryApi from "../../api/categoryApi";
 import Toast from "../../components/Toast";
+import { hasTryOnAvailable } from "../../utils/tryOnUtils";
 
 import {
   TryOnIcon,
@@ -144,6 +146,13 @@ const ProductDesc = () => {
 
     fetchProductData();
   }, [productSlug]);
+
+  // Sync isFavorited state with wishlist when product loads
+  useEffect(() => {
+    if (product && product.id) {
+      setIsFavorited(isInWishlist(product.id));
+    }
+  }, [product?.id, isInWishlist]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -666,8 +675,14 @@ const ProductDesc = () => {
     addToCart(productData, quantity, selectedSize);
   };
 
-  const handleAddToWishlist = () => {
-    if (getAvailableStock() === 0) return;
+  const handleAddToWishlist = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!formattedProduct || !formattedProduct.id) {
+      console.error("Product data not available");
+      return;
+    }
 
     const productData = {
       id: formattedProduct.id,
@@ -726,15 +741,17 @@ const ProductDesc = () => {
     return productName.includes('espoir') || collectionName.includes('love language');
   };
 
-  if (loading) {
+  // Show skeleton only on initial load when we don't have data yet
+  // Check if we have any data to display
+  const hasAnyData = product !== null || formattedProduct !== null;
+
+  // Only show skeleton if we're loading AND don't have any data yet
+  const isInitialLoad = loading && !hasAnyData;
+
+  if (isInitialLoad) {
     return (
       <Layout full noPadding>
-        <div className="bg-[#1f1f21] text-[#FFF7DC] min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#FFF7DC] mx-auto mb-4"></div>
-            <p className="text-xl avant">Loading product...</p>
-          </div>
-        </div>
+        <ProductDescSkeleton />
       </Layout>
     );
   }
@@ -852,10 +869,19 @@ const ProductDesc = () => {
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
-                    {isEspoirProduct() && (
+                    {hasTryOnAvailable(formattedProduct.category || product?.category, formattedProduct.name || product?.name) && (
                       <button 
-                        onClick={() => navigate('/tryon')}
+                        onClick={() => {
+                          const category = formattedProduct.category || product?.category || "";
+                          const productName = formattedProduct.name || product?.name || "";
+                          const params = new URLSearchParams();
+                          if (category) params.set("category", category);
+                          if (productName) params.set("product", productName);
+                          navigate(`/tryon?${params.toString()}`);
+                        }}
                         className="p-1.5 opacity-100 hover:opacity-80 transition-opacity cursor-pointer"
+                        aria-label="Try on this product"
+                        title="Try on this product"
                       >
                         <img src={TryOnIcon} alt="Try On" className="w-6 h-6" />
                       </button>
@@ -863,7 +889,10 @@ const ProductDesc = () => {
                     <button
                       type="button"
                       onClick={handleAddToWishlist}
-                      className="w-6 h-6 p-0 opacity-100 hover:opacity-80 transition-opacity cursor-pointer"
+                      className="relative w-6 h-6 min-w-[24px] min-h-[24px] p-0 opacity-100 hover:opacity-80 transition-opacity cursor-pointer flex items-center justify-center pointer-events-auto z-10 bg-transparent"
+                      style={{ cursor: 'pointer' }}
+                      aria-label={isFavorited ? "Remove from wishlist" : "Add to wishlist"}
+                      title={isFavorited ? "Remove from wishlist" : "Add to wishlist"}
                     >
                       <img
                         src={isFavorited ? AddedFavorites : AddFavorite}
@@ -872,7 +901,9 @@ const ProductDesc = () => {
                             ? "Added to Favorites"
                             : "Add to Favorites"
                         }
-                        className="w-full h-full object-contain block"
+                        className="w-full h-full object-contain block pointer-events-none select-none"
+                        draggable={false}
+                        style={{ pointerEvents: 'none' }}
                       />
                     </button>
                   </div>
@@ -1122,10 +1153,19 @@ const ProductDesc = () => {
                   {formattedProduct.collectionName} {formattedProduct.name}
                 </h2>
                 <div className="flex items-center gap-3">
-                  {isEspoirProduct() && (
+                  {hasTryOnAvailable(formattedProduct.category || product?.category, formattedProduct.name || product?.name) && (
                     <button 
-                      onClick={() => navigate('/tryon')}
+                      onClick={() => {
+                        const category = formattedProduct.category || product?.category || "";
+                        const productName = formattedProduct.name || product?.name || "";
+                        const params = new URLSearchParams();
+                        if (category) params.set("category", category);
+                        if (productName) params.set("product", productName);
+                        navigate(`/tryon?${params.toString()}`);
+                      }}
                       className="p-2 opacity-100 hover:opacity-80 transition-opacity cursor-pointer"
+                      aria-label="Try on this product"
+                      title="Try on this product"
                     >
                       <img src={TryOnIcon} alt="Try On" className="w-8 h-8" />
                     </button>
@@ -1134,14 +1174,19 @@ const ProductDesc = () => {
                   <button
                     type="button"
                     onClick={handleAddToWishlist}
-                    className="w-8 h-8 p-0 opacity-100 hover:opacity-80 transition-opacity cursor-pointer"
+                    className="relative w-8 h-8 min-w-[32px] min-h-[32px] p-0 opacity-100 hover:opacity-80 transition-opacity cursor-pointer flex items-center justify-center pointer-events-auto z-10 bg-transparent"
+                    style={{ cursor: 'pointer' }}
+                    aria-label={isFavorited ? "Remove from wishlist" : "Add to wishlist"}
+                    title={isFavorited ? "Remove from wishlist" : "Add to wishlist"}
                   >
                     <img
                       src={isFavorited ? AddedFavorites : AddFavorite}
                       alt={
                         isFavorited ? "Added to Favorites" : "Add to Favorites"
                       }
-                      className="w-full h-full object-contain block"
+                      className="w-full h-full object-contain block pointer-events-none select-none"
+                      draggable={false}
+                      style={{ pointerEvents: 'none' }}
                     />
                   </button>
                 </div>

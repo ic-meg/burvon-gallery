@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../../../components/Layout";
 import ProductCard from "../../../components/ProductCard";
 import FilterComponent from "../../../components/FilterComponent";
+import CollectionPageSkeleton from "../../../components/CollectionPageSkeleton";
 import { useCollection } from "../../../contexts/CollectionContext";
 import { useProduct } from "../../../contexts/ProductContext";
 
@@ -824,15 +825,22 @@ const CollectionPage = () => {
     if (canNext) setCarouselIndex(carouselIndex + 1);
   };
 
-  if (loading) {
+  // Show skeleton only on initial load when we don't have data yet
+  // Check if we have any data to display
+  const hasAnyData = 
+    currentCollection !== null ||
+    collectionProducts.length > 0 ||
+    filteredProducts.length > 0 ||
+    rawProducts.length > 0 ||
+    collectionContent !== null;
+
+  // Only show skeleton if we're loading AND don't have any data yet
+  const isInitialLoad = (loading || collectionsLoading) && !hasAnyData;
+
+  if (isInitialLoad) {
     return (
       <Layout full noPadding>
-        <div className="min-h-screen bg-[#1f1f21] flex items-center justify-center">
-          <div className="text-[#FFF7DC] text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FFF7DC] mx-auto mb-4"></div>
-            <p className="avant text-lg">Loading {collectionSlug}...</p>
-          </div>
-        </div>
+        <CollectionPageSkeleton />
       </Layout>
     );
   }
@@ -920,18 +928,8 @@ const CollectionPage = () => {
       {/* ===== ALL PRODUCTS GRID ===== */}
       <section className="bg-[#1f1f21] pt-1 pb-14 px-4">
         <div className="max-w-7xl mx-auto px-0">
-          {/* Loading State */}
-          {loading && (
-            <div className="flex justify-center items-center py-20">
-              <div className="text-[#FFF7DC] text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FFF7DC] mx-auto mb-4"></div>
-                <p className="avant text-lg">Loading products...</p>
-              </div>
-            </div>
-          )}
-
           {/* Empty State */}
-          {!loading && filteredProducts.length === 0 && (
+          {filteredProducts.length === 0 && (
             <div className="flex justify-center items-center py-20">
               <div className="text-[#FFF7DC] text-center">
                 <p className="avant text-lg mb-2">No products found</p>
@@ -943,7 +941,7 @@ const CollectionPage = () => {
           )}
 
           {/* Products Grid */}
-          {!loading && filteredProducts.length > 0 && (
+          {filteredProducts.length > 0 && (
             <>
               {/* MOBILE Version */}
               <div className="grid grid-cols-2 gap-4 md:hidden items-stretch">

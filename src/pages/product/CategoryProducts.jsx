@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import Layout from "../../components/Layout";
 import ProductCard from "../../components/ProductCard";
 import FilterComponent from "../../components/FilterComponent";
+import CategoryProductsSkeleton from "../../components/CategoryProductsSkeleton";
 import { useCategory } from "../../contexts/CategoryContext";
 import { useProduct } from "../../contexts/ProductContext";
 import { useCollection } from "../../contexts/CollectionContext";
@@ -95,7 +96,7 @@ const CategoryProducts = () => {
 
   const topScrollRef = React.useRef(null);
 
-  const { getCategoryBySlug, fetchCategoryBySlug, hasCategoryData, categories: allCategories } =
+  const { getCategoryBySlug, fetchCategoryBySlug, hasCategoryData, categories: allCategories, loading: categoryLoading } =
     useCategory();
   const { collections } = useCollection();
   const {
@@ -365,6 +366,23 @@ const CategoryProducts = () => {
   const handleNext = () => {
     if (canNext) setCarouselIndex(carouselIndex + 1);
   };
+
+  // Show skeleton only on initial load when we don't have data yet
+  // Check if we have any data to display
+  const hasAnyData = 
+    categoryData !== null ||
+    allProducts.length > 0 ||
+    formattedProducts.length > 0;
+
+  const isInitialLoad = (categoryLoading || productsLoading) && !hasAnyData;
+
+  if (isInitialLoad) {
+    return (
+      <Layout full noPadding>
+        <CategoryProductsSkeleton />
+      </Layout>
+    );
+  }
 
   return (
     <Layout full noPadding>
