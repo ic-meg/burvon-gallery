@@ -11,6 +11,8 @@ import { CollectionProvider } from "./contexts/CollectionContext";
 import { ProductProvider } from "./contexts/ProductContext";
 import { CartProvider } from "./contexts/CartContext";
 import { WishlistProvider } from "./contexts/WishlistContext";
+import { FaceLandmarksProvider } from "./contexts/FaceLandmarksContext";
+import { HandLandmarksProvider } from "./contexts/HandLandmarksContext";
 
 //about
 import ContactUs from "./pages/about/ContactUs";
@@ -72,152 +74,265 @@ import CollectionsContent from "./admin/Contents/Collections/CollectionsContent"
 
 const App = () => {
   return (
-    
-    <ContentProvider>
-      <CategoryProvider>
-        <CollectionProvider>
-          <ProductProvider>
-            <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-              <Router>
-                <CartProvider>
-                  <WishlistProvider>
-                <ScrollToTop />
-                <div>
-                  
-                  <Routes>
-                    <Route path="/" element={<Homepage />} />
-                    <Route path="/template" element={<Template />} />
+    <FaceLandmarksProvider>
+      <HandLandmarksProvider>
+        <ContentProvider>
+          <CategoryProvider>
+            <CollectionProvider>
+              <ProductProvider>
+                <GoogleOAuthProvider
+                  clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}
+                >
+                  <Router>
+                    <CartProvider>
+                      <WishlistProvider>
+                        <ScrollToTop />
+                        <div>
+                          <Routes>
+                            <Route path="/" element={<Homepage />} />
+                            <Route path="/template" element={<Template />} />
 
-                    {/*Customer Care Footer */}
-                    <Route path="/customer-care/faqs" element={<FAQs />} />
-                    <Route
-                      path="/customer-care/jewelry-care"
-                      element={<JewelryCare />}
-                    />
-                    <Route
-                      path="/customer-care/size-guide"
-                      element={<SizeGuide />}
-                    />
-                    <Route
-                      path="/customer-care/shipping"
-                      element={<Shipping />}
-                    />
-                    <Route
-                      path="/customer-care/track-order"
-                      element={<TrackOrder />}
-                    />
-                    <Route
-                      path="/customer-care/track-order-2"
-                      element={<TrackOrder2 />}
-                    />
-                    <Route path="/customer-care/return" element={<Return />} />
+                            {/*Customer Care Footer */}
+                            <Route
+                              path="/customer-care/faqs"
+                              element={<FAQs />}
+                            />
+                            <Route
+                              path="/customer-care/jewelry-care"
+                              element={<JewelryCare />}
+                            />
+                            <Route
+                              path="/customer-care/size-guide"
+                              element={<SizeGuide />}
+                            />
+                            <Route
+                              path="/customer-care/shipping"
+                              element={<Shipping />}
+                            />
+                            <Route
+                              path="/customer-care/track-order"
+                              element={<TrackOrder />}
+                            />
+                            <Route
+                              path="/customer-care/track-order-2"
+                              element={<TrackOrder2 />}
+                            />
+                            <Route
+                              path="/customer-care/return"
+                              element={<Return />}
+                            />
 
-                    {/*About Footer */}
-                    <Route path="/about/contact-us" element={<ContactUs />} />
-                    <Route path="/about/our-story" element={<OurStory />} />
-                    <Route
-                      path="/about/customer-review"
-                      element={<CustomerReviews />}
-                    />
+                            {/*About Footer */}
+                            <Route
+                              path="/about/contact-us"
+                              element={<ContactUs />}
+                            />
+                            <Route
+                              path="/about/our-story"
+                              element={<OurStory />}
+                            />
+                            <Route
+                              path="/about/customer-review"
+                              element={<CustomerReviews />}
+                            />
 
-                    {/*Main Header */}
-                    <Route path="/wishlist" element={<Wishlist />} />
-                    <Route
-                      path="/user/Wishlist-Empty"
-                      element={<WishlistEmpty />}
-                    />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/admin-login" element={<AdminLogin />} />
-                    <Route path="/shopping-bag" element={<ShoppingBag />} />
-                    <Route path="/user/cart/checkout" element={<Checkout />} />
-                    <Route path="/order-completed" element={<OrderCompleted />} />
-                    <Route
-                      path="/user/cart/ShoppingBag-Empty"
-                      element={<ShoppingBagEmpty />}
-                    />
-                    <Route path="/verification" element={<Verification />} />
-                    <Route path="/auth/verify" element={<Verification />} />
+                            {/*Main Header */}
+                            <Route path="/wishlist" element={<Wishlist />} />
+                            <Route
+                              path="/user/Wishlist-Empty"
+                              element={<WishlistEmpty />}
+                            />
+                            <Route path="/login" element={<Login />} />
+                            <Route
+                              path="/admin-login"
+                              element={<AdminLogin />}
+                            />
+                            <Route
+                              path="/shopping-bag"
+                              element={<ShoppingBag />}
+                            />
+                            <Route
+                              path="/user/cart/checkout"
+                              element={<Checkout />}
+                            />
+                            <Route
+                              path="/order-completed"
+                              element={<OrderCompleted />}
+                            />
+                            <Route
+                              path="/user/cart/ShoppingBag-Empty"
+                              element={<ShoppingBagEmpty />}
+                            />
+                            <Route
+                              path="/verification"
+                              element={<Verification />}
+                            />
+                            <Route
+                              path="/auth/verify"
+                              element={<Verification />}
+                            />
 
-                    {/*Main nav */}
-                    {/* Dynamic Category Products Route */}
-                    <Route
-                      path="/products/:categorySlug"
-                      element={<CategoryProducts />}
-                    />
-                    <Route
-                      path="/product/:productSlug"
-                      element={<ProductDesc />}
-                    />
-                    <Route path="/tryon" element={<TryOn />} />
+                            {/*Main nav */}
+                            {/* Dynamic Category Products Route */}
+                            <Route
+                              path="/products/:categorySlug"
+                              element={<CategoryProducts />}
+                            />
+                            <Route
+                              path="/product/:productSlug"
+                              element={<ProductDesc />}
+                            />
+                            <Route path="/tryon" element={<TryOn />} />
 
-                    {/*Collections - Dynamic Route */}
-                    <Route
-                      path="/collections/:collectionSlug"
-                      element={<CollectionPage />}
-                    />
+                            {/*Collections - Dynamic Route */}
+                            <Route
+                              path="/collections/:collectionSlug"
+                              element={<CollectionPage />}
+                            />
 
-                    {/*Profile */}
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="/profile/inprogress" element={<InProgress />} />
-                    <Route path="/profile/delivered" element={<Delivered />} />
-                    <Route path="/profile/cancelled" element={<Cancelled />} />
-                    <Route path="/profile/refund" element={<Refund />} />
-                    <Route path="/profile/vieworder" element={<ViewOrder />} />
-                    <Route
-                      path="/profile/vieworder-inprogress"
-                      element={<ViewOrderInProgress />}
-                    />
-                    <Route path="/profile/requestreturn" element={<RequestReturn />} />
-                    <Route path="/profile/reviewdetails" element={<ReviewDetails />} />
-                    <Route path="/profile/ordercompleted" element={<OrderCompleted />} />
+                            {/*Profile */}
+                            <Route path="/profile" element={<Profile />} />
+                            <Route
+                              path="/profile/inprogress"
+                              element={<InProgress />}
+                            />
+                            <Route
+                              path="/profile/delivered"
+                              element={<Delivered />}
+                            />
+                            <Route
+                              path="/profile/cancelled"
+                              element={<Cancelled />}
+                            />
+                            <Route
+                              path="/profile/refund"
+                              element={<Refund />}
+                            />
+                            <Route
+                              path="/profile/vieworder"
+                              element={<ViewOrder />}
+                            />
+                            <Route
+                              path="/profile/vieworder-inprogress"
+                              element={<ViewOrderInProgress />}
+                            />
+                            <Route
+                              path="/profile/requestreturn"
+                              element={<RequestReturn />}
+                            />
+                            <Route
+                              path="/profile/reviewdetails"
+                              element={<ReviewDetails />}
+                            />
+                            <Route
+                              path="/profile/ordercompleted"
+                              element={<OrderCompleted />}
+                            />
 
-                    {/*Admin */}
-                    <Route path="/admin/dashboard" element={<ProtectedAdminRoute requiredPage="Dashboard"><AdminDashboard /></ProtectedAdminRoute>} />
-                    <Route path="/admin/orders" element={<ProtectedAdminRoute requiredPage="Order Management"><AdminOrders /></ProtectedAdminRoute>} />
-                    <Route path="/admin/products" element={<ProtectedAdminRoute requiredPage="Product Management"><AdminProducts /></ProtectedAdminRoute>} />
-                    <Route
-                      path="/admin/collection"
-                      element={<ProtectedAdminRoute requiredPage="Collections Management"><CollectionManagement /></ProtectedAdminRoute>}
-                    />
-                    <Route path="/admin/live-chat" element={<ProtectedAdminRoute requiredPage="Live Chat"><LiveChat /></ProtectedAdminRoute>} />
-                    <Route path="/admin/content" element={<ProtectedAdminRoute requiredPage="Content Management"><ContentManagement /></ProtectedAdminRoute>}>
-                      <Route index element={<HomepageContent />} />
-                      <Route path="homepage" element={<HomepageContent />} />
-                      <Route path="categories" element={<CategoriesContent />} />
-                      <Route
-                        path="categories/necklaces"
-                        element={<CategoriesContent />}
-                      />
-                      <Route
-                        path="categories/bracelets"
-                        element={<CategoriesContent />}
-                      />
-                      <Route path="categories/rings" element={<CategoriesContent />} />
-                      <Route
-                        path="categories/earrings"
-                        element={<CategoriesContent />}
-                      />
+                            {/*Admin */}
+                            <Route
+                              path="/admin/dashboard"
+                              element={
+                                <ProtectedAdminRoute requiredPage="Dashboard">
+                                  <AdminDashboard />
+                                </ProtectedAdminRoute>
+                              }
+                            />
+                            <Route
+                              path="/admin/orders"
+                              element={
+                                <ProtectedAdminRoute requiredPage="Order Management">
+                                  <AdminOrders />
+                                </ProtectedAdminRoute>
+                              }
+                            />
+                            <Route
+                              path="/admin/products"
+                              element={
+                                <ProtectedAdminRoute requiredPage="Product Management">
+                                  <AdminProducts />
+                                </ProtectedAdminRoute>
+                              }
+                            />
+                            <Route
+                              path="/admin/collection"
+                              element={
+                                <ProtectedAdminRoute requiredPage="Collections Management">
+                                  <CollectionManagement />
+                                </ProtectedAdminRoute>
+                              }
+                            />
+                            <Route
+                              path="/admin/live-chat"
+                              element={
+                                <ProtectedAdminRoute requiredPage="Live Chat">
+                                  <LiveChat />
+                                </ProtectedAdminRoute>
+                              }
+                            />
+                            <Route
+                              path="/admin/content"
+                              element={
+                                <ProtectedAdminRoute requiredPage="Content Management">
+                                  <ContentManagement />
+                                </ProtectedAdminRoute>
+                              }
+                            >
+                              <Route index element={<HomepageContent />} />
+                              <Route
+                                path="homepage"
+                                element={<HomepageContent />}
+                              />
+                              <Route
+                                path="categories"
+                                element={<CategoriesContent />}
+                              />
+                              <Route
+                                path="categories/necklaces"
+                                element={<CategoriesContent />}
+                              />
+                              <Route
+                                path="categories/bracelets"
+                                element={<CategoriesContent />}
+                              />
+                              <Route
+                                path="categories/rings"
+                                element={<CategoriesContent />}
+                              />
+                              <Route
+                                path="categories/earrings"
+                                element={<CategoriesContent />}
+                              />
 
-                      <Route
-                        path="collections"
-                        element={<CollectionsContent />}
-                      />
-                      <Route
-                        path="collections/:collectionSlug"
-                        element={<CollectionsContent />}
-                      />
-                    </Route>
-                    <Route path="/admin/user" element={<ProtectedAdminRoute requiredPage="User Management"><UserManagement /></ProtectedAdminRoute>} />
-                  </Routes>
-                </div>
-                  </WishlistProvider>
-                </CartProvider>
-              </Router>
-            </GoogleOAuthProvider>
-          </ProductProvider>
-        </CollectionProvider>
-      </CategoryProvider>
-    </ContentProvider>
+                              <Route
+                                path="collections"
+                                element={<CollectionsContent />}
+                              />
+                              <Route
+                                path="collections/:collectionSlug"
+                                element={<CollectionsContent />}
+                              />
+                            </Route>
+                            <Route
+                              path="/admin/user"
+                              element={
+                                <ProtectedAdminRoute requiredPage="User Management">
+                                  <UserManagement />
+                                </ProtectedAdminRoute>
+                              }
+                            />
+                          </Routes>
+                        </div>
+                      </WishlistProvider>
+                    </CartProvider>
+                  </Router>
+                </GoogleOAuthProvider>
+              </ProductProvider>
+            </CollectionProvider>
+          </CategoryProvider>
+        </ContentProvider>
+      </HandLandmarksProvider>
+    </FaceLandmarksProvider>
   );
 };
 
