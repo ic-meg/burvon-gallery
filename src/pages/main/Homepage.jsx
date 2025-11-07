@@ -803,7 +803,7 @@ const Homepage = () => {
                   className="bg-[#111] drop-shadow-lg rounded-none flex-shrink-0 md:flex-shrink md:w-auto cursor-pointer"
                   style={{
                     width: "65vw",
-                    height: "400px", 
+                    height: "300px", 
                     margin: "0 8px", 
                     scrollSnapAlign: "center",
                   }}
