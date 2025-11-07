@@ -13,6 +13,7 @@ import { Camera } from "@mediapipe/camera_utils";
 import { useFaceLandmarks } from "../../../contexts/FaceLandmarksContext";
 import { useHandLandmarks } from "../../../contexts/HandLandmarksContext";
 import { ImageJewelryOverlay } from "../../../components/3Dcomponents/TryOn/ImageJewelryOverlay";
+import HandDetectionGuide from "../../../components/3Dcomponents/TryOn/HandDetectionGuide";
 import { mapCategoryToTryOn, tryOnProducts as products } from "../../../utils/tryOnUtils";
 
 const categories = [
@@ -69,11 +70,16 @@ const TryOnDesktop = ({
   selectedJewelryImage,
   categoryToJewelryType,
   isCameraOpen,
-  videoReady
+  videoReady,
+  handLandmarks
 }) => {
   const [hoveredCategory, setHoveredCategory] = useState(null);
   const [hoveredPrev, setHoveredPrev] = useState(false);
   const [hoveredNext, setHoveredNext] = useState(false);
+  
+  // Check if hand detection guide should be shown
+  const needsHandDetection = selectedCategory === "rings" || selectedCategory === "bracelet";
+  const showHandGuide = needsHandDetection && isCameraOpen && !photo && (!handLandmarks || handLandmarks.length === 0);
 
   return (
     <div className="hidden lg:block min-h-screen bg-[#181818] px-0 py-20 text-[#fff7dc]">
@@ -180,6 +186,7 @@ const TryOnDesktop = ({
                         <p className="avant cream-text text-sm">Please allow camera permissions if prompted</p>
                       </div>
                     )}
+                    <HandDetectionGuide isVisible={showHandGuide} />
                     <canvas
                       ref={canvasRef}
                       style={{ display: "none" }}
@@ -301,9 +308,14 @@ const TryOnMobile = ({
   selectedJewelryImage,
   categoryToJewelryType,
   isCameraOpen,
-  videoReady
+  videoReady,
+  handLandmarks
 }) => {
   const [hoveredCategory, setHoveredCategory] = useState(null);
+  
+  // Check if hand detection guide should be shown
+  const needsHandDetection = selectedCategory === "rings" || selectedCategory === "bracelet";
+  const showHandGuide = needsHandDetection && isCameraOpen && !photo && (!handLandmarks || handLandmarks.length === 0);
 
   return (
     <div className="lg:hidden w-full min-h-screen bg-[#181818] px-4 pt-22 text-[#fff7dc]">
@@ -396,6 +408,7 @@ const TryOnMobile = ({
                 <p className="avant cream-text text-xs">Allow camera permissions if prompted</p>
               </div>
             )}
+            <HandDetectionGuide isVisible={showHandGuide} />
             <canvas
               ref={canvasRef}
               style={{ display: "none" }}
@@ -581,7 +594,7 @@ const TryOn = () => {
   const selectedCategoryRef = useRef(selectedCategory);
 
   const { setFaceLandmarks } = useFaceLandmarks();
-  const { setHandLandmarks } = useHandLandmarks();
+  const { handLandmarks, setHandLandmarks } = useHandLandmarks();
 
   // Map category keys to jewelry types for ImageJewelryOverlay
   const categoryToJewelryType = {
@@ -1144,6 +1157,7 @@ const TryOn = () => {
         videoRef={videoRef}
         setVideoRef={setVideoRef}
         canvasRef={canvasRef}
+        handLandmarks={handLandmarks}
         overlayCanvasRef={overlayCanvasRef}
         overlayCanvasRefDesktop={overlayCanvasRefDesktop}
         selectedJewelryImage={selectedJewelryImage}
@@ -1174,6 +1188,7 @@ const TryOn = () => {
         categoryToJewelryType={categoryToJewelryType}
         isCameraOpen={isCameraOpen}
         videoReady={videoReady}
+        handLandmarks={handLandmarks}
       />
     </Layout>
   );

@@ -1,0 +1,36 @@
+import React from 'react';
+
+const HandDetectionGuide = ({ isVisible }) => {
+  if (!isVisible) return null;
+
+  return (
+    <div className="absolute inset-0 flex items-center justify-center z-50 rounded-lg pointer-events-none">
+      <div className="bg-black bg-opacity-30 rounded-lg px-6 py-4 backdrop-blur-sm">
+        <div className="text-center">
+          <div className="mb-2">
+            <svg
+              className="w-10 h-10 mx-auto text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11"
+              />
+            </svg>
+          </div>
+          <p className="avant text-white text-sm font-medium">
+            Place Your Hand
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default HandDetectionGuide;
+
