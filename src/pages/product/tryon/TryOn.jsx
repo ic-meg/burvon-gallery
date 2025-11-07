@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import Layout from "../../../components/Layout";
 import {
   hand, ringThumb, ringIndex, ringMiddle, ringRing, ringPinky,
-  friden_tryon, iliao_tryon, neid_tryon, ring_onhand, sample_image,
+  sample_image,
   again, bracelet, camera, download, earrings, necklace, NextFacts, PrevFacts, rings,
   necklaceBlack, earringsBlack, ringsBlack, braceletBlack,
 } from "../../../assets/index.js";
@@ -12,6 +13,7 @@ import { Camera } from "@mediapipe/camera_utils";
 import { useFaceLandmarks } from "../../../contexts/FaceLandmarksContext";
 import { useHandLandmarks } from "../../../contexts/HandLandmarksContext";
 import { ImageJewelryOverlay } from "../../../components/3Dcomponents/TryOn/ImageJewelryOverlay";
+import { mapCategoryToTryOn, tryOnProducts as products } from "../../../utils/tryOnUtils";
 
 const categories = [
   { key: "necklace", label: "NECKLACES", icon: necklace, iconBlack: necklaceBlack },
@@ -20,20 +22,20 @@ const categories = [
   { key: "bracelet", label: "BRACELETS", icon: bracelet, iconBlack: braceletBlack },
 ];
 
-const products = {
-  necklace: [
-    { name: "SILVER NECKLACE", image: "/image/Necklace/Silver-Necklace.png" },
-  ],
-  earrings: [
-    { name: "ESPOIR", image: "/image/Earrings/EspoirImage.png" },
-  ],
-  rings: [
-    { name: "RING", image: "/image/Rings/ring_PNG106.png" },
-  ],
-  bracelet: [
-    { name: "SOLEIL", image: "/image/Bracelets/SoleilImage.png" },
-  ],
+
+const generateImagePath = (category, productName) => {
+  const categoryMap = {
+    necklace: "Necklace",
+    earrings: "Earrings",
+    rings: "Rings",
+    bracelet: "Bracelets"
+  };
+
+  const titleCase = productName.charAt(0).toUpperCase() + productName.slice(1).toLowerCase();
+  return `/image/${categoryMap[category]}/${titleCase}Image.png`;
 };
+
+// Products are now imported from tryOnUtils.js
 
 const fingers = ["THUMB", "INDEX", "MIDDLE", "RING", "PINKY"];
 
@@ -210,7 +212,7 @@ const TryOnDesktop = ({
                       }}
                     >
                       <img
-                        src={prod.image}
+                        src={generateImagePath(selectedCategory, prod.name)}
                         alt={prod.name}
                         className={`object-contain mb-2 rounded-lg`}
                         style={{
@@ -439,18 +441,18 @@ const TryOnMobile = ({
         
         <div className="flex gap-4">
           {products[selectedCategory].map((prod, idx) => (
-            <div 
-              key={prod.name} 
+            <div
+              key={prod.name}
               className={`flex flex-col items-center transition-all ${
                 selectedProductIdx === idx ? "scale-125" : "scale-100"
               }`}
             >
-              <img 
-                src={prod.image} 
-                alt={prod.name} 
+              <img
+                src={generateImagePath(selectedCategory, prod.name)}
+                alt={prod.name}
                 className={`object-contain mb-1 rounded-lg ${
                   selectedProductIdx === idx ? "w-22 h-22" : "w-20 h-20"
-                }`} 
+                }`}
               />
               <span className="bebas cream-text text-sm">{prod.name}</span>
             </div>
@@ -487,12 +489,46 @@ const getRingPosition = (finger) => {
 };
 
 const TryOn = () => {
-  const [selectedCategory, setSelectedCategory] = useState("necklace");
-  const [selectedProductIdx, setSelectedProductIdx] = useState(0);
+  const [searchParams] = useSearchParams();
+  
+  // Get category and product from URL parameters
+  const urlCategory = searchParams.get("category");
+  const urlProduct = searchParams.get("product");
+  
+  // Map URL category to try-on category and validate
+  const mappedCategory = urlCategory ? mapCategoryToTryOn(urlCategory) : null;
+  const initialCategory = mappedCategory && categories.find(c => c.key === mappedCategory) 
+    ? mappedCategory 
+    : "necklace";
+  
+  // Find product index if product name is provided
+  const findProductIndex = (category, productName) => {
+    if (!productName || !products[category]) return 0;
+    const index = products[category].findIndex(
+      p => p.name.toLowerCase() === productName.toLowerCase()
+    );
+    return index >= 0 ? index : 0;
+  };
+  
+  const initialProductIdx = urlProduct && mappedCategory 
+    ? findProductIndex(mappedCategory, urlProduct)
+    : 0;
+  
+  // Ensure we have a valid product array and index
+  const safeProductIdx = products[initialCategory] && products[initialCategory].length > 0
+    ? Math.min(initialProductIdx, products[initialCategory].length - 1)
+    : 0;
+  
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
+  const [selectedProductIdx, setSelectedProductIdx] = useState(safeProductIdx);
   const [selectedFinger, setSelectedFinger] = useState(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [photo, setPhoto] = useState(null);
-  const [selectedJewelryImage, setSelectedJewelryImage] = useState("/image/Necklace/Silver-Necklace.png");
+  const [selectedJewelryImage, setSelectedJewelryImage] = useState(
+    products[initialCategory] && products[initialCategory][safeProductIdx]
+      ? generateImagePath(initialCategory, products[initialCategory][safeProductIdx].name)
+      : generateImagePath("necklace", products.necklace[0].name)
+  );
   const [videoReady, setVideoReady] = useState(false);
 
   const videoRef = useRef(null);
@@ -511,14 +547,23 @@ const TryOn = () => {
       
       // Only set ref if this element is visible, or if no ref is set yet
       if (isVisible || !videoRef.current) {
-        // If we already have a ref but this one is visible, update it
-        if (videoRef.current && videoRef.current !== element) {
-   
-        }
         videoRef.current = element;
         videoRefCallback.current = element;
         setVideoReady(true); // Notify that video element is ready
-    
+        
+        // Ensure stream is attached to the new video element
+        if (streamRef.current) {
+          if (!element.srcObject || element.srcObject !== streamRef.current) {
+            element.srcObject = streamRef.current;
+          }
+          
+          // Ensure video is playing if camera is open
+          if (isCameraOpen && element.paused) {
+            element.play().catch(err => {
+              console.error('[TryOn] Error playing video in setVideoRef:', err);
+            });
+          }
+        }
       }
     } else {
       setVideoReady(false);
@@ -531,7 +576,9 @@ const TryOn = () => {
   const isProcessing = useRef(false);
   const lastHandFrameTime = useRef(0);
   const isHandProcessing = useRef(false);
-  const isInitializing = useRef(false);
+  const streamRef = useRef(null);
+  const timeoutRefs = useRef([]);
+  const selectedCategoryRef = useRef(selectedCategory);
 
   const { setFaceLandmarks } = useFaceLandmarks();
   const { setHandLandmarks } = useHandLandmarks();
@@ -544,108 +591,90 @@ const TryOn = () => {
     bracelet: "bracelet"
   };
 
-  // MediaPipe and camera initialization
+  // Webcam initialization - runs only ONCE on mount
   useEffect(() => {
+    let isActive = true;
 
-    
-    // Prevent double initialization (React Strict Mode) - but allow re-initialization after cleanup
-    if (isInitializing.current && cameraRef.current) {
-
-      return;
-    }
-    
     const startWebcam = async () => {
-
       try {
         // Wait a bit to ensure video element is in DOM
         if (!videoRef.current) {
-  
-          await new Promise(resolve => setTimeout(resolve, 100));
-          if (!videoRef.current) {
-            console.error('[TryOn] Video element still not available');
-            return;
-          }
+          await new Promise(resolve => {
+            const timeout = setTimeout(resolve, 100);
+            timeoutRefs.current.push(timeout);
+          });
+          if (!videoRef.current || !isActive) return;
         }
-        
-      
+
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { width: 640, height: 480 },
           audio: false,
         });
-     
-        
-        // Double-check video element is still available
+
+        if (!isActive) {
+          stream.getTracks().forEach(track => track.stop());
+          return;
+        }
+
+        streamRef.current = stream;
+
         if (videoRef.current) {
-    
           const video = videoRef.current;
-          
-          // Clear any existing stream first
-          if (video.srcObject) {
-         
-            const oldTracks = video.srcObject.getTracks();
-            oldTracks.forEach(track => track.stop());
-            video.srcObject = null;
-          }
-          
-          // Set up event listener BEFORE setting srcObject
+
           const handleLoadedMetadata = () => {
-        
+            if (!isActive) return;
             video.play().then(() => {
-     
-              setIsCameraOpen(true);
+              if (isActive) setIsCameraOpen(true);
             }).catch((err) => {
               console.error('[TryOn] Error playing video:', err);
-              setIsCameraOpen(true); // Still set as open even if play fails
+              if (isActive) setIsCameraOpen(true);
             });
           };
-          
+
           video.addEventListener('loadedmetadata', handleLoadedMetadata, { once: true });
-          
-          // Set the stream
           video.srcObject = stream;
-       
-          
-          // Also listen for canplay event as additional fallback
-          const handleCanPlay = () => {
-         
-            if (video.paused) {
-              video.play().catch(err => console.error('[TryOn] Error in canplay handler:', err));
-            }
-          };
-          video.addEventListener('canplay', handleCanPlay, { once: true });
-          
-          // Fallback: try to play immediately if metadata already loaded
+
           if (video.readyState >= 1) {
-        
             video.play().then(() => {
-           
-              setIsCameraOpen(true);
+              if (isActive) setIsCameraOpen(true);
             }).catch((err) => {
               console.error('[TryOn] Error playing video (immediate):', err);
-              setIsCameraOpen(true);
+              if (isActive) setIsCameraOpen(true);
             });
-          } else {
-            // Set a timeout to check if video starts playing
-            setTimeout(() => {
-              if (video.srcObject && video.paused) {
-      
-                video.play().then(() => {
-            
-                  setIsCameraOpen(true);
-                }).catch(err => {
-                  console.error('[TryOn] Error playing after timeout:', err);
-                });
-              }
-            }, 1000);
           }
-        } else {
-          console.warn('[TryOn] videoRef.current is null');
         }
       } catch (error) {
         console.error("[TryOn] Error accessing webcam:", error);
-        setIsCameraOpen(false);
+        if (isActive) setIsCameraOpen(false);
       }
     };
+
+    startWebcam();
+
+    return () => {
+      isActive = false;
+      // Cleanup webcam on unmount
+      if (videoRef.current && videoRef.current.srcObject) {
+        const tracks = videoRef.current.srcObject.getTracks();
+        tracks.forEach(track => track.stop());
+        videoRef.current.srcObject = null;
+      }
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
+      }
+    };
+  }, []); 
+
+  // Update category ref whenever it changes
+  useEffect(() => {
+    selectedCategoryRef.current = selectedCategory;
+  }, [selectedCategory]);
+
+  // MediaPipe models initialization - changes when category changes
+  useEffect(() => {
+    const needsFaceMesh = selectedCategory === "necklace" || selectedCategory === "earrings";
+    const needsHands = selectedCategory === "rings" || selectedCategory === "bracelet";
 
     const onFaceResults = (results) => {
       if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
@@ -657,83 +686,153 @@ const TryOn = () => {
 
     const onHandResults = (results) => {
       if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-        setHandLandmarks(results.multiHandLandmarks[0]);
+        const landmarks = results.multiHandLandmarks[0];
+        setHandLandmarks(landmarks);
       } else {
         setHandLandmarks(null);
       }
     };
 
-    const initializeHands = async () => {
-      const hands = new Hands({
-        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
-      });
+    const initializeModels = async () => {
+      // Wait for webcam to be ready
+      if (!videoRef.current) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      if (!videoRef.current) return;
 
-      hands.setOptions({
-        maxNumHands: 2,
-        modelComplexity: 1,
-        minDetectionConfidence: 0.5,
-        minTrackingConfidence: 0.5,
-      });
+      // Initialize FaceMesh if needed
+      if (needsFaceMesh && !faceMeshRef.current) {
+        const faceMesh = new FaceMesh({
+          locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`,
+        });
+        faceMesh.setOptions({
+          maxNumFaces: 1,
+          refineLandmarks: true,
+          minDetectionConfidence: 0.5,
+          minTrackingConfidence: 0.5,
+        });
+        faceMesh.onResults(onFaceResults);
+        faceMeshRef.current = faceMesh;
+      }
 
-      hands.onResults(onHandResults);
-      handsRef.current = hands;
-    };
+      // Initialize Hands if needed
+      if (needsHands) {
+        if (!handsRef.current) {
+          try {
+            const hands = new Hands({
+              locateFile: (file) => {
+                // Try jsdelivr first (most common)
+                const baseUrl = `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+                return baseUrl;
+              },
+            });
+            hands.setOptions({
+              maxNumHands: 2,
+              modelComplexity: 1,
+              minDetectionConfidence: 0.5,
+              minTrackingConfidence: 0.5,
+            });
+            hands.onResults(onHandResults);
+            
+            // Add error handler
+            if (hands.onError) {
+              hands.onError = (error) => {
+                console.error('[TryOn] Hands model error:', error);
+              };
+            }
+            
+            handsRef.current = hands;
+          } catch (error) {
+            console.error('[TryOn] Failed to initialize Hands model:', error);
+            // Try alternative CDN (unpkg)
+            try {
+              const hands = new Hands({
+                locateFile: (file) => `https://unpkg.com/@mediapipe/hands@0.4.1675469404/${file}`,
+              });
+              hands.setOptions({
+                maxNumHands: 2,
+                modelComplexity: 1,
+                minDetectionConfidence: 0.5,
+                minTrackingConfidence: 0.5,
+              });
+              hands.onResults(onHandResults);
+              if (hands.onError) {
+                hands.onError = (error) => {
+                  console.error('[TryOn] Hands model error (alternative):', error);
+                };
+              }
+              handsRef.current = hands;
+            } catch (altError) {
+              console.error('[TryOn] Alternative Hands model initialization also failed:', altError);
+              console.error('[TryOn] This may be a network/CDN issue. Please check your internet connection.');
+            }
+          }
+        }
+      }
 
-    const initializeFaceMesh = async () => {
-      const faceMesh = new FaceMesh({
-        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`,
-      });
-
-      faceMesh.setOptions({
-        maxNumFaces: 1,
-        refineLandmarks: true,
-        minDetectionConfidence: 0.5,
-        minTrackingConfidence: 0.5,
-      });
-
-      faceMesh.onResults(onFaceResults);
-      faceMeshRef.current = faceMesh;
-
-      // Wait for video to be ready
-      await startWebcam();
-
-      // Initialize hands
-      await initializeHands();
-
-      // Start camera after video is ready with frame throttling
-      if (videoRef.current) {
+      // Start MediaPipe Camera if not already started
+      if (videoRef.current && !cameraRef.current) {
         const camera = new Camera(videoRef.current, {
           onFrame: async () => {
-            // Throttle to ~30 FPS to reduce lag
             const now = performance.now();
-            if (now - lastFrameTime.current < 33 || isProcessing.current) {
-              return;
-            }
 
-            lastFrameTime.current = now;
+            // Check current category using ref to get latest value
+            const currentCategory = selectedCategoryRef.current;
+            const currentNeedsFaceMesh = currentCategory === "necklace" || currentCategory === "earrings";
+            const currentNeedsHands = currentCategory === "rings" || currentCategory === "bracelet";
 
-            if (faceMeshRef.current && videoRef.current) {
-              isProcessing.current = true;
-              try {
-                await faceMeshRef.current.send({ image: videoRef.current });
-              } finally {
-                isProcessing.current = false;
+            // Process FaceMesh if needed for current category
+            if (currentNeedsFaceMesh && faceMeshRef.current && videoRef.current) {
+              if (now - lastFrameTime.current >= 33 && !isProcessing.current) {
+                lastFrameTime.current = now;
+                isProcessing.current = true;
+                try {
+                  await faceMeshRef.current.send({ image: videoRef.current });
+                } catch (err) {
+                  console.error('[TryOn] Error processing face mesh:', err);
+                } finally {
+                  isProcessing.current = false;
+                }
               }
             }
 
-            // Process hands separately with throttling
-            if (now - lastHandFrameTime.current < 33 || isHandProcessing.current) {
-              return;
-            }
-
-            lastHandFrameTime.current = now;
-
-            if (handsRef.current && videoRef.current) {
-              isHandProcessing.current = true;
-              try {
-                await handsRef.current.send({ image: videoRef.current });
-              } finally {
-                isHandProcessing.current = false;
+            // Process Hands if needed for current category
+            if (currentNeedsHands && handsRef.current && videoRef.current) {
+              if (now - lastHandFrameTime.current >= 33 && !isHandProcessing.current) {
+                lastHandFrameTime.current = now;
+                isHandProcessing.current = true;
+                try {
+                  if (handsRef.current && videoRef.current.readyState >= 2) {
+                    await handsRef.current.send({ image: videoRef.current });
+                  } else {
+                    if (Math.random() < 0.1) {
+                      console.warn('[TryOn] Video not ready for hand processing:', {
+                        videoReadyState: videoRef.current?.readyState
+                      });
+                    }
+                  }
+                } catch (err) {
+                  console.error('[TryOn] Error processing hands:', err);
+                  console.error('[TryOn] Error details:', {
+                    message: err.message,
+                    stack: err.stack,
+                    name: err.name
+                  });
+                  if (err.message && (err.message.includes('undefined') || err.message.includes('not loaded'))) {
+                    console.warn('[TryOn] Hands model may not be fully loaded, will retry...');
+                    handsRef.current = null;
+                  }
+                } finally {
+                  isHandProcessing.current = false;
+                }
+              }
+            } else if (currentNeedsHands) {
+              if (Math.random() < 0.05) {
+                console.warn('[TryOn] Cannot process hands:', {
+                  hasHandsModel: !!handsRef.current,
+                  hasVideo: !!videoRef.current,
+                  currentCategory
+                });
               }
             }
           },
@@ -742,87 +841,150 @@ const TryOn = () => {
         });
         camera.start();
         cameraRef.current = camera;
+      } else {
+        if (!videoRef.current) {
+          console.warn('[TryOn] Cannot start camera: videoRef.current is null');
+        }
+        if (cameraRef.current) {
+          // Verify that the Hands model is available for the current category
+          if (needsHands && !handsRef.current) {
+            console.warn('[TryOn] WARNING: Hands model not initialized but needed for category:', selectedCategory);
+          }
+        }
       }
     };
 
-    let initTimer = null;
-    
-    if (!photo) {
-      // Reset camera state when component mounts/remounts
-      setIsCameraOpen(false);
-      isInitializing.current = true;
-      
-      // Small delay to ensure DOM is ready
-      initTimer = setTimeout(() => {
-        initializeFaceMesh();
-      }, 50);
-    }
+    initializeModels();
 
     return () => {
-      // Clear initialization timer if it exists
-      if (initTimer) {
-        clearTimeout(initTimer);
-      }
-      
-   
-      
-      // Stop camera first
-      if (cameraRef.current) {
-   
-        try {
-          cameraRef.current.stop();
-        } catch (err) {
-          console.error('[TryOn] Error stopping camera:', err);
-        }
-        cameraRef.current = null;
-      }
-
-      // Stop webcam tracks
-      if (videoRef.current && videoRef.current.srcObject) {
-   
-        try {
-          const tracks = videoRef.current.srcObject.getTracks();
-          tracks.forEach((track) => {
-            track.stop();
-         
-          });
-          videoRef.current.srcObject = null;
-        } catch (err) {
-          console.error('[TryOn] Error stopping tracks:', err);
-        }
-      }
-
-      // Close face mesh
-      if (faceMeshRef.current) {
-    
+      // Cleanup unused models when switching categoriesz
+      if (!needsFaceMesh && faceMeshRef.current) {
         try {
           faceMeshRef.current.close();
         } catch (err) {
           console.error('[TryOn] Error closing face mesh:', err);
         }
         faceMeshRef.current = null;
+        setFaceLandmarks(null);
       }
 
-      // Close hands
-      if (handsRef.current) {
-   
+      // Close Hands if we don't need it for the new category
+      if (!needsHands && handsRef.current) {
         try {
           handsRef.current.close();
         } catch (err) {
           console.error('[TryOn] Error closing hands:', err);
         }
         handsRef.current = null;
+        setHandLandmarks(null);
+      }
+    };
+  }, [selectedCategory]); // Re-initialize when category changes
+
+  // Reattach video stream and recreate MediaPipe Camera when photo is cleared (retry button clicked)
+  useEffect(() => {
+    if (!photo && videoRef.current && streamRef.current && isCameraOpen) {
+      // Photo was cleared, ensure video stream is attached and playing
+      const video = videoRef.current;
+      
+      // Check if stream is already attached
+      if (!video.srcObject || video.srcObject !== streamRef.current) {
+        video.srcObject = streamRef.current;
       }
       
-      // Reset initialization flag AFTER cleanup
-      isInitializing.current = false;
-      setIsCameraOpen(false);
-    };
-  }, [photo]);
+      // Ensure video is playing
+      const playVideo = async () => {
+        if (video.paused) {
+          try {
+            await video.play();
+          } catch (err) {
+            console.error('[TryOn] Error playing video after photo cleared:', err);
+          }
+        }
+        
+        // Wait for video to be ready, then recreate MediaPipe Camera if needed
+        const checkAndRecreateCamera = () => {
+          if (!videoRef.current || !isCameraOpen) return;
+          
+          // Check if video is ready
+          if (video.readyState >= 2 && video.videoWidth > 0) {
+            // Always recreate MediaPipe Camera when photo is cleared
+            if (cameraRef.current) {
+              // Stop old camera
+              try {
+                cameraRef.current.stop();
+              } catch (err) {
+                // Ignore errors if already stopped
+              }
+              cameraRef.current = null;
+            }
+            
+            // Recreate MediaPipe Camera with the new video element
+            if (videoRef.current) {
+              const currentCategory = selectedCategoryRef.current;
+              const currentNeedsFaceMesh = currentCategory === "necklace" || currentCategory === "earrings";
+              const currentNeedsHands = currentCategory === "rings" || currentCategory === "bracelet";
+              
+              const camera = new Camera(videoRef.current, {
+                onFrame: async () => {
+                  const now = performance.now();
+                  const currentCategory = selectedCategoryRef.current;
+                  const currentNeedsFaceMesh = currentCategory === "necklace" || currentCategory === "earrings";
+                  const currentNeedsHands = currentCategory === "rings" || currentCategory === "bracelet";
 
-  // Ensure the visible video element gets the ref
+                  if (currentNeedsFaceMesh && faceMeshRef.current && videoRef.current) {
+                    if (now - lastFrameTime.current >= 33 && !isProcessing.current) {
+                      lastFrameTime.current = now;
+                      isProcessing.current = true;
+                      try {
+                        await faceMeshRef.current.send({ image: videoRef.current });
+                      } catch (err) {
+                        console.error('[TryOn] Error processing face mesh:', err);
+                      } finally {
+                        isProcessing.current = false;
+                      }
+                    }
+                  }
+
+                  if (currentNeedsHands && handsRef.current && videoRef.current) {
+                    if (now - lastHandFrameTime.current >= 33 && !isHandProcessing.current) {
+                      lastHandFrameTime.current = now;
+                      isHandProcessing.current = true;
+                      try {
+                        if (handsRef.current && videoRef.current.readyState >= 2) {
+                          await handsRef.current.send({ image: videoRef.current });
+                        }
+                      } catch (err) {
+                        console.error('[TryOn] Error processing hands:', err);
+                      } finally {
+                        isHandProcessing.current = false;
+                      }
+                    }
+                  }
+                },
+                width: 640,
+                height: 480,
+              });
+              camera.start();
+              cameraRef.current = camera;
+            }
+          } else {
+            setTimeout(checkAndRecreateCamera, 50);
+          }
+        };
+        
+        setTimeout(checkAndRecreateCamera, 100);
+      };
+      
+      playVideo();
+      
+      if (video.style.opacity === '0') {
+        video.style.opacity = '1';
+      }
+    }
+  }, [photo, isCameraOpen]);
+
   useEffect(() => {
-    // Check which video element is visible after render
     const checkVisibleVideo = () => {
       const allVideos = document.querySelectorAll('video');
       if (allVideos.length > 0) {
@@ -834,18 +996,26 @@ const TryOn = () => {
                            style.opacity !== '0';
           
           if (isVisible && video !== videoRef.current) {
-          
             const oldVideo = videoRef.current;
             videoRef.current = video;
-            setVideoReady(true); // Notify that video element is ready
+            setVideoReady(true); 
             
-            // If the old video had a stream, transfer it to the visible element
-            if (oldVideo && oldVideo.srcObject && !video.srcObject) {
-           
+            if (streamRef.current) {
+              if (!video.srcObject || video.srcObject !== streamRef.current) {
+                video.srcObject = streamRef.current;
+              }
+              
+              // Ensure video is playing
+              if (video.paused) {
+                video.play().catch(err => {
+                  console.error('[TryOn] Error playing visible video:', err);
+                });
+              }
+            } else if (oldVideo && oldVideo.srcObject && !video.srcObject) {
+              // Fallback: transfer stream from old video if streamRef is not available
               video.srcObject = oldVideo.srcObject;
-              // Try to play the video
               video.play().then(() => {
-             
+                // Video started
               }).catch(err => {
                 console.error('[TryOn] Error playing visible video:', err);
               });
@@ -856,23 +1026,48 @@ const TryOn = () => {
       }
     };
     
-    // Check after a short delay to ensure CSS has been applied
     const timer = setTimeout(checkVisibleVideo, 100);
     return () => clearTimeout(timer);
-  }, [isCameraOpen]);
+  }, [isCameraOpen, photo]); // Also trigger when photo changes
 
-  // Update selected jewelry image when category or product changes
+  // Handle URL parameter changes (e.g., when navigating from different products)
   useEffect(() => {
-    const currentProduct = products[selectedCategory][selectedProductIdx];
+    const urlCategory = searchParams.get("category");
+    const urlProduct = searchParams.get("product");
+    
+    if (urlCategory) {
+      const mappedCategory = mapCategoryToTryOn(urlCategory);
+      if (mappedCategory && categories.find(c => c.key === mappedCategory)) {
+        if (mappedCategory !== selectedCategory) {
+          setSelectedCategory(mappedCategory);
+        }
+        
+        if (urlProduct) {
+          const productIdx = findProductIndex(mappedCategory, urlProduct);
+          if (productIdx >= 0 && products[mappedCategory] && products[mappedCategory][productIdx]) {
+            if (productIdx !== selectedProductIdx || mappedCategory !== selectedCategory) {
+              setSelectedProductIdx(productIdx);
+              setSelectedJewelryImage(
+                generateImagePath(mappedCategory, products[mappedCategory][productIdx].name)
+              );
+            }
+            return;
+          }
+        }
+      }
+    }
+  }, [searchParams]); 
+
+  useEffect(() => {
+    const currentProduct = products[selectedCategory]?.[selectedProductIdx];
     if (currentProduct) {
-      setSelectedJewelryImage(currentProduct.image);
+      setSelectedJewelryImage(generateImagePath(selectedCategory, currentProduct.name));
     }
   }, [selectedCategory, selectedProductIdx]);
 
   const takePhoto = () => {
     if (videoRef.current && isCameraOpen) {
       const video = videoRef.current;
-      // Use the appropriate overlay canvas based on which one is available/visible
       const overlayCanvas = overlayCanvasRefDesktop.current || overlayCanvasRefMobile.current;
 
       if (video.videoWidth > 0 && video.videoHeight > 0) {
@@ -888,8 +1083,7 @@ const TryOn = () => {
         ctx.restore();
 
         // Draw jewelry overlay on top if it exists
-        // The overlay canvas content is not flipped (only displayed flipped via CSS),
-        // so we need to flip it when capturing to match the flipped video
+ 
         if (overlayCanvas && overlayCanvas.width > 0 && overlayCanvas.height > 0) {
           ctx.save();
           ctx.scale(-1, 1);
