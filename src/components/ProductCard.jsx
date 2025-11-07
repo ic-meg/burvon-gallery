@@ -12,6 +12,7 @@ import {
   AddBag,
   AddBagHover,
 } from "../assets/index.js";
+import { hasTryOnAvailable } from "../utils/tryOnUtils";
 
 export default function ProductCard({
   item,
@@ -138,23 +139,44 @@ export default function ProductCard({
           }`}
         >
           <div className="absolute top-2 left-2 right-2 flex justify-between items-center z-10">
-            <img
-              src={TryOnIcon}
-              alt="Try On"
-              className="w-4 h-4 cursor-pointer hover:opacity-80"
-              draggable={false}
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/tryon/${item.id}`);
-              }}
-            />
-            <img
-              src={isInWishlist(item.id) ? AddedFavorites : AddFavorite}
-              alt="Favorite"
-              className="w-4 h-4 cursor-pointer hover:opacity-80"
-              draggable={false}
+            {hasTryOnAvailable(item.category, item.name) && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const category = item.category || "";
+                  const productName = item.name || "";
+                  const params = new URLSearchParams();
+                  if (category) params.set("category", category);
+                  if (productName) params.set("product", productName);
+                  navigate(`/tryon?${params.toString()}`);
+                }}
+                className="w-4 h-4 p-0 bg-transparent border-0 cursor-pointer hover:opacity-80 flex items-center justify-center"
+                aria-label="Try on this product"
+                title="Try on this product"
+              >
+                <img
+                  src={TryOnIcon}
+                  alt="Try On"
+                  className="w-full h-full pointer-events-none"
+                  draggable={false}
+                />
+              </button>
+            )}
+            <button
+              type="button"
               onClick={handleWishlistToggle}
-            />
+              className="w-4 h-4 p-0 bg-transparent border-0 cursor-pointer hover:opacity-80 flex items-center justify-center"
+              aria-label={isInWishlist(item.id) ? "Remove from wishlist" : "Add to wishlist"}
+              title={isInWishlist(item.id) ? "Remove from wishlist" : "Add to wishlist"}
+            >
+              <img
+                src={isInWishlist(item.id) ? AddedFavorites : AddFavorite}
+                alt={isInWishlist(item.id) ? "Added to Favorites" : "Add to Favorites"}
+                className="w-full h-full pointer-events-none"
+                draggable={false}
+              />
+            </button>
           </div>
           <img
             src={item.images[0]}
@@ -224,23 +246,46 @@ export default function ProductCard({
     >
       {/* Try-on and Heart Icons */}
       <div className="w-full flex justify-between items-center px-6 pt-6 absolute top-0 left-0 z-10">
-        <img
-          src={TryOnIcon}
-          alt="Try On"
-          className="w-6 h-6 cursor-pointer hover:opacity-80"
-          draggable={false}
-          onClick={(e) => {
-            e.stopPropagation();
-            navigate(`/try-on/${item.id}`);
-          }}
-        />
-        <img
-          src={isInWishlist(item.id) ? AddedFavorites : AddFavorite}
-          alt="Favorite"
-          className="w-6 h-6 cursor-pointer hover:opacity-80"
-          draggable={false}
+        {hasTryOnAvailable(item.category, item.name) ? (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              const category = item.category || "";
+              const productName = item.name || "";
+              const params = new URLSearchParams();
+              if (category) params.set("category", category);
+              if (productName) params.set("product", productName);
+              navigate(`/tryon?${params.toString()}`);
+            }}
+            className="w-6 h-6 p-0 bg-transparent border-0 cursor-pointer hover:opacity-80 flex items-center justify-center"
+            aria-label="Try on this product"
+            title="Try on this product"
+          >
+            <img
+              src={TryOnIcon}
+              alt="Try On"
+              className="w-full h-full pointer-events-none"
+              draggable={false}
+            />
+          </button>
+        ) : (
+          <div className="w-6 h-6" /> // Spacer to maintain layout
+        )}
+        <button
+          type="button"
           onClick={handleWishlistToggle}
-        />
+          className="w-6 h-6 p-0 bg-transparent border-0 cursor-pointer hover:opacity-80 flex items-center justify-center"
+          aria-label={isInWishlist(item.id) ? "Remove from wishlist" : "Add to wishlist"}
+          title={isInWishlist(item.id) ? "Remove from wishlist" : "Add to wishlist"}
+        >
+          <img
+            src={isInWishlist(item.id) ? AddedFavorites : AddFavorite}
+            alt={isInWishlist(item.id) ? "Added to Favorites" : "Add to Favorites"}
+            className="w-full h-full pointer-events-none"
+            draggable={false}
+          />
+        </button>
       </div>
       {/* product image */}
       <div
