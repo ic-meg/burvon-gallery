@@ -1,50 +1,17 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Layout from '../../../components/Layout'
 import { 
-  Friden, 
-  Odyssey, 
   editIcon, 
   DropDown,
   AddImageCream, 
   AddVideoCream 
 } from '../../../assets/index.js'
-
-const ordersByTab = {
-  'TO SHIP': [],
-  'TO RECEIVED': [],
-  'DELIVERED': [
-    {
-      id: '38940123',
-      items: [
-        {
-          name: 'Clash Collection Necklaces',
-          variant: 'ODYSSEY',
-          price: 580,
-          oldPrice: 590,
-          quantity: 1,
-          size: 'N/A',
-          image: Odyssey,
-        },
-        {
-          name: 'Clash Collection Necklaces',
-          variant: 'FRIDEN',
-          price: 580,
-          oldPrice: 590,
-          quantity: 1,
-          size: 'N/A',
-          image: Friden,
-        },
-      ],
-      date: 'Sep 26',
-      delivery: 'Sep 27',
-      totalQty: 3,
-      subtotal: 1770,
-    },
-  ],
-  'RETURN/REFUND': [],
-  'CANCELLED': [],
-}
+import { logout, getUser, getAuthToken } from '../../../services/authService'
+import userApi from '../../../api/userApi'
+import orderApi from '../../../api/orderApi'
+import Toast from '../../../components/Toast'
+import { groupOrdersByTab } from './profileUtils'
 
 const tabs = [
   'TO SHIP',
@@ -63,58 +30,106 @@ const tabRoutes = {
 }
 
 // edit profile modal
-const EditProfileModal = ({ open, onClose }) => {
+const EditProfileModal = ({ open, onClose, userData, onUpdate }) => {
   const [name, setName] = useState('')
-  const [email, setEmail] = useState('gilcalais@gmail.com')
+  const [email, setEmail] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' })
+
+  useEffect(() => {
+    if (open && userData) {
+      setName(userData.name || '')
+      setEmail(userData.email || '')
+    }
+  }, [open, userData])
+
+  const handleSave = async () => {
+    if (!userData?.user_id) return
+
+    setLoading(true)
+    try {
+      const result = await userApi.updateUserProfile(userData.user_id, {
+        name: name.trim(),
+        email: email.trim(),
+      })
+
+      if (result.error) {
+        setToast({ show: true, message: result.error || 'Failed to update profile', type: 'error' })
+      } else {
+        setToast({ show: true, message: 'Profile updated successfully!', type: 'success' })
+        if (onUpdate) {
+          onUpdate({ ...userData, name: name.trim(), email: email.trim() })
+        }
+        setTimeout(() => {
+          onClose()
+        }, 1000)
+      }
+    } catch (error) {
+      setToast({ show: true, message: 'An error occurred. Please try again.', type: 'error' })
+    } finally {
+      setLoading(false)
+    }
+  }
 
   if (!open) return null
 
   return (
-    <div
-      className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50"
-      onClick={onClose}
-    >
+    <>
       <div
-        className="bg-[#181818] rounded-2xl p-8 min-w-[320px] max-w-[90vw] flex flex-col gap-6"
-        style={{ boxShadow: '0 0 32px #000' }}
-        onClick={e => e.stopPropagation()}
+        className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50"
+        onClick={onClose}
       >
-        <div className="bebas cream-text text-2xl mb-2">MY PROFILE</div>
-        <div>
-          <label className="bebas cream-text text-md mb-1 block">NAME:</label>
-          <input
-            type="text"
-            className="w-full px-4 py-3 rounded-lg bg-transparent border-1 border-[#FFF7DC] avant cream-text text-md mb-4"
-            placeholder="Enter your name"
-            value={name}
-            onChange={e => setName(e.target.value)}
-          />
-        </div>
-        <div>
-          <label className="bebas cream-text text-md mb-1 block">EMAIL:</label>
-          <input
-            type="email"
-            className="w-full px-4 py-3 rounded-lg bg-transparent border-1 border-[#FFF7DC] avant cream-text text-md mb-4"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-          />
-        </div>
-        <div className="flex justify-end gap-2 mt-1">
-          <button
-            className="avantbold px-5 py-2 rounded-lg text-md border-1 border-[#FFF7DC] cream-text bg-transparent cursor-pointer"
-            onClick={onClose}
-          >
-            CANCEL
-          </button>
-          <button
-            className="avantbold cream-bg metallic-text px-8 py-2 rounded-lg text-md cursor-pointer"
-            onClick={onClose}
-          >
-            SAVE
-          </button>
+        <div
+          className="bg-[#181818] rounded-2xl p-8 min-w-[320px] max-w-[90vw] flex flex-col gap-6"
+          style={{ boxShadow: '0 0 32px #000' }}
+          onClick={e => e.stopPropagation()}
+        >
+          <div className="bebas cream-text text-2xl mb-2">MY PROFILE</div>
+          <div>
+            <label className="bebas cream-text text-md mb-1 block">NAME:</label>
+            <input
+              type="text"
+              className="w-full px-4 py-3 rounded-lg bg-transparent border-1 border-[#FFF7DC] avant cream-text text-md mb-4"
+              placeholder="Enter your name"
+              value={name}
+              onChange={e => setName(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="bebas cream-text text-md mb-1 block">EMAIL:</label>
+            <input
+              type="email"
+              className="w-full px-4 py-3 rounded-lg bg-transparent border-1 border-[#FFF7DC] avant cream-text text-md mb-4"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+            />
+          </div>
+          <div className="flex justify-end gap-2 mt-1">
+            <button
+              className="avantbold px-5 py-2 rounded-lg text-md border-1 border-[#FFF7DC] cream-text bg-transparent cursor-pointer"
+              onClick={onClose}
+              disabled={loading}
+            >
+              CANCEL
+            </button>
+            <button
+              className="avantbold cream-bg metallic-text px-8 py-2 rounded-lg text-md cursor-pointer disabled:opacity-50"
+              onClick={handleSave}
+              disabled={loading}
+            >
+              {loading ? 'SAVING...' : 'SAVE'}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+      <Toast
+        show={toast.show}
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast({ ...toast, show: false })}
+        duration={3000}
+      />
+    </>
   )
 }
 
@@ -306,11 +321,15 @@ const RateProductModalMobile = ({ open, onClose, products }) => {
 }
 
 // Desktop Layout
-const ProfileDesktop = ({ openModal, onEditProfile, openRateModal }) => {
-  const [activeTab, setActiveTab] = useState('DELIVERED') 
+const ProfileDesktop = ({ openModal, onEditProfile, openRateModal, userData, ordersByTab, activeTab, setActiveTab }) => {
   const orders = ordersByTab[activeTab] || []
   const selectedOrder = orders[0]
-  const navigate = useNavigate(); 
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  }
 
   return (
     <div className="hidden md:block min-h-screen bg-[#181818] px-0 py-34 text-[#fff7dc]">
@@ -320,10 +339,15 @@ const ProfileDesktop = ({ openModal, onEditProfile, openRateModal }) => {
         <div className="bebas cream-text text-2xl tracking-wide">
           SHOPPING HISTORY / <span className="font-bold">{activeTab}</span>
         </div>
-        <button className="avant cream-text text-md flex items-center gap-1 cursor-pointer" onClick={onEditProfile}>
-          <span>Edit Profile</span>
-          <img src={editIcon} alt="Edit" className="w-5 h-5" /> {/* edit icon image */}
-        </button>
+        <div className="flex gap-4">
+          <button className="avant cream-text text-md flex items-center gap-1 cursor-pointer" onClick={onEditProfile}>
+            <span>Edit Profile</span>
+            <img src={editIcon} alt="Edit" className="w-5 h-5" />
+          </button>
+          <button className="avant cream-text text-md cursor-pointer hover:opacity-80" onClick={handleLogout}>
+            Logout
+          </button>
+        </div>
       </div>
       {/* Cream horizontal line */}
       <div className="w-full px-12">
@@ -384,18 +408,23 @@ const ProfileDesktop = ({ openModal, onEditProfile, openRateModal }) => {
                       alt={item.variant}
                       className="w-25 h-25 object-cover rounded-md cursor-pointer"
                       onClick={() => openModal(item.image)}
+                      onError={(e) => {
+                        e.target.src = 'https://via.placeholder.com/200'
+                      }}
                     />
                     <div>
                       <div className="avantbold cream-text text-lg text-nowrap">{item.name}</div> {/* product name */}
                       <div className="bebas cream-text text-lg">{item.variant}</div> {/* product type "odyssey" */}
                       <div className="flex gap-2 items-center mt-1">
-                        <span
-                          className="avant text-md line-through"
-                          style={{ color: '#959595' }}
-                        >
-                          ₱ {item.oldPrice}.00
-                        </span> {/* nakacrossed out na price */}
-                        <span className="avantbold cream-text text-lg">₱ {item.price}.00</span> {/* price */}
+                        {item.oldPrice && (
+                          <span
+                            className="avant text-md line-through"
+                            style={{ color: '#959595' }}
+                          >
+                            ₱ {item.oldPrice.toFixed(2)}
+                          </span>
+                        )}
+                        <span className="avantbold cream-text text-lg">₱ {item.price.toFixed(2)}</span>
                       </div>
                       <div className="avantbold cream-text text-md mt-1" style={{ color: '#959595' }}>QUANTITY: {item.quantity} &nbsp; SIZE: {item.size}
                       
@@ -444,7 +473,12 @@ const ProfileDesktop = ({ openModal, onEditProfile, openRateModal }) => {
               ))}
             </>
           ) : (
-            <div className="avant cream-text text-lg mt-12">No orders in this category.</div>
+            <div className="avant cream-text text-lg mt-12 text-center">
+              <p className="mb-2">No orders in this category.</p>
+              <p className="text-sm" style={{ color: '#959595' }}>
+                Your completed orders will appear here.
+              </p>
+            </div>
           )}
         </div>
       </div>
@@ -453,12 +487,11 @@ const ProfileDesktop = ({ openModal, onEditProfile, openRateModal }) => {
 }
 
 // Mobile Layout 
-const ProfileMobile = ({ openModal, onEditProfile, openRateModal }) => {
+const ProfileMobile = ({ openModal, onEditProfile, openRateModal, userData, ordersByTab, activeTab, setActiveTab }) => {
   const [showSubtotal, setShowSubtotal] = useState(false)
-  const [activeTab, setActiveTab] = useState('DELIVERED') 
   const orders = ordersByTab[activeTab] || []
   const selectedOrder = orders[0]
-  const navigate = useNavigate() 
+  const navigate = useNavigate()
 
   return (
     <div className="md:hidden w-full min-h-screen px-4 pt-2 text-[#fff7dc] relative">
@@ -466,7 +499,7 @@ const ProfileMobile = ({ openModal, onEditProfile, openRateModal }) => {
         HI, REBELS!
         <button className="avant text-xs cream-text ml-2 align-middle" onClick={onEditProfile}>
           <span>Edit Profile</span>
-          <img src={editIcon} alt="Edit" className="w-4 h-4 inline-block ml-1" /> {/* edit icon image */}
+          <img src={editIcon} alt="Edit" className="w-4 h-4 inline-block ml-1" />
         </button>
       </div>
       <div className="bebas cream-text text-center text-2xl mt-9 mb-4">SHOPPING HISTORY</div>
@@ -498,56 +531,75 @@ const ProfileMobile = ({ openModal, onEditProfile, openRateModal }) => {
       </div>
       {/* Order Section */}
       <div className="mt-4">
-        <div className="flex justify-between items-center mb-2">
-          <span className="avantbold cream-text text-xs">ORDER ID : #38940123</span>
-          <span className="avantbold cream-text text-xs">EXPECTED DELIVERY: Sep 27</span>
-        </div>
-        <div className="flex gap-4 items-start rounded-lg p-2">
-          <img
-            src={Odyssey}
-            alt="Odyssey"
-            className="w-32 h-32 object-cover rounded-md cursor-pointer"
-            onClick={() => openModal(Odyssey)}
-          />
-          <div className="flex-1">
-            <div className="avantbold cream-text text-sm text-nowrap leading-tight">Clash Collection Necklaces<br /><span className="text-xs">(Elegant Pendant Jewelry)</span></div>
-            <div className="bebas cream-text text-sm mt-1">ODYSSEY</div>
-            <div className="flex gap-6 mt-1">
-              <span className="avantbold text-sm" style={{ color: '#959595' }}>QUANTITY: 1</span>
-              <span className="avantbold text-sm" style={{ color: '#959595' }}>SIZE: N/A</span>
+        {selectedOrder ? (
+          <>
+            <div className="flex justify-between items-center mb-2">
+              <span className="avantbold cream-text text-xs">ORDER ID : #{selectedOrder.id}</span>
+              <span className="avantbold cream-text text-xs">EXPECTED DELIVERY: {selectedOrder.delivery}</span>
             </div>
-            <div className="flex gap-2 justify-end mt-2">
-              <span className="avant text-sm line-through" style={{ color: '#959595' }}>₱ 590.00</span>
-              <span className="avantbold cream-text text-sm">₱ 580.00</span>
-            </div>
-            {/* View More button */}
-            <button
-              className="avantbold cream-text text-sm mt-2 flex items-center gap-2 focus:outline-none"
-              onClick={() => setShowSubtotal((prev) => !prev)}
-              style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
-            >
-              View More <img src={DropDown} alt="Dropdown" className={`w-3 h-3 inline-block transition-transform ${showSubtotal ? 'rotate-180' : ''}`} />
-            </button>
-            {/* Subtotal */}
-            {showSubtotal && (
-              <div className="flex justify-end mt-2">
-                <span className="avantbold cream-text text-md" style={{ color: '#959595' }}>Subtotal:</span>
-                <span className="avantbold cream-text text-md ml-2">₱ 1,580.00</span>
+            <div className="flex gap-4 items-start rounded-lg p-2">
+              <img
+                src={selectedOrder.items[0]?.image}
+                alt={selectedOrder.items[0]?.variant}
+                className="w-32 h-32 object-cover rounded-md cursor-pointer"
+                onClick={() => openModal(selectedOrder.items[0]?.image)}
+                onError={(e) => {
+                  e.target.src = 'https://via.placeholder.com/200'
+                }}
+              />
+              <div className="flex-1">
+                <div className="avantbold cream-text text-sm text-nowrap leading-tight">
+                  {selectedOrder.items[0]?.name}
+                </div>
+                <div className="bebas cream-text text-sm mt-1">{selectedOrder.items[0]?.variant}</div>
+                <div className="flex gap-6 mt-1">
+                  <span className="avantbold text-sm" style={{ color: '#959595' }}>QUANTITY: {selectedOrder.items[0]?.quantity}</span>
+                  <span className="avantbold text-sm" style={{ color: '#959595' }}>SIZE: {selectedOrder.items[0]?.size}</span>
+                </div>
+                <div className="flex gap-2 justify-end mt-2">
+                  {selectedOrder.items[0]?.oldPrice && (
+                    <span className="avant text-sm line-through" style={{ color: '#959595' }}>₱ {selectedOrder.items[0].oldPrice.toFixed(2)}</span>
+                  )}
+                  <span className="avantbold cream-text text-sm">₱ {selectedOrder.items[0]?.price.toFixed(2)}</span>
+                </div>
+                {/* View More button */}
+                <button
+                  className="avantbold cream-text text-sm mt-2 flex items-center gap-2 focus:outline-none"
+                  onClick={() => setShowSubtotal((prev) => !prev)}
+                  style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                >
+                  View More <img src={DropDown} alt="Dropdown" className={`w-3 h-3 inline-block transition-transform ${showSubtotal ? 'rotate-180' : ''}`} />
+                </button>
+                {/* Subtotal */}
+                {showSubtotal && (
+                  <div className="flex justify-end mt-2">
+                    <span className="avantbold cream-text text-md" style={{ color: '#959595' }}>Subtotal:</span>
+                    <span className="avantbold cream-text text-md ml-2">₱ {selectedOrder.subtotal.toLocaleString(undefined, {minimumFractionDigits:2})}</span>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
+            <div className="flex justify-end gap-2 mt-6 mb-2">
+              <button 
+                className="avantbold rounded border border-[#FFF7DC] cream-text px-4 py-3 text-sm"
+                onClick={() => navigate(`/profile/requestreturn?orderId=${selectedOrder.id}`)}
+              >
+                RETURN/REFUND
+              </button>
+              <button className="avantbold cream-bg metallic-text px-4 py-0 rounded border border-[#FFF7DC] text-sm" onClick={openRateModal}>
+                RATE
+              </button>
+            </div>
+            <div className="w-full h-[1px] bg-[#FFF7DC] mt-4" />
+          </>
+        ) : (
+          <div className="avant cream-text text-lg mt-12 text-center">
+            <p className="mb-2">No orders in this category.</p>
+            <p className="text-sm" style={{ color: '#959595' }}>
+              Your completed orders will appear here.
+            </p>
           </div>
-        </div>
-        <div className="flex justify-end gap-2 mt-6 mb-2">
-          <button className="avantbold rounded border border-[#FFF7DC] cream-text px-4 py-3 text-sm"
-          onClick={() => navigate('/profile/requestreturn')}
-          >
-            RETURN/REFUND
-            </button>
-          <button className="avantbold cream-bg metallic-text px-4 py-0 rounded border border-[#FFF7DC] text-sm" onClick={openRateModal}>
-            RATE
-          </button>
-        </div>
-        <div className="w-full h-[1px] bg-[#FFF7DC] mt-4" />
+        )}
       </div>
     </div>
   )
@@ -558,6 +610,67 @@ const Delivered = () => {
   const [modalImg, setModalImg] = useState(null)
   const [editProfileOpen, setEditProfileOpen] = useState(false)
   const [rateModalOpen, setRateModalOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState('DELIVERED')
+  const [userData, setUserData] = useState(null)
+  const [ordersByTab, setOrdersByTab] = useState({
+    'TO SHIP': [],
+    'TO RECEIVED': [],
+    'DELIVERED': [],
+    'RETURN/REFUND': [],
+    'CANCELLED': [],
+  })
+  const [loading, setLoading] = useState(true)
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const token = getAuthToken()
+      if (!token) {
+        navigate('/login')
+        return
+      }
+
+      const currentUser = getUser()
+      if (!currentUser || !currentUser.user_id) {
+        navigate('/login')
+        return
+      }
+
+      setLoading(true)
+      try {
+        // Fetch user profile
+        const userResult = await userApi.fetchUserProfile(currentUser.user_id)
+        if (userResult.error) {
+          console.error('Error fetching user profile:', userResult.error)
+          setUserData(currentUser)
+        } else {
+          const user = userResult.data || currentUser
+          // Map full_name to name for consistency
+          if (user && user.full_name && !user.name) {
+            user.name = user.full_name
+          }
+          setUserData(user)
+        }
+
+        // Fetch user orders
+        const ordersResult = await orderApi.fetchOrdersByUserId(currentUser.user_id)
+        if (ordersResult.error) {
+          console.error('Error fetching orders:', ordersResult.error)
+        } else if (ordersResult.data && ordersResult.data.success) {
+          const orders = ordersResult.data.data || []
+          setOrdersByTab(groupOrdersByTab(orders))
+        } else {
+          console.error('Unexpected orders response format:', ordersResult.data)
+        }
+      } catch (error) {
+        console.error('Error fetching profile data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [navigate])
 
   const openModal = (img) => {
     setModalImg(img)
@@ -572,10 +685,44 @@ const Delivered = () => {
   const openRateModal = () => setRateModalOpen(true)
   const closeRateModal = () => setRateModalOpen(false)
 
+  const handleUserUpdate = (updatedUser) => {
+    setUserData(updatedUser)
+    localStorage.setItem('user', JSON.stringify(updatedUser))
+  }
+
+  if (loading) {
+    return (
+      <Layout full>
+        <div className="min-h-screen bg-[#181818] flex items-center justify-center">
+          <div className="text-[#FFF7DC] text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FFF7DC] mx-auto mb-4"></div>
+            <p className="avant text-lg">Loading profile...</p>
+          </div>
+        </div>
+      </Layout>
+    )
+  }
+
   return (
     <Layout full>
-      <ProfileDesktop openModal={openModal} onEditProfile={openEditProfile} openRateModal={openRateModal} />
-      <ProfileMobile openModal={openModal} onEditProfile={openEditProfile} openRateModal={openRateModal} />
+      <ProfileDesktop 
+        openModal={openModal} 
+        onEditProfile={openEditProfile} 
+        openRateModal={openRateModal}
+        userData={userData}
+        ordersByTab={ordersByTab}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+      />
+      <ProfileMobile 
+        openModal={openModal} 
+        onEditProfile={openEditProfile} 
+        openRateModal={openRateModal}
+        userData={userData}
+        ordersByTab={ordersByTab}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+      />
       {modalOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50"
@@ -589,7 +736,12 @@ const Delivered = () => {
           />
         </div>
       )}
-      <EditProfileModal open={editProfileOpen} onClose={closeEditProfile} />
+      <EditProfileModal 
+        open={editProfileOpen} 
+        onClose={closeEditProfile}
+        userData={userData}
+        onUpdate={handleUserUpdate}
+      />
       {rateModalOpen && (
         <>
           {/* Desktop only */}
