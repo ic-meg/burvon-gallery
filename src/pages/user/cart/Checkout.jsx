@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../../../components/Layout';
 import { useCart } from '../../../contexts/CartContext';
@@ -6,6 +6,7 @@ import AddressDropdowns from '../../../components/AddressDropdowns';
 import { philippineLocations } from '../../../data/philippineLocations';
 import { createCheckoutSession } from '../../../services/paymongoService'; // Remove after testing
 import Toast from '../../../components/Toast';
+import { getUser } from '../../../services/authService';
 import { 
     visa, 
     mastercard, 
@@ -464,6 +465,17 @@ const Checkout = () => {
     type: 'error'
   });
 
+  // Pre-fill email if user is logged in
+  useEffect(() => {
+    const currentUser = getUser();
+    if (currentUser && currentUser.email) {
+      setFormData(prev => ({
+        ...prev,
+        email: currentUser.email
+      }));
+    }
+  }, []);
+
   const showToast = (message, type = 'error') => {
     setToast({
       show: true,
@@ -639,6 +651,10 @@ const Checkout = () => {
     
     if (validateForm()) {
       try {
+        // Get current user if logged in
+        const currentUser = getUser();
+        const userId = currentUser?.user_id || null;
+
         // Prepare data for PayMongo checkout session
         const paymongoData = {
           email: formData.email,
@@ -654,7 +670,8 @@ const Checkout = () => {
           shipping_method: 'Standard',
           // payment_method will be detected from PayMongo after payment hopefully as of now not working...
           total_price: total,
-          shipping_cost: 80, 
+          shipping_cost: 80,
+          ...(userId && { user_id: userId }), // Include user_id if user is logged in
           items: selectedProducts.map(product => {
             const item = {
               product_id: product.product_id,
