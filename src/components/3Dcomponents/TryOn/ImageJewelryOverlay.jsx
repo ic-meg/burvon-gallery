@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useFaceLandmarks } from "../../../contexts/FaceLandmarksContext";
 import { useHandLandmarks } from "../../../contexts/HandLandmarksContext";
-import { useControls } from "leva";
+// import { useControls } from "leva";
 
 export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, useImageOverlay, jewelryType, selectedJewelryImage, videoReady }) => {
   const internalCanvasRef = useRef(null);
@@ -30,6 +30,10 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
   //   ringSizeMultiplier,
   //   ringYOffset,
   //   ringZOffset,
+  //   ringRotationOffset,
+  //   ringAutoRotate,
+  //   ringBandWidth,
+  //   ringPerspectiveHeight,
   //   braceletWidthMultiplier,
   //   braceletHeightRatio,
   //   braceletYOffset,
@@ -79,9 +83,13 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
   //   necklaceWidthMultiplier: { value: 1.3, min: 1.0, max: 3.0, step: 0.1, label: "Necklace Width Multiplier" },
   //   necklaceHeightRatio: { value: 0.80, min: 0.3, max: 0.8, step: 0.05, label: "Necklace Height Ratio" },
   //   necklaceYOffset: { value: 40, min: 0, max: 100, step: 5, label: "Necklace Y Offset (px)" },
-  //   ringSizeMultiplier: { value: 1.2, min: 0.8, max: 2.0, step: 0.1, label: "Ring Size Multiplier" },
-  //   ringYOffset: { value: -13, min: -50, max: 50, step: 1, label: "Ring Y Offset (px)" },
-  //   ringZOffset: { value: 0, min: -200, max: 200, step: 1, label: "Ring Z Offset (depth adjustment)" },
+  //   ringSizeMultiplier: { value: 2, min: 0.8, max: 2.0, step: 0.1, label: "Ring Size Multiplier" },
+  //   ringYOffset: { value: -4, min: -50, max: 50, step: 1, label: "Ring Y Offset (px)" },
+  //   ringZOffset: { value: -3, min: -200, max: 200, step: 1, label: "Ring Z Offset (depth adjustment)" },
+  //   ringRotationOffset: { value: 0, min: -180, max: 180, step: 1, label: "Ring Rotation Offset (degrees)" },
+  //   ringAutoRotate: { value: true, label: "Ring Auto-Rotate with Hand" },
+  //   ringBandWidth: { value: 0.55, min: 0.1, max: 1.0, step: 0.05, label: "Ring Band Width (thickness)" },
+  //   ringPerspectiveHeight: { value: 0.80, min: 0.1, max: 0.8, step: 0.05, label: "Ring Perspective Height" },
   //   braceletWidthMultiplier: { value: 1.0, min: 1.0, max: 2.0, step: 0.1, label: "Bracelet Width Multiplier" },
   //   braceletHeightRatio: { value: 0.50, min: 0.2, max: 0.5, step: 0.05, label: "Bracelet Height Ratio" },
   //   braceletYOffset: { value: 1, min: -100, max: 100, step: 1, label: "Bracelet Y Offset (px)" },
@@ -105,15 +113,19 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
   // Instead of using levaNecklaceImage, use direct values:
 const necklaceImage = jewelryType === "necklace" && selectedJewelryImage ? selectedJewelryImage : "/image/Necklace/Silver-Necklace.png";
 const braceletImage = jewelryType === "bracelet" && selectedJewelryImage ? selectedJewelryImage : "/image/Bracelets/SoleilImage.png";
-const ringImage = jewelryType === "ring" && selectedJewelryImage ? selectedJewelryImage : "/image/Rings/ring_PNG106.png";
+const ringImage = jewelryType === "ring" && selectedJewelryImage ? selectedJewelryImage : "/image/Rings/TianaImage.png";
 const earringImage = jewelryType === "earrings" && selectedJewelryImage ? selectedJewelryImage : "/image/Earrings/EspoirImage.png";
 
 const necklaceWidthMultiplier = 1.3;
 const necklaceHeightRatio = 0.80;
-const necklaceYOffset = 40;
-const ringSizeMultiplier = 1.2;
-const ringYOffset = -13;
-const ringZOffset = 0;
+const necklaceYOffset = 62;
+const ringSizeMultiplier = 2.0;
+const ringYOffset = -4;
+const ringZOffset = -3;
+const ringRotationOffset = 0;
+const ringAutoRotate = true;
+const ringBandWidth = 0.55;
+const ringPerspectiveHeight = 0.80;
 const braceletWidthMultiplier = 1.0; // Reduced from 1.6 to match wrist size better
 const braceletHeightRatio = 0.50;
 const braceletYOffset = 1; // Y offset for bracelet position (positive = down, negative = up)
@@ -124,12 +136,16 @@ const earringLeftOffsetX = -4;
 const earringLeftOffsetY = 7;
 const earringRightOffsetX = 4;
 const earringRightOffsetY = 8;
-const earringLeftMaxZDepth = 0.08;
-const earringRightMaxZDepth = 0.08;
+// Increased z-depth thresholds for better mobile detection
+// Mobile cameras often have less accurate z-depth, so we use a more lenient threshold
+const earringLeftMaxZDepth = 0.15; // Increased from 0.08 for better mobile support
+const earringRightMaxZDepth = 0.15; // Increased from 0.08 for better mobile support
 
   // Load images into cache
   useEffect(() => {
     const loadImage = (src) => {
+      if (!src) return Promise.resolve(null);
+      
       if (imageCacheRef.current[src]) {
         return Promise.resolve(imageCacheRef.current[src]);
       }
@@ -141,17 +157,24 @@ const earringRightMaxZDepth = 0.08;
           imageCacheRef.current[src] = img;
           resolve(img);
         };
-        img.onerror = reject;
+        img.onerror = (err) => {
+          console.error(`[ImageJewelryOverlay] Failed to load image: ${src}`, err);
+          reject(err);
+        };
         img.src = src;
       });
     };
 
-    // Preload all images
+    // Preload all images, including selectedJewelryImage if it's different
     const imagesToLoad = [necklaceImage, braceletImage, ringImage, earringImage];
+    if (selectedJewelryImage && !imagesToLoad.includes(selectedJewelryImage)) {
+      imagesToLoad.push(selectedJewelryImage);
+    }
+    
     imagesToLoad.forEach((src) => {
       if (src) {
         loadImage(src).catch((err) => {
-          console.warn(`Failed to load image: ${src}`, err);
+          console.warn(`[ImageJewelryOverlay] Failed to load image: ${src}`, err);
         });
       }
     });
@@ -160,7 +183,6 @@ const earringRightMaxZDepth = 0.08;
   // Draw jewelry on canvas
   useEffect(() => {
     if (!useImageOverlay || !canvasRef.current || !videoRef?.current || !videoReady) {
-
       return;
     }
 
@@ -169,11 +191,14 @@ const earringRightMaxZDepth = 0.08;
     const video = videoRef.current;
 
     let animationFrameId = null;
+    let isActive = true; // Flag to prevent drawing after cleanup
 
     const updateCanvasSize = () => {
-      if (video.videoWidth && video.videoHeight) {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
+      if (video && video.videoWidth && video.videoHeight) {
+        if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+        }
       }
     };
 
@@ -182,7 +207,9 @@ const earringRightMaxZDepth = 0.08;
 
     // Update size when video metadata loads
     const handleLoadedMetadata = () => {
-      updateCanvasSize();
+      if (isActive) {
+        updateCanvasSize();
+      }
     };
     video.addEventListener("loadedmetadata", handleLoadedMetadata);
 
@@ -205,9 +232,14 @@ const earringRightMaxZDepth = 0.08;
         return;
       }
 
-      const image = imageCacheRef.current[necklaceImage];
+      // Get the current image path (may have changed)
+      const currentNecklaceImage = jewelryType === "necklace" && selectedJewelryImage ? selectedJewelryImage : necklaceImage;
+      const image = imageCacheRef.current[currentNecklaceImage];
       if (!image || !image.complete) {
         // Image not loaded yet, wait for it
+        if (Math.random() < 0.01) {
+          console.warn('[ImageJewelryOverlay] Necklace image not loaded:', currentNecklaceImage, 'Cache keys:', Object.keys(imageCacheRef.current));
+        }
         return;
       }
 
@@ -254,9 +286,14 @@ const earringRightMaxZDepth = 0.08;
         z: middleFingerMCP.z + (middleFingerPIP.z - middleFingerMCP.z) * interpolationFactor,
       };
 
-      const image = imageCacheRef.current[ringImage];
+      // Get the current image path (may have changed)
+      const currentRingImage = jewelryType === "ring" && selectedJewelryImage ? selectedJewelryImage : ringImage;
+      const image = imageCacheRef.current[currentRingImage];
       if (!image || !image.complete) {
         // Image not loaded yet, wait for it
+        if (Math.random() < 0.01) {
+          console.warn('[ImageJewelryOverlay] Ring image not loaded:', currentRingImage, 'Cache keys:', Object.keys(imageCacheRef.current));
+        }
         return;
       }
 
@@ -279,23 +316,82 @@ const earringRightMaxZDepth = 0.08;
 
       // Get Z coordinate for depth adjustment
       const ringZ = ringLandmark.z || 0; // Z coordinate for depth (0 if not available)
-      
+
       // Apply Y and Z offsets
       // Z offset affects Y position based on depth (simulating perspective)
       // Positive Z = closer to camera, negative Z = farther away
       const zAdjustedY = ringZ * ringZOffset;
-      
+
       const x = ringLandmark.x * canvas.width;
       const y = ringLandmark.y * canvas.height + ringYOffset + zAdjustedY;
 
-      // Draw ring
+      // Calculate rotation angle based on hand orientation
+      let rotationAngle = 0;
+      if (ringAutoRotate) {
+        // Calculate angle from MCP to PIP (finger direction)
+        const angle = Math.atan2(pipY - mcpY, pipX - mcpX);
+        // Convert to degrees and adjust to align ring with finger
+        rotationAngle = angle + Math.PI / 2; // Add 90 degrees to align ring perpendicular to finger
+      }
+
+      // Add manual rotation offset
+      const rotationOffsetRad = (ringRotationOffset * Math.PI) / 180;
+      rotationAngle += rotationOffsetRad;
+
+      // Save canvas state
+      ctx.save();
+
+      // Translate to ring position and rotate
+      ctx.translate(x, y);
+      ctx.rotate(rotationAngle);
+
+      // Draw ring with proper wrapping effect
+      // Use elliptical shape to simulate 3D perspective
+      const ringWidth = ringSize * ringBandWidth;
+      const ringHeight = ringSize * ringPerspectiveHeight;
+
+      // --- Draw BACK half of ring (behind the finger) ---
+      ctx.save();
+      ctx.globalAlpha = 0.65; // Darker for depth
+
+      // Clip to bottom half only
+      ctx.beginPath();
+      ctx.rect(-ringWidth, 0, ringWidth * 2, ringHeight);
+      ctx.clip();
+
+      // Draw ring image compressed vertically for perspective
       ctx.drawImage(
         image,
-        x - ringSize / 2,
-        y - ringSize / 2,
-        ringSize,
-        ringSize
+        -ringWidth,
+        -ringHeight / 2,
+        ringWidth * 2,
+        ringHeight
       );
+
+      ctx.restore();
+
+      // --- Draw FRONT half of ring (in front of the finger) ---
+      ctx.save();
+      ctx.globalAlpha = 1.0; // Full brightness for front
+
+      // Clip to top half only
+      ctx.beginPath();
+      ctx.rect(-ringWidth, -ringHeight, ringWidth * 2, ringHeight);
+      ctx.clip();
+
+      // Draw ring image compressed vertically for perspective
+      ctx.drawImage(
+        image,
+        -ringWidth,
+        -ringHeight / 2,
+        ringWidth * 2,
+        ringHeight
+      );
+
+      ctx.restore();
+
+      // Restore canvas state
+      ctx.restore();
     };
 
     const drawBracelet = (ctx, canvas) => {
@@ -318,9 +414,14 @@ const earringRightMaxZDepth = 0.08;
         return;
       }
 
-      const image = imageCacheRef.current[braceletImage];
+      // Get the current image path (may have changed)
+      const currentBraceletImage = jewelryType === "bracelet" && selectedJewelryImage ? selectedJewelryImage : braceletImage;
+      const image = imageCacheRef.current[currentBraceletImage];
       if (!image || !image.complete) {
         // Image not loaded yet, wait for it
+        if (Math.random() < 0.01) {
+          console.warn('[ImageJewelryOverlay] Bracelet image not loaded:', currentBraceletImage, 'Cache keys:', Object.keys(imageCacheRef.current));
+        }
         return;
       }
 
@@ -380,18 +481,31 @@ const earringRightMaxZDepth = 0.08;
       }
 
       // EARRING LANDMARKS (from EarringModel.jsx):
-      // 132: Left ear (user's left)
-      // 361: Right ear (user's right)
+      // 132: Left ear (user's left) - primary
+      // 361: Right ear (user's right) - primary
+      // Fallback landmarks for better mobile detection:
+      // 234: Left cheek (can help estimate left ear position)
+      // 454: Right cheek (can help estimate right ear position)
+      // 10: Left temple area
+      // 151: Right temple area
       const leftEarLandmark = landmarks[132];
       const rightEarLandmark = landmarks[361];
+      const leftCheek = landmarks[234];
+      const rightCheek = landmarks[454];
 
-      const image = imageCacheRef.current[earringImage];
+      // Get the current image path (may have changed)
+      const currentEarringImage = jewelryType === "earrings" && selectedJewelryImage ? selectedJewelryImage : earringImage;
+      const image = imageCacheRef.current[currentEarringImage];
       if (!image || !image.complete) {
+        // Image not loaded yet, wait for it
+        if (Math.random() < 0.01) {
+          console.warn('[ImageJewelryOverlay] Earring image not loaded:', currentEarringImage, 'Cache keys:', Object.keys(imageCacheRef.current));
+        }
         return;
       }
 
       // Helper function to check if an ear landmark is valid and tracked
-      const isEarDetected = (earLandmark) => {
+      const isEarDetected = (earLandmark, useZDepth = true) => {
         if (!earLandmark) {
           return false;
         }
@@ -410,27 +524,121 @@ const earringRightMaxZDepth = 0.08;
           return false;
         }
         
-        // Check if coordinates are within valid bounds
-        if (earLandmark.x < -0.1 || earLandmark.x > 1.1 ||
-            earLandmark.y < -0.1 || earLandmark.y > 1.1) {
+        // Check if coordinates are within valid bounds (more lenient for mobile)
+        if (earLandmark.x < -0.15 || earLandmark.x > 1.15 ||
+            earLandmark.y < -0.15 || earLandmark.y > 1.15) {
           return false;
+        }
+        
+        // Z-depth check - more lenient on mobile, or skip if z-depth is unreliable
+        if (useZDepth) {
+          // Only check z-depth if it's a reasonable value
+          // On mobile, z-depth might be less accurate, so we're more lenient
+          if (earLandmark.z > 0.3) {
+            // Z-depth is too far back, likely not visible
+            return false;
+          }
         }
         
         return true;
       };
 
       // Check if left ear is detected and tracked
-      const isLeftEarDetected = isEarDetected(leftEarLandmark) &&
-        leftEarLandmark.z < earringLeftMaxZDepth;
+      // First check if the primary ear landmark exists and is valid
+      let isLeftEarDetected = false;
+      let useLeftFallback = false;
+      
+      if (leftEarLandmark && isEarDetected(leftEarLandmark, false)) {
+        // Primary landmark exists and is valid, check z-depth
+        // If z-depth is too high, ear is not visible (turned away) - don't show earring
+        if (leftEarLandmark.z < earringLeftMaxZDepth) {
+          // Also check relative z-depth - if right ear is much closer, left ear is likely not visible
+          if (rightEarLandmark && isEarDetected(rightEarLandmark, false)) {
+            const zDiff = leftEarLandmark.z - rightEarLandmark.z;
+            // If left ear is significantly further back (z-diff > 0.1), it's likely not visible
+            if (zDiff > 0.1) {
+              isLeftEarDetected = false; // Don't show left earring
+            } else {
+              isLeftEarDetected = true;
+            }
+          } else {
+            isLeftEarDetected = true;
+          }
+        } else if (leftEarLandmark.z < 0.25) {
+          // Z-depth is slightly higher but still reasonable - might be mobile z-depth inaccuracy
+          // Only use fallback if z-depth is not too high (ear might still be somewhat visible)
+          // But don't use fallback if z-depth is very high (ear is definitely not visible)
+          if (leftCheek && isEarDetected(leftCheek, false) && leftCheek.z < earringLeftMaxZDepth) {
+            // Check relative z-depth before using fallback
+            if (rightEarLandmark && isEarDetected(rightEarLandmark, false)) {
+              const zDiff = leftEarLandmark.z - rightEarLandmark.z;
+              if (zDiff <= 0.1) {
+                // Cheek is visible and relative position is okay, use as fallback
+                isLeftEarDetected = true;
+                useLeftFallback = true;
+              }
+            } else {
+              isLeftEarDetected = true;
+              useLeftFallback = true;
+            }
+          }
+        }
+        // If z-depth >= 0.25, ear is definitely not visible - don't show earring
+      }
+      // If primary landmark doesn't exist at all, don't show earring (isLeftEarDetected stays false)
 
       // Check if right ear is detected and tracked
-      const isRightEarDetected = isEarDetected(rightEarLandmark) &&
-        rightEarLandmark.z < earringRightMaxZDepth;
+      let isRightEarDetected = false;
+      let useRightFallback = false;
+      
+      if (rightEarLandmark && isEarDetected(rightEarLandmark, false)) {
+        // Primary landmark exists and is valid, check z-depth
+        // If z-depth is too high, ear is not visible (turned away) - don't show earring
+        if (rightEarLandmark.z < earringRightMaxZDepth) {
+          // Also check relative z-depth - if left ear is much closer, right ear is likely not visible
+          if (leftEarLandmark && isEarDetected(leftEarLandmark, false)) {
+            const zDiff = rightEarLandmark.z - leftEarLandmark.z;
+            // If right ear is significantly further back (z-diff > 0.1), it's likely not visible
+            if (zDiff > 0.1) {
+              isRightEarDetected = false; // Don't show right earring
+            } else {
+              isRightEarDetected = true;
+            }
+          } else {
+            isRightEarDetected = true;
+          }
+        } else if (rightEarLandmark.z < 0.25) {
+          // Z-depth is slightly higher but still reasonable - might be mobile z-depth inaccuracy
+          // Only use fallback if z-depth is not too high (ear might still be somewhat visible)
+          // But don't use fallback if z-depth is very high (ear is definitely not visible)
+          if (rightCheek && isEarDetected(rightCheek, false) && rightCheek.z < earringRightMaxZDepth) {
+            // Check relative z-depth before using fallback
+            if (leftEarLandmark && isEarDetected(leftEarLandmark, false)) {
+              const zDiff = rightEarLandmark.z - leftEarLandmark.z;
+              if (zDiff <= 0.1) {
+                // Cheek is visible and relative position is okay, use as fallback
+                isRightEarDetected = true;
+                useRightFallback = true;
+              }
+            } else {
+              isRightEarDetected = true;
+              useRightFallback = true;
+            }
+          }
+        }
+        // If z-depth >= 0.25, ear is definitely not visible - don't show earring
+      }
+      // If primary landmark doesn't exist at all, don't show earring (isRightEarDetected stays false)
 
       // Calculate face width for sizing (only if at least one ear is detected)
       let faceWidth = 200; // Default size
       if (isLeftEarDetected && isRightEarDetected) {
-        faceWidth = Math.abs(rightEarLandmark.x - leftEarLandmark.x) * canvas.width;
+        // Use the actual landmarks (ear or fallback) for width calculation
+        const leftLandmark = useLeftFallback ? leftCheek : leftEarLandmark;
+        const rightLandmark = useRightFallback ? rightCheek : rightEarLandmark;
+        if (leftLandmark && rightLandmark) {
+          faceWidth = Math.abs(rightLandmark.x - leftLandmark.x) * canvas.width;
+        }
       } else if (isLeftEarDetected || isRightEarDetected) {
         // If only one ear is detected, use a reasonable default based on canvas size
         faceWidth = Math.min(canvas.width, canvas.height) * 0.3;
@@ -438,36 +646,59 @@ const earringRightMaxZDepth = 0.08;
 
       // Draw left earring only if left ear is detected and tracked
       if (isLeftEarDetected) {
-        const x = leftEarLandmark.x * canvas.width + earringLeftOffsetX;
-        const y = leftEarLandmark.y * canvas.height + earringLeftOffsetY;
-        const earringSize = (faceWidth * 0.15) * earringSizeMultiplier;
+        // Use primary ear landmark if available, otherwise use fallback (cheek)
+        const landmark = useLeftFallback ? leftCheek : leftEarLandmark;
         
-        ctx.drawImage(
-          image,
-          x - earringSize / 2,
-          y - earringSize / 2,
-          earringSize,
-          earringSize
-        );
+        if (landmark) {
+          // Adjust position slightly if using fallback landmark
+          const offsetX = useLeftFallback ? earringLeftOffsetX - 15 : earringLeftOffsetX;
+          const offsetY = useLeftFallback ? earringLeftOffsetY - 5 : earringLeftOffsetY;
+          
+          const x = landmark.x * canvas.width + offsetX;
+          const y = landmark.y * canvas.height + offsetY;
+          const earringSize = (faceWidth * 0.15) * earringSizeMultiplier;
+          
+          ctx.drawImage(
+            image,
+            x - earringSize / 2,
+            y - earringSize / 2,
+            earringSize,
+            earringSize
+          );
+        }
       }
 
       // Draw right earring only if right ear is detected and tracked
       if (isRightEarDetected) {
-        const x = rightEarLandmark.x * canvas.width + earringRightOffsetX;
-        const y = rightEarLandmark.y * canvas.height + earringRightOffsetY;
-        const earringSize = (faceWidth * 0.15) * earringSizeMultiplier;
+        // Use primary ear landmark if available, otherwise use fallback (cheek)
+        const landmark = useRightFallback ? rightCheek : rightEarLandmark;
         
-        ctx.drawImage(
-          image,
-          x - earringSize / 2,
-          y - earringSize / 2,
-          earringSize,
-          earringSize
-        );
+        if (landmark) {
+          // Adjust position slightly if using fallback landmark
+          const offsetX = useRightFallback ? earringRightOffsetX + 15 : earringRightOffsetX;
+          const offsetY = useRightFallback ? earringRightOffsetY - 5 : earringRightOffsetY;
+          
+          const x = landmark.x * canvas.width + offsetX;
+          const y = landmark.y * canvas.height + offsetY;
+          const earringSize = (faceWidth * 0.15) * earringSizeMultiplier;
+          
+          ctx.drawImage(
+            image,
+            x - earringSize / 2,
+            y - earringSize / 2,
+            earringSize,
+            earringSize
+          );
+        }
       }
     };
 
     const draw = () => {
+      // Stop drawing if component has been cleaned up
+      if (!isActive || !canvasRef.current || !videoRef?.current) {
+        return;
+      }
+
       // Update canvas size in case video dimensions changed
       updateCanvasSize();
 
@@ -490,23 +721,47 @@ const earringRightMaxZDepth = 0.08;
           drawNecklace(ctx, canvas);
         } else if (jewelryType === "earrings" && faceLandmarksRef.current) {
           drawEarrings(ctx, canvas);
-        } else if (jewelryType === "bracelet" && handLandmarksRef.current) {
-          drawBracelet(ctx, canvas);
-        } else if (jewelryType === "ring" && handLandmarksRef.current) {
-          drawRing(ctx, canvas);
+        } else if (jewelryType === "bracelet") {
+          if (handLandmarksRef.current) {
+            drawBracelet(ctx, canvas);
+          } else {
+            if (Math.random() < 0.01) {
+              console.warn('[ImageJewelryOverlay] Cannot draw bracelet: no hand landmarks');
+            }
+          }
+        } else if (jewelryType === "ring") {
+          if (handLandmarksRef.current) {
+            drawRing(ctx, canvas);
+          } else {
+            if (Math.random() < 0.01) {
+              console.warn('[ImageJewelryOverlay] Cannot draw ring: no hand landmarks');
+            }
+          }
         }
       }
 
-      animationFrameId = requestAnimationFrame(draw);
+      // Only continue animation loop if still active
+      if (isActive) {
+        animationFrameId = requestAnimationFrame(draw);
+      }
     };
 
     draw();
 
     return () => {
-      if (animationFrameId) {
+      // Mark as inactive to stop drawing
+      isActive = false;
+      
+      // Cancel any pending animation frame
+      if (animationFrameId !== null) {
         cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
       }
-      video.removeEventListener("loadedmetadata", handleLoadedMetadata);
+      
+      // Remove event listener
+      if (video) {
+        video.removeEventListener("loadedmetadata", handleLoadedMetadata);
+      }
     };
   }, [
     useImageOverlay,
@@ -521,6 +776,10 @@ const earringRightMaxZDepth = 0.08;
     ringSizeMultiplier,
     ringYOffset,
     ringZOffset,
+    ringRotationOffset,
+    ringAutoRotate,
+    ringBandWidth,
+    ringPerspectiveHeight,
     braceletWidthMultiplier,
     braceletHeightRatio,
     braceletYOffset,
