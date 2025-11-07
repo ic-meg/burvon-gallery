@@ -1,4 +1,5 @@
 import apiRequest from './apiRequest';
+import { getAuthToken } from '../services/authService';
 
 const baseUrl = `${import.meta.env.VITE_ORDER_API}/`;
 
@@ -45,9 +46,49 @@ const getOrderDetails = async (orderId) => {
   return await apiRequest(url, null);
 };
 
+const fetchOrdersByUserId = async (userId) => {
+  if (!import.meta.env.VITE_ORDER_API) return missing("VITE_ORDER_API");
+  if (!userId) return missing("userId");
+  
+  const token = getAuthToken();
+  if (!token) {
+    return { error: "Not authenticated", data: null };
+  }
+
+  const url = `${baseUrl.replace(/\/$/, '')}/user/${userId}`;
+  return await apiRequest(url, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  });
+};
+
+const fetchOrdersByEmail = async (email) => {
+  if (!import.meta.env.VITE_ORDER_API) return missing("VITE_ORDER_API");
+  if (!email) return missing("email");
+  
+  const token = getAuthToken();
+  if (!token) {
+    return { error: "Not authenticated", data: null };
+  }
+
+  const url = `${baseUrl.replace(/\/$/, '')}/email/${email}`;
+  return await apiRequest(url, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  });
+};
+
 export default {
   fetchAllOrders,
   fetchOrdersByStatus,
   updateOrderStatus,
-  getOrderDetails
+  getOrderDetails,
+  fetchOrdersByUserId,
+  fetchOrdersByEmail
 };
