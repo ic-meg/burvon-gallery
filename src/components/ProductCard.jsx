@@ -134,7 +134,7 @@ export default function ProductCard({
         onMouseLeave={onMouseLeave}
       >
         <div
-          className={`relative w-full h-[300px] overflow-hidden ${
+          className={`relative w-full h-[250px] overflow-hidden ${
             isOutOfStock() ? "bg-gray-800" : "bg-black"
           }`}
         >
