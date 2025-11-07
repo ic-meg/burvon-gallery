@@ -20,7 +20,7 @@ import {
 
 const shipping = 80;
 
-const CheckoutDesktop = ({ onImageClick, products, subtotal, total, itemCount, formData, handleInputChange, errors, handleSubmit, handleCityChange, handleProvinceChange, availableBarangays }) => (
+const CheckoutDesktop = ({ onImageClick, products, subtotal, total, itemCount, formData, handleInputChange, errors, handleSubmit, handleCityChange, handleProvinceChange, availableBarangays, isLoggedIn }) => (
   <div className="hidden lg:block min-h-screen bg-[#181818] px-0 py-20 text-[#fff7dc] bebas">
     <div className="flex flex-col items-center pt-20">
       <h1 className="bebas cream-text mb-12" style={{fontSize: '85px'}}>CHECKOUT</h1>
@@ -75,9 +75,10 @@ const CheckoutDesktop = ({ onImageClick, products, subtotal, total, itemCount, f
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
+                  readOnly={isLoggedIn}
                   className={`w-full px-4 py-2 rounded-lg bg-transparent border avant cream-text text-md mb-2 placeholder-avant ${
                     errors.email ? 'border-red-500' : 'border-[#FFF7DC]'
-                  }`}
+                  } ${isLoggedIn ? 'cursor-not-allowed opacity-80' : ''}`}
                   placeholder="Enter your Email Address" 
                 />
                 {errors.email && <p className="text-red-500 text-sm avant">{errors.email}</p>}
@@ -241,7 +242,7 @@ const CheckoutDesktop = ({ onImageClick, products, subtotal, total, itemCount, f
   </div>
 );
 
-const CheckoutMobile = ({ onImageClick, products, subtotal, total, itemCount, formData, handleInputChange, errors, handleSubmit, handleCityChange, handleProvinceChange, availableBarangays }) => (
+const CheckoutMobile = ({ onImageClick, products, subtotal, total, itemCount, formData, handleInputChange, errors, handleSubmit, handleCityChange, handleProvinceChange, availableBarangays, isLoggedIn }) => (
   <div className="lg:hidden w-full min-h-screen bg-[#181818] px-4 pt-22 text-[#fff7dc] bebas">
     <h1 className="bebas cream-text text-center text-4xl mb-6">CHECKOUT</h1>
     {/* Products List */}
@@ -291,9 +292,10 @@ const CheckoutMobile = ({ onImageClick, products, subtotal, total, itemCount, fo
           name="email"
           value={formData.email}
           onChange={handleInputChange}
+          readOnly={isLoggedIn}
           className={`w-full px-3 py-2 rounded-md bg-transparent border avant cream-text text-xs mb-2 placeholder-avant ${
             errors.email ? 'border-red-500' : 'border-[#FFF7DC]'
-          }`}
+          } ${isLoggedIn ? 'cursor-not-allowed opacity-80' : ''}`}
           placeholder="Enter your email" 
         />
         {errors.email && <p className="text-red-500 text-xs avant">{errors.email}</p>}
@@ -466,13 +468,18 @@ const Checkout = () => {
   });
 
   // Pre-fill email if user is logged in
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  
   useEffect(() => {
     const currentUser = getUser();
     if (currentUser && currentUser.email) {
+      setIsLoggedIn(true);
       setFormData(prev => ({
         ...prev,
         email: currentUser.email
       }));
+    } else {
+      setIsLoggedIn(false);
     }
   }, []);
 
@@ -825,6 +832,7 @@ const Checkout = () => {
         handleCityChange={handleCityChange}
         handleProvinceChange={handleProvinceChange}
         availableBarangays={availableBarangays}
+        isLoggedIn={isLoggedIn}
       />
       <CheckoutMobile 
         onImageClick={handleImageClick}
@@ -839,6 +847,7 @@ const Checkout = () => {
         handleCityChange={handleCityChange}
         handleProvinceChange={handleProvinceChange}
         availableBarangays={availableBarangays}
+        isLoggedIn={isLoggedIn}
       />
       
       <Toast
