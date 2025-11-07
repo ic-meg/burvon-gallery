@@ -5,10 +5,9 @@ import { useContent } from "../../contexts/ContentContext";
 import { useCollection } from "../../contexts/CollectionContext";
 import { useProduct } from "../../contexts/ProductContext";
 import ProductCard from "../../components/ProductCard";
+import HomepageSkeleton from "../../components/HomepageSkeleton";
 
 import {
-  KidsCollectionBanner,
-  ClashCollectionBanner,
   NextIcon,
   PrevIcon,
   LyricImage,
@@ -19,8 +18,6 @@ import {
   RiomWebp,
   CelineImage,
   CelineWebp,
-  ClashCollectionWebp,
-  KidsCollectionWebp,
   FastShipIcon,
   SecureIcon,
   ReturnIcon,
@@ -59,10 +56,6 @@ const scrollbarHideStyle = `
   }
 `;
 
-const heroImages = [
-  { src: KidsCollectionBanner, webp: KidsCollectionWebp },
-  { src: ClashCollectionBanner, webp: ClashCollectionWebp },
-];
 
 // Placeholder data for when server is down - will be replaced with dynamic content
 const rebelsTopPicks = [
@@ -200,8 +193,11 @@ const Homepage = () => {
   }, []);
 
   useEffect(() => {
+    const heroImages = getDynamicHeroImages();
+    if (heroImages.length === 0) return; // Don't run carousel if no images
+    
     const interval = setInterval(() => {
-      const totalImages = getDynamicHeroImages()?.length || heroImages.length;
+      const totalImages = heroImages.length;
       setCurrentIndex((prev) => (prev + 1) % totalImages);
     }, 4000);
     return () => clearInterval(interval);
@@ -514,12 +510,12 @@ const Homepage = () => {
   // Infinite scroll effect for rebels top picks on mobile to loop left/right indefinitely
   // Removed because we handle natural scroll snapping now.
 
-  // Get dynamic hero images from admin content or fallback to static
+  // Get dynamic hero images from admin content
   const getDynamicHeroImages = () => {
     if (homepageContent?.hero_images && Array.isArray(homepageContent.hero_images) && homepageContent.hero_images.length > 0) {
       return homepageContent.hero_images.map(url => ({ src: url, webp: url }));
     }
-    return heroImages; // fallback to static images
+    return []; // No fallback - return empty array if no dynamic images
   };
 
   // Get dynamic collections from API or fallback to placeholder data
@@ -564,51 +560,74 @@ const Homepage = () => {
     return collectionIndex >= collections.length - MAX_VISIBLE_BURVON;
   }, [collectionIndex, dynamicCollections]);
 
+  // Show skeleton only on initial load when we don't have data yet
+  // Don't show skeleton if we already have data (even if loading is true for refetch)
+  // Check if we have any data to display
+  const hasAnyData = 
+    homepageContent !== null ||
+    dynamicCollections.length > 0 ||
+    topPicksProducts.length > 0 ||
+    collections.length > 0 ||
+    products.length > 0;
+
+  // Only show skeleton if we're loading AND don't have any data yet
+  const isInitialLoad = (contentLoading || collectionsLoading || productsLoading) && !hasAnyData;
+
+  if (isInitialLoad) {
+    return (
+      <Layout full>
+        <HomepageSkeleton />
+      </Layout>
+    );
+  }
+
   return (
     <Layout full>
       <style>{scrollbarHideStyle}</style>
       {/* Hero Section */}
-      <section
-        id="hero"
-        className="relative w-full h-[450px] lg:h-[550px] xl:h-[730px] overflow-hidden bg-black flex items-center justify-center"
-      >
-        <div
-          className="flex h-full w-full transition-transform duration-700"
-          style={{ transform: `translateX(-${currentIndex * 100}%)` }}
-          aria-live="polite"
+      {getDynamicHeroImages().length > 0 && (
+        <section
+          id="hero"
+          className="relative w-full h-[450px] lg:h-[550px] xl:h-[730px] overflow-hidden bg-black flex items-center justify-center"
         >
-          {getDynamicHeroImages().map((image, index) => (
-            <picture key={index} className="flex-shrink-0 w-full h-full">
-              <source src={image.webp} type="image/webp" />
-              <img
-                src={image.src}
-                alt={`Burvon homepage banner collection ${index + 1}`}
-                className="w-full h-full object-cover object-center"
-                draggable={false}
+          <div
+            className="flex h-full w-full transition-transform duration-700"
+            style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+            aria-live="polite"
+          >
+            {getDynamicHeroImages().map((image, index) => (
+              <picture key={index} className="flex-shrink-0 w-full h-full">
+                <source src={image.webp} type="image/webp" />
+                <img
+                  src={image.src}
+                  alt={`Burvon homepage banner collection ${index + 1}`}
+                  className="w-full h-full object-cover object-center"
+                  draggable={false}
+                />
+              </picture>
+            ))}
+          </div>
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex space-x-1 z-20">
+            {getDynamicHeroImages().map((_, index) => (
+              <span
+                key={index}
+                className={`w-2 h-2 rounded-full border border-[#FFF7DC] ${
+                  index === currentIndex
+                    ? "bg-[#FFF7DC]"
+                    : "bg-gray-400 opacity-40"
+                } transition-colors duration-300`}
+                onClick={() => setCurrentIndex(index)}
+                aria-label={`Go to slide ${index + 1}`}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") setCurrentIndex(index);
+                }}
               />
-            </picture>
-          ))}
-        </div>
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex space-x-1 z-20">
-          {getDynamicHeroImages().map((_, index) => (
-            <span
-              key={index}
-              className={`w-2 h-2 rounded-full border border-[#FFF7DC] ${
-                index === currentIndex
-                  ? "bg-[#FFF7DC]"
-                  : "bg-gray-400 opacity-40"
-              } transition-colors duration-300`}
-              onClick={() => setCurrentIndex(index)}
-              aria-label={`Go to slide ${index + 1}`}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") setCurrentIndex(index);
-              }}
-            />
-          ))}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      )}
 
       
 
@@ -891,6 +910,7 @@ const Homepage = () => {
                   </p>
                 )}
                 <button
+                  onClick={() => navigate("/tryon")}
                   style={{
                     backgroundColor:
                       hoveredButtonId === "try" ? "#FFF7DC" : "transparent",
