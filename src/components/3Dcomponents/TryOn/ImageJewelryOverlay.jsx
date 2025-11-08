@@ -118,7 +118,7 @@ const earringImage = jewelryType === "earrings" && selectedJewelryImage ? select
 
 const necklaceWidthMultiplier = 1.0;
 const necklaceHeightRatio = 0.80;
-const necklaceYOffset = 30;
+const necklaceYOffset = 60;
 const ringSizeMultiplier = 2.0;
 const ringYOffset = -4;
 const ringZOffset = -3;
