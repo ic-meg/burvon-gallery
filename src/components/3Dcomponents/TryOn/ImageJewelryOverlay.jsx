@@ -3,7 +3,17 @@ import { useFaceLandmarks } from "../../../contexts/FaceLandmarksContext";
 import { useHandLandmarks } from "../../../contexts/HandLandmarksContext";
 import { useControls } from "leva";
 
-export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, useImageOverlay, jewelryType, selectedJewelryImage, videoReady }) => {
+// Finger landmark mapping
+// Each finger has MCP (base) and PIP (middle joint) landmarks
+const FINGER_LANDMARKS = {
+  THUMB: { MCP: 2, PIP: 3 },     // Thumb MCP and IP joint
+  INDEX: { MCP: 5, PIP: 6 },     // Index finger MCP and PIP
+  MIDDLE: { MCP: 9, PIP: 10 },   // Middle finger MCP and PIP
+  RING: { MCP: 13, PIP: 14 },    // Ring finger MCP and PIP
+  PINKY: { MCP: 17, PIP: 18 },   // Pinky finger MCP and PIP
+};
+
+export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, useImageOverlay, jewelryType, selectedJewelryImage, videoReady, selectedFinger }) => {
   const internalCanvasRef = useRef(null);
   const canvasRef = externalCanvasRef || internalCanvasRef;
   const { faceLandmarks } = useFaceLandmarks();
@@ -266,14 +276,21 @@ const earringRightMaxZDepth = 0.15; // Increased from 0.08 for better mobile sup
         return;
       }
 
-      // RING LANDMARKS:
-      // 9: Middle finger MCP joint (base of finger)
-      // 10: Middle finger PIP joint (middle joint)
-      // We'll interpolate between MCP and PIP to position the ring just above the base
-      const middleFingerMCP = landmarks[9]; // Middle finger MCP (base)
-      const middleFingerPIP = landmarks[10]; // Middle finger PIP (middle joint)
+      // Determine which finger to use based on selectedFinger prop
+      // Default to MIDDLE if no finger is selected
+      const fingerToUse = selectedFinger || "MIDDLE";
+      const fingerLandmarks = FINGER_LANDMARKS[fingerToUse];
 
-      if (!middleFingerMCP || !middleFingerPIP) {
+      if (!fingerLandmarks) {
+        console.warn(`[ImageJewelryOverlay] Invalid finger selected: ${fingerToUse}`);
+        return;
+      }
+
+      // Get the MCP (base) and PIP (middle joint) landmarks for the selected finger
+      const fingerMCP = landmarks[fingerLandmarks.MCP];
+      const fingerPIP = landmarks[fingerLandmarks.PIP];
+
+      if (!fingerMCP || !fingerPIP) {
         return;
       }
 
@@ -281,9 +298,9 @@ const earringRightMaxZDepth = 0.15; // Increased from 0.08 for better mobile sup
       // 0.2 = 20% from MCP toward PIP (just above the base, where rings are typically worn)
       const interpolationFactor = 0.2;
       const ringLandmark = {
-        x: middleFingerMCP.x + (middleFingerPIP.x - middleFingerMCP.x) * interpolationFactor,
-        y: middleFingerMCP.y + (middleFingerPIP.y - middleFingerMCP.y) * interpolationFactor,
-        z: middleFingerMCP.z + (middleFingerPIP.z - middleFingerMCP.z) * interpolationFactor,
+        x: fingerMCP.x + (fingerPIP.x - fingerMCP.x) * interpolationFactor,
+        y: fingerMCP.y + (fingerPIP.y - fingerMCP.y) * interpolationFactor,
+        z: fingerMCP.z + (fingerPIP.z - fingerMCP.z) * interpolationFactor,
       };
 
       // Get the current image path (may have changed)
@@ -300,10 +317,10 @@ const earringRightMaxZDepth = 0.15; // Increased from 0.08 for better mobile sup
       // Calculate ring size based on finger width (using actual distance, not just X difference)
       // This ensures consistent size regardless of hand orientation
       // Use Euclidean distance between MCP and PIP joints for sizing
-      const mcpX = middleFingerMCP.x * canvas.width;
-      const mcpY = middleFingerMCP.y * canvas.height;
-      const pipX = middleFingerPIP.x * canvas.width;
-      const pipY = middleFingerPIP.y * canvas.height;
+      const mcpX = fingerMCP.x * canvas.width;
+      const mcpY = fingerMCP.y * canvas.height;
+      const pipX = fingerPIP.x * canvas.width;
+      const pipY = fingerPIP.y * canvas.height;
       
       // Calculate actual distance between MCP and PIP joints
       const fingerSegmentLength = Math.sqrt(
@@ -793,6 +810,7 @@ const earringRightMaxZDepth = 0.15; // Increased from 0.08 for better mobile sup
     earringRightMaxZDepth,
     videoRef,
     videoReady,
+    selectedFinger,
   ]);
 
   if (!useImageOverlay) return null;

@@ -110,7 +110,8 @@ const TryOnDesktop = ({
                         onClick={() => {
                           setSelectedCategory(cat.key);
                           setSelectedProductIdx(0);
-                          setSelectedFinger(null);
+                          // Set default finger to MIDDLE when rings category is selected
+                          setSelectedFinger(cat.key === "rings" ? "MIDDLE" : null);
                         }}
                         onMouseEnter={() => setHoveredCategory(cat.key)}
                         onMouseLeave={() => setHoveredCategory(null)}
@@ -136,8 +137,6 @@ const TryOnDesktop = ({
                             : "bg-transparent cream-text hover:bg-[#FFF7DC] hover:text-[#181818]"
                         }`}
                         onClick={() => setSelectedFinger(finger)}
-                        onMouseEnter={() => setSelectedFinger(finger)}
-                        onMouseLeave={() => setSelectedFinger(null)}
                       >
                         {finger}
                       </button>
@@ -179,6 +178,7 @@ const TryOnDesktop = ({
                       jewelryType={categoryToJewelryType[selectedCategory]}
                       selectedJewelryImage={selectedJewelryImage}
                       videoReady={videoReady}
+                      selectedFinger={selectedFinger}
                     />
                     {!isCameraOpen && (
                       <div className="flex flex-col items-center justify-center w-full h-full absolute top-0 left-0 z-10">
@@ -338,7 +338,8 @@ const TryOnMobile = ({
               onClick={() => {
                 setSelectedCategory(cat.key);
                 setSelectedProductIdx(0);
-                setSelectedFinger(null);
+                // Set default finger to MIDDLE when rings category is selected
+                setSelectedFinger(cat.key === "rings" ? "MIDDLE" : null);
               }}
               onMouseEnter={() => setHoveredCategory(cat.key)}
               onMouseLeave={() => setHoveredCategory(null)}
@@ -401,6 +402,7 @@ const TryOnMobile = ({
               jewelryType={categoryToJewelryType[selectedCategory]}
               selectedJewelryImage={selectedJewelryImage}
               videoReady={videoReady}
+              selectedFinger={selectedFinger}
             />
             {!isCameraOpen && (
               <div className="flex flex-col items-center justify-center w-full h-full absolute top-0 left-0 z-10">
@@ -534,7 +536,7 @@ const TryOn = () => {
   
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [selectedProductIdx, setSelectedProductIdx] = useState(safeProductIdx);
-  const [selectedFinger, setSelectedFinger] = useState(null);
+  const [selectedFinger, setSelectedFinger] = useState(initialCategory === "rings" ? "MIDDLE" : null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [photo, setPhoto] = useState(null);
   const [selectedJewelryImage, setSelectedJewelryImage] = useState(
