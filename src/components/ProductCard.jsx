@@ -1,8 +1,6 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
 import { useWishlist } from "../contexts/WishlistContext";
-import { useState } from "react";
 import {
   TryOnIcon,
   AddFavorite,
@@ -24,9 +22,10 @@ export default function ProductCard({
   onImageChange = () => {},
   hoveredButtonId,
   setHoveredButtonId = () => {},
+  mobileImageHeight = "200px", // Default mobile image height
 }) {
   const navigate = useNavigate();
-  const { addToCart, isInCart } = useCart();
+  const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const mobile = layout === "mobile";
 
@@ -134,9 +133,10 @@ export default function ProductCard({
         onMouseLeave={onMouseLeave}
       >
         <div
-          className={`relative w-full h-[250px] overflow-hidden ${
+          className={`relative w-full overflow-hidden ${
             isOutOfStock() ? "bg-gray-800" : "bg-black"
           }`}
+          style={{ height: mobileImageHeight }}
         >
           <div className="absolute top-2 left-2 right-2 flex justify-between items-center z-10">
             {hasTryOnAvailable(item.category, item.name) && (

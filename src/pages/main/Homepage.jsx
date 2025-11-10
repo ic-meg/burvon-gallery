@@ -701,6 +701,7 @@ const Homepage = () => {
             <ProductCard
               item={item}
               layout="mobile"
+              mobileImageHeight="250px"
             />
           </div>
         ))}

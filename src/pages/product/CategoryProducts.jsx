@@ -16,8 +16,8 @@ import {
 const getDynamicHeroImages = (categoryData) => {
   if (!categoryData) {
     return [
-      { src: "HERO IMAGE 1 PLACEHOLDER" },
-      { src: "HERO IMAGE 2 PLACEHOLDER" },
+      { src: "HERO IMAGE 1" },
+      { src: "HERO IMAGE 2" },
     ];
   }
 
@@ -60,8 +60,8 @@ const getDynamicHeroImages = (categoryData) => {
   }
 
   return [
-    { src: "HERO IMAGE 1 PLACEHOLDER" },
-    { src: "HERO IMAGE 2 PLACEHOLDER" },
+    { src: "HERO IMAGE 1" },
+    { src: "HERO IMAGE 2" },
   ];
 };
 
@@ -177,16 +177,20 @@ const CategoryProducts = () => {
     }
     
     let categoryName = null;
-    
-    if (categoryData && categoryData.category_id === product.category_id) {
-      categoryName = categoryData.title || categoryData.name;
+
+    // Use the current page's category slug for all products on category pages
+    // This ensures products show correct try-on icons based on the page they're displayed on
+    if (categorySlug) {
+      categoryName = categorySlug;
+    } else if (categoryData) {
+      categoryName = categoryData.slug || categoryData.name || categoryData.title;
     } else if (product.category_id && allCategories) {
       if (Array.isArray(allCategories)) {
         const category = allCategories.find(c => c.category_id === product.category_id);
-        categoryName = category?.title || category?.name || null;
+        categoryName = category?.name || category?.title || null;
       } else {
         const category = Object.values(allCategories).find(c => c && c.category_id === product.category_id);
-        categoryName = category?.title || category?.name || null;
+        categoryName = category?.name || category?.title || null;
       }
     }
 
@@ -239,7 +243,6 @@ const CategoryProducts = () => {
           ? product.images
           : ["https://via.placeholder.com/400x400?text=No+Image"],
     };
-    
 
     return formattedProduct;
   };
@@ -429,7 +432,7 @@ const CategoryProducts = () => {
       {/* Category Section */}
       <section className="bg-[#1f1f21] text-[#FFF7DC] pt-8 pb-1 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between pb-6">
+          <div className="flex items-center justify-between gap-6 pb-6">
             <h2 className="text-5xl sm:text-6xl bebas tracking-wide whitespace-nowrap">
               {categoryDisplayName.toUpperCase()}
             </h2>
@@ -680,6 +683,7 @@ const CategoryProducts = () => {
                   <ProductCard
                     item={item}
                     layout="mobile"
+                    mobileImageHeight="250px"
                   />
                 </div>
               ))}
