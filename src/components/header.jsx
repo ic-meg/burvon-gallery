@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAuthToken } from "../services/authService";
+import { getAuthToken, getUser } from "../services/authService";
+import { checkAndRedirectAdmin } from "../utils/authUtils";
 
 //icons and logo
 import {
@@ -35,6 +36,11 @@ const Header = () => {
   const handleProfileClick = () => {
     const token = getAuthToken();
     if (token) {
+      const user = getUser();
+      // Check if admin user is trying to access customer profile
+      if (user && checkAndRedirectAdmin(user, navigate)) {
+        return;
+      }
       navigate('/profile');
     } else {
       navigate('/login');
