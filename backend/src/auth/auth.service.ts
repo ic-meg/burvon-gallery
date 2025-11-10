@@ -80,6 +80,12 @@ export class AuthService {
         });
       }
 
+      // Prevent admin users from logging in through customer login
+      const isAdmin = ['super_admin', 'admin', 'manager', 'csr', 'clerk'].includes(user.role);
+      if (isAdmin) {
+        throw new UnauthorizedException('Admin users must use the admin login page');
+      }
+
       const sessionToken = this.jwtService.sign(
         { user_id: user.user_id, email: user.email },
         { expiresIn: '30d' }
@@ -92,10 +98,11 @@ export class AuthService {
           user_id: user.user_id,
           email: user.email,
           full_name: user.full_name,
+          role: user.role,
         },
       };
     } catch (error) {
-      throw new UnauthorizedException('Invalid or expired token');
+      throw new UnauthorizedException(error.message || 'Invalid or expired token');
     }
   }
 
@@ -146,6 +153,12 @@ export class AuthService {
         });
       }
 
+      // Prevent admin users from logging in through customer login
+      const isAdmin = ['super_admin', 'admin', 'manager', 'csr', 'clerk'].includes(user.role);
+      if (isAdmin) {
+        throw new UnauthorizedException('Admin users must use the admin login page');
+      }
+
       const sessionToken = this.jwtService.sign(
         { user_id: user.user_id, email: user.email },
         { expiresIn: '30d' }
@@ -158,6 +171,7 @@ export class AuthService {
           user_id: user.user_id,
           email: user.email,
           full_name: user.full_name,
+          role: user.role,
         },
       };
     } catch (error) {
