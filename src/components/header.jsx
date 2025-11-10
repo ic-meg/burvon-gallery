@@ -203,7 +203,10 @@ const Header = () => {
               src={User}
               alt="User"
               className="w-6 h-6 hover:opacity-80 cursor-pointer"
-              onClick={handleProfileClick}
+              onClick={() => {
+                handleProfileClick();
+                setMenuOpen(false);
+              }}
             />
             <div
               role="button"
@@ -232,10 +235,14 @@ const Header = () => {
                 <div
                   role="link"
                   tabIndex={0}
-                  onClick={() => navigate(path)}
+                  onClick={() => {
+                    navigate(path);
+                    setMenuOpen(false);
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
                       navigate(path);
+                      setMenuOpen(false);
                     }
                   }}
                   className="text-2xl bebas metallic-text hover:opacity-70 cursor-pointer"
@@ -263,7 +270,10 @@ const Header = () => {
             >
               <div className="border-t border-[#c9c9c9] mb-4 opacity-35" />
               <button
-                onClick={() => navigate("/wishlist")}
+                onClick={() => {
+                  navigate("/wishlist");
+                  setMenuOpen(false);
+                }}
                 className="flex items-center justify-between text-[1rem] w-full"
                 style={{ padding: "0.6rem 0.5rem" }}
               >
