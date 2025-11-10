@@ -14,7 +14,7 @@ const AdminHeader = () => {
   const handleLogout = () => {
     if (window.confirm('Are you sure you want to logout?')) {
       adminLogout();
-      navigate('/admin-login');
+      navigate('/');
     }
   };
 
