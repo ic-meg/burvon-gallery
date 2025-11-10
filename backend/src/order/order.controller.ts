@@ -156,6 +156,30 @@ export class OrderController {
     }
   }
 
+  @Get('tracking/:trackingNumber')
+  async getOrderByTrackingNumber(@Param('trackingNumber') trackingNumber: string) {
+    try {
+      const order = await this.orderService.getOrderByTrackingNumber(trackingNumber);
+      if (!order) {
+        return {
+          success: false,
+          message: 'Order not found',
+        };
+      }
+      return {
+        success: true,
+        data: order,
+        message: 'Order retrieved successfully',
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+        message: 'Failed to retrieve order',
+      };
+    }
+  }
+
   @Post('temp')
   async storeTempOrder(@Body() tempOrderData: { checkout_session_id: string; order_data: any }) {
     try {

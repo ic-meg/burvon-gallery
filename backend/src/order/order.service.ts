@@ -301,6 +301,25 @@ export class OrderService {
     });
   }
 
+  async getOrderByTrackingNumber(trackingNumber: string) {
+    return this.prisma.order.findFirst({
+      where: { tracking_number: trackingNumber },
+      include: {
+        items: {
+          include: {
+            product: {
+              include: {
+                collection: true,
+                category: true,
+              },
+            },
+          },
+        },
+        user: true,
+      },
+    });
+  }
+
   async updateOrder(orderId: number, updateData: any) {
     const data: any = { ...updateData };
 
