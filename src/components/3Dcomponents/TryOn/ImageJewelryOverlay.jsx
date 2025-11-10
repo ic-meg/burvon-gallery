@@ -206,10 +206,10 @@ const earringRightMaxZDepth = 0.15; // Increased from 0.08 for better mobile sup
 
     // Detect Android specifically for optimization
     const isAndroid = /Android/i.test(navigator.userAgent);
-    // Android-only optimization: 50ms = 20fps for better performance
+    // Android-only optimization: 40ms = 25fps (balanced performance & responsiveness)
     // iOS: 16ms = 60fps (keep fast and smooth)
     // Desktop: 16ms = 60fps
-    const drawInterval = isAndroid ? 50 : 16;
+    const drawInterval = isAndroid ? 40 : 16;
 
     const updateCanvasSize = () => {
       if (video && video.videoWidth && video.videoHeight) {

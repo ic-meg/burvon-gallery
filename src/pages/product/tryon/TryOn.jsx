@@ -918,8 +918,8 @@ const TryOn = () => {
       // Start MediaPipe Camera if not already started
       if (videoRef.current && !cameraRef.current) {
         // Set frame rate based on device type
-        // Android: 50ms = 20fps (more aggressive throttle), iOS: 33ms = 30fps, Desktop: 33ms = ~30fps
-        const frameInterval = isAndroid ? 50 : (isMobileDevice ? 33 : 33);
+        // Android: 40ms = 25fps (balanced), iOS: 33ms = 30fps, Desktop: 33ms = ~30fps
+        const frameInterval = isAndroid ? 40 : (isMobileDevice ? 33 : 33);
 
         const camera = new Camera(videoRef.current, {
           onFrame: async () => {
@@ -1075,8 +1075,8 @@ const TryOn = () => {
               const currentNeedsHands = currentCategory === "rings" || currentCategory === "bracelet";
 
               // Set frame rate based on device type
-              // Android: 50ms = 20fps (more aggressive throttle), iOS: 33ms = 30fps, Desktop: 33ms = ~30fps
-              const frameInterval = isAndroid ? 50 : (isMobileDevice ? 33 : 33);
+              // Android: 40ms = 25fps (balanced), iOS: 33ms = 30fps, Desktop: 33ms = ~30fps
+              const frameInterval = isAndroid ? 40 : (isMobileDevice ? 33 : 33);
 
               const camera = new Camera(videoRef.current, {
                 onFrame: async () => {
