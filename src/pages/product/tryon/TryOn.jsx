@@ -867,15 +867,13 @@ const TryOn = () => {
             });
             hands.setOptions({
               maxNumHands: 2,
-              modelComplexity: 1,
-              minDetectionConfidence: 0.5,
-              minTrackingConfidence: 0.5,
-
-              modelComplexity: isMobileDevice ? 0 : 1,
-              // Lower confidence thresholds on mobile for faster processing
-              minDetectionConfidence: isMobileDevice ? 0.4 : 0.5,
-              minTrackingConfidence: isMobileDevice ? 0.4 : 0.5,
-
+              // Android-only optimization: Use lite model (0) for better performance
+              // iOS and Desktop: Use standard model (1) for accuracy
+              modelComplexity: isAndroid ? 0 : 1,
+              // Android-only: Lower confidence for faster detection
+              // iOS and Desktop: Keep standard confidence (0.5)
+              minDetectionConfidence: isAndroid ? 0.3 : 0.5,
+              minTrackingConfidence: isAndroid ? 0.3 : 0.5,
             });
             hands.onResults(onHandResults);
             
