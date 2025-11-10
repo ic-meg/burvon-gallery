@@ -42,8 +42,15 @@ const getOrderDetails = async (orderId) => {
   if (!import.meta.env.VITE_ORDER_API) return missing("VITE_ORDER_API");
   if (!orderId) return missing("orderId");
   
+  const token = getAuthToken();
   const url = `${baseUrl}${orderId}`;
-  return await apiRequest(url, null);
+  return await apiRequest(url, {
+    method: 'GET',
+    headers: {
+      'Authorization': token ? `Bearer ${token}` : '',
+      'Content-Type': 'application/json'
+    }
+  });
 };
 
 const fetchOrdersByUserId = async (userId) => {
@@ -84,11 +91,25 @@ const fetchOrdersByEmail = async (email) => {
   });
 };
 
+const getOrderByTrackingNumber = async (trackingNumber) => {
+  if (!import.meta.env.VITE_ORDER_API) return missing("VITE_ORDER_API");
+  if (!trackingNumber) return missing("trackingNumber");
+  
+  const url = `${baseUrl.replace(/\/$/, '')}/tracking/${encodeURIComponent(trackingNumber)}`;
+  return await apiRequest(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+};
+
 export default {
   fetchAllOrders,
   fetchOrdersByStatus,
   updateOrderStatus,
   getOrderDetails,
   fetchOrdersByUserId,
-  fetchOrdersByEmail
+  fetchOrdersByEmail,
+  getOrderByTrackingNumber
 };
