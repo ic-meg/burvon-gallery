@@ -30,7 +30,7 @@ export default function GuidedOverlay({ visible = false, autoHideMs = 4500, onDi
 
         <div className="flex-1">
           <div className="font-semibold avantbold">Try the 3D viewer</div>
-          <div className="text-sm text-[#EAE6D8]/90">Drag to rotate • Pinch or scroll to zoom</div>
+          <div className="text-sm text-[#EAE6D8]/90">Drag to rotate • Shift to pan • Pinch or scroll to zoom</div>
         </div>
 
         <div className="flex items-center gap-2">
