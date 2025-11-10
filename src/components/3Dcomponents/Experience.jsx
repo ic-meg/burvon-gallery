@@ -233,13 +233,13 @@ export const Experience = ({ modelPath }) => {
         makeDefault
         enableDamping
         dampingFactor={0.12}
-        maxDistance={8}
+        maxDistance={12}
         minDistance={1}
         minPolarAngle={0}
         maxPolarAngle={degToRad(80)}
       />
 
-      <Environment preset="warehouse" background blur={0.6} />
+      <Environment preset="warehouse" files="/hdri/Contrast-Black-Jewelry-HDRI-Vol2.hdr" background blur={2} />
       {isBracelet && (
         <Environment files="/hdri/Contrast-Black-Jewelry-HDRI-Vol2.hdr" background={false} />
       )}
