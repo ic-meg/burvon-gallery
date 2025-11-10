@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "../../components/Layout";
 import {
@@ -5,10 +6,130 @@ import {
   trackVector,
   trackBGMobile,
 } from "../../assets/index.js";
+import orderApi from "../../api/orderApi";
+import Toast from "../../components/Toast";
 
 
 const TrackOrder = () => {
   const navigate = useNavigate();
+  const [orderId, setOrderId] = useState("");
+  const [trackingNumber, setTrackingNumber] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [toast, setToast] = useState({ show: false, message: '', type: 'error' });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      let result = null;
+      let searchType = "";
+
+      if (orderId.trim()) {
+        const cleanOrderId = orderId.trim().replace(/^#/, '');
+        
+        // Validate order ID is a number
+        if (isNaN(cleanOrderId) || cleanOrderId === '') {
+          setError("Please enter a valid Order ID (numbers only)");
+          setToast({ show: true, message: "Invalid Order ID format", type: 'error' });
+          setLoading(false);
+          return;
+        }
+
+        searchType = "Order ID";
+        result = await orderApi.getOrderDetails(cleanOrderId);
+      } 
+      // Otherwise try tracking number
+      else if (trackingNumber.trim()) {
+        searchType = "Tracking Number";
+        result = await orderApi.getOrderByTrackingNumber(trackingNumber.trim());
+      } 
+      else {
+        setError("Please provide either an Order ID or Tracking Number");
+        setLoading(false);
+        return;
+      }
+
+      if (result.error) {
+        if (result.status === 404 || result.error.toLowerCase().includes('not found')) {
+          setError(`No order found with this ${searchType.toLowerCase()}. Please check and try again.`);
+          setToast({ 
+            show: true, 
+            message: `Order not found with this ${searchType.toLowerCase()}`, 
+            type: 'error' 
+          });
+        } else if (result.status === 401 || result.status === 403) {
+          setError("You don't have permission to view this order. Please contact support if you believe this is an error.");
+          setToast({ 
+            show: true, 
+            message: "Access denied", 
+            type: 'error' 
+          });
+        } else {
+          setError(`Unable to retrieve order. ${result.error}. Please try again later.`);
+          setToast({ 
+            show: true, 
+            message: result.error || "Failed to retrieve order", 
+            type: 'error' 
+          });
+        }
+        setLoading(false);
+        return;
+      }
+
+      if (result.data && result.data.success === false) {
+        const errorMessage = result.data.message || result.data.error;
+        
+        if (errorMessage && errorMessage.toLowerCase().includes('not found')) {
+          setError(`No order found with this ${searchType.toLowerCase()}. Please verify your ${searchType.toLowerCase()} and try again.`);
+          setToast({ 
+            show: true, 
+            message: `Order not found with this ${searchType.toLowerCase()}`, 
+            type: 'error' 
+          });
+        } else {
+          setError(errorMessage || `Unable to find order with this ${searchType.toLowerCase()}.`);
+          setToast({ 
+            show: true, 
+            message: errorMessage || "Order not found", 
+            type: 'error' 
+          });
+        }
+        setLoading(false);
+        return;
+      }
+
+        // Extract order data
+      const orderData = result.data?.data || result.data;
+      
+      if (!orderData || !orderData.order_id) {
+        setError(`No order found with this ${searchType.toLowerCase()}. Please check your ${searchType.toLowerCase()} and try again.`);
+        setToast({ 
+          show: true, 
+          message: `Order not found with this ${searchType.toLowerCase()}`, 
+          type: 'error' 
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Navigate to track order results page with order data
+      navigate("/customer-care/track-order-2", { 
+        state: { order: orderData } 
+      });
+    } catch (err) {
+      console.error("Error tracking order:", err);
+      setError("An unexpected error occurred. Please check your connection and try again.");
+      setToast({ 
+        show: true, 
+        message: "Network error. Please try again.", 
+        type: 'error' 
+      });
+      setLoading(false);
+    }
+  };
 
   return (
     <Layout full>
@@ -57,7 +178,20 @@ const TrackOrder = () => {
           </h2>
 
           {/* desktop: forms */}
-          <form style={{ width: "100%", maxWidth: "500px" }}>
+          <form onSubmit={handleSubmit} style={{ width: "100%", maxWidth: "500px" }}>
+            {error && (
+              <div
+                style={{
+                  color: "#ff6b6b",
+                  fontSize: "0.9rem",
+                  marginBottom: "1rem",
+                  textAlign: "center",
+                  fontFamily: "avant",
+                }}
+              >
+                {error}
+              </div>
+            )}
             <label
               className="bebas"
               style={{
@@ -74,6 +208,8 @@ const TrackOrder = () => {
               type="text"
               className="avant"
               placeholder="Order ID (e.g., #38940123)"
+              value={orderId}
+              onChange={(e) => setOrderId(e.target.value)}
               style={{
                 width: "100%",
                 padding: "0.9rem 1.5rem",
@@ -104,6 +240,8 @@ const TrackOrder = () => {
               type="text"
               className="avant"
               placeholder="Tracking No."
+              value={trackingNumber}
+              onChange={(e) => setTrackingNumber(e.target.value)}
               style={{
                 width: "100%",
                 padding: "0.9rem 1.5rem",
@@ -126,24 +264,25 @@ const TrackOrder = () => {
               }}
             >
               <button
-                onClick={() => navigate("/customer-care/track-order-2")}
-                type="button"
+                type="submit"
+                disabled={loading}
                 className="avant"
                 style={{
-                  background: "#fff7dc",
+                  background: loading ? "#666" : "#fff7dc",
                   color: "#222",
                   padding: "1rem 3.5rem",
                   borderRadius: "15px",
                   border: "none",
                   fontWeight: "bold",
                   fontSize: "1.2rem",
-                  cursor: "pointer",
+                  cursor: loading ? "not-allowed" : "pointer",
                   letterSpacing: "1px",
                   marginTop: "0.5rem",
                   width: "full",
+                  opacity: loading ? 0.6 : 1,
                 }}
               >
-                SUBMIT
+                {loading ? "SEARCHING..." : "SUBMIT"}
               </button>
             </div>
           </form>
@@ -287,7 +426,20 @@ const TrackOrder = () => {
             background: "transparent",
           }}
         >
-          <form style={{ width: "100%", maxWidth: "400px" }}>
+          <form onSubmit={handleSubmit} style={{ width: "100%", maxWidth: "400px" }}>
+            {error && (
+              <div
+                style={{
+                  color: "#ff6b6b",
+                  fontSize: "0.9rem",
+                  marginBottom: "1rem",
+                  textAlign: "center",
+                  fontFamily: "avant",
+                }}
+              >
+                {error}
+              </div>
+            )}
             <label
               className="bebas"
               style={{
@@ -305,6 +457,8 @@ const TrackOrder = () => {
               type="text"
               className="avant"
               placeholder="Order ID (e.g., #38940123)"
+              value={orderId}
+              onChange={(e) => setOrderId(e.target.value)}
               style={{
                 width: "100%",
                 padding: "0.8rem 1.5rem",
@@ -336,6 +490,8 @@ const TrackOrder = () => {
               type="text"
               className="avant"
               placeholder="Tracking No."
+              value={trackingNumber}
+              onChange={(e) => setTrackingNumber(e.target.value)}
               style={{
                 width: "100%",
                 padding: "0.8rem 1.5rem",
@@ -358,28 +514,35 @@ const TrackOrder = () => {
               }}
             >
               <button
-                type="button"
+                type="submit"
+                disabled={loading}
                 className="avant cursor-pointer"
-                onClick={() => navigate("/customer-care/track-order-2")}
                 style={{
-                  background: "#fff7dc",
+                  background: loading ? "#666" : "#fff7dc",
                   color: "#222",
                   padding: "0.5rem 3.5rem",
                   borderRadius: "15px",
                   border: "none",
                   fontWeight: "bold",
                   fontSize: "1rem",
-                  cursor: "pointer",
+                  cursor: loading ? "not-allowed" : "pointer",
                   letterSpacing: "1px",
                   marginTop: "0.5rem",
+                  opacity: loading ? 0.6 : 1,
                 }}
               >
-                SUBMIT
+                {loading ? "SEARCHING..." : "SUBMIT"}
               </button>
             </div>
           </form>
         </div>
       </div>
+      <Toast 
+        show={toast.show} 
+        message={toast.message} 
+        type={toast.type} 
+        onClose={() => setToast({ show: false, message: '', type: 'error' })}
+      />
     </Layout>
   );
 };
