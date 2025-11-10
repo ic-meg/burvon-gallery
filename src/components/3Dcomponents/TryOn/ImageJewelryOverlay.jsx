@@ -206,8 +206,9 @@ const earringRightMaxZDepth = 0.15; // Increased from 0.08 for better mobile sup
 
     // Detect if user is on mobile device
     const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    // Mobile: 66ms = ~15fps, Desktop: 16ms = ~60fps
-    const drawInterval = isMobileDevice ? 66 : 16;
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    // Android: 50ms = 20fps (more aggressive), iOS: 33ms = 30fps, Desktop: 16ms = ~60fps
+    const drawInterval = isAndroid ? 50 : (isMobileDevice ? 33 : 16);
 
     const updateCanvasSize = () => {
       if (video && video.videoWidth && video.videoHeight) {

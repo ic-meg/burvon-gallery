@@ -807,6 +807,8 @@ const TryOn = () => {
 
   // Detect if user is on mobile device
   const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  // Detect Android specifically for more aggressive optimization
+  const isAndroid = /Android/i.test(navigator.userAgent);
 
   // MediaPipe models initialization - changes when category changes
   useEffect(() => {
@@ -865,11 +867,11 @@ const TryOn = () => {
             });
             hands.setOptions({
               maxNumHands: 2,
-              // Use lower complexity on mobile for better performance
-              modelComplexity: isMobileDevice ? 0 : 1,
-              // Lower confidence thresholds on mobile for faster processing
-              minDetectionConfidence: isMobileDevice ? 0.4 : 0.5,
-              minTrackingConfidence: isMobileDevice ? 0.4 : 0.5,
+              // Use lower complexity on Android (0 = lite model), iOS uses standard
+              modelComplexity: isAndroid ? 0 : (isMobileDevice ? 1 : 1),
+              // Lower confidence thresholds on Android for faster processing
+              minDetectionConfidence: isAndroid ? 0.3 : (isMobileDevice ? 0.5 : 0.5),
+              minTrackingConfidence: isAndroid ? 0.3 : (isMobileDevice ? 0.5 : 0.5),
             });
             hands.onResults(onHandResults);
             
@@ -890,11 +892,11 @@ const TryOn = () => {
               });
               hands.setOptions({
                 maxNumHands: 2,
-                // Use lower complexity on mobile for better performance
-                modelComplexity: isMobileDevice ? 0 : 1,
-                // Lower confidence thresholds on mobile for faster processing
-                minDetectionConfidence: isMobileDevice ? 0.4 : 0.5,
-                minTrackingConfidence: isMobileDevice ? 0.4 : 0.5,
+                // Use lower complexity on Android (0 = lite model), iOS uses standard
+                modelComplexity: isAndroid ? 0 : (isMobileDevice ? 1 : 1),
+                // Lower confidence thresholds on Android for faster processing
+                minDetectionConfidence: isAndroid ? 0.3 : (isMobileDevice ? 0.5 : 0.5),
+                minTrackingConfidence: isAndroid ? 0.3 : (isMobileDevice ? 0.5 : 0.5),
               });
               hands.onResults(onHandResults);
               if (hands.onError) {
@@ -914,8 +916,8 @@ const TryOn = () => {
       // Start MediaPipe Camera if not already started
       if (videoRef.current && !cameraRef.current) {
         // Set frame rate based on device type
-        // Mobile: 66ms = ~15fps, Desktop: 33ms = ~30fps
-        const frameInterval = isMobileDevice ? 66 : 33;
+        // Android: 50ms = 20fps (more aggressive throttle), iOS: 33ms = 30fps, Desktop: 33ms = ~30fps
+        const frameInterval = isAndroid ? 50 : (isMobileDevice ? 33 : 33);
 
         const camera = new Camera(videoRef.current, {
           onFrame: async () => {
@@ -1071,7 +1073,8 @@ const TryOn = () => {
               const currentNeedsHands = currentCategory === "rings" || currentCategory === "bracelet";
 
               // Set frame rate based on device type
-              const frameInterval = isMobileDevice ? 66 : 33;
+              // Android: 50ms = 20fps (more aggressive throttle), iOS: 33ms = 30fps, Desktop: 33ms = ~30fps
+              const frameInterval = isAndroid ? 50 : (isMobileDevice ? 33 : 33);
 
               const camera = new Camera(videoRef.current, {
                 onFrame: async () => {
