@@ -867,11 +867,15 @@ const TryOn = () => {
             });
             hands.setOptions({
               maxNumHands: 2,
-              // Use lower complexity on Android (0 = lite model), iOS uses standard
-              modelComplexity: isAndroid ? 0 : (isMobileDevice ? 1 : 1),
-              // Lower confidence thresholds on Android for faster processing
-              minDetectionConfidence: isAndroid ? 0.3 : (isMobileDevice ? 0.5 : 0.5),
-              minTrackingConfidence: isAndroid ? 0.3 : (isMobileDevice ? 0.5 : 0.5),
+              modelComplexity: 1,
+              minDetectionConfidence: 0.5,
+              minTrackingConfidence: 0.5,
+
+              modelComplexity: isMobileDevice ? 0 : 1,
+              // Lower confidence thresholds on mobile for faster processing
+              minDetectionConfidence: isMobileDevice ? 0.4 : 0.5,
+              minTrackingConfidence: isMobileDevice ? 0.4 : 0.5,
+
             });
             hands.onResults(onHandResults);
             
