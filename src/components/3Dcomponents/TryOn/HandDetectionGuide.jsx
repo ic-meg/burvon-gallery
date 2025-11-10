@@ -5,7 +5,7 @@ const HandDetectionGuide = ({ isVisible }) => {
 
   return (
     <div className="absolute inset-0 flex items-center justify-center z-50 rounded-lg pointer-events-none">
-      <div className="bg-black bg-opacity-30 rounded-lg px-6 py-4 backdrop-blur-sm">
+      <div className="bg-black/65 backdrop-blur-sm rounded-lg px-6 py-4">
         <div className="text-center">
           <div className="mb-2">
             <svg
@@ -18,7 +18,7 @@ const HandDetectionGuide = ({ isVisible }) => {
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth={1.5}
+                strokeWidth={2.5}
                 d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11"
               />
             </svg>

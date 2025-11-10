@@ -15,7 +15,7 @@ export default function GuidedOverlay({ visible = false, autoHideMs = 4500, onDi
   if (!show) return null;
 
   return (
-    <div className="pointer-events-none absolute inset-0 flex items-center justify-center z-40">
+    <div className="pointer-events-none absolute inset-0 flex items-center justify-center z-40 ">
       <div className="pointer-events-auto bg-black/65 backdrop-blur-sm text-white rounded-xl px-4 py-3 flex items-center gap-4 shadow-lg max-w-sm mx-4">
         <div className="flex-shrink-0 w-14 h-14 flex items-center justify-center">
           {/* simple hand / gesture svg */}
