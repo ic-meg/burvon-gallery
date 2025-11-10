@@ -68,13 +68,13 @@ export const groupOrdersByTab = (orders) => {
   })
 
   // Debug: Log grouped orders count
-  console.log('Orders grouped by tab:', {
-    'TO SHIP': grouped['TO SHIP'].length,
-    'TO RECEIVED': grouped['TO RECEIVED'].length,
-    'DELIVERED': grouped['DELIVERED'].length,
-    'RETURN/REFUND': grouped['RETURN/REFUND'].length,
-    'CANCELLED': grouped['CANCELLED'].length,
-  })
+  // console.log('Orders grouped by tab:', {
+  //   'TO SHIP': grouped['TO SHIP'].length,
+  //   'TO RECEIVED': grouped['TO RECEIVED'].length,
+  //   'DELIVERED': grouped['DELIVERED'].length,
+  //   'RETURN/REFUND': grouped['RETURN/REFUND'].length,
+  //   'CANCELLED': grouped['CANCELLED'].length,
+  // })
 
   return grouped
 }

@@ -7,15 +7,13 @@ import { philippineLocations } from '../../../data/philippineLocations';
 import { createCheckoutSession } from '../../../services/paymongoService'; // Remove after testing
 import Toast from '../../../components/Toast';
 import { getUser } from '../../../services/authService';
+import { checkAndRedirectAdmin } from '../../../utils/authUtils';
 import { 
     visa, 
     mastercard, 
     gcash, 
     maya, 
-    paymongo, 
-    Friden, 
-    Odyssey,
-    XWhite
+    paymongo
 } from '../../../assets/index.js'; 
 
 const shipping = 80;
@@ -473,6 +471,10 @@ const Checkout = () => {
   useEffect(() => {
     const currentUser = getUser();
     if (currentUser && currentUser.email) {
+      // Check if admin user is trying to access customer page
+      if (checkAndRedirectAdmin(currentUser, navigate)) {
+        return;
+      }
       setIsLoggedIn(true);
       setFormData(prev => ({
         ...prev,
@@ -481,7 +483,7 @@ const Checkout = () => {
     } else {
       setIsLoggedIn(false);
     }
-  }, []);
+  }, [navigate]);
 
   const showToast = (message, type = 'error') => {
     setToast({

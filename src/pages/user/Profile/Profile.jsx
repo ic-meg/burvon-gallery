@@ -6,6 +6,7 @@ import {
   DropDown 
 } from '../../../assets/index.js'
 import { logout, getUser, getAuthToken } from '../../../services/authService'
+import { checkAndRedirectAdmin, isAdminUser } from '../../../utils/authUtils'
 import userApi from '../../../api/userApi'
 import orderApi from '../../../api/orderApi'
 import Toast from '../../../components/Toast'
@@ -577,6 +578,11 @@ const Profile = () => {
       const currentUser = getUser()
       if (!currentUser || !currentUser.user_id) {
         navigate('/login')
+        return
+      }
+
+      // Check if admin user is trying to access customer page
+      if (checkAndRedirectAdmin(currentUser, navigate)) {
         return
       }
 
