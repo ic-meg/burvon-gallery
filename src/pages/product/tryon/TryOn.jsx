@@ -71,7 +71,9 @@ const TryOnDesktop = ({
   categoryToJewelryType,
   isCameraOpen,
   videoReady,
-  handLandmarks
+  handLandmarks,
+  isJewelryLoading,
+  isOverlayReady
 }) => {
   const [hoveredCategory, setHoveredCategory] = useState(null);
   const [hoveredPrev, setHoveredPrev] = useState(false);
@@ -184,6 +186,12 @@ const TryOnDesktop = ({
                       <div className="flex flex-col items-center justify-center w-full h-full absolute top-0 left-0 z-10">
                         <p className="avant cream-text text-lg mb-2">Camera initializing...</p>
                         <p className="avant cream-text text-sm">Please allow camera permissions if prompted</p>
+                      </div>
+                    )}
+                    {isCameraOpen && isJewelryLoading && (
+                      <div className="flex flex-col items-center justify-center w-full h-full absolute top-0 left-0 z-20 bg-[#232323] bg-opacity-80">
+                        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-[#FFF7DC] mb-4"></div>
+                        <p className="avant cream-text text-lg">Loading product...</p>
                       </div>
                     )}
                     <HandDetectionGuide isVisible={showHandGuide} />
@@ -309,7 +317,9 @@ const TryOnMobile = ({
   categoryToJewelryType,
   isCameraOpen,
   videoReady,
-  handLandmarks
+  handLandmarks,
+  isJewelryLoading,
+  isOverlayReady
 }) => {
   const [hoveredCategory, setHoveredCategory] = useState(null);
   
@@ -408,6 +418,12 @@ const TryOnMobile = ({
               <div className="flex flex-col items-center justify-center w-full h-full absolute top-0 left-0 z-10">
                 <p className="avant cream-text text-sm mb-1">Camera initializing...</p>
                 <p className="avant cream-text text-xs">Allow camera permissions if prompted</p>
+              </div>
+            )}
+            {isCameraOpen && isJewelryLoading && (
+              <div className="flex flex-col items-center justify-center w-full h-full absolute top-0 left-0 z-20 bg-[#232323] bg-opacity-80">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FFF7DC] mb-3"></div>
+                <p className="avant cream-text text-sm">Loading product...</p>
               </div>
             )}
             <HandDetectionGuide isVisible={showHandGuide} />
@@ -539,12 +555,14 @@ const TryOn = () => {
   const [selectedFinger, setSelectedFinger] = useState(initialCategory === "rings" ? "MIDDLE" : null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [photo, setPhoto] = useState(null);
-  const [selectedJewelryImage, setSelectedJewelryImage] = useState(
-    products[initialCategory] && products[initialCategory][safeProductIdx]
-      ? generateImagePath(initialCategory, products[initialCategory][safeProductIdx].name)
-      : generateImagePath("necklace", products.necklace[0].name)
-  );
+  const initialImagePath = products[initialCategory] && products[initialCategory][safeProductIdx]
+    ? generateImagePath(initialCategory, products[initialCategory][safeProductIdx].name)
+    : generateImagePath("necklace", products.necklace[0].name);
+
+  const [selectedJewelryImage, setSelectedJewelryImage] = useState(initialImagePath);
   const [videoReady, setVideoReady] = useState(false);
+  const [isJewelryLoading, setIsJewelryLoading] = useState(true);
+  const [isOverlayReady, setIsOverlayReady] = useState(false);
 
   const videoRef = useRef(null);
   const videoRefCallback = useRef(null);
@@ -605,6 +623,111 @@ const TryOn = () => {
     rings: "ring",
     bracelet: "bracelet"
   };
+
+  // Comprehensive cleanup function using useRef to avoid stale closures
+  const stopAllMediaRef = useRef();
+  stopAllMediaRef.current = () => {
+    console.log('[TryOn] stopAllMedia called');
+
+    // Stop MediaPipe Camera
+    if (cameraRef.current) {
+      try {
+        cameraRef.current.stop();
+        console.log('[TryOn] MediaPipe camera stopped');
+      } catch (err) {
+        console.error('[TryOn] Error stopping camera:', err);
+      }
+      cameraRef.current = null;
+    }
+
+    // Close MediaPipe models
+    if (faceMeshRef.current) {
+      try {
+        faceMeshRef.current.close();
+        console.log('[TryOn] FaceMesh closed');
+      } catch (err) {
+        console.error('[TryOn] Error closing face mesh:', err);
+      }
+      faceMeshRef.current = null;
+    }
+
+    if (handsRef.current) {
+      try {
+        handsRef.current.close();
+        console.log('[TryOn] Hands closed');
+      } catch (err) {
+        console.error('[TryOn] Error closing hands:', err);
+      }
+      handsRef.current = null;
+    }
+
+    // Stop all video tracks
+    if (videoRef.current && videoRef.current.srcObject) {
+      const tracks = videoRef.current.srcObject.getTracks();
+      tracks.forEach(track => {
+        track.stop();
+        console.log('[TryOn] Stopped video track:', track.label, track.readyState);
+      });
+      videoRef.current.srcObject = null;
+    }
+
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => {
+        track.stop();
+        console.log('[TryOn] Stopped stream track:', track.label, track.readyState);
+      });
+      streamRef.current = null;
+    }
+
+    // Clear state
+    setIsCameraOpen(false);
+    setFaceLandmarks(null);
+    setHandLandmarks(null);
+
+    console.log('[TryOn] All media stopped');
+  };
+
+  const stopAllMedia = () => stopAllMediaRef.current();
+
+  // Handle initial image load
+  useEffect(() => {
+    const img = new Image();
+    img.onload = () => {
+      setIsJewelryLoading(false);
+      setTimeout(() => setIsOverlayReady(true), 300);
+    };
+    img.onerror = () => {
+      setIsJewelryLoading(false);
+      setIsOverlayReady(true);
+    };
+    img.src = initialImagePath;
+  }, []);
+
+  // Add page visibility and navigation listeners for cleanup
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        console.log('[TryOn] Page hidden, stopping media');
+        stopAllMedia();
+      }
+    };
+
+    const handleBeforeUnload = () => {
+      console.log('[TryOn] Before unload, stopping media');
+      stopAllMedia();
+    };
+
+    // Listen for page visibility changes
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Listen for page unload
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
 
   // Webcam initialization - runs only ONCE on mount
   useEffect(() => {
@@ -668,16 +791,12 @@ const TryOn = () => {
 
     return () => {
       isActive = false;
-      // Cleanup webcam on unmount
-      if (videoRef.current && videoRef.current.srcObject) {
-        const tracks = videoRef.current.srcObject.getTracks();
-        tracks.forEach(track => track.stop());
-        videoRef.current.srcObject = null;
-      }
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-        streamRef.current = null;
-      }
+      // Clear timeouts
+      timeoutRefs.current.forEach(timeout => clearTimeout(timeout));
+      timeoutRefs.current = [];
+      // Use comprehensive cleanup
+      stopAllMedia();
+      console.log('[TryOn] Component unmount cleanup finished');
     };
   }, []); 
 
@@ -685,6 +804,9 @@ const TryOn = () => {
   useEffect(() => {
     selectedCategoryRef.current = selectedCategory;
   }, [selectedCategory]);
+
+  // Detect if user is on mobile device
+  const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
   // MediaPipe models initialization - changes when category changes
   useEffect(() => {
@@ -743,9 +865,11 @@ const TryOn = () => {
             });
             hands.setOptions({
               maxNumHands: 2,
-              modelComplexity: 1,
-              minDetectionConfidence: 0.5,
-              minTrackingConfidence: 0.5,
+              // Use lower complexity on mobile for better performance
+              modelComplexity: isMobileDevice ? 0 : 1,
+              // Lower confidence thresholds on mobile for faster processing
+              minDetectionConfidence: isMobileDevice ? 0.4 : 0.5,
+              minTrackingConfidence: isMobileDevice ? 0.4 : 0.5,
             });
             hands.onResults(onHandResults);
             
@@ -766,9 +890,11 @@ const TryOn = () => {
               });
               hands.setOptions({
                 maxNumHands: 2,
-                modelComplexity: 1,
-                minDetectionConfidence: 0.5,
-                minTrackingConfidence: 0.5,
+                // Use lower complexity on mobile for better performance
+                modelComplexity: isMobileDevice ? 0 : 1,
+                // Lower confidence thresholds on mobile for faster processing
+                minDetectionConfidence: isMobileDevice ? 0.4 : 0.5,
+                minTrackingConfidence: isMobileDevice ? 0.4 : 0.5,
               });
               hands.onResults(onHandResults);
               if (hands.onError) {
@@ -787,6 +913,10 @@ const TryOn = () => {
 
       // Start MediaPipe Camera if not already started
       if (videoRef.current && !cameraRef.current) {
+        // Set frame rate based on device type
+        // Mobile: 66ms = ~15fps, Desktop: 33ms = ~30fps
+        const frameInterval = isMobileDevice ? 66 : 33;
+
         const camera = new Camera(videoRef.current, {
           onFrame: async () => {
             const now = performance.now();
@@ -798,7 +928,7 @@ const TryOn = () => {
 
             // Process FaceMesh if needed for current category
             if (currentNeedsFaceMesh && faceMeshRef.current && videoRef.current) {
-              if (now - lastFrameTime.current >= 33 && !isProcessing.current) {
+              if (now - lastFrameTime.current >= frameInterval && !isProcessing.current) {
                 lastFrameTime.current = now;
                 isProcessing.current = true;
                 try {
@@ -813,7 +943,7 @@ const TryOn = () => {
 
             // Process Hands if needed for current category
             if (currentNeedsHands && handsRef.current && videoRef.current) {
-              if (now - lastHandFrameTime.current >= 33 && !isHandProcessing.current) {
+              if (now - lastHandFrameTime.current >= frameInterval && !isHandProcessing.current) {
                 lastHandFrameTime.current = now;
                 isHandProcessing.current = true;
                 try {
@@ -939,7 +1069,10 @@ const TryOn = () => {
               const currentCategory = selectedCategoryRef.current;
               const currentNeedsFaceMesh = currentCategory === "necklace" || currentCategory === "earrings";
               const currentNeedsHands = currentCategory === "rings" || currentCategory === "bracelet";
-              
+
+              // Set frame rate based on device type
+              const frameInterval = isMobileDevice ? 66 : 33;
+
               const camera = new Camera(videoRef.current, {
                 onFrame: async () => {
                   const now = performance.now();
@@ -948,7 +1081,7 @@ const TryOn = () => {
                   const currentNeedsHands = currentCategory === "rings" || currentCategory === "bracelet";
 
                   if (currentNeedsFaceMesh && faceMeshRef.current && videoRef.current) {
-                    if (now - lastFrameTime.current >= 33 && !isProcessing.current) {
+                    if (now - lastFrameTime.current >= frameInterval && !isProcessing.current) {
                       lastFrameTime.current = now;
                       isProcessing.current = true;
                       try {
@@ -962,7 +1095,7 @@ const TryOn = () => {
                   }
 
                   if (currentNeedsHands && handsRef.current && videoRef.current) {
-                    if (now - lastHandFrameTime.current >= 33 && !isHandProcessing.current) {
+                    if (now - lastHandFrameTime.current >= frameInterval && !isHandProcessing.current) {
                       lastHandFrameTime.current = now;
                       isHandProcessing.current = true;
                       try {
@@ -1076,7 +1209,25 @@ const TryOn = () => {
   useEffect(() => {
     const currentProduct = products[selectedCategory]?.[selectedProductIdx];
     if (currentProduct) {
-      setSelectedJewelryImage(generateImagePath(selectedCategory, currentProduct.name));
+      setIsJewelryLoading(true);
+      setIsOverlayReady(false);
+      const imagePath = generateImagePath(selectedCategory, currentProduct.name);
+
+      // Preload the image
+      const img = new Image();
+      img.onload = () => {
+        setSelectedJewelryImage(imagePath);
+        setIsJewelryLoading(false);
+        // Give a small delay for the overlay to render
+        setTimeout(() => setIsOverlayReady(true), 300);
+      };
+      img.onerror = () => {
+        // Even on error, update the image path and mark as not loading
+        setSelectedJewelryImage(imagePath);
+        setIsJewelryLoading(false);
+        setIsOverlayReady(true);
+      };
+      img.src = imagePath;
     }
   }, [selectedCategory, selectedProductIdx]);
 
@@ -1166,6 +1317,8 @@ const TryOn = () => {
         categoryToJewelryType={categoryToJewelryType}
         isCameraOpen={isCameraOpen}
         videoReady={videoReady}
+        isJewelryLoading={isJewelryLoading}
+        isOverlayReady={isOverlayReady}
       />
 
       <TryOnMobile
@@ -1191,6 +1344,8 @@ const TryOn = () => {
         isCameraOpen={isCameraOpen}
         videoReady={videoReady}
         handLandmarks={handLandmarks}
+        isJewelryLoading={isJewelryLoading}
+        isOverlayReady={isOverlayReady}
       />
     </Layout>
   );
