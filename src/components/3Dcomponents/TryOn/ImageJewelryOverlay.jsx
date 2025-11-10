@@ -202,6 +202,12 @@ const earringRightMaxZDepth = 0.15; // Increased from 0.08 for better mobile sup
 
     let animationFrameId = null;
     let isActive = true; // Flag to prevent drawing after cleanup
+    let lastDrawTime = 0;
+
+    // Detect if user is on mobile device
+    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    // Mobile: 66ms = ~15fps, Desktop: 16ms = ~60fps
+    const drawInterval = isMobileDevice ? 66 : 16;
 
     const updateCanvasSize = () => {
       if (video && video.videoWidth && video.videoHeight) {
@@ -710,11 +716,24 @@ const earringRightMaxZDepth = 0.15; // Increased from 0.08 for better mobile sup
       }
     };
 
-    const draw = () => {
+    const draw = (currentTime) => {
       // Stop drawing if component has been cleaned up
       if (!isActive || !canvasRef.current || !videoRef?.current) {
         return;
       }
+
+      // Throttle drawing based on device type
+      const elapsed = currentTime - lastDrawTime;
+      if (elapsed < drawInterval) {
+        // Not enough time has passed, skip this frame
+        if (isActive) {
+          animationFrameId = requestAnimationFrame(draw);
+        }
+        return;
+      }
+
+      // Update last draw time
+      lastDrawTime = currentTime;
 
       // Update canvas size in case video dimensions changed
       updateCanvasSize();
