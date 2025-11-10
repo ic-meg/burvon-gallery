@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import Layout from "../../components/Layout";
 
 import {
@@ -7,44 +8,104 @@ import {
   Processed,
   Processed_Done,
   Shipped,
+  Shipped_Done,
   Arrived,
+  Arrived_Done,
   CheckIcon,
 } from "../../assets/index.js";
 
-const orderTimeline = [
-  {
-    label: "Order Received",
-    date: "March 01, 2025",
-    status: "done",
-    icon: Received_Done,
-  },
-  {
-    label: "Order Processed",
-    date: "March 03, 2025",
-    status: "ongoing",
-    icon: Processed_Done,
-  },
-  {
-    label: "Package Shipped",
-    date: "",
-    status: "pending",
-    icon: Shipped,
-  },
-  {
-    label: "Package Arrived",
-    date: "",
-    status: "pending",
-    icon: Arrived,
-  },
-];
-
-// Helper for date colors
 const getDateColor = (status) => {
   if (status === "pending") return "text-[#959595]";
   return "text-[#FFF7DC]";
 };
 
-const TrackOrder2 = () => (
+
+const formatDate = (dateString) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+};
+
+
+const buildTimeline = (order) => {
+  if (!order) return [];
+
+  const status = order.status || 'Pending';
+  const createdDate = formatDate(order.created_at);
+  const shippedDate = formatDate(order.shipped_date);
+  const deliveredDate = formatDate(order.delivered_date);
+
+  const timeline = [
+    {
+      label: "Order Received",
+      date: createdDate,
+      status: "done",
+      icon: Received_Done,
+    },
+    {
+      label: "Order Processed",
+      date: status !== 'Pending' ? createdDate : "",
+      status: status !== 'Pending' ? "done" : "pending",
+      icon: status !== 'Pending' ? Processed_Done : Processed,
+    },
+    {
+      label: "Package Shipped",
+      date: shippedDate,
+      status: status === 'Shipped' || status === 'Delivered' ? (status === 'Shipped' ? "ongoing" : "done") : "pending",
+      icon: status === 'Shipped' || status === 'Delivered' ? Shipped_Done : Shipped,
+    },
+    {
+      label: "Package Arrived",
+      date: deliveredDate,
+      status: status === 'Delivered' ? "done" : "pending",
+      icon: status === 'Delivered' ? Arrived_Done : Arrived,
+    },
+  ];
+
+  return timeline;
+};
+
+const TrackOrder2 = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const orderData = location.state?.order;
+    
+    if (orderData) {
+      setOrder(orderData);
+      setLoading(false);
+    } else {
+      navigate("/customer-care/track-order");
+    }
+  }, [location, navigate]);
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="bg-none text-[#FFF7DC] relative min-h-screen flex items-center justify-center">
+          <div className="avant text-xl">Loading order details...</div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (!order) {
+    return (
+      <Layout>
+        <div className="bg-none text-[#FFF7DC] relative min-h-screen flex items-center justify-center">
+          <div className="avant text-xl">Order not found</div>
+        </div>
+      </Layout>
+    );
+  }
+
+  const orderTimeline = buildTimeline(order);
+  const hasTrackingNumber = order.tracking_number && order.tracking_number.trim() !== "";
+
+  return (
   <Layout>
     <div className="bg-none text-[#FFF7DC] relative">
       {/* Header */}
@@ -57,11 +118,17 @@ const TrackOrder2 = () => (
         {/* Desktop: Order ID + Tracking ABOVE line */}
         <div className="hidden md:flex justify-between items-center w-full px-6 mt-6 avan">
           <div className="text-base md:text-lg font-semibold whitespace-nowrap">
-            Order ID : <span className="font-bold">#38940123</span>
+            Order ID : <span className="font-bold">#{order.order_id || order.id}</span>
           </div>
-          <div className="text-base md:text-lg font-semibold whitespace-nowrap">
-            Tracking Number : <span className="ml-1">7421424523</span>
-          </div>
+          {hasTrackingNumber ? (
+            <div className="text-base md:text-lg font-semibold whitespace-nowrap">
+              Tracking Number : <span className="ml-1">{order.tracking_number}</span>
+            </div>
+          ) : (
+            <div className="text-base md:text-lg font-semibold whitespace-nowrap text-[#959595]">
+              Tracking Number : <span className="ml-1">Not yet shipped</span>
+            </div>
+          )}
         </div>
 
         {/* Divider line full width */}
@@ -70,13 +137,33 @@ const TrackOrder2 = () => (
         {/* Mobile: Order ID + Tracking BELOW line */}
         <div className="flex flex-col md:hidden w-full px-2 mt-4 avantbold">
           <div className="text-base font-semibold whitespace-nowrap mb-[2px]">
-            Order ID : <span className="font-bold">#38940123</span>
+            Order ID : <span className="font-bold">#{order.order_id || order.id}</span>
           </div>
-          <div className="text-base font-semibold whitespace-nowrap mb-[2px]">
-            Tracking Number : <span className="ml-1">7421424523</span>
-          </div>
+          {hasTrackingNumber ? (
+            <div className="text-base font-semibold whitespace-nowrap mb-[2px]">
+              Tracking Number : <span className="ml-1">{order.tracking_number}</span>
+            </div>
+          ) : (
+            <div className="text-base font-semibold whitespace-nowrap mb-[2px] text-[#959595]">
+              Tracking Number : <span className="ml-1">Not yet shipped</span>
+            </div>
+          )}
         </div>
       </header>
+
+      {/* Message if no tracking number */}
+      {!hasTrackingNumber && (
+        <div className="w-full px-6 mt-8 mb-4">
+          <div className="max-w-[1000px] mx-auto bg-[#2a2a2a] border-2 border-[#FFF7DC] rounded-xl p-6 text-center">
+            <p className="avant text-lg text-[#FFF7DC] mb-2">
+              Your order hasn't been shipped yet.
+            </p>
+            <p className="avant text-base text-[#959595]">
+              We'll update the tracking information once your order is shipped. You'll receive a tracking number when it's on its way!
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* ==================== DESKTOP TIMELINE ==================== */}
       <section className="hidden 
@@ -252,6 +339,7 @@ const TrackOrder2 = () => (
       </section>
     </div>
   </Layout>
-);
+  );
+};
 
 export default TrackOrder2;
