@@ -10,7 +10,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "postinstall": "npm install --include=optional @esbuild/linux-x64 @rollup/rollup-linux-x64-gnu lightningcss-linux-x64-gnu || true"
+    "postinstall": "npm install --include=optional @esbuild/linux-x64 @rollup/rollup-linux-x64-gnu lightningcss-linux-x64-gnu @tailwindcss/oxide-linux-x64-gnu || true"
   },
   "dependencies": {
     "@mediapipe/camera_utils": "^0.3.1675466862",
