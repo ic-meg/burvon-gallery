@@ -134,8 +134,8 @@ const ringYOffset = -4;
 const ringZOffset = -3;
 const ringRotationOffset = 0;
 const ringAutoRotate = true;
-const ringBandWidth = 0.55;
-const ringPerspectiveHeight = 0.80;
+const ringBandWidth = 0.40;
+const ringPerspectiveHeight = 0.30;
 const braceletWidthMultiplier = 1.0; // Reduced from 1.6 to match wrist size better
 const braceletHeightRatio = 0.50;
 const braceletYOffset = 1; // Y offset for bracelet position (positive = down, negative = up)
