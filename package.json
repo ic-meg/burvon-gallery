@@ -9,7 +9,8 @@
     "dev:all": "concurrently \"npm run dev\" \"npm run dev:backend\" --names \"FRONTEND,BACKEND\" --prefix-colors \"blue,green\" --kill-others-on-fail",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "railway:build": "npm install && npm run build"
   },
   "dependencies": {
     "@mediapipe/camera_utils": "^0.3.1675466862",
