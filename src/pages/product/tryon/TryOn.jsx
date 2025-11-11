@@ -627,7 +627,7 @@ const TryOn = () => {
   // Comprehensive cleanup function using useRef to avoid stale closures
   const stopAllMediaRef = useRef();
   stopAllMediaRef.current = () => {
-    console.log('[TryOn] stopAllMedia called');
+    // console.log('[TryOn] stopAllMedia called');
 
     // Stop MediaPipe Camera
     if (cameraRef.current) {
@@ -644,7 +644,7 @@ const TryOn = () => {
     if (faceMeshRef.current) {
       try {
         faceMeshRef.current.close();
-        console.log('[TryOn] FaceMesh closed');
+        // console.log('[TryOn] FaceMesh closed');
       } catch (err) {
         console.error('[TryOn] Error closing face mesh:', err);
       }
@@ -654,7 +654,7 @@ const TryOn = () => {
     if (handsRef.current) {
       try {
         handsRef.current.close();
-        console.log('[TryOn] Hands closed');
+        // console.log('[TryOn] Hands closed');
       } catch (err) {
         console.error('[TryOn] Error closing hands:', err);
       }
@@ -666,7 +666,7 @@ const TryOn = () => {
       const tracks = videoRef.current.srcObject.getTracks();
       tracks.forEach(track => {
         track.stop();
-        console.log('[TryOn] Stopped video track:', track.label, track.readyState);
+        // console.log('[TryOn] Stopped video track:', track.label, track.readyState);
       });
       videoRef.current.srcObject = null;
     }
@@ -674,7 +674,7 @@ const TryOn = () => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => {
         track.stop();
-        console.log('[TryOn] Stopped stream track:', track.label, track.readyState);
+        // console.log('[TryOn] Stopped stream track:', track.label, track.readyState);
       });
       streamRef.current = null;
     }
@@ -684,7 +684,7 @@ const TryOn = () => {
     setFaceLandmarks(null);
     setHandLandmarks(null);
 
-    console.log('[TryOn] All media stopped');
+    // console.log('[TryOn] All media stopped');
   };
 
   const stopAllMedia = () => stopAllMediaRef.current();
@@ -707,13 +707,13 @@ const TryOn = () => {
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        console.log('[TryOn] Page hidden, stopping media');
+        // console.log('[TryOn] Page hidden, stopping media');
         stopAllMedia();
       }
     };
 
     const handleBeforeUnload = () => {
-      console.log('[TryOn] Before unload, stopping media');
+      // console.log('[TryOn] Before unload, stopping media');
       stopAllMedia();
     };
 
@@ -796,7 +796,7 @@ const TryOn = () => {
       timeoutRefs.current = [];
       // Use comprehensive cleanup
       stopAllMedia();
-      console.log('[TryOn] Component unmount cleanup finished');
+      // console.log('[TryOn] Component unmount cleanup finished');
     };
   }, []); 
 
