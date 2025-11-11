@@ -3,6 +3,7 @@ import { useThree } from "@react-three/fiber";
 import { useLayoutEffect, useRef, useState, useEffect } from "react";
 import { degToRad } from "three/src/math/MathUtils.js";
 import * as THREE from "three";
+// import { useControls } from "leva";
 
 export const Experience = ({ modelPath }) => {
   const blobCacheRef = useRef(new Map());
@@ -10,13 +11,28 @@ export const Experience = ({ modelPath }) => {
   const [fetching, setFetching] = useState(false);
   const effectiveModelPath = blobUrl || null;
 
-  // Detect if this is an earring model (which needs pair rendering)
+  
   const isPairModel = modelPath?.toLowerCase().includes('/earrings/') ||
                        modelPath?.toLowerCase().includes('earring');
 
-  // Detect if this is a bracelet model (needs darker gold material)
   const isBracelet = modelPath?.toLowerCase().includes('/bracelets/') ||
                      modelPath?.toLowerCase().includes('bracelet');
+
+  // Default values for earring spacing
+  const earringGapX = 2.0;
+  const earringOffsetZ = 1.0;
+  const cameraDistance = isPairModel ? 5.0 : 2.5;
+
+  // Leva controls for earring spacing (commented out)
+  // const { earringGapX, earringOffsetZ } = useControls('Earring Spacing', {
+  //   earringGapX: { value: 2.0, min: 0, max: 2, step: 0.05, label: 'Left-Right Gap (X)' },
+  //   earringOffsetZ: { value: 1.0, min: -1, max: 1, step: 0.05, label: 'Front-Back Offset (Z)' }
+  // });
+
+  // Leva controls for camera (commented out)
+  // const { cameraDistance } = useControls('Camera', {
+  //   cameraDistance: { value: 5.0, min: 1, max: 15, step: 0.1, label: 'Distance Multiplier' }
+  // });
 
   useEffect(() => {
     let cancelled = false;
@@ -128,13 +144,12 @@ export const Experience = ({ modelPath }) => {
         const minY = box.min.y || 0;
         if (modelRef.current) modelRef.current.position.y += -minY;
 
-        // Recompute box after shift
         const shiftedBox = new THREE.Box3().setFromObject(modelRef.current);
         shiftedBox.getCenter(center);
         const size = new THREE.Vector3();
         shiftedBox.getSize(size);
         const maxDim = Math.max(size.x, size.y, size.z, 0.001);
-        const fitDistance = Math.max(1.5, maxDim * 1.5);
+        const fitDistance = Math.max(1.5, maxDim * cameraDistance);
 
         camera.position.set(
           center.x + fitDistance,
@@ -147,11 +162,14 @@ export const Experience = ({ modelPath }) => {
           controlsRef.current.update();
         }
 
-        // compute spacing based on model width
-        const width = size.x || 0.6;
-        const gap = Math.max(0.03, Math.min(width * 0.25, 0.25));
-        if (rightRef.current) rightRef.current.position.set(gap / 2, 0, 0);
-        if (leftRef.current) leftRef.current.position.set(-gap / 2, 0, 0);
+        if (isPairModel) {
+          if (rightRef.current) {
+            rightRef.current.position.set(-earringGapX, 0, -earringOffsetZ);
+          }
+          if (leftRef.current) {
+            leftRef.current.position.set(earringGapX, 0, earringOffsetZ);
+          }
+        }
 
         const applyReflectiveToLowest = (group, makeDoubleSide) => {
           if (!group) return;
@@ -172,7 +190,6 @@ export const Experience = ({ modelPath }) => {
           let mat = lowestMesh.material;
           if (mat && mat.clone) mat = mat.clone();
 
-          // Use darker material settings for bracelets
           const envIntensity = isBracelet ? 1.2 : 2.5;
           const roughness = isBracelet ? 0.15 : 0.1;
 
@@ -204,17 +221,10 @@ export const Experience = ({ modelPath }) => {
           }
         };
 
-        // Apply reflective material
-        if (isPairModel) {
-          // For earrings, apply to both models
-          applyReflectiveToLowest(rightRef.current, false);
-          applyReflectiveToLowest(leftRef.current, false);
-        } else {
-          // For single models (bracelets, necklaces, rings)
+        if (!isPairModel) {
           applyReflectiveToLowest(rightRef.current, false);
         }
       } catch (err) {
-        // Keep retrying until we can compute bounds safely.
         requestAnimationFrame(trySetup);
       }
     };
@@ -224,7 +234,7 @@ export const Experience = ({ modelPath }) => {
     return () => {
       mounted = false;
     };
-  }, [effectiveModelPath, camera, scene, isPairModel]);
+  }, [effectiveModelPath, camera, scene, isPairModel, earringGapX, earringOffsetZ, cameraDistance]);
 
   return (
     <>
@@ -233,13 +243,13 @@ export const Experience = ({ modelPath }) => {
         makeDefault
         enableDamping
         dampingFactor={0.12}
-        maxDistance={12}
+        maxDistance={30}
         minDistance={1}
         minPolarAngle={0}
         maxPolarAngle={degToRad(80)}
       />
 
-      <Environment preset="warehouse" files="/hdri/Contrast-Black-Jewelry-HDRI-Vol2.hdr" background blur={2} />
+      <Environment preset="warehouse" files="/hdri/Jewel-hdri-diamond-set1-3.hdr" background blur={0.2} />
       {isBracelet && (
         <Environment files="/hdri/Contrast-Black-Jewelry-HDRI-Vol2.hdr" background={false} />
       )}
@@ -257,8 +267,7 @@ export const Experience = ({ modelPath }) => {
           isPairModel ? (
             // Render pair for earrings
             <>
-              <group name="earring-right" ref={rightRef} position={[0.1, 0, 0.1]}>
-                {/* remove hard Y offset so grounding logic can place model on y=0 */}
+              <group name="earring-right" ref={rightRef} position={[-earringGapX, 0, -earringOffsetZ]}>
                 <Gltf
                   src={effectiveModelPath}
                   position-y={0}
@@ -269,7 +278,7 @@ export const Experience = ({ modelPath }) => {
               <group
                 name="earring-left"
                 ref={leftRef}
-                position={[0.12, 0, 0.03]}
+                position={[earringGapX, 0, earringOffsetZ]}
                 rotation={[0, Math.PI, 0]}
               >
                 <Gltf
@@ -306,37 +315,31 @@ export const Experience = ({ modelPath }) => {
         rotation-x={-Math.PI * 0.5}
         scale={50}
         receiveShadow
-        roughness={0.4}
       >
         <planeGeometry />
-        <shadowMaterial color="black" opacity={0.3} />
+        <shadowMaterial transparent opacity={0.15} />
       </mesh>
 
-      <ambientLight intensity={0.35} />
+      <ambientLight intensity={0.5} />
       <hemisphereLight
         skyColor={0xddeeff}
         groundColor={0x444455}
-        intensity={10.3}
-      />
-      <spotLight
-        position={[2, 6, 2]}
-        angle={0.35}
-        penumbra={0.6}
-        intensity={12.2}
-        castShadow
-        shadow-mapSize-width={2048}
-        shadow-mapSize-height={2048}
+        intensity={8}
       />
       <directionalLight
         castShadow
-        position={[-2, 3, -1]}
-        intensity={0.8}
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
-        shadow-camera-left={-5}
-        shadow-camera-right={5}
-        shadow-camera-top={5}
-        shadow-camera-bottom={-5}
+        position={[3, 10, 4]}
+        intensity={1.5}
+        shadow-mapSize-width={4096}
+        shadow-mapSize-height={4096}
+        shadow-camera-left={-15}
+        shadow-camera-right={15}
+        shadow-camera-top={15}
+        shadow-camera-bottom={-15}
+        shadow-camera-near={0.1}
+        shadow-camera-far={50}
+        shadow-bias={-0.00005}
+        shadow-normalBias={0.02}
       />
     </>
   );
