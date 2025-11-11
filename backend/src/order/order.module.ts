@@ -3,8 +3,10 @@ import { OrderController } from './order.controller';
 import { WebhookController } from './webhook.controller';
 import { OrderService } from './order.service';
 import { DatabaseService } from '../database/database.service';
+import { EmailModule } from '../email/email.module';
 
 @Module({
+  imports: [EmailModule],
   controllers: [OrderController, WebhookController],
   providers: [OrderService, DatabaseService],
   exports: [OrderService],

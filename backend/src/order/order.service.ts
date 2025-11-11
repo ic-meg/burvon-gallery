@@ -1,12 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 import { CreateOrderDto, OrderStatus } from './dto/create-order.dto';
+import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class OrderService {
   private processingSessions = new Set<string>();
 
-  constructor(private prisma: DatabaseService) { }
+  constructor(
+    private prisma: DatabaseService,
+    private emailService: EmailService,
+  ) { }
 
   async createOrder(createOrderDto: CreateOrderDto) {
     const {
@@ -537,13 +541,47 @@ export class OrderService {
 
         const order = await this.createOrder(finalOrderData);
 
+        // Send order confirmation email
+        try {
+          const subtotal = order.items.reduce(
+            (sum, item) => sum + Number(item.price) * item.quantity,
+            0,
+          );
+
+          await this.emailService.sendOrderConfirmationEmail({
+            orderId: order.order_id,
+            customerName: `${order.first_name} ${order.last_name}`,
+            email: order.email,
+            items: order.items.map((item) => ({
+              name: item.name || 'Product',
+              quantity: item.quantity,
+              price: Number(item.price),
+              size: item.size || undefined,
+            })),
+            subtotal: subtotal,
+            shippingCost: Number(order.shipping_cost) || 0,
+            totalPrice: Number(order.total_price),
+            shippingAddress: order.shipping_address || '',
+            paymentMethod: order.payment_method,
+            orderDate: new Date(order.created_at).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            }),
+          });
+         
+        } catch (emailError) {
+          console.error('Failed to send order confirmation email:', emailError);
+   
+        }
+
         // Clean up temporary data
         try {
-          
+
           await this.prisma.pendingOrder.delete({
             where: { checkout_session_id: checkoutSessionId },
           });
-          
+
         } catch (cleanupError) {
           console.error(
             `[ORDER SERVICE] Error cleaning up pending order for session ${checkoutSessionId}:`,
@@ -551,7 +589,7 @@ export class OrderService {
           );
         }
 
-        
+
         return true;
       } finally {
         this.processingSessions.delete(checkoutSessionId);
@@ -748,11 +786,26 @@ export class OrderService {
       },
     });
 
-   
+
     if (status === 'Shipped') {
       if (!(order as any).tracking_number) {
         throw new Error('Failed to save tracking number to database');
       }
+    }
+
+    // Send order status update email
+    try {
+      await this.emailService.sendOrderStatusUpdateEmail(
+        order.email,
+        order.order_id,
+        `${order.first_name} ${order.last_name}`,
+        status,
+        (order as any).tracking_number || undefined,
+      );
+
+    } catch (emailError) {
+      console.error('Failed to send order status update email:', emailError);
+      // Don't fail the status update if email fails
     }
 
     return order;
