@@ -64,10 +64,11 @@ const CheckoutDesktop = ({ onImageClick, products, subtotal, total, itemCount, f
         <div className="flex-1 max-w-[2500px]">
           <div className="bg-[#181818] p-6 rounded-xl border border-[#fff7dc]/30 mb-4">
             <div className="bebas cream-text text-4xl mb-4">DELIVERY</div>
+            <div className="avant text-sm cream-text mb-3" style={{color: '#959595'}}>* All fields are required</div>
             <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
               {/* EMAIL ADDRESS */}
               <div>
-                <label className="bebas text-lg mb-1 block">EMAIL ADDRESS</label>
+                <label className="bebas text-lg mb-1 block">EMAIL ADDRESS *</label>
                 <input 
                   type="email" 
                   name="email"
@@ -84,7 +85,7 @@ const CheckoutDesktop = ({ onImageClick, products, subtotal, total, itemCount, f
               {/* FIRST NAME and LAST NAME */}
               <div className="flex gap-4">
                 <div className="flex-1">
-                  <label className="bebas text-lg mb-1 block">FIRST NAME</label>
+                  <label className="bebas text-lg mb-1 block">FIRST NAME *</label>
                   <input 
                     type="text" 
                     name="first_name"
@@ -98,7 +99,7 @@ const CheckoutDesktop = ({ onImageClick, products, subtotal, total, itemCount, f
                   {errors.first_name && <p className="text-red-500 text-sm avant">{errors.first_name}</p>}
                 </div>
                 <div className="flex-1">
-                  <label className="bebas text-lg mb-1 block">LAST NAME</label>
+                  <label className="bebas text-lg mb-1 block">LAST NAME *</label>
                   <input 
                     type="text" 
                     name="last_name"
@@ -114,7 +115,7 @@ const CheckoutDesktop = ({ onImageClick, products, subtotal, total, itemCount, f
               </div>
               {/* STREET ADDRESS */}
               <div>
-                <label className="bebas text-lg mb-1 block">STREET ADDRESS</label>
+                <label className="bebas text-lg mb-1 block">STREET ADDRESS *</label>
                 <input 
                   type="text" 
                   name="street_address"
@@ -138,7 +139,7 @@ const CheckoutDesktop = ({ onImageClick, products, subtotal, total, itemCount, f
               />
               {/* POSTAL CODE */}
               <div>
-                  <label className="bebas text-lg mb-1 block">POSTAL CODE</label>
+                  <label className="bebas text-lg mb-1 block">POSTAL CODE *</label>
                 <input 
                   type="text" 
                   name="postal_code"
@@ -154,7 +155,7 @@ const CheckoutDesktop = ({ onImageClick, products, subtotal, total, itemCount, f
               {/* PHONE NUMBER */}
               <div className="flex gap-4">
                 <div className="flex-1">
-                  <label className="bebas text-lg mb-1 block">PHONE NUMBER</label>
+                  <label className="bebas text-lg mb-1 block">PHONE NUMBER *</label>
                   <input 
                     type="text" 
                     name="phone"
@@ -283,8 +284,9 @@ const CheckoutMobile = ({ onImageClick, products, subtotal, total, itemCount, fo
     {/* Delivery Form */}
     <div className="bg-[#181818] p-4 rounded-xl border border-[#fff7dc]/30 mb-4">
       <div className="bebas cream-text text-3xl mb-2">DELIVERY</div>
+      <div className="avant text-xs cream-text mb-2" style={{color: '#959595'}}>* All fields are required</div>
       <form className="flex flex-col gap-2" onSubmit={handleSubmit}>
-        <label className="bebas text-md block">EMAIL ADDRESS</label>
+        <label className="bebas text-md block">EMAIL ADDRESS *</label>
         <input 
           type="email" 
           name="email"
@@ -297,8 +299,8 @@ const CheckoutMobile = ({ onImageClick, products, subtotal, total, itemCount, fo
           placeholder="Enter your email" 
         />
         {errors.email && <p className="text-red-500 text-xs avant">{errors.email}</p>}
-        
-        <label className="bebas text-md block">FIRST NAME</label>
+
+        <label className="bebas text-md block">FIRST NAME *</label>
         <input 
           type="text" 
           name="first_name"
@@ -310,8 +312,8 @@ const CheckoutMobile = ({ onImageClick, products, subtotal, total, itemCount, fo
           placeholder="Enter your first name" 
         />
         {errors.first_name && <p className="text-red-500 text-xs avant">{errors.first_name}</p>}
-        
-        <label className="bebas text-md block">LAST NAME</label>
+
+        <label className="bebas text-md block">LAST NAME *</label>
         <input 
           type="text" 
           name="last_name"
@@ -323,8 +325,8 @@ const CheckoutMobile = ({ onImageClick, products, subtotal, total, itemCount, fo
           placeholder="Enter your last name" 
         />
         {errors.last_name && <p className="text-red-500 text-xs avant">{errors.last_name}</p>}
-        
-        <label className="bebas text-md block">STREET ADDRESS</label>
+
+        <label className="bebas text-md block">STREET ADDRESS *</label>
         <input 
           type="text" 
           name="street_address"
@@ -336,7 +338,7 @@ const CheckoutMobile = ({ onImageClick, products, subtotal, total, itemCount, fo
           placeholder="(house/building number, street name, and optional subdivision)" 
         />
         {errors.street_address && <p className="text-red-500 text-xs avant">{errors.street_address}</p>}
-        
+
         <AddressDropdowns 
           formData={formData}
           errors={errors}
@@ -346,8 +348,8 @@ const CheckoutMobile = ({ onImageClick, products, subtotal, total, itemCount, fo
           availableBarangays={availableBarangays}
           isMobile={true}
         />
-        
-        <label className="bebas text-md block">POSTAL CODE</label>
+
+        <label className="bebas text-md block">POSTAL CODE *</label>
         <input 
           type="text" 
           name="postal_code"
@@ -359,8 +361,8 @@ const CheckoutMobile = ({ onImageClick, products, subtotal, total, itemCount, fo
           placeholder="Enter your Postal Code" 
         />
         {errors.postal_code && <p className="text-red-500 text-xs avant">{errors.postal_code}</p>}
-        
-        <label className="bebas text-md block">PHONE NUMBER</label>
+
+        <label className="bebas text-md block">PHONE NUMBER *</label>
         <input 
           type="text" 
           name="phone"

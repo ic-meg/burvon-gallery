@@ -35,7 +35,7 @@ const AddressDropdowns = ({
   if (isMobile) {
     return (
       <>
-        <label className={labelClass}>PROVINCE/REGION</label>
+        <label className={labelClass}>PROVINCE/REGION *</label>
         <select 
           name="province_region"
           value={formData.province_region}
@@ -53,8 +53,8 @@ const AddressDropdowns = ({
           ))}
         </select>
         {errors.province_region && <p className={errorClass}>{errors.province_region}</p>}
-        
-        <label className={labelClass}>CITY/MUNICIPALITY</label>
+
+        <label className={labelClass}>CITY/MUNICIPALITY *</label>
         <select 
           name="city_municipality"
           value={formData.city_municipality}
@@ -97,8 +97,8 @@ const AddressDropdowns = ({
           }
         </select>
         {errors.city_municipality && <p className={errorClass}>{errors.city_municipality}</p>}
-        
-        <label className={labelClass}>BARANGAY</label>
+
+        <label className={labelClass}>BARANGAY *</label>
         {Array.isArray(availableBarangays) && availableBarangays.length > 0 ? (
           <select 
             name="barangay"
@@ -137,7 +137,7 @@ const AddressDropdowns = ({
     <>
       {/* PROVINCE/REGION */}
       <div>
-        <label className={labelClass}>PROVINCE/REGION</label>
+        <label className={labelClass}>PROVINCE/REGION *</label>
         <select 
           name="province_region"
           value={formData.province_region}
@@ -160,7 +160,7 @@ const AddressDropdowns = ({
       {/* CITY/MUNICIPALITY and BARANGAY */}
       <div className={containerClass}>
         <div className="flex-1">
-          <label className={labelClass}>CITY/MUNICIPALITY</label>
+          <label className={labelClass}>CITY/MUNICIPALITY *</label>
           <select 
             name="city_municipality"
             value={formData.city_municipality}
@@ -205,7 +205,7 @@ const AddressDropdowns = ({
           {errors.city_municipality && <p className={errorClass}>{errors.city_municipality}</p>}
         </div>
         <div className="flex-1">
-          <label className={labelClass}>BARANGAY</label>
+          <label className={labelClass}>BARANGAY *</label>
           {Array.isArray(availableBarangays) && availableBarangays.length > 0 ? (
             <select 
               name="barangay"
