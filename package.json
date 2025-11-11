@@ -10,7 +10,8 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "railway:build": "npm install && npm run build"
+    "railway:build": "npm install && npm run build",
+    "vercel:build": "npm install && npm run build"
   },
   "dependencies": {
     "@mediapipe/camera_utils": "^0.3.1675466862",
