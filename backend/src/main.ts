@@ -4,14 +4,19 @@ config();
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import * as express from 'express';
+import { join } from 'path';
 
 const server = express.default();
 const PORT = process.env.PORT || 3000;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, new ExpressAdapter(server));
+
+  // Use IoAdapter for WebSocket support
+  app.useWebSocketAdapter(new IoAdapter(app));
 
   app.enableCors({
     origin: [
@@ -25,7 +30,16 @@ async function bootstrap() {
     credentials: true,
   });
 
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  server.use(express.static(join(__dirname, '..')));
+
+  app.useGlobalPipes(new ValidationPipe({ 
+    whitelist: true, 
+    transform: true,
+    forbidNonWhitelisted: false,
+    transformOptions: {
+      enableImplicitConversion: true,
+    }
+  }));
 
   await app.init();
   

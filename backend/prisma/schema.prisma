@@ -22,6 +22,7 @@ model UserAccount {
   category_updates   CategoryContent[]
   chats_admin        ChatMessage[]       @relation("AdminChats")
   chats_sent         ChatMessage[]       @relation("UserChats")
+  chat_sessions      ChatSession[]
   collection_updates CollectionContent[]
   homepage_updates   HomepageContent[]
   orders             Order[]
@@ -176,14 +177,33 @@ model PendingOrder {
 
 model ChatMessage {
   chat_id       Int          @id @default(autoincrement())
-  user_id       Int?
+  user_id       Int?         
+  session_id    String?      
+  email         String?      
   admin_id      Int?
   message       String
   is_from_admin Boolean      @default(false)
   is_resolved   Boolean      @default(false)
+  is_read       Boolean      @default(false) 
   created_at    DateTime     @default(now())
   admin         UserAccount? @relation("AdminChats", fields: [admin_id], references: [user_id])
   user          UserAccount? @relation("UserChats", fields: [user_id], references: [user_id])
+  
+  @@index([session_id]) 
+  @@index([email])
+  @@index([user_id])
+}
+
+model ChatSession {
+  session_id    String       @id @default(uuid())
+  email         String?
+  user_id       Int?         // Linked when user logs in
+  created_at    DateTime     @default(now())
+  last_active   DateTime     @default(now())
+  user          UserAccount? @relation(fields: [user_id], references: [user_id])
+  
+  @@index([email])
+  @@index([user_id])
 }
 
 model AutoReply {

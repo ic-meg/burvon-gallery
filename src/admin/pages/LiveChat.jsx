@@ -1,5 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import AdminHeader from '../../components/admin/AdminHeader';
+import { useWebSocket } from '../../hooks/useWebSocket';
+import { getAuthToken, getUser } from '../../services/authService';
+import Toast from '../../components/Toast';
+import chatApi from '../../api/chatApi';
 
 import {
   AddVideo,
@@ -30,187 +34,124 @@ const LiveChat = () => {
     keywords: ''
   });
   const [selectedFiles, setSelectedFiles] = useState([]);
+  const [chats, setChats] = useState([]);
+  const [loading, setLoading] = useState(true);
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
   const fileInputRef = useRef(null);
+  
+  const adminUser = JSON.parse(localStorage.getItem('adminUser') || 'null');
+  
+  const loadConversations = useCallback(async () => {
+    try {
+      setLoading(true);
+      const result = await chatApi.fetchAllConversations();
 
-  // Sample chat data with logical status assignments
-  const [chats, setChats] = useState([
-    {
-      id: 1,
-      customerName: "Meg Fabian",
-      customerInitials: "MF",
-      lastMessage: "Hi, I need help with my order.",
-      lastSender: "customer",
-      timestamp: "9:47PM",
-      status: "unread",
-      unreadCount: 2,
-      isOnline: true,
-      messages: [
-        {
-          id: 1,
-          sender: "customer",
-          content: "Hi, I need help with my order.",
-          timestamp: "9:47PM",
-          isRead: false
-        },
-        {
-          id: 2,
-          sender: "customer", 
-          content: "My order number is #3894O123.",
-          timestamp: "9:48PM",
-          isRead: false
-        }
-      ]
-    },
-    {
-      id: 2,
-      customerName: "Giuliani Calais",
-      customerInitials: "GC",
-      lastMessage: "Can you help me with sizing?",
-      lastSender: "customer",
-      timestamp: "9:45PM",
-      status: "unanswered",
-      unreadCount: 0,
-      isOnline: true,
-      messages: [
-        {
-          id: 1,
-          sender: "customer",
-          content: "Hi there!",
-          timestamp: "9:44PM",
-          isRead: true
-        },
-        {
-          id: 2,
-          sender: "customer",
-          content: "Can you help me with sizing?",
-          timestamp: "9:45PM",
-          isRead: true
-        }
-      ]
-    },
-    {
-      id: 3,
-      customerName: "Sarah Johnson",
-      customerInitials: "SJ",
-      lastMessage: "You: Thank you for contacting us! Your order has been processed.",
-      lastSender: "admin",
-      timestamp: "9:40PM",
-      status: "answered",
-      unreadCount: 0,
-      isOnline: false,
-      messages: [
-        {
-          id: 1,
-          sender: "customer",
-          content: "I want to cancel my order.",
-          timestamp: "9:35PM",
-          isRead: true
-        },
-        {
-          id: 2,
-          sender: "admin",
-          content: "I can help you with that. What's your order number?",
-          timestamp: "9:36PM",
-          isRead: true
-        },
-        {
-          id: 3,
-          sender: "customer",
-          content: "It's #ORDER789",
-          timestamp: "9:37PM",
-          isRead: true
-        },
-        {
-          id: 4,
-          sender: "admin",
-          content: "Thank you for contacting us! Your order has been processed.",
-          timestamp: "9:40PM",
-          isRead: true
-        }
-      ]
-    },
-    {
-      id: 4,
-      customerName: "Shanley Galo",
-      customerInitials: "SG",
-      lastMessage: "When will my ring be ready?",
-      lastSender: "customer",
-      timestamp: "9:30PM",
-      status: "unread",
-      unreadCount: 1,
-      isOnline: false,
-      messages: [
-        {
-          id: 1,
-          sender: "customer",
-          content: "When will my ring be ready?",
-          timestamp: "9:30PM",
-          isRead: false
-        }
-      ]
-    },
-    {
-      id: 5,
-      customerName: "Mike Chen",
-      customerInitials: "MC",
-      lastMessage: "You: The issue has been resolved. Have a great day!",
-      lastSender: "admin",
-      timestamp: "8:30PM",
-      status: "resolved",
-      unreadCount: 0,
-      isOnline: false,
-      messages: [
-        {
-          id: 1,
-          sender: "customer",
-          content: "I have a problem with my bracelet.",
-          timestamp: "8:25PM",
-          isRead: true
-        },
-        {
-          id: 2,
-          sender: "admin",
-          content: "I'm sorry to hear that. What seems to be the issue?",
-          timestamp: "8:26PM",
-          isRead: true
-        },
-        {
-          id: 3,
-          sender: "customer",
-          content: "The clasp is not working properly.",
-          timestamp: "8:27PM",
-          isRead: true
-        },
-        {
-          id: 4,
-          sender: "admin",
-          content: "The issue has been resolved. Have a great day!",
-          timestamp: "8:30PM",
-          isRead: true
-        }
-      ]
+      if (!result.error && result.data) {
+        const formattedChats = result.data.conversations.map((conv, index) => ({
+          id: conv.identifier,
+          identifier: conv.identifier,
+          customerName: conv.customerName,
+          customerInitials: conv.customerInitials,
+          lastMessage: conv.lastMessage,
+          lastSender: conv.lastSender,
+          timestamp: new Date(conv.timestamp).toLocaleTimeString([], { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          }),
+          status: conv.isResolved ? 'resolved' :
+                  conv.unreadCount > 0 ? 'unread' : 
+                  conv.lastSender === 'admin' ? 'answered' : 'unanswered',
+          unreadCount: conv.unreadCount,
+          isOnline: conv.isOnline,
+          user_id: conv.user_id,
+          session_id: conv.session_id,
+          email: conv.email,
+          messages: conv.messages || []
+        }));
+        setChats(formattedChats);
+      }
+    } catch (error) {
+      console.error('Error loading conversations:', error);
+    } finally {
+      setLoading(false);
     }
-  ]);
+  }, []);
 
-  // Automated reply templates
-  const [templates, setTemplates] = useState([
-    {
-      id: 1,
-      title: "GREETING",
-      content: "Hello! Welcome to Burvon Jewelry. How can I help you today?",
-      keywords: "hello, hi, start"
-    },
-    {
-      id: 2,
-      title: "ORDER STATUS",
-      content: "To check a customer's order status and will tell you the confirmation method. track your confirmation. Thank you!\n\nRegards, sales team, where is my order tracking",
-      keywords: "order, status, shipping"
+  // Handle conversations list from WebSocket
+  const handleConversationsUpdate = useCallback((conversations) => {
+    const formattedChats = conversations.map((conv) => ({
+      id: conv.identifier,
+      identifier: conv.identifier,
+      customerName: conv.customerName,
+      customerInitials: conv.customerInitials,
+      lastMessage: conv.lastMessage,
+      lastSender: conv.lastSender,
+      timestamp: new Date(conv.timestamp).toLocaleTimeString([], { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      }),
+      status: conv.unreadCount > 0 ? 'unread' : 
+              conv.lastSender === 'admin' ? 'answered' : 'unanswered',
+      unreadCount: conv.unreadCount,
+      isOnline: conv.isOnline,
+      user_id: conv.user_id,
+      session_id: conv.session_id,
+      email: conv.email,
+      messages: conv.messages || []
+    }));
+    setChats(formattedChats);
+    setLoading(false);
+  }, []);
+
+  // Handle new message - refresh conversations list
+  const handleNewMessage = useCallback((chatMessage) => {
+    loadConversations();
+  }, [loadConversations]);
+
+  const { isConnected, sendMessage } = useWebSocket(true, handleConversationsUpdate, handleNewMessage);
+
+  useEffect(() => {
+    if (isConnected) {
+      loadConversations();
     }
-  ]);
+  }, [isConnected, loadConversations]);
 
-  // Updated filter options - Chat includes all except resolved, Unread only unread messages, Resolved only resolved
+  const [templates, setTemplates] = useState([]);
+  const [templatesLoading, setTemplatesLoading] = useState(true);
+  
+  // Toast notification state
+  const [toast, setToast] = useState({ show: false, message: '', type: 'error' });
+
+  // Load templates from API
+  const loadTemplates = useCallback(async () => {
+    try {
+      setTemplatesLoading(true);
+      const result = await chatApi.fetchAllTemplates();
+
+      if (!result.error && result.data) {
+        // Convert backend format to frontend format
+        const formattedTemplates = result.data.templates.map(template => ({
+          id: template.auto_reply_id,
+          title: template.title,
+          content: template.reply_message,
+          keywords: Array.isArray(template.trigger_keywords) 
+            ? template.trigger_keywords.join(', ') 
+            : template.trigger_keywords || ''
+        }));
+        setTemplates(formattedTemplates);
+      }
+    } catch (error) {
+      console.error('Error loading templates:', error);
+    } finally {
+      setTemplatesLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadTemplates();
+  }, [loadTemplates]);
+
   const filterOptions = [
     { 
       value: 'CHAT', 
@@ -229,7 +170,6 @@ const LiveChat = () => {
     }
   ];
 
-  // Get filtered chats with updated logic
   const filteredChats = chats.filter(chat => {
     const matchesFilter = selectedFilter === 'CHAT' ? 
       chat.status !== 'resolved' : 
@@ -238,15 +178,12 @@ const LiveChat = () => {
     return matchesFilter && matchesSearch;
   });
 
-  // Get current chat
   const currentChat = chats.find(chat => chat.id === selectedChat);
 
-  // Get current message for this chat
   const getCurrentMessage = () => {
     return messagesByChat[selectedChat] || '';
   };
 
-  // Set message for current chat
   const setCurrentMessage = (message) => {
     setMessagesByChat(prev => ({
       ...prev,
@@ -254,7 +191,6 @@ const LiveChat = () => {
     }));
   };
 
-  // Auto-resize textarea
   const adjustTextareaHeight = () => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -262,7 +198,6 @@ const LiveChat = () => {
     }
   };
 
-  // Handle file selection
   const handleFileSelect = () => {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -270,7 +205,6 @@ const LiveChat = () => {
     }
   };
 
-  // Handle file upload (multiple files up to 4)
   const handleFileUpload = (event) => {
     const files = Array.from(event.target.files);
     const newFiles = files.slice(0, 4 - selectedFiles.length);
@@ -280,14 +214,11 @@ const LiveChat = () => {
     }
   };
 
-  // Remove selected file
   const removeFile = (index) => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  // Handle chat click with improved status management
-  const handleChatClick = (chatId) => {
-    // Update previously opened chats to move them to unanswered if they were unread
+  const handleChatClick = async (chatId) => {
     if (selectedChat && selectedChat !== chatId && selectedChat !== activelyAnswering) {
       setChats(prevChats => 
         prevChats.map(chat => 
@@ -298,23 +229,36 @@ const LiveChat = () => {
       );
     }
 
-    // Set new selected chat and mark as opened
     setSelectedChat(chatId);
     setLastOpenedChat(chatId);
     setPreviouslyOpenedChats(prev => new Set([...prev, chatId]));
     
-    // Mark messages as read but don't change status immediately
-    setChats(prevChats => 
-      prevChats.map(chat => 
-        chat.id === chatId 
-          ? { 
-              ...chat, 
-              unreadCount: 0,
-              messages: chat.messages.map(msg => ({ ...msg, isRead: true }))
-            }
-          : chat
-      )
-    );
+    const chat = chats.find(c => c.id === chatId);
+    if (chat && chat.identifier) {
+      await loadConversationMessages(chat.identifier);
+    }
+    
+    // Mark messages as read
+    const chatToUpdate = chats.find(c => c.id === chatId);
+    if (chatToUpdate) {
+      const identifier = chatToUpdate.identifier;
+      const isUser = identifier.startsWith('user_');
+      const isSession = identifier.startsWith('session_');
+
+      try {
+        if (isUser) {
+          const user_id = parseInt(identifier.replace('user_', ''));
+          await chatApi.markMessagesAsReadByUser(user_id);
+        } else if (isSession) {
+          const session_id = identifier.replace('session_', '');
+          await chatApi.markMessagesAsReadBySession(session_id);
+        }
+      } catch (error) {
+        console.error('Error marking messages as read:', error);
+      }
+      
+      loadConversations();
+    }
   };
 
   // Create object URL for file preview
@@ -333,7 +277,7 @@ const LiveChat = () => {
     };
   }, [selectedFiles]);
 
-  // Handle message input change - mark chat as actively being answered
+    // Handle message input change - mark chat as actively being answered
   const handleMessageInputChange = (e) => {
     setCurrentMessage(e.target.value);
     
@@ -349,61 +293,123 @@ const LiveChat = () => {
   };
 
   // Handle send message with file display - moves chat to "answered" tab
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     const currentMessage = getCurrentMessage();
     if ((!currentMessage.trim() && selectedFiles.length === 0) || !currentChat) return;
 
-    const newMsg = {
-      id: currentChat.messages.length + 1,
-      sender: "admin",
-      content: currentMessage || '',
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      files: selectedFiles.map(file => ({
-        ...file,
-        url: createFilePreview(file),
-        type: file.type,
-        name: file.name,
-        size: file.size
-      })),
-      isRead: true
+    // Send via WebSocket
+    const identifier = currentChat.identifier;
+    const isUser = identifier.startsWith('user_');
+    const isSession = identifier.startsWith('session_');
+
+    const messageData = {
+      message: currentMessage,
+      admin_id: adminUser?.user_id,
+      sender_type: 'admin',
     };
 
-    setChats(prevChats => 
-      prevChats.map(chat => 
-        chat.id === selectedChat 
-          ? { 
-              ...chat, 
-              messages: [...chat.messages, newMsg],
-              lastMessage: currentMessage || `You: Sent ${selectedFiles.length} file(s)`,
-              lastSender: "admin",
-              timestamp: newMsg.timestamp,
-              status: 'answered'
-            }
-          : chat
-      )
-    );
+    let targetUserId = null;
+    let targetSessionId = null;
+    let targetEmail = null;
 
-    // Clear message for this chat
-    setCurrentMessage('');
-    setSelectedFiles([]);
-    setActivelyAnswering(null);
+    if (isUser) {
+      targetUserId = parseInt(identifier.replace('user_', ''));
+    } else if (isSession) {
+      targetSessionId = identifier.replace('session_', '');
+      targetEmail = currentChat.email; // Get email from chat for session-based messages
+    }
+
+    const success = sendMessage(currentMessage, adminUser?.user_id, targetUserId, targetSessionId, targetEmail);
     
-    // Reset textarea height
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
+    if (success) {
+      const newMsg = {
+        chat_id: Date.now(), // Temporary ID
+        message: currentMessage,
+        is_from_admin: true,
+        created_at: new Date().toISOString(),
+        admin: adminUser,
+      };
+
+      setChats(prevChats => 
+        prevChats.map(chat => 
+          chat.id === selectedChat 
+            ? { 
+                ...chat, 
+                messages: [...chat.messages, newMsg],
+                lastMessage: currentMessage || `You: Sent ${selectedFiles.length} file(s)`,
+                lastSender: "admin",
+                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                status: 'answered',
+                unreadCount: 0
+              }
+            : chat
+        )
+      );
+
+      setCurrentMessage('');
+      setSelectedFiles([]);
+      setActivelyAnswering(null);
+      
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto';
+      }
+
+      // Reload conversation to get actual message from server
+      setTimeout(() => {
+        loadConversationMessages(identifier);
+      }, 500);
+    }
+  };
+
+  // Load messages for a specific conversation
+  const loadConversationMessages = async (identifier) => {
+    try {
+      const result = await chatApi.fetchConversationByIdentifier(identifier);
+
+      if (!result.error && result.data) {
+        setChats(prevChats => 
+          prevChats.map(chat => 
+            chat.identifier === identifier 
+              ? { ...chat, messages: result.data.messages || [] }
+              : chat
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error loading conversation messages:', error);
     }
   };
 
   // Handle mark as resolved
-  const handleMarkAsResolved = () => {
-    setChats(prevChats => 
-      prevChats.map(chat => 
-        chat.id === selectedChat 
-          ? { ...chat, status: 'resolved' }
-          : chat
-      )
-    );
-    setActivelyAnswering(null);
+  const handleMarkAsResolved = async () => {
+    if (!selectedChat) return;
+    
+    const chat = chats.find(c => c.id === selectedChat);
+    if (!chat) return;
+
+    try {
+      const result = await chatApi.markConversationAsResolved(chat.user_id, chat.session_id, adminUser?.user_id);
+
+      if (!result.error) {
+        // Update local state
+        setChats(prevChats => 
+          prevChats.map(c => 
+            c.id === selectedChat 
+              ? { ...c, status: 'resolved' }
+              : c
+          )
+        );
+        setActivelyAnswering(null);
+        setToast({ show: true, message: 'Conversation marked as resolved!', type: 'success' });
+        // Reload conversations to get updated data
+        loadConversations();
+      } else {
+        setToast({ show: true, message: result.error || 'Failed to mark as resolved', type: 'error' });
+      }
+    } catch (error) {
+      console.error('Error marking conversation as resolved:', error);
+      setToast({ show: true, message: `Error: ${error.message}`, type: 'error' });
+    }
   };
 
   // Handle use template
@@ -418,6 +424,28 @@ const LiveChat = () => {
     setTimeout(() => adjustTextareaHeight(), 0);
   };
 
+  // Handle delete template
+  const handleDeleteTemplate = async (templateId) => {
+    if (!window.confirm('Are you sure you want to delete this template?')) {
+      return;
+    }
+
+    try {
+      const result = await chatApi.deleteTemplate(templateId);
+
+      if (!result.error) {
+        setToast({ show: true, message: 'Template deleted successfully!', type: 'success' });
+        // Reload templates
+        loadTemplates();
+      } else {
+        setToast({ show: true, message: result.error || 'Failed to delete template', type: 'error' });
+      }
+    } catch (error) {
+      console.error('Error deleting template:', error);
+      setToast({ show: true, message: `Error deleting template: ${error.message}`, type: 'error' });
+    }
+  };
+
   // Handle edit template
   const handleEditTemplateClick = (template) => {
     setEditTemplate({
@@ -430,39 +458,71 @@ const LiveChat = () => {
   };
 
   // Handle add template
-  const handleAddTemplate = () => {
+  const handleAddTemplate = async () => {
     if (!newTemplate.title.trim() || !newTemplate.content.trim()) return;
 
-    const template = {
-      id: templates.length + 1,
-      title: newTemplate.title,
-      content: newTemplate.content,
-      keywords: newTemplate.keywords
-    };
+    try {
+      // Convert keywords string to array
+      const keywordsArray = newTemplate.keywords
+        ? newTemplate.keywords.split(',').map(k => k.trim()).filter(k => k)
+        : [];
 
-    setTemplates(prev => [...prev, template]);
-    setNewTemplate({ title: '', content: '', keywords: '' });
-    setShowTemplateModal(false);
+      const requestBody = {
+        title: newTemplate.title.trim(),
+        reply_message: newTemplate.content.trim(),
+        trigger_keywords: keywordsArray
+      };
+
+   
+
+      const result = await chatApi.createTemplate(requestBody);
+
+      if (!result.error) {
+        setNewTemplate({ title: '', content: '', keywords: '' });
+        setShowTemplateModal(false);
+        setToast({ show: true, message: 'Template created successfully!', type: 'success' });
+        // Reload templates
+        loadTemplates();
+      } else {
+        setToast({ show: true, message: result.error || 'Failed to create template', type: 'error' });
+      }
+    } catch (error) {
+      console.error('Error creating template:', error);
+      setToast({ show: true, message: `Error creating template: ${error.message}`, type: 'error' });
+    }
   };
 
   // Handle update template
-  const handleUpdateTemplate = () => {
-    if (!editTemplate.title.trim() || !editTemplate.content.trim()) return;
+  const handleUpdateTemplate = async () => {
+    if (!editTemplate.title.trim() || !editTemplate.content.trim() || !editTemplate.id) return;
 
-    setTemplates(prev => 
-      prev.map(template => 
-        template.id === editTemplate.id 
-          ? { 
-              ...template, 
-              title: editTemplate.title,
-              content: editTemplate.content,
-              keywords: editTemplate.keywords
-            }
-          : template
-      )
-    );
-    setShowEditTemplateModal(false);
-    setEditTemplate({ id: null, title: '', content: '', keywords: '' });
+    try {
+      // Convert keywords string to array
+      const keywordsArray = editTemplate.keywords
+        ? editTemplate.keywords.split(',').map(k => k.trim()).filter(k => k)
+        : [];
+
+      const result = await chatApi.updateTemplate(editTemplate.id, {
+        title: editTemplate.title,
+        reply_message: editTemplate.content,
+        trigger_keywords: keywordsArray
+      });
+
+      if (!result.error) {
+        setShowEditTemplateModal(false);
+        setEditTemplate({ id: null, title: '', content: '', keywords: '' });
+        setToast({ show: true, message: 'Template updated successfully!', type: 'success' });
+        // Reload templates
+        loadTemplates();
+      } else {
+        const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+        console.error('Failed to update template:', response.status, errorData);
+        setToast({ show: true, message: errorData.message || 'Failed to update template', type: 'error' });
+      }
+    } catch (error) {
+      console.error('Error updating template:', error);
+      setToast({ show: true, message: `Error updating template: ${error.message}`, type: 'error' });
+    }
   };
 
   // Get last message preview
@@ -636,38 +696,44 @@ const LiveChat = () => {
 
                   {/* Messages */}
                   <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                    {currentChat.messages.map(message => (
-                      <div
-                        key={message.id}
-                        className={`flex ${message.sender === 'admin' ? 'justify-end' : 'justify-start'}`}
-                      >
-                        <div className={`max-w-[70%] px-4 py-2 rounded-lg ${
-                          message.sender === 'admin'
-                            ? 'bg-black text-white'
-                            : `${!message.isRead ? 'bg-yellow-100 border-2 border-yellow-300' : 'bg-gray-200'} text-black`
-                        }`}>
-                          {/* Text content with proper word breaking */}
-                          {message.content && (
-                            <p className="text-sm avant break-words whitespace-pre-wrap mb-2" style={{ wordBreak: 'break-word' }}>{message.content}</p>
-                          )}
+                    {currentChat.messages && currentChat.messages.length > 0 ? (
+                      currentChat.messages.map(message => {
+                        const isAdmin = message.is_from_admin;
+                        const messageId = message.chat_id || message.id;
+                        const messageText = message.message || message.content || '';
+                        
+                        return (
+                          <div
+                            key={messageId}
+                            className={`flex ${isAdmin ? 'justify-end' : 'justify-start'}`}
+                          >
+                            <div className={`max-w-[70%] px-4 py-2 rounded-lg ${
+                              isAdmin
+                                ? 'metallic-bg cream-text'
+                                : `${!message.is_read ? 'bg-yellow-100 border-2 border-yellow-300' : 'bg-gray-200'} text-black`
+                            }`}>
+                              {/* Text content with proper word breaking */}
+                              {messageText && (
+                                <p className="text-sm avant break-words whitespace-pre-wrap mb-2" style={{ wordBreak: 'break-word' }}>{messageText}</p>
+                              )}
                           
-                          {/* File display */}
-                          {message.files && message.files.length > 0 && (
-                            <div className="space-y-2">
-                              {message.files.map((file, index) => (
-                                <div key={index}>
-                                  {file.type?.startsWith('image/') ? (
-                                    <div>
+                              {/* File display */}
+                              {message.files && message.files.length > 0 && (
+                                <div className="space-y-2">
+                                  {message.files.map((file, index) => (
+                                    <div key={index}>
+                                      {file.type?.startsWith('image/') ? (
+                                        <div>
                                       <img 
                                         src={file.url} 
                                         alt={file.name}
                                         className="max-w-full max-h-48 rounded-lg object-cover"
                                         loading="lazy"
                                       />
-                                      <p className="text-xs opacity-75 mt-1">{file.name}</p>
-                                    </div>
-                                  ) : file.type?.startsWith('video/') ? (
-                                    <div>
+                                        <p className="text-xs opacity-75 mt-1">{file.name}</p>
+                                        </div>
+                                      ) : file.type?.startsWith('video/') ? (
+                                        <div>
                                       <video 
                                         src={file.url} 
                                         controls 
@@ -675,35 +741,46 @@ const LiveChat = () => {
                                       >
                                         Your browser does not support the video tag.
                                       </video>
-                                      <p className="text-xs opacity-75 mt-1">{file.name}</p>
-                                    </div>
-                                  ) : (
-                                    <div className="flex items-center space-x-2 p-2 bg-gray-100 bg-opacity-20 rounded">
+                                        <p className="text-xs opacity-75 mt-1">{file.name}</p>
+                                        </div>
+                                      ) : (
+                                        <div className="flex items-center space-x-2 p-2 bg-gray-100 bg-opacity-20 rounded">
                                       <span className="text-lg">
                                         {file.type === 'application/pdf' ? '📄' : '📎'}
                                       </span>
                                       <div>
                                         <p className="text-xs font-medium">{file.name}</p>
                                         <p className="text-xs opacity-75">{(file.size / 1024).toFixed(1)} KB</p>
+                                        </div>
                                       </div>
+                                      )}
                                     </div>
-                                  )}
+                                  ))}
                                 </div>
-                              ))}
+                              )}
+                              
+                              <span className={`text-xs mt-1 block ${
+                                isAdmin ? 'cream-text opacity-75' : 'text-gray-500'
+                              }`}>
+                                {message.created_at 
+                                  ? new Date(message.created_at).toLocaleTimeString([], { 
+                                      hour: '2-digit', 
+                                      minute: '2-digit' 
+                                    })
+                                  : message.timestamp || ''}
+                                {!message.is_read && !isAdmin && (
+                                  <span className="ml-2 text-yellow-600 font-medium">NEW</span>
+                                )}
+                              </span>
                             </div>
-                          )}
-                          
-                          <span className={`text-xs mt-1 block ${
-                            message.sender === 'admin' ? 'text-gray-300' : 'text-gray-500'
-                          }`}>
-                            {message.timestamp}
-                            {!message.isRead && message.sender === 'customer' && (
-                              <span className="ml-2 text-yellow-600 font-medium">NEW</span>
-                            )}
-                          </span>
-                        </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-gray-400">
+                        <p className="avant">No messages yet. Start the conversation!</p>
                       </div>
-                    ))}
+                    )}
                     <div ref={messagesEndRef} />
                   </div>
 
@@ -810,29 +887,45 @@ const LiveChat = () => {
 
               {/* Templates List */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {templates.map(template => (
-                  <div key={template.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-sm avantbold text-black">{template.title}</h4>
+                {templatesLoading ? (
+                  <div className="text-center text-gray-500 avant text-sm">Loading templates...</div>
+                ) : templates.length === 0 ? (
+                  <div className="text-center text-gray-500 avant text-sm">No templates yet. Add one to get started!</div>
+                ) : (
+                  templates.map(template => (
+                    <div key={template.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="text-sm avantbold text-black">{template.title}</h4>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleEditTemplateClick(template)}
+                            className="text-xs avant text-gray-600 hover:text-black"
+                          >
+                            EDIT
+                          </button>
+                          <button
+                            onClick={() => handleDeleteTemplate(template.id)}
+                            className="text-xs avant text-red-600 hover:text-red-800"
+                          >
+                            DELETE
+                          </button>
+                        </div>
+                      </div>
+                      <p className="text-xs avant text-gray-600 mb-2 line-clamp-3">{template.content}</p>
+                      {template.keywords && (
+                        <p className="text-xs avant text-gray-500 mb-3">
+                          <span className="font-medium">Keywords:</span> {template.keywords}
+                        </p>
+                      )}
                       <button
-                        onClick={() => handleEditTemplateClick(template)}
-                        className="text-xs avant text-gray-600 hover:text-black"
+                        onClick={() => handleUseTemplate(template)}
+                        className="w-full px-3 py-2 bg-gray-100 text-black rounded hover:bg-gray-200 transition-colors avant text-xs font-medium"
                       >
-                        EDIT
+                        USE TEMPLATE
                       </button>
                     </div>
-                    <p className="text-xs avant text-gray-600 mb-2 line-clamp-3">{template.content}</p>
-                    <p className="text-xs avant text-gray-500 mb-3">
-                      <span className="font-medium">Keywords:</span> {template.keywords}
-                    </p>
-                    <button
-                      onClick={() => handleUseTemplate(template)}
-                      className="w-full px-3 py-2 bg-gray-100 text-black rounded hover:bg-gray-200 transition-colors avant text-xs font-medium"
-                    >
-                      USE TEMPLATE
-                    </button>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
           </div>
@@ -989,6 +1082,14 @@ const LiveChat = () => {
           </div>
         </div>
       )}
+
+      {/* Toast Notification */}
+      <Toast 
+        show={toast.show} 
+        message={toast.message} 
+        type={toast.type} 
+        onClose={() => setToast({ show: false, message: '', type: 'error' })}
+      />
     </div>
   );
 };
