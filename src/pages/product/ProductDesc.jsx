@@ -213,20 +213,20 @@ const ProductDesc = () => {
         : null,
       newPrice:
         productData.current_price &&
-        productData.current_price !== "null" &&
-        productData.current_price !== null
+          productData.current_price !== "null" &&
+          productData.current_price !== null
           ? `₱${parseFloat(productData.current_price).toFixed(2)}`
           : null,
       price:
         productData.current_price &&
-        productData.current_price !== "null" &&
-        productData.current_price !== null
+          productData.current_price !== "null" &&
+          productData.current_price !== null
           ? `₱${parseFloat(productData.current_price).toFixed(2)}`
           : productData.original_price &&
             productData.original_price !== "null" &&
             productData.original_price !== null
-          ? `₱${parseFloat(productData.original_price).toFixed(2)}`
-          : "₱0.00",
+            ? `₱${parseFloat(productData.original_price).toFixed(2)}`
+            : "₱0.00",
       stock: productData.stock || 0,
       images:
         Array.isArray(productData.images) && productData.images.length > 0
@@ -286,7 +286,7 @@ const ProductDesc = () => {
   const [resolvedModelPath, setResolvedModelPath] = useState(null);
 
   useEffect(() => {
-   
+
     let cancelled = false;
 
     const makeCandidates = (p) => {
@@ -394,7 +394,7 @@ const ProductDesc = () => {
               }
               return;
             } else {
-             
+
               console.debug(
                 "Model probe fallback GET rejected:",
                 candidate,
@@ -444,8 +444,8 @@ const ProductDesc = () => {
     price: productData.current_price
       ? `₱${parseFloat(productData.current_price).toFixed(2)}`
       : productData.original_price
-      ? `₱${parseFloat(productData.original_price).toFixed(2)}`
-      : "₱0.00",
+        ? `₱${parseFloat(productData.original_price).toFixed(2)}`
+        : "₱0.00",
     images:
       Array.isArray(productData.images) && productData.images.length > 0
         ? productData.images
@@ -663,6 +663,7 @@ const ProductDesc = () => {
 
   const handleSizeSelect = (size) => {
     setSelectedSize(size);
+    setQuantity(1); // Reset quantity to 1 when size changes
   };
 
   const handleAddToCart = () => {
@@ -671,12 +672,14 @@ const ProductDesc = () => {
     // Check if product is a ring (has sizes) and if a size is selected
     const isRing = formattedProduct?.sizes && formattedProduct.sizes.length > 0;
     if (isRing && !selectedSize) {
-      // Show toast notification if no size is selected
       setToastMessage("Please select a size before adding to cart");
       setToastType("error");
       setShowToast(true);
       return;
     }
+
+    // Get the size-specific stock for products with sizes
+    const sizeSpecificStock = isRing ? getSelectedSizeStock() : null;
 
     const productData = {
       id: formattedProduct.id,
@@ -689,13 +692,13 @@ const ProductDesc = () => {
       category_id: formattedProduct.category_id,
     };
 
-    addToCart(productData, quantity, selectedSize);
+    addToCart(productData, quantity, selectedSize, sizeSpecificStock);
   };
 
   const handleAddToWishlist = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (!formattedProduct || !formattedProduct.id) {
       console.error("Product data not available");
       return;
@@ -821,7 +824,7 @@ const ProductDesc = () => {
                   </button>
                 )}
                 {resolvedModelPath && show3D ? (
-                  
+
                   <div className="w-full h-full">
                     <ThreePage modelPath={resolvedModelPath} />
                   </div>
@@ -846,17 +849,15 @@ const ProductDesc = () => {
                     <button
                       key={index}
                       onClick={() => handleThumbnailClick(index)}
-                      className={`w-20 aspect-square bg-black rounded-lg overflow-hidden border ${
-                        currentImageIndex === index
+                      className={`w-20 aspect-square bg-black rounded-lg overflow-hidden border ${currentImageIndex === index
                           ? "border-[#FFF7DC]"
                           : "border-transparent"
-                      } transition-all`}
+                        } transition-all`}
                     >
                       <img
                         src={image}
-                        alt={`${formattedProduct?.name || ""} view ${
-                          index + 1
-                        }`}
+                        alt={`${formattedProduct?.name || ""} view ${index + 1
+                          }`}
                         className="w-full h-full object-cover"
                         draggable={false}
                       />
@@ -887,7 +888,7 @@ const ProductDesc = () => {
                   </div>
                   <div className="flex items-center gap-3">
                     {hasTryOnAvailable(formattedProduct.category || product?.category, formattedProduct.name || product?.name) && (
-                      <button 
+                      <button
                         onClick={() => {
                           const category = formattedProduct.category || product?.category || "";
                           const productName = formattedProduct.name || product?.name || "";
@@ -982,10 +983,10 @@ const ProductDesc = () => {
                         {(() => {
                           const sizes =
                             formattedProduct?.sizes &&
-                            formattedProduct.sizes.length > 0
+                              formattedProduct.sizes.length > 0
                               ? Array.from(new Set(formattedProduct.sizes))
-                                  .slice()
-                                  .sort((a, b) => a - b)
+                                .slice()
+                                .sort((a, b) => a - b)
                               : getAvailableSizes();
 
                           const sizeStockLookup = (
@@ -1009,13 +1010,12 @@ const ProductDesc = () => {
                                   inStock && handleSizeSelect(size)
                                 }
                                 disabled={!inStock}
-                                className={`relative w-8 h-8 rounded-md border-2 transition-all duration-200 flex items-center justify-center text-xs avantbold ${
-                                  selectedSize === size
+                                className={`relative w-8 h-8 rounded-md border-2 transition-all duration-200 flex items-center justify-center text-xs avantbold ${selectedSize === size
                                     ? "bg-[#FFF7DC] text-[#1f1f21] border-[#FFF7DC]"
                                     : inStock
-                                    ? "bg-transparent text-[#FFF7DC] border-[#959595] hover:border-[#FFF7DC]"
-                                    : "bg-[#222] text-[#6f6f6f] border-[#444] cursor-not-allowed"
-                                }`}
+                                      ? "bg-transparent text-[#FFF7DC] border-[#959595] hover:border-[#FFF7DC]"
+                                      : "bg-[#222] text-[#6f6f6f] border-[#444] cursor-not-allowed"
+                                  }`}
                               >
                                 <span className="z-10">{size}</span>
                                 {!inStock && (
@@ -1040,7 +1040,14 @@ const ProductDesc = () => {
                           });
                         })()}
                       </div>
-                      <button className="flex items-center gap-1.5 text-[#959595] hover:opacity-80 transition-opacity">
+                      <button onClick={() => {
+                        const params = new URLSearchParams();
+                        const category = formattedProduct.category || product?.category || "";
+                        const productName = formattedProduct.name || product?.name || "";
+                        if (category) params.set("category", category);
+                        if (productName) params.set("product", productName);
+                        navigate(`/customer-care/size-guide?${params.toString()}`);
+                      }} className="flex items-center gap-1.5 text-[#959595] hover:opacity-80 transition-opacity cursor-pointer">
                         <img src={Ruler} alt="Ruler" className="w-4 h-4" />
                         <span className="text-xs avantbold tracking-wider uppercase">
                           CHECK MY SIZE
@@ -1053,11 +1060,10 @@ const ProductDesc = () => {
                 <button
                   disabled={getAvailableStock() === 0}
                   onClick={handleAddToCart}
-                  className={`w-full py-3 rounded-lg avantbold tracking-wider flex items-center justify-center gap-2 text-lg mb-6 transition-all duration-300 ${
-                    getAvailableStock() === 0
+                  className={`w-full py-3 rounded-lg avantbold tracking-wider flex items-center justify-center gap-2 text-lg mb-6 transition-all duration-300 ${getAvailableStock() === 0
                       ? "bg-gray-500 text-gray-300 cursor-not-allowed opacity-50"
                       : "bg-[#FFF7DC] text-[#1f1f21] hover:bg-transparent hover:text-[#FFF7DC] hover:border-2 hover:border-[#FFF7DC] cursor-pointer"
-                  }`}
+                    }`}
                 >
                   {getAvailableStock() === 0 ? "OUT OF STOCK" : "ADD TO BAG"}
                 </button>
@@ -1132,11 +1138,10 @@ const ProductDesc = () => {
                       <button
                         key={index}
                         onClick={() => handleThumbnailClick(index)}
-                        className={`w-2 h-2 rounded-full border border-[#FFF7DC] transition-colors duration-300 ${
-                          index === currentImageIndex
+                        className={`w-2 h-2 rounded-full border border-[#FFF7DC] transition-colors duration-300 ${index === currentImageIndex
                             ? "bg-[#FFF7DC]"
                             : "bg-gray-400 opacity-40"
-                        }`}
+                          }`}
                         aria-label={`Go to slide ${index + 1}`}
                         role="button"
                         tabIndex={0}
@@ -1171,7 +1176,7 @@ const ProductDesc = () => {
                 </h2>
                 <div className="flex items-center gap-3">
                   {hasTryOnAvailable(formattedProduct.category || product?.category, formattedProduct.name || product?.name) && (
-                    <button 
+                    <button
                       onClick={() => {
                         const category = formattedProduct.category || product?.category || "";
                         const productName = formattedProduct.name || product?.name || "";
@@ -1273,10 +1278,10 @@ const ProductDesc = () => {
                         {(() => {
                           const sizes =
                             formattedProduct?.sizes &&
-                            formattedProduct.sizes.length > 0
+                              formattedProduct.sizes.length > 0
                               ? Array.from(new Set(formattedProduct.sizes))
-                                  .slice()
-                                  .sort((a, b) => a - b)
+                                .slice()
+                                .sort((a, b) => a - b)
                               : getAvailableSizes();
                           const sizeStockLookup = (
                             formattedProduct?.sizeStocks || []
@@ -1299,13 +1304,12 @@ const ProductDesc = () => {
                                   inStock && handleSizeSelect(size)
                                 }
                                 disabled={!inStock}
-                                className={`relative w-10 h-10 rounded-md border-2 transition-all duration-200 flex items-center justify-center text-lg avantbold ${
-                                  selectedSize === size
+                                className={`relative w-10 h-10 rounded-md border-2 transition-all duration-200 flex items-center justify-center text-lg avantbold ${selectedSize === size
                                     ? "bg-[#FFF7DC] text-[#1f1f21] border-[#FFF7DC]"
                                     : inStock
-                                    ? "bg-transparent text-[#FFF7DC] border-[#959595] hover:border-[#FFF7DC]"
-                                    : "bg-[#222] text-[#6f6f6f] border-[#444] cursor-not-allowed"
-                                }`}
+                                      ? "bg-transparent text-[#FFF7DC] border-[#959595] hover:border-[#FFF7DC]"
+                                      : "bg-[#222] text-[#6f6f6f] border-[#444] cursor-not-allowed"
+                                  }`}
                               >
                                 <span className="z-10">{size}</span>
                                 {!inStock && (
@@ -1341,7 +1345,14 @@ const ProductDesc = () => {
                 {/* Show CHECK MY SIZE button only if product has sizes */}
                 {formattedProduct?.sizes &&
                   formattedProduct.sizes.length > 0 && (
-                    <button className="flex items-center gap-2 text-[#959595] hover:opacity-80 transition-opacity">
+                    <button onClick={() => {
+                      const params = new URLSearchParams();
+                      const category = formattedProduct.category || product?.category || "";
+                      const productName = formattedProduct.name || product?.name || "";
+                      if (category) params.set("category", category);
+                      if (productName) params.set("product", productName);
+                      navigate(`/customer-care/size-guide?${params.toString()}`);
+                    }} className="flex items-center gap-2 text-[#959595] hover:opacity-80 transition-opacity cursor-pointer">
                       <img src={Ruler} alt="Ruler" className="w-5 h-5" />
                       <span className="text-lg avantbold tracking-wider uppercase">
                         CHECK MY SIZE
@@ -1368,11 +1379,10 @@ const ProductDesc = () => {
               <button
                 disabled={getAvailableStock() === 0}
                 onClick={handleAddToCart}
-                className={`w-full py-4 rounded-lg avantbold tracking-wider flex items-center justify-center gap-3 text-2xl transition-all duration-300 ${
-                  getAvailableStock() === 0
+                className={`w-full py-4 rounded-lg avantbold tracking-wider flex items-center justify-center gap-3 text-2xl transition-all duration-300 ${getAvailableStock() === 0
                     ? "bg-gray-500 text-gray-300 cursor-not-allowed opacity-50"
                     : "bg-[#FFF7DC] text-[#1f1f21] hover:bg-transparent hover:text-[#FFF7DC] hover:border-2 hover:border-[#FFF7DC] cursor-pointer"
-                }`}
+                  }`}
               >
                 {getAvailableStock() === 0 ? "OUT OF STOCK" : "ADD TO BAG"}
               </button>
@@ -1385,17 +1395,15 @@ const ProductDesc = () => {
                     <button
                       key={index}
                       onClick={() => handleThumbnailClick(index)}
-                      className={`aspect-square bg-black rounded-lg overflow-hidden border ${
-                        currentImageIndex === index
+                      className={`aspect-square bg-black rounded-lg overflow-hidden border ${currentImageIndex === index
                           ? "border-[#FFF7DC]"
                           : "border-transparent"
-                      } transition-all hover:bg-[#333] hover:shadow-lg`}
+                        } transition-all hover:bg-[#333] hover:shadow-lg`}
                     >
                       <img
                         src={image}
-                        alt={`${formattedProduct?.name || ""} view ${
-                          index + 1
-                        }`}
+                        alt={`${formattedProduct?.name || ""} view ${index + 1
+                          }`}
                         className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                         draggable={false}
                       />
