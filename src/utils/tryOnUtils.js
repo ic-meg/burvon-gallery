@@ -92,7 +92,15 @@ export const preloadTryOnAvailability = async (products) => {
   
   const checkPromises = products.map(product => {
     if (!product.category || !product.name) return null;
-    const imagePath = generateTryOnImagePath(product.category, product.name);
+    
+    // Handle both string and object category formats
+    const categoryName = typeof product.category === 'string'
+      ? product.category
+      : product.category?.name;
+    
+    if (!categoryName) return null;
+    
+    const imagePath = generateTryOnImagePath(categoryName, product.name);
     if (!imagePath) return null;
     return checkImageExists(imagePath);
   }).filter(Boolean);
