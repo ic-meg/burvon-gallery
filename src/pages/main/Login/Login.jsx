@@ -48,9 +48,9 @@ const Login = () => {
         setError('');
  
         const result = await googleAuth(credentialResponse.access_token);
-        
+
         if (result.success) {
-          navigate('/profile');
+          navigate('/');
         } else {
           setError(result.error || 'Google login failed');
         }
