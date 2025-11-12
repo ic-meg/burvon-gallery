@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import productApi from "../api/productApi";
 import storageService from "../services/storageService";
+import { preloadTryOnAvailability } from "../utils/tryOnUtils";
 
 const ProductContext = createContext();
 
@@ -93,15 +94,23 @@ export const ProductProvider = ({ children }) => {
           }
         }
 
+        let finalProducts = [];
         if (productsData && productsData.products) {
-          setProducts(
-            Array.isArray(productsData.products) ? productsData.products : []
-          );
+          finalProducts = Array.isArray(productsData.products) ? productsData.products : [];
+          setProducts(finalProducts);
         } else if (Array.isArray(productsData)) {
-          setProducts(productsData);
+          finalProducts = productsData;
+          setProducts(finalProducts);
         } else {
           console.warn("Unexpected products data structure:", productsData);
           setProducts([]);
+        }
+        
+        // Preload try-on availability for all products
+        if (finalProducts.length > 0) {
+          preloadTryOnAvailability(finalProducts).catch(err => {
+            console.warn("Failed to preload try-on availability:", err);
+          });
         }
       } else {
         setProducts([]);
@@ -191,6 +200,14 @@ export const ProductProvider = ({ children }) => {
           ...prev,
           [categorySlug]: products,
         }));
+        
+        // Preload try-on availability for category products
+        if (products.length > 0) {
+          preloadTryOnAvailability(products).catch(err => {
+            console.warn("Failed to preload try-on availability:", err);
+          });
+        }
+        
         return products;
       }
 
@@ -268,6 +285,14 @@ export const ProductProvider = ({ children }) => {
           ...prev,
           [collectionId]: products,
         }));
+        
+        // Preload try-on availability for collection products
+        if (products.length > 0) {
+          preloadTryOnAvailability(products).catch(err => {
+            console.warn("Failed to preload try-on availability:", err);
+          });
+        }
+        
         return products;
       }
 
