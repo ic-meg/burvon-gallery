@@ -7,9 +7,10 @@
     "dev": "vite",
     "dev:backend": "cd backend && npm run start:dev",
     "dev:all": "concurrently \"npm run dev\" \"npm run dev:backend\" --names \"FRONTEND,BACKEND\" --prefix-colors \"blue,green\" --kill-others-on-fail",
-    "build": "vite build",
+    "build": "npm run generate:tryon && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "generate:tryon": "node scripts/generate-tryon-products.js",
     "postinstall": "npm install --include=optional @esbuild/linux-x64 @rollup/rollup-linux-x64-gnu lightningcss-linux-x64-gnu @tailwindcss/oxide-linux-x64-gnu || true"
   },
   "dependencies": {
@@ -26,7 +27,7 @@
     "dotenv": "^17.2.3",
     "google-auth-library": "^10.5.0",
     "gsap": "^3.13.0",
-    "leva": "^0.10.0",
+    "leva": "^0.10.1",
     "node-fetch": "^3.3.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
