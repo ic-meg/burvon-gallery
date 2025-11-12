@@ -11,7 +11,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "generate:tryon": "node scripts/generate-tryon-products.js",
-    "postinstall": "npm install --include=optional @esbuild/linux-x64 @rollup/rollup-linux-x64-gnu lightningcss-linux-x64-gnu @tailwindcss/oxide-linux-x64-gnu || true"
+    "postinstall": "npm install --include=optional @esbuild/linux-x64 @rollup/rollup-linux-x64-gnu lightningcss-linux-x64-gnu @tailwindcss/oxide-linux-x64-gnu || true && npm run generate:tryon"
   },
   "dependencies": {
     "@mediapipe/camera_utils": "^0.3.1675466862",
