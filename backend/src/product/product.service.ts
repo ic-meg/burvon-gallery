@@ -279,4 +279,63 @@ export class ProductService {
 
     return { products, collection };
   }
+
+  async searchProducts(query: string) {
+    if (!query || query.trim().length === 0) {
+      return [];
+    }
+
+    const searchTerm = query.toLowerCase().trim();
+
+    const products = await this.db.product.findMany({
+      where: {
+        OR: [
+          {
+            name: {
+              contains: searchTerm,
+              mode: 'insensitive',
+            },
+          },
+          {
+            sku: {
+              contains: searchTerm,
+              mode: 'insensitive',
+            },
+          },
+          {
+            variant: {
+              contains: searchTerm,
+              mode: 'insensitive',
+            },
+          },
+          {
+            collection: {
+              name: {
+                contains: searchTerm,
+                mode: 'insensitive',
+              },
+            },
+          },
+          {
+            category: {
+              name: {
+                contains: searchTerm,
+                mode: 'insensitive',
+              },
+            },
+          },
+        ],
+      },
+      include: {
+        category: true,
+        collection: true,
+        sizeStocks: true,
+      },
+      orderBy: {
+        created_at: 'desc',
+      },
+    });
+
+    return products;
+  }
 }

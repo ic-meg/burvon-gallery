@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, ParseIntPipe, Patch, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, ParseIntPipe, Patch, Delete, Query } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -22,6 +22,24 @@ export class ProductController {
     return this.productService.findOne(id);
   }
 
+  @Get('search')
+  search(@Query('q') query: string) {
+    if (!query || query.trim().length === 0) {
+      return [];
+    }
+    return this.productService.searchProducts(query.trim());
+  }
+
+  @Get('category/:slug')
+  findByCategory(@Param('slug') slug: string) {
+    return this.productService.getProductsByCategory(slug);
+  }
+
+  @Get('collection/:id')
+  findByCollection(@Param('id', ParseIntPipe) collectionId: number) {
+    return this.productService.getProductsByCollection(collectionId);
+  }
+
   @Get(':slug')
   findBySlug(@Param('slug') slug: string) {
     return this.productService.findBySlug(slug);
@@ -36,15 +54,5 @@ export class ProductController {
   @Delete(':id')
   delete(@Param('id', ParseIntPipe) id: number) {
     return this.productService.deleteProduct(id);
-  }
-
-  @Get('category/:slug')
-  findByCategory(@Param('slug') slug: string) {
-    return this.productService.getProductsByCategory(slug);
-  }
-
-  @Get('collection/:id')
-  findByCollection(@Param('id', ParseIntPipe) collectionId: number) {
-    return this.productService.getProductsByCollection(collectionId);
   }
 }
