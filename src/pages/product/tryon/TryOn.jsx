@@ -206,57 +206,91 @@ const TryOnDesktop = ({
               </div>
 
               {/* Product Carousel */}
-              <div className="flex items-center justify-center gap-6 mt-8">
+              <div className="flex items-center justify-center gap-6 mt-8 relative" style={{ width: "600px", height: "200px" }}>
                 <button
                   onClick={handlePrev}
                   onMouseEnter={() => setHoveredPrev(true)}
                   onMouseLeave={() => setHoveredPrev(false)}
-                  className="p-3 rounded-lg border-2 border-[#FFF7DC] bg-transparent hover:bg-[#FFF7DC] hover:text-[#181818] transition"
+                  className="p-3 rounded-lg border-2 border-[#FFF7DC] bg-transparent hover:bg-[#FFF7DC] hover:text-[#181818] transition z-10"
                   style={{ width: 48, height: 48, display: "flex", alignItems: "center", justifyContent: "center" }}
                 >
                   <img src={hoveredPrev ? PrevFacts : PrevFacts} alt="Previous" className="w-6 h-6" style={{ filter: hoveredPrev ? "brightness(0) saturate(100%) invert(0%) sepia(0%) saturate(0%) hue-rotate(0deg)" : "none" }} />
                 </button>
-                <div className="flex gap-8 items-end">
-                  {products[selectedCategory].map((prod, idx) => (
-                    <div
-                      key={prod.name}
-                      className={`flex flex-col items-center transition-all duration-200`}
-                      style={{
-                        transform: selectedProductIdx === idx ? "scale(1.25)" : "scale(1)",
-                        zIndex: selectedProductIdx === idx ? 2 : 1,
-                      }}
-                    >
-                      <img
-                        src={generateImagePath(selectedCategory, prod.name)}
-                        alt={prod.name}
-                        className={`object-contain mb-2 rounded-lg`}
+                <div className="relative flex items-end justify-center" style={{ width: "500px", height: "200px" }}>
+                  {products[selectedCategory].map((prod, idx) => {
+                    const totalItems = products[selectedCategory].length;
+                    const prevIdx = selectedProductIdx === 0 ? totalItems - 1 : selectedProductIdx - 1;
+                    const nextIdx = selectedProductIdx === totalItems - 1 ? 0 : selectedProductIdx + 1;
+                    
+                    const isActive = selectedProductIdx === idx;
+                    const isPrev = idx === prevIdx;
+                    const isNext = idx === nextIdx;
+                    const isVisible = isActive || isPrev || isNext;
+                    
+                    if (!isVisible) return null;
+                    
+                    let translateX = 0;
+                    let scale = 1;
+                    let opacity = 1;
+                    
+                    if (isActive) {
+                      translateX = 0;
+                      scale = 1.25;
+                      opacity = 1;
+                    } else if (isPrev) {
+                      translateX = -100;
+                      scale = 0.8;
+                      opacity = 0.7;
+                    } else if (isNext) {
+                      translateX = 100;
+                      scale = 0.8;
+                      opacity = 0.7;
+                    }
+                    
+                    return (
+                      <div
+                        key={prod.name}
+                        className="flex flex-col items-center transition-all duration-300 absolute"
                         style={{
-                          width: selectedProductIdx === idx ? 120 : 80,
-                          height: selectedProductIdx === idx ? 120 : 80,
-                          transition: "all 0.2s cubic-bezier(.4,0,.2,1)",
-                        }}
-                      />
-                      <span
-                        className={`bebas`}
-                        style={{
-                          color: "#FFF7DC",
-                          fontSize: selectedProductIdx === idx ? "2rem" : "1.2rem",
-                          fontWeight: selectedProductIdx === idx ? "bold" : "normal",
-                          letterSpacing: "1px",
-                          textAlign: "center",
-                          marginTop: selectedProductIdx === idx ? "8px" : "4px",
+                          transform: `translateX(${translateX}px) scale(${scale})`,
+                          opacity: opacity,
+                          zIndex: isActive ? 3 : isPrev ? 1 : 2,
+                          left: "50%",
+                          marginLeft: isActive ? "-60px" : isPrev ? "-60px" : "0px",
                         }}
                       >
-                        {prod.name}
-                      </span>
-                    </div>
-                  ))}
+                        <img
+                          src={generateImagePath(selectedCategory, prod.name)}
+                          alt={prod.name}
+                          className="object-contain mb-2 rounded-lg"
+                          style={{
+                            width: isActive ? 120 : 80,
+                            height: isActive ? 120 : 80,
+                            transition: "all 0.3s cubic-bezier(.4,0,.2,1)",
+                          }}
+                        />
+                        <span
+                          className="bebas"
+                          style={{
+                            color: "#FFF7DC",
+                            fontSize: isActive ? "2rem" : "1.2rem",
+                            fontWeight: isActive ? "bold" : "normal",
+                            letterSpacing: "1px",
+                            textAlign: "center",
+                            marginTop: isActive ? "8px" : "4px",
+                          }}
+                        >
+                          {prod.name}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
                 <button
                   onClick={handleNext}
                   onMouseEnter={() => setHoveredNext(true)}
                   onMouseLeave={() => setHoveredNext(false)}
-                  className="p-3 rounded-lg border-2 border-[#FFF7DC] bg-transparent hover:bg-[#FFF7DC] hover:text-[#181818] transition"
+                  className="p-3 rounded-lg border-2 border-[#FFF7DC] bg-transparent hover:bg-[#FFF7DC] hover:text-[#181818] transition z-10"
                   style={{ width: 48, height: 48, display: "flex", alignItems: "center", justifyContent: "center" }}
                 >
                   <img src={hoveredNext ? NextFacts : NextFacts} alt="Next" className="w-6 h-6" style={{ filter: hoveredNext ? "brightness(0) saturate(100%) invert(0%) sepia(0%) saturate(0%) hue-rotate(0deg)" : "none" }} />
@@ -462,37 +496,84 @@ const TryOnMobile = ({
       </div>
 
       {/* Product Carousel */}
-      <div className="flex items-center justify-center gap-4 mb-6">
+      <div className="flex items-center justify-center gap-3 mb-6 relative" style={{ width: "100%", maxWidth: "400px", height: "160px", margin: "0 auto" }}>
         <button 
           onClick={handlePrev} 
-          className="p-2 rounded-lg bg-[#232323] border border-[#FFF7DC] hover:bg-[#FFF7DC] transition group"
+          className="p-2 rounded-lg bg-[#232323] border border-[#FFF7DC] hover:bg-[#FFF7DC] transition group z-10"
         >
           <img src={PrevFacts} alt="Previous" className="w-5 h-5 group-hover:invert" />
         </button>
         
-        <div className="flex gap-4">
-          {products[selectedCategory].map((prod, idx) => (
-            <div
-              key={prod.name}
-              className={`flex flex-col items-center transition-all ${
-                selectedProductIdx === idx ? "scale-125" : "scale-100"
-              }`}
-            >
-              <img
-                src={generateImagePath(selectedCategory, prod.name)}
-                alt={prod.name}
-                className={`object-contain mb-1 rounded-lg ${
-                  selectedProductIdx === idx ? "w-22 h-22" : "w-20 h-20"
-                }`}
-              />
-              <span className="bebas cream-text text-sm">{prod.name}</span>
-            </div>
-          ))}
+        <div className="relative flex items-end justify-center" style={{ width: "300px", height: "160px" }}>
+          {products[selectedCategory].map((prod, idx) => {
+            const totalItems = products[selectedCategory].length;
+            const prevIdx = selectedProductIdx === 0 ? totalItems - 1 : selectedProductIdx - 1;
+            const nextIdx = selectedProductIdx === totalItems - 1 ? 0 : selectedProductIdx + 1;
+            
+            const isActive = selectedProductIdx === idx;
+            const isPrev = idx === prevIdx;
+            const isNext = idx === nextIdx;
+            const isVisible = isActive || isPrev || isNext;
+            
+            if (!isVisible) return null;
+            
+            let translateX = 0;
+            let scale = 1;
+            let opacity = 1;
+            
+            if (isActive) {
+              translateX = 0;
+              scale = 1.2;
+              opacity = 1;
+            } else if (isPrev) {
+              translateX = -70;
+              scale = 0.75;
+              opacity = 0.6;
+            } else if (isNext) {
+              translateX = 70;
+              scale = 0.75;
+              opacity = 0.6;
+            }
+            
+            return (
+              <div
+                key={prod.name}
+                className="flex flex-col items-center transition-all duration-300 absolute"
+                style={{
+                  transform: `translateX(${translateX}px) scale(${scale})`,
+                  opacity: opacity,
+                  zIndex: isActive ? 3 : isPrev ? 1 : 2,
+                  left: "50%",
+                  marginLeft: isActive ? "-40px" : isPrev ? "-40px" : "0px",
+                }}
+              >
+                <img
+                  src={generateImagePath(selectedCategory, prod.name)}
+                  alt={prod.name}
+                  className="object-contain mb-1 rounded-lg"
+                  style={{
+                    width: isActive ? 80 : 60,
+                    height: isActive ? 80 : 60,
+                    transition: "all 0.3s cubic-bezier(.4,0,.2,1)",
+                  }}
+                />
+                <span 
+                  className="bebas cream-text"
+                  style={{
+                    fontSize: isActive ? "1rem" : "0.75rem",
+                    fontWeight: isActive ? "bold" : "normal",
+                  }}
+                >
+                  {prod.name}
+                </span>
+              </div>
+            );
+          })}
         </div>
         
         <button 
           onClick={handleNext} 
-          className="p-2 rounded-lg bg-[#232323] border border-[#FFF7DC] hover:bg-[#FFF7DC] transition group"
+          className="p-2 rounded-lg bg-[#232323] border border-[#FFF7DC] hover:bg-[#FFF7DC] transition group z-10"
         >
           <img src={NextFacts} alt="Next" className="w-5 h-5 group-hover:invert" />
         </button>
