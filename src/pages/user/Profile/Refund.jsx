@@ -10,6 +10,7 @@ import { checkAndRedirectAdmin } from '../../../utils/authUtils'
 import userApi from '../../../api/userApi'
 import orderApi from '../../../api/orderApi'
 import Toast from '../../../components/Toast'
+import ProfileSkeleton from '../../../components/ProfileSkeleton'
 import { groupOrdersByTab } from './profileUtils'
 
 const tabs = [
@@ -493,12 +494,7 @@ const Refund = () => {
   if (loading) {
     return (
       <Layout full>
-        <div className="min-h-screen bg-[#181818] flex items-center justify-center">
-          <div className="text-[#FFF7DC] text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FFF7DC] mx-auto mb-4"></div>
-            <p className="avant text-lg">Loading profile...</p>
-          </div>
-        </div>
+        <ProfileSkeleton />
       </Layout>
     )
   }
