@@ -303,7 +303,7 @@ export class ProductService {
             },
           },
           {
-            variant: {
+            description: {
               contains: searchTerm,
               mode: 'insensitive',
             },

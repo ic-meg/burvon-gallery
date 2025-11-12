@@ -1,6 +1,7 @@
 // assets/index.js
 
 // ICONS
+import TryOnBlack from './icons/VirtualTryOn-black.png';
 import Icon3D from './icons/cube.png';
 import IconSearch from './icons/search.svg';
 import IconUser from './icons/profile.svg';
@@ -208,6 +209,7 @@ import KidsCollHighNeck from './images/KidsCollHighNeck.png';
 
 // once, import lagay yung name sa export, then call it in the component 
 export {
+  TryOnBlack,
   IconSearch,
   IconUser,
   IconHeart,

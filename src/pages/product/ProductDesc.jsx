@@ -11,6 +11,7 @@ import Toast from "../../components/Toast";
 import { hasTryOnAvailable } from "../../utils/tryOnUtils";
 
 import {
+  TryOnBlack,
   TryOnIcon,
   AddFavorite,
   AddedFavorites,
@@ -581,6 +582,7 @@ const ProductDesc = () => {
     const imageCount =
       formattedProduct?.images?.length || fallbackImages.length;
     setShow3D(false);
+    setHas3DBeenViewed(false);
     setCurrentImageIndex((prev) => (prev === 0 ? imageCount - 1 : prev - 1));
   };
 
@@ -588,11 +590,13 @@ const ProductDesc = () => {
     const imageCount =
       formattedProduct?.images?.length || fallbackImages.length;
     setShow3D(false);
+    setHas3DBeenViewed(false);
     setCurrentImageIndex((prev) => (prev === imageCount - 1 ? 0 : prev + 1));
   };
 
   const handleThumbnailClick = (index) => {
     setShow3D(false);
+    setHas3DBeenViewed(false);
     setCurrentImageIndex(index);
   };
 
@@ -816,7 +820,7 @@ const ProductDesc = () => {
                     aria-label={has3DBeenViewed && hasTryOnAvailable(formattedProduct.category || product?.category, formattedProduct.name || product?.name) ? "Try on this product" : "Open Interactive 3D viewer"}
                   >
                     <span className="w-7 h-7 rounded-full  flex items-center justify-center shadow-inner">
-                      <img src={has3DBeenViewed && hasTryOnAvailable(formattedProduct.category || product?.category, formattedProduct.name || product?.name) ? TryOnIcon : Icon3D} alt={has3DBeenViewed && hasTryOnAvailable(formattedProduct.category || product?.category, formattedProduct.name || product?.name) ? "Try On" : "3D"} className="w-4 h-4" />
+                      <img src={has3DBeenViewed && hasTryOnAvailable(formattedProduct.category || product?.category, formattedProduct.name || product?.name) ? TryOnBlack : Icon3D} alt={has3DBeenViewed && hasTryOnAvailable(formattedProduct.category || product?.category, formattedProduct.name || product?.name) ? "Try On" : "3D"} className="w-4 h-4" />
                     </span>
                     <span className="avantbold text-sm tracking-wide">
                       {has3DBeenViewed && hasTryOnAvailable(formattedProduct.category || product?.category, formattedProduct.name || product?.name) ? "Try On" : "Interactive 3D"}
@@ -1104,7 +1108,7 @@ const ProductDesc = () => {
                     aria-label={has3DBeenViewed && hasTryOnAvailable(formattedProduct.category || product?.category, formattedProduct.name || product?.name) ? "Try on this product" : "Open Interactive 3D viewer"}
                   >
                     <span className="w-10 h-10 rounded-full  flex items-center justify-center shadow-inner">
-                      <img src={has3DBeenViewed && hasTryOnAvailable(formattedProduct.category || product?.category, formattedProduct.name || product?.name) ? TryOnIcon : Icon3D} alt={has3DBeenViewed && hasTryOnAvailable(formattedProduct.category || product?.category, formattedProduct.name || product?.name) ? "Try On" : "3D"} className="w-5 h-5" />
+                      <img src={has3DBeenViewed && hasTryOnAvailable(formattedProduct.category || product?.category, formattedProduct.name || product?.name) ? TryOnBlack : Icon3D} alt={has3DBeenViewed && hasTryOnAvailable(formattedProduct.category || product?.category, formattedProduct.name || product?.name) ? "Try On" : "3D"} className="w-5 h-5" />
                     </span>
                     <div className="text-left">
                       <div className="avantbold text-base tracking-wide">
