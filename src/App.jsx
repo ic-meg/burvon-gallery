@@ -1,10 +1,11 @@
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import Homepage from "./pages/main/Homepage";
 
 import Template from "./pages/Template";
 import ScrollToTop from "./components/ScrollToTop";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
+import ProtectedRoute from "./components/ProtectedRoute";
 import { ContentProvider } from "./contexts/ContentContext";
 import { CategoryProvider } from "./contexts/CategoryContext";
 import { CollectionProvider } from "./contexts/CollectionContext";
@@ -191,45 +192,90 @@ const App = () => {
                             />
 
                             {/*Profile */}
-                            <Route path="/profile" element={<Profile />} />
+                            <Route
+                              path="/profile"
+                              element={
+                                <ProtectedRoute>
+                                  <Profile />
+                                </ProtectedRoute>
+                              }
+                            />
                             <Route
                               path="/profile/inprogress"
-                              element={<InProgress />}
+                              element={
+                                <ProtectedRoute>
+                                  <InProgress />
+                                </ProtectedRoute>
+                              }
                             />
                             <Route
                               path="/profile/delivered"
-                              element={<Delivered />}
+                              element={
+                                <ProtectedRoute>
+                                  <Delivered />
+                                </ProtectedRoute>
+                              }
                             />
                             <Route
                               path="/profile/cancelled"
-                              element={<Cancelled />}
+                              element={
+                                <ProtectedRoute>
+                                  <Cancelled />
+                                </ProtectedRoute>
+                              }
                             />
                             <Route
                               path="/profile/refund"
-                              element={<Refund />}
+                              element={
+                                <ProtectedRoute>
+                                  <Refund />
+                                </ProtectedRoute>
+                              }
                             />
                             <Route
                               path="/profile/vieworder"
-                              element={<ViewOrder />}
+                              element={
+                                <ProtectedRoute>
+                                  <ViewOrder />
+                                </ProtectedRoute>
+                              }
                             />
                             <Route
                               path="/profile/vieworder-inprogress"
-                              element={<ViewOrderInProgress />}
+                              element={
+                                <ProtectedRoute>
+                                  <ViewOrderInProgress />
+                                </ProtectedRoute>
+                              }
                             />
                             <Route
                               path="/profile/requestreturn"
-                              element={<RequestReturn />}
+                              element={
+                                <ProtectedRoute>
+                                  <RequestReturn />
+                                </ProtectedRoute>
+                              }
                             />
                             <Route
                               path="/profile/reviewdetails"
-                              element={<ReviewDetails />}
+                              element={
+                                <ProtectedRoute>
+                                  <ReviewDetails />
+                                </ProtectedRoute>
+                              }
                             />
                             <Route
                               path="/profile/ordercompleted"
-                              element={<OrderCompleted />}
+                              element={
+                                <ProtectedRoute>
+                                  <OrderCompleted />
+                                </ProtectedRoute>
+                              }
                             />
 
                             {/*Admin */}
+                            {/* Redirect /admin to home */}
+                            <Route path="/admin" element={<Navigate to="/" replace />} />
                             <Route
                               path="/admin/dashboard"
                               element={
@@ -321,6 +367,9 @@ const App = () => {
                                 </ProtectedAdminRoute>
                               }
                             />
+
+                            {/* Catch-all route - redirect any unmatched paths to home */}
+                            <Route path="*" element={<Navigate to="/" replace />} />
                           </Routes>
                         </div>
                       </WishlistProvider>
