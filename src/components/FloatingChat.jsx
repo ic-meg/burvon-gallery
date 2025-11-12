@@ -7,6 +7,7 @@ import SentIcon from "../assets/icons/send.png";
 import { useWebSocket } from "../hooks/useWebSocket";
 import { getChatUserIdentifier, getChatEmail, setChatEmail } from "../utils/chatSession";
 import chatApi from "../api/chatApi";
+import { getUser } from "../services/authService";
 
 const FloatingChatButton = () => {
   const [overFooter, setOverFooter] = useState(false);
@@ -27,9 +28,18 @@ const FloatingChatButton = () => {
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
   const [hasMoved, setHasMoved] = useState(false);
-  
+  const [currentUser, setCurrentUser] = useState(null);
+
   const userIdentifier = getChatUserIdentifier();
   const { isConnected, sendMessage, markAsRead, error: wsError, socket } = useWebSocket(false);
+
+
+  useEffect(() => {
+    if (chatOpen) {
+      const user = getUser();
+      setCurrentUser(user);
+    }
+  }, [chatOpen]);
 
 
 
@@ -438,7 +448,9 @@ const FloatingChatButton = () => {
             {/* Welcome Message - Always shown */}
             <div className="flex justify-start">
               <div className="metallic-bg cream-text rounded-2xl px-4 py-3 max-w-[80%]">
-                <p className="text-md avant">Hi! Welcome to Burvon Support. How can we assist you today?</p>
+                <p className="text-md avant">
+                  Hi{currentUser?.name ? `, ${currentUser.name.split(' ')[0]}` : currentUser?.full_name ? `, ${currentUser.full_name.split(' ')[0]}` : ''}! Welcome to Burvon Support. How can we assist you today?
+                </p>
               </div>
             </div>
             
