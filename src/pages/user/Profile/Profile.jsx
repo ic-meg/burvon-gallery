@@ -363,7 +363,7 @@ const ProfileDesktop = ({ openModal, onEditProfile, userData, ordersByTab, activ
   )
 }
 
-// Mobile Layout 
+// Mobile Layout
 const ProfileMobile = ({ openModal, onEditProfile, userData, ordersByTab, activeTab, setActiveTab }) => {
   const [showSubtotal, setShowSubtotal] = useState(false)
   const orders = ordersByTab[activeTab] || []
@@ -382,6 +382,11 @@ const ProfileMobile = ({ openModal, onEditProfile, userData, ordersByTab, active
   const endIndex = startIndex + ordersPerPage
   const paginatedOrders = orders.slice(startIndex, endIndex)
 
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  }
+
   const handlePageChange = (page) => {
     setCurrentPage(page)
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -394,6 +399,9 @@ const ProfileMobile = ({ openModal, onEditProfile, userData, ordersByTab, active
         <button className="avant text-xs cream-text ml-2 align-middle" onClick={onEditProfile}>
           <span>Edit Profile</span>
           <img src={editIcon} alt="Edit" className="w-4 h-4 inline-block ml-1" />
+        </button>
+        <button className="avant text-xs cream-text ml-2 align-middle hover:opacity-80" onClick={handleLogout}>
+          Logout
         </button>
       </div>
       <div className="bebas cream-text text-center text-2xl mt-9 mb-4">SHOPPING HISTORY</div>
