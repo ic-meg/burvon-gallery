@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import AdminHeader from "../../components/admin/AdminHeader";
 import orderApi from "../../api/orderApi";
 import Toast from "../../components/Toast";
@@ -152,7 +153,6 @@ const ViewDetailsModal = ({ isOpen, onClose, order, showToast }) => {
 
   const orderDetails = getOrderDetails(order);
 
-  // Get status-specific styling
   const getStatusStyle = (status) => {
     const styles = {
       'Pending': 'bg-gray-100 text-gray-800 border border-gray-300',
@@ -313,7 +313,6 @@ const ViewDetailsModal = ({ isOpen, onClose, order, showToast }) => {
     </div>
   );
 
-  // Render action buttons based on status
   const renderActionButtons = () => {
     const handleStatusUpdate = async (newStatus) => {
       try {
@@ -720,7 +719,6 @@ const ViewDetailsModal = ({ isOpen, onClose, order, showToast }) => {
           {/* Dynamic layout based on status */}
           {renderReturnRefundLayout()}
 
-          {/* Action Buttons */}
           {renderActionButtons()}
 
         </div>
@@ -730,13 +728,34 @@ const ViewDetailsModal = ({ isOpen, onClose, order, showToast }) => {
 };
 
 const AdminOrders = ({ hasAccess = true }) => {
-  const [activeTab, setActiveTab] = useState('all');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const statusFromUrl = searchParams.get('status');
+  
+  // Map URL status to tab ID
+  const getTabFromStatus = (status) => {
+    if (!status) return 'all';
+    const statusLower = status.toLowerCase();
+    if (statusLower === 'pending') return 'pending';
+    if (statusLower.includes('return') || statusLower.includes('refund')) return 'return';
+    if (statusLower.includes('cancel')) return 'cancellation';
+    return 'all';
+  };
+  
+  const [activeTab, setActiveTab] = useState(statusFromUrl ? getTabFromStatus(statusFromUrl) : 'all');
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectAll, setSelectAll] = useState(false);
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [dateSort, setDateSort] = useState('newest');
   const [showSortDropdown, setShowSortDropdown] = useState(false);
+  
+  // Update activeTab when URL status changes
+  useEffect(() => {
+    if (statusFromUrl) {
+      const tab = getTabFromStatus(statusFromUrl);
+      setActiveTab(tab);
+    }
+  }, [statusFromUrl]);
 
   // Single modal state
   const [showViewDetailsModal, setShowViewDetailsModal] = useState(false);
