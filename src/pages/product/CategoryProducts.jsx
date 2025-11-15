@@ -4,14 +4,11 @@ import Layout from "../../components/Layout";
 import ProductCard from "../../components/ProductCard";
 import FilterComponent from "../../components/FilterComponent";
 import CategoryProductsSkeleton from "../../components/CategoryProductsSkeleton";
+import TopPicks from "../../components/TopPicks";
 import { useCategory } from "../../contexts/CategoryContext";
 import { useProduct } from "../../contexts/ProductContext";
 import { useCollection } from "../../contexts/CollectionContext";
 
-import {
-  NextIcon,
-  PrevIcon,
-} from "../../assets/index.js";
 
 const getDynamicHeroImages = (categoryData) => {
   if (!categoryData) {
@@ -90,11 +87,8 @@ const CategoryProducts = () => {
   const [isInitialized, setIsInitialized] = useState(false);
   const [showMobileCollection, setShowMobileCollection] = useState(false);
   const [showMobileSort, setShowMobileSort] = useState(false);
-  const [carouselIndex, setCarouselIndex] = useState(0);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [showMobileCategory, setShowMobileCategory] = useState(false);
-
-  const topScrollRef = React.useRef(null);
 
   const { getCategoryBySlug, fetchCategoryBySlug, hasCategoryData, categories: allCategories, loading: categoryLoading } =
     useCategory();
@@ -199,7 +193,7 @@ const CategoryProducts = () => {
       const cleanedOriginal = product.original_price.toString().replace(/[^\d.]/g, '');
       const parsedOriginal = parseFloat(cleanedOriginal);
       if (!isNaN(parsedOriginal) && parsedOriginal > 0) {
-        oldPrice = `₱${parsedOriginal.toFixed(2)}`;
+        oldPrice = `PHP${parsedOriginal.toFixed(2)}`;
       }
     }
 
@@ -208,19 +202,19 @@ const CategoryProducts = () => {
       const cleanedCurrent = product.current_price.toString().replace(/[^\d.]/g, '');
       const parsedCurrent = parseFloat(cleanedCurrent);
       if (!isNaN(parsedCurrent) && parsedCurrent > 0) {
-        price = `₱${parsedCurrent.toFixed(2)}`;
+        price = `PHP${parsedCurrent.toFixed(2)}`;
       }
     } else if (product.price) {
       const cleanedPrice = product.price.toString().replace(/[^\d.]/g, '');
       const parsedPrice = parseFloat(cleanedPrice);
       if (!isNaN(parsedPrice) && parsedPrice > 0) {
-        price = `₱${parsedPrice.toFixed(2)}`;
+        price = `PHP${parsedPrice.toFixed(2)}`;
       }
     } else if (product.original_price && !product.current_price) {
       const cleanedOriginal = product.original_price.toString().replace(/[^\d.]/g, '');
       const parsedOriginal = parseFloat(cleanedOriginal);
       if (!isNaN(parsedOriginal) && parsedOriginal > 0) {
-        price = `₱${parsedOriginal.toFixed(2)}`;
+        price = `PHP${parsedOriginal.toFixed(2)}`;
         oldPrice = ''; // Don't show as crossed out if it's the only price
       }
     }
@@ -356,19 +350,6 @@ const CategoryProducts = () => {
     setMaxPrice(newMaxPrice);
   };
 
-  const topPicks = formattedProducts.slice(0, 8);
-  const maxVisible = 4;
-  const canPrev = carouselIndex > 0;
-  const canNext = carouselIndex < topPicks.length - maxVisible;
-  const isMobile = window.innerWidth < 768;
-
-  const handlePrev = () => {
-    if (canPrev) setCarouselIndex(carouselIndex - 1);
-  };
-
-  const handleNext = () => {
-    if (canNext) setCarouselIndex(carouselIndex + 1);
-  };
 
   // Show skeleton only on initial load when we don't have data yet
   // Check if we have any data to display
@@ -482,7 +463,7 @@ const CategoryProducts = () => {
                     <div className="text-sm opacity-80">
                       {collectionValue !== "none" && `Collection: ${collectionValue}`}
                       {collectionValue !== "none" && (minPrice !== 0 || maxPrice !== 2000) && " • "}
-                      {(minPrice !== 0 || maxPrice !== 2000) && `Price: ₱${minPrice} - ₱${maxPrice}`}
+                      {(minPrice !== 0 || maxPrice !== 2000) && `Price: PHP${minPrice} - PHP${maxPrice}`}
                     </div>
                     <div className="text-xs mt-2 opacity-60">
                       Try adjusting your filters to see more products
@@ -621,110 +602,14 @@ const CategoryProducts = () => {
       </section>
 
       {/* Top Picks Section */}
-      <section className="bg-[#1f1f21] py-14">
-        <div className="max-w-7xl mx-auto px-5 relative">
-          <div className="flex justify-between items-center pb-8">
-            <h2 className="font-bold bebas text-3xl lg:text-5xl tracking-wide text-[#FFF7DC]">
-              TOP PICKS {categoryDisplayName.toUpperCase()}
-            </h2>
-            {!isMobile && (
-              <div className="flex space-x-4">
-                <div
-                  onClick={handlePrev}
-                  role="button"
-                  tabIndex={0}
-                  aria-label="Previous Picks"
-                  className={`flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 transition select-none ${
-                    !canPrev ? "opacity-30 cursor-not-allowed" : ""
-                  }`}
-                >
-                  <img
-                    src={PrevIcon}
-                    alt="Previous"
-                    className="w-10 h-10"
-                    draggable={false}
-                  />
-                </div>
-                <div
-                  onClick={handleNext}
-                  role="button"
-                  tabIndex={0}
-                  aria-label="Next Picks"
-                  className={`flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 transition select-none ${
-                    !canNext ? "opacity-30 cursor-not-allowed" : ""
-                  }`}
-                >
-                  <img
-                    src={NextIcon}
-                    alt="Next"
-                    className="w-10 h-10"
-                    draggable={false}
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-
-          {isMobile && (
-            <div
-              ref={topScrollRef}
-              className="flex overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-mandatory flex-nowrap md:grid md:grid-cols-4 md:gap-5 md:overflow-visible"
-              style={{
-                scrollBehavior: "smooth",
-                WebkitOverflowScrolling: "touch",
-              }}
-            >
-              {topPicks.map((item) => (
-                <div
-                  key={`top-pick-${item.id}`}
-                  className="flex-shrink-0 transition-all duration-300 ease-in-out snap-center"
-                  style={{ width: "65vw", margin: "0 6px" }}
-                >
-                  <ProductCard
-                    item={item}
-                    layout="mobile"
-                    mobileImageHeight="250px"
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-
-          {!isMobile && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10">
-              {topPicks
-                .slice(carouselIndex, carouselIndex + maxVisible)
-                .map((item) => {
-                  const isHovered = hoveredCardId === item.id;
-                  const currentImageIndex = hoveredImageIndexes[item.id] ?? 0;
-                  return (
-                    <ProductCard
-                      key={`top-pick-${item.id}`}
-                      item={item}
-                      layout="desktop"
-                      isHovered={isHovered}
-                      currentImageIndex={currentImageIndex}
-                      onMouseEnter={() => {
-                        setHoveredCardId(item.id);
-                        setHoveredImageIndexes((prev) => ({
-                          ...prev,
-                          [item.id]: 0,
-                        }));
-                      }}
-                      onMouseLeave={() => {
-                        setHoveredCardId(null);
-                        setHoveredButtonId(null);
-                      }}
-                      onImageChange={handleImageChange}
-                      hoveredButtonId={hoveredButtonId}
-                      setHoveredButtonId={setHoveredButtonId}
-                    />
-                  );
-                })}
-            </div>
-          )}
-        </div>
-      </section>
+      <TopPicks
+        categorySlug={categorySlug}
+        title={`TOP PICKS ${categoryDisplayName.toUpperCase()}`}
+        limit={8}
+        maxVisible={4}
+        categoryContext={categoryData}
+        allCategories={allCategories}
+      />
     </Layout>
   );
 };

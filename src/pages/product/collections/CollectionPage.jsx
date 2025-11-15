@@ -4,6 +4,7 @@ import Layout from "../../../components/Layout";
 import ProductCard from "../../../components/ProductCard";
 import FilterComponent from "../../../components/FilterComponent";
 import CollectionPageSkeleton from "../../../components/CollectionPageSkeleton";
+import TopPicks from "../../../components/TopPicks";
 import { useCollection } from "../../../contexts/CollectionContext";
 import { useProduct } from "../../../contexts/ProductContext";
 
@@ -11,22 +12,8 @@ import {
   KidsCollHeroNeck,
   ClashCollHeroNeck,
   DropDownIcon,
-  DropDownIconBlack,
-  DropUpIconBlack,
   DropUpIcon,
-  TryOnIcon,
-  AddFavorite,
-  LyricImage,
-  AgathaImage,
-  RiomImage,
-  CelineImage,
-  AddBag,
-  AddBagHover,
-  NextIcon,
-  PrevIcon,
-  KidsCollHighNeck,
   KidsCollHighNeckCrop,
-  FilterIcon,
 } from "../../../assets/index.js";
 
 const fallbackHeroImages = [
@@ -172,9 +159,6 @@ const CollectionPage = () => {
     return categoryOptions;
   };
 
-  const [carouselIndex, setCarouselIndex] = useState(0);
-  const maxVisible = 4;
-  const isMobile = window.innerWidth < 768;
 
   const handleCollectionChange = (selectedCollectionId) => {
     if (selectedCollectionId === "none") {
@@ -280,7 +264,7 @@ const CollectionPage = () => {
               .toString()
               .replace(/[^\d.]/g, "");
             const parsed = parseFloat(cleaned);
-            return !isNaN(parsed) && parsed > 0 ? `₱${parsed.toFixed(2)}` : "";
+            return !isNaN(parsed) && parsed > 0 ? `PHP${parsed.toFixed(2)}` : "";
           }
           return "";
         })(),
@@ -290,19 +274,19 @@ const CollectionPage = () => {
               .toString()
               .replace(/[^\d.]/g, "");
             const parsed = parseFloat(cleaned);
-            return !isNaN(parsed) && parsed > 0 ? `₱${parsed.toFixed(2)}` : "";
+            return !isNaN(parsed) && parsed > 0 ? `PHP${parsed.toFixed(2)}` : "";
           }
           if (product.price) {
             const cleaned = product.price.toString().replace(/[^\d.]/g, "");
             const parsed = parseFloat(cleaned);
-            return !isNaN(parsed) && parsed > 0 ? `₱${parsed.toFixed(2)}` : "";
+            return !isNaN(parsed) && parsed > 0 ? `PHP${parsed.toFixed(2)}` : "";
           }
           if (product.original_price && !product.current_price) {
             const cleaned = product.original_price
               .toString()
               .replace(/[^\d.]/g, "");
             const parsed = parseFloat(cleaned);
-            return !isNaN(parsed) && parsed > 0 ? `₱${parsed.toFixed(2)}` : "";
+            return !isNaN(parsed) && parsed > 0 ? `PHP${parsed.toFixed(2)}` : "";
           }
           return "";
         })(),
@@ -332,7 +316,7 @@ const CollectionPage = () => {
               .toString()
               .replace(/[^\d.]/g, "");
             const parsed = parseFloat(cleaned);
-            return !isNaN(parsed) && parsed > 0 ? `₱${parsed.toFixed(2)}` : "";
+            return !isNaN(parsed) && parsed > 0 ? `PHP${parsed.toFixed(2)}` : "";
           }
           return "";
         })(),
@@ -342,19 +326,19 @@ const CollectionPage = () => {
               .toString()
               .replace(/[^\d.]/g, "");
             const parsed = parseFloat(cleaned);
-            return !isNaN(parsed) && parsed > 0 ? `₱${parsed.toFixed(2)}` : "";
+            return !isNaN(parsed) && parsed > 0 ? `PHP${parsed.toFixed(2)}` : "";
           }
           if (product.price) {
             const cleaned = product.price.toString().replace(/[^\d.]/g, "");
             const parsed = parseFloat(cleaned);
-            return !isNaN(parsed) && parsed > 0 ? `₱${parsed.toFixed(2)}` : "";
+            return !isNaN(parsed) && parsed > 0 ? `PHP${parsed.toFixed(2)}` : "";
           }
           if (product.original_price && !product.current_price) {
             const cleaned = product.original_price
               .toString()
               .replace(/[^\d.]/g, "");
             const parsed = parseFloat(cleaned);
-            return !isNaN(parsed) && parsed > 0 ? `₱${parsed.toFixed(2)}` : "";
+            return !isNaN(parsed) && parsed > 0 ? `PHP${parsed.toFixed(2)}` : "";
           }
           return "";
         })(),
@@ -687,7 +671,7 @@ const CollectionPage = () => {
                 .replace(/[^\d.]/g, "");
               const parsed = parseFloat(cleaned);
               return !isNaN(parsed) && parsed > 0
-                ? `₱${parsed.toFixed(2)}`
+                ? `PHP${parsed.toFixed(2)}`
                 : "";
             }
             return "";
@@ -699,14 +683,14 @@ const CollectionPage = () => {
                 .replace(/[^\d.]/g, "");
               const parsed = parseFloat(cleaned);
               return !isNaN(parsed) && parsed > 0
-                ? `₱${parsed.toFixed(2)}`
+                ? `PHP${parsed.toFixed(2)}`
                 : "";
             }
             if (product.price) {
               const cleaned = product.price.toString().replace(/[^\d.]/g, "");
               const parsed = parseFloat(cleaned);
               return !isNaN(parsed) && parsed > 0
-                ? `₱${parsed.toFixed(2)}`
+                ? `PHP${parsed.toFixed(2)}`
                 : "";
             }
             if (product.original_price && !product.current_price) {
@@ -715,7 +699,7 @@ const CollectionPage = () => {
                 .replace(/[^\d.]/g, "");
               const parsed = parseFloat(cleaned);
               return !isNaN(parsed) && parsed > 0
-                ? `₱${parsed.toFixed(2)}`
+                ? `PHP${parsed.toFixed(2)}`
                 : "";
             }
             return "";
@@ -814,16 +798,6 @@ const CollectionPage = () => {
   };
 
 
-  const topPicksProducts = [];
-  const canPrev = carouselIndex > 0;
-  const canNext = carouselIndex < topPicksProducts.length - maxVisible;
-
-  const handlePrev = () => {
-    if (canPrev) setCarouselIndex(carouselIndex - 1);
-  };
-  const handleNext = () => {
-    if (canNext) setCarouselIndex(carouselIndex + 1);
-  };
 
   // Show skeleton only on initial load when we don't have data yet
   // Check if we have any data to display
@@ -1049,258 +1023,12 @@ const CollectionPage = () => {
       )}
 
       {/* ===== TOP PICKS COLLECTION ===== */}
-      <section className="bg-[#1f1f21] py-14">
-        <div className="max-w-7xl mx-auto px-5 relative">
-          <div className="flex justify-between items-center pb-8">
-            <h2 className="font-bold bebas text-3xl lg:text-5xl tracking-wide text-[#FFF7DC]">
-              TOP PICKS {collectionName}
-            </h2>
-            {!isMobile ? (
-              <div className="flex space-x-4">
-                <div
-                  onClick={handlePrev}
-                  role="button"
-                  tabIndex={0}
-                  aria-label="Previous Picks"
-                  className={`flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 transition select-none ${
-                    !canPrev ? "opacity-30 cursor-not-allowed" : ""
-                  }`}
-                >
-                  <img
-                    src={PrevIcon}
-                    alt="Previous"
-                    className="w-10 h-10"
-                    draggable={false}
-                  />
-                </div>
-                <div
-                  onClick={handleNext}
-                  role="button"
-                  tabIndex={0}
-                  aria-label="Next Picks"
-                  className={`flex items-center justify-center px-2 py-1 cursor-pointer hover:opacity-70 transition select-none ${
-                    !canNext ? "opacity-30 cursor-not-allowed" : ""
-                  }`}
-                >
-                  <img
-                    src={NextIcon}
-                    alt="Next"
-                    className="w-10 h-10"
-                    draggable={false}
-                  />
-                </div>
-              </div>
-            ) : null}
-          </div>
-
-          {/* MOBILE Carousel */}
-          {isMobile && (
-            <div
-              className="flex overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-mandatory flex-nowrap md:grid md:grid-cols-4 md:gap-5 md:overflow-visible"
-              style={{
-                scrollBehavior: "smooth",
-                WebkitOverflowScrolling: "touch",
-              }}
-            >
-              {topPicksProducts.map((item) => (
-                <div
-                  key={`top-pick-${item.id}`}
-                  className="relative bg-[#222] flex-shrink-0 transition-all duration-300 ease-in-out snap-center"
-                  style={{
-                    width: "65vw",
-                    margin: "0 6px",
-                  }}
-                >
-                  {/* Product Image */}
-                  <div className="relative w-full h-[260px] flex items-center justify-center overflow-hidden bg-black">
-                    {/* Overlay Icons */}
-                    <div className="absolute top-4 left-4 right-4 flex justify-between items-center z-10">
-                      <img
-                        src={TryOnIcon}
-                        alt="Try On"
-                        className="w-6 h-6 cursor-pointer hover:opacity-80"
-                        draggable={false}
-                      />
-                      <img
-                        src={AddFavorite}
-                        alt="Favorite"
-                        className="w-6 h-6 cursor-pointer hover:opacity-80"
-                        draggable={false}
-                      />
-                    </div>
-                    <img
-                      src={item.images[0]}
-                      alt={item.name}
-                      className="object-cover w-full h-full"
-                      draggable={false}
-                    />
-                  </div>
-                  {/* Text + Price */}
-                  <div
-                    style={{
-                      background:
-                        "linear-gradient(90deg, #000000 46%, #666666 100%)",
-                    }}
-                    className="py-3 px-2 text-center flex flex-col items-center"
-                  >
-                    <span className="uppercase text-[#FFF7DC] tracking-widest text-sm avantbold">
-                      {item.name}
-                    </span>
-                    <span className="text-xs tracking-widest text-[#FFF7DC] avant mt-1">
-                      {item.collection}
-                    </span>
-                    <div className="flex justify-center items-center gap-2 text-sm avantbold mt-1">
-                      <span className="line-through text-[#FFF7DC] opacity-50">
-                        {item.oldPrice}
-                      </span>
-                      <span className="text-[#FFF7DC]">{item.price}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* DESKTOP GRID */}
-          {!isMobile && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10">
-              {topPicksProducts
-                .slice(carouselIndex, carouselIndex + maxVisible)
-                .map((item) => {
-                  const isHovered = hoveredCardId === item.id;
-                  const currentImageIndex = hoveredImageIndexes[item.id] ?? 0;
-                  return (
-                    <div
-                      key={`top-pick-${item.id}`}
-                      onMouseEnter={() => {
-                        setHoveredCardId(item.id);
-                        setHoveredImageIndexes((prev) => ({
-                          ...prev,
-                          [item.id]: 0,
-                        }));
-                      }}
-                      onMouseLeave={() => {
-                        setHoveredCardId(null);
-                        setHoveredButtonId(null);
-                      }}
-                      className={`relative bg-[#222] rounded-none overflow-hidden drop-shadow-[0_10px_15px_rgba(0,0,0,1)] group transition-all transform ${
-                        isHovered ? "scale-105 z-10" : ""
-                      }`}
-                      style={{
-                        height: isHovered ? "440px" : "375px",
-                        transition: "height 0.3s ease, transform 0.3s ease",
-                      }}
-                    >
-                      {/* Top icons */}
-                      <div className="w-full flex justify-between items-center px-6 pt-3 absolute top-0 left-0 z-10">
-                        <img
-                          src={TryOnIcon}
-                          alt="Try On"
-                          className="w-6 h-6 cursor-pointer hover:opacity-80"
-                          draggable={false}
-                        />
-                        <img
-                          src={AddFavorite}
-                          alt="Favorite"
-                          className="w-6 h-6 cursor-pointer hover:opacity-80"
-                          draggable={false}
-                        />
-                      </div>
-                      {/* Product Image */}
-                      <div className="relative w-full h-[300px] flex items-center justify-center overflow-hidden bg-black">
-                        <img
-                          src={
-                            isHovered
-                              ? item.images[currentImageIndex]
-                              : item.images[0]
-                          }
-                          alt={item.name}
-                          className="object-cover w-full h-full rounded-none transition-all duration-300"
-                          draggable={false}
-                        />
-                        {isHovered && item.images.length > 1 && (
-                          <>
-                            <img
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleImageChange(item.id, "prev");
-                              }}
-                              src={PrevIcon}
-                              alt="Previous"
-                              className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 cursor-pointer hover:opacity-80"
-                              draggable={false}
-                            />
-                            <img
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleImageChange(item.id, "next");
-                              }}
-                              src={NextIcon}
-                              alt="Next"
-                              className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 cursor-pointer hover:opacity-80"
-                              draggable={false}
-                            />
-                          </>
-                        )}
-                      </div>
-                      {/* Text + Price + Button */}
-                      <div
-                        style={{
-                          background:
-                            "linear-gradient(90deg, #000000 46%, #666666 100%)",
-                        }}
-                        className="relative py-2 px-2 text-center flex flex-col items-center rounded-none min-h-[140px]"
-                      >
-                        <span className="uppercase text-[#FFF7DC] tracking-widest text-[13px] avantbold">
-                          {item.name}
-                        </span>
-                        <span className="text-[13px] tracking-widest text-[#FFF7DC] avant">
-                          {item.collection}
-                        </span>
-                        <div className="flex justify-center items-center gap-2 text-[14px] avantbold mt-1">
-                          <span className="line-through text-[#FFF7DC] opacity-50">
-                            {item.oldPrice}
-                          </span>
-                          <span className="text-[#FFF7DC]">{item.price}</span>
-                        </div>
-                        {isHovered && (
-                          <button
-                            style={{
-                              backgroundColor:
-                                hoveredButtonId === item.id
-                                  ? "#FFF7DC"
-                                  : "transparent",
-                              color:
-                                hoveredButtonId === item.id
-                                  ? "#1F1F21"
-                                  : "#FFF7DC",
-                              outline: "2px solid #FFF7DC",
-                              borderRadius: 5,
-                            }}
-                            onMouseEnter={() => setHoveredButtonId(item.id)}
-                            onMouseLeave={() => setHoveredButtonId(null)}
-                            className="mt-4 w-full flex items-center justify-center gap-2 border border-[#FFF7DC] py-2 px-4 font-bold text-md tracking-wide rounded-5 transition-all duration-300"
-                          >
-                            <img
-                              src={
-                                hoveredButtonId === item.id
-                                  ? AddBagHover
-                                  : AddBag
-                              }
-                              alt="Bag Icon"
-                              className="w-4 h-4"
-                            />
-                            ADD TO BAG
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-            </div>
-          )}
-        </div>
-      </section>
+      <TopPicks
+        collectionId={currentCollection?.collection_id || currentCollection?.id}
+        title={`TOP PICKS ${collectionName}`}
+        limit={8}
+        maxVisible={4}
+      />
     </Layout>
   );
 };
