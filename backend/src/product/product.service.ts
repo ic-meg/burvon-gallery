@@ -338,4 +338,155 @@ export class ProductService {
 
     return products;
   }
+
+  async getTopPicksByCategory(categorySlug: string, limit: number = 8) {
+    const categoryName =
+      categorySlug.charAt(0).toUpperCase() +
+      categorySlug.slice(1).toLowerCase();
+
+    let category = await this.db.category.findFirst({
+      where: {
+        name: {
+          equals: categoryName,
+          mode: 'insensitive',
+        },
+      },
+    });
+
+    // If not found, try with 's' appended (singular to plural)
+    if (!category) {
+      const pluralName = categoryName + 's';
+      category = await this.db.category.findFirst({
+        where: {
+          name: {
+            equals: pluralName,
+            mode: 'insensitive',
+          },
+        },
+      });
+    }
+
+    if (!category && categoryName.endsWith('s')) {
+      const singularName = categoryName.slice(0, -1);
+      category = await this.db.category.findFirst({
+        where: {
+          name: {
+            equals: singularName,
+            mode: 'insensitive',
+          },
+        },
+      });
+    }
+
+    if (!category) {
+      throw new NotFoundException(`Category '${categorySlug}' not found`);
+    }
+
+    const productsWithSales = await this.db.product.findMany({
+      where: {
+        category_id: category.category_id,
+      },
+      include: {
+        category: true,
+        collection: true,
+        sizeStocks: true,
+        orderItems: {
+          include: {
+            order: {
+              select: {
+                status: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // Calculate total sales for each product (only count completed/delivered orders)
+    const productsWithSalesCount = productsWithSales.map((product) => {
+      const totalSales = product.orderItems.reduce((sum, item) => {
+        // Only count delivered orders
+        if (item.order.status === 'Delivered') {
+          return sum + item.quantity;
+        }
+        return sum;
+      }, 0);
+
+      // Remove orderItems from response
+      const { orderItems, ...productData } = product;
+
+      return {
+        ...productData,
+        totalSales,
+      };
+    });
+
+    // Filter out products with 0 sales, then sort by total sales (descending) and take top N
+    const topPicks = productsWithSalesCount
+      .filter((product) => product.totalSales > 0)
+      .sort((a, b) => b.totalSales - a.totalSales)
+      .slice(0, limit);
+
+    return { products: topPicks, category };
+  }
+
+  async getTopPicksByCollection(collectionId: number, limit: number = 8) {
+    const collection = await this.db.collection.findUnique({
+      where: { collection_id: collectionId },
+    });
+
+    if (!collection) {
+      throw new NotFoundException(
+        `Collection with ID ${collectionId} not found`,
+      );
+    }
+
+    // Get products with their total sales quantity
+    const productsWithSales = await this.db.product.findMany({
+      where: {
+        collection_id: collectionId,
+      },
+      include: {
+        category: true,
+        collection: true,
+        sizeStocks: true,
+        orderItems: {
+          include: {
+            order: {
+              select: {
+                status: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // Calculate total sales for each product (only count completed/delivered orders)
+    const productsWithSalesCount = productsWithSales.map((product) => {
+      const totalSales = product.orderItems.reduce((sum, item) => {
+        // Only count delivered orders
+        if (item.order.status === 'Delivered') {
+          return sum + item.quantity;
+        }
+        return sum;
+      }, 0);
+
+      // Remove orderItems from response
+      const { orderItems, ...productData } = product;
+
+      return {
+        ...productData,
+        totalSales,
+      };
+    });
+
+    // Filter out products with 0 sales, then sort by total sales (descending) and take top N
+    const topPicks = productsWithSalesCount
+      .filter((product) => product.totalSales > 0)
+      .sort((a, b) => b.totalSales - a.totalSales)
+      .slice(0, limit);
+
+    return { products: topPicks, collection };
+  }
 }

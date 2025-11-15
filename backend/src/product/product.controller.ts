@@ -30,6 +30,18 @@ export class ProductController {
     return this.productService.searchProducts(query.trim());
   }
 
+  @Get('top-picks/category/:slug')
+  getTopPicksByCategory(@Param('slug') slug: string, @Query('limit') limit?: string) {
+    const limitNum = limit ? parseInt(limit, 10) : 8;
+    return this.productService.getTopPicksByCategory(slug, limitNum);
+  }
+
+  @Get('top-picks/collection/:id')
+  getTopPicksByCollection(@Param('id', ParseIntPipe) collectionId: number, @Query('limit') limit?: string) {
+    const limitNum = limit ? parseInt(limit, 10) : 8;
+    return this.productService.getTopPicksByCollection(collectionId, limitNum);
+  }
+
   @Get('category/:slug')
   findByCategory(@Param('slug') slug: string) {
     return this.productService.getProductsByCategory(slug);
