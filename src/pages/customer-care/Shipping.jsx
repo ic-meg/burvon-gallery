@@ -47,11 +47,11 @@ const boxData = [
     title: "SHIPPING FEES",
     desc: (
       <>
-        Metro Manila: ₱99
+        Metro Manila: PHP99
         <br />
-        Luzon/Visayas/Mindanao: ₱120–₱150
+        Luzon/Visayas/Mindanao: PHP120–PHP150
         <br />
-        FREE shipping on orders over ₱2,000
+        FREE shipping on orders over PHP2,000
       </>
     ),
   },

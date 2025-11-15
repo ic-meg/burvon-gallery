@@ -262,7 +262,7 @@ export function generateOrderConfirmationEmail(data: OrderConfirmationEmailData)
               <td class="item-name">${item.name}</td>
               <td>${item.size || '-'}</td>
               <td>${item.quantity}</td>
-              <td>₱${item.price.toFixed(2)}</td>
+              <td>PHP${item.price.toFixed(2)}</td>
             </tr>
           `).join('')}
         </tbody>
@@ -271,15 +271,15 @@ export function generateOrderConfirmationEmail(data: OrderConfirmationEmailData)
       <div class="totals-section">
         <div class="total-row">
           <span>Subtotal:</span>
-          <span>₱${subtotal.toFixed(2)}</span>
+          <span>PHP${subtotal.toFixed(2)}</span>
         </div>
         <div class="total-row">
           <span>Shipping:</span>
-          <span>₱${shippingCost.toFixed(2)}</span>
+          <span>PHP${shippingCost.toFixed(2)}</span>
         </div>
         <div class="total-row grand-total">
           <span>TOTAL:</span>
-          <span>₱${totalPrice.toFixed(2)}</span>
+          <span>PHP${totalPrice.toFixed(2)}</span>
         </div>
       </div>
 

@@ -111,7 +111,7 @@ const ReviewDetailsDesktop = () => (
               <img src={item.image} alt={item.variant} className="w-24 h-24 object-cover rounded-md" />
               <div>
                 <div className="avantbold cream-text text-lg">{item.name}</div>
-                <div className="bebas cream-text text-md" style={{color:'#959595'}}>{item.variant} - ₱ {item.price.toLocaleString(undefined, {minimumFractionDigits:2})}</div>
+                <div className="bebas cream-text text-md" style={{color:'#959595'}}>{item.variant} - PHP {item.price.toLocaleString(undefined, {minimumFractionDigits:2})}</div>
                 <div className="avant cream-text text-md" style={{color:'#959595'}}>Quantity: {item.quantity}</div>
               </div>
             </div>
@@ -125,8 +125,8 @@ const ReviewDetailsDesktop = () => (
         <div className="flex flex-col gap-4 pl-10">
           <div className="flex justify-between items-start gap-8">
             <div>
-              <div className="avantbold cream-text text-md mb-1">Refund Amount: <span className="avant text-md">₱ {reviewData.refundAmount.toLocaleString(undefined, {minimumFractionDigits:2})}</span></div>
-              <div className="avantbold cream-text text-md mb-1">Actual Refund Amount: <span className="avant text-md">₱ {reviewData.actualAmount.toLocaleString(undefined, {minimumFractionDigits:2})}</span></div>
+              <div className="avantbold cream-text text-md mb-1">Refund Amount: <span className="avant text-md">PHP {reviewData.refundAmount.toLocaleString(undefined, {minimumFractionDigits:2})}</span></div>
+              <div className="avantbold cream-text text-md mb-1">Actual Refund Amount: <span className="avant text-md">PHP {reviewData.actualAmount.toLocaleString(undefined, {minimumFractionDigits:2})}</span></div>
             </div>
             <div>
               <div className="avantbold cream-text text-md mb-1">Refund to: <span className="avant">{reviewData.refundTo}</span></div>
@@ -224,13 +224,13 @@ const ReviewDetailsMobile = () => (
                 (Elegant Pendant Jewelry)
               </span>
             </div>
-            <div className="bebas cream-text text-xs mt-2" style={{color: '#959595'}}>{item.variant} - ₱ {item.price.toLocaleString(undefined, {minimumFractionDigits:2})}</div>
+            <div className="bebas cream-text text-xs mt-2" style={{color: '#959595'}}>{item.variant} - PHP {item.price.toLocaleString(undefined, {minimumFractionDigits:2})}</div>
             <div className="avant cream-text text-xs" style={{color: '#959595'}}>Quantity: {item.quantity}</div>
           </div>
         </div>
       ))}
-      <div className="avantbold cream-text text-sm mt-2">Refund Amount: <span className="avant"> ₱ {reviewData.refundAmount.toLocaleString(undefined, {minimumFractionDigits:2})}</span></div>
-      <div className="avantbold cream-text text-sm">Actual Refund Amount: <span className="avant"> ₱ {reviewData.actualAmount.toLocaleString(undefined, {minimumFractionDigits:2})}</span></div>
+      <div className="avantbold cream-text text-sm mt-2">Refund Amount: <span className="avant"> PHP {reviewData.refundAmount.toLocaleString(undefined, {minimumFractionDigits:2})}</span></div>
+      <div className="avantbold cream-text text-sm">Actual Refund Amount: <span className="avant"> PHP {reviewData.actualAmount.toLocaleString(undefined, {minimumFractionDigits:2})}</span></div>
       <div className="avantbold cream-text text-sm">Return to: <span className="avant">{reviewData.refundTo}</span></div>
       <div className="avantbold cream-text text-sm mt-6">Reason: <span className="avant">{reviewData.reason}</span></div>
       <div className="avant cream-text text-sm mt-2">{reviewData.message}</div>

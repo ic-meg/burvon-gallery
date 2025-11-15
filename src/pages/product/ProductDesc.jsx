@@ -210,24 +210,24 @@ const ProductDesc = () => {
       collectionName: collectionName ? ` ${collectionName}: ` : productName,
       description: productData.description || "No description available.",
       oldPrice: productData.original_price
-        ? `₱${parseFloat(productData.original_price).toFixed(2)}`
+        ? `PHP${parseFloat(productData.original_price).toFixed(2)}`
         : null,
       newPrice:
         productData.current_price &&
           productData.current_price !== "null" &&
           productData.current_price !== null
-          ? `₱${parseFloat(productData.current_price).toFixed(2)}`
+          ? `PHP${parseFloat(productData.current_price).toFixed(2)}`
           : null,
       price:
         productData.current_price &&
           productData.current_price !== "null" &&
           productData.current_price !== null
-          ? `₱${parseFloat(productData.current_price).toFixed(2)}`
+          ? `PHP${parseFloat(productData.current_price).toFixed(2)}`
           : productData.original_price &&
             productData.original_price !== "null" &&
             productData.original_price !== null
-            ? `₱${parseFloat(productData.original_price).toFixed(2)}`
-            : "₱0.00",
+            ? `PHP${parseFloat(productData.original_price).toFixed(2)}`
+            : "PHP0.00",
       stock: productData.stock || 0,
       images:
         Array.isArray(productData.images) && productData.images.length > 0
@@ -440,13 +440,13 @@ const ProductDesc = () => {
     name: productData.name || "Unnamed Product",
     collection: productData.collection?.name?.toUpperCase() || "COLLECTION",
     oldPrice: productData.original_price
-      ? `₱${parseFloat(productData.original_price).toFixed(2)}`
+      ? `PHP${parseFloat(productData.original_price).toFixed(2)}`
       : null,
     price: productData.current_price
-      ? `₱${parseFloat(productData.current_price).toFixed(2)}`
+      ? `PHP${parseFloat(productData.current_price).toFixed(2)}`
       : productData.original_price
-        ? `₱${parseFloat(productData.original_price).toFixed(2)}`
-        : "₱0.00",
+        ? `PHP${parseFloat(productData.original_price).toFixed(2)}`
+        : "PHP0.00",
     images:
       Array.isArray(productData.images) && productData.images.length > 0
         ? productData.images

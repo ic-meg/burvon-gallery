@@ -36,14 +36,14 @@ const ViewDetailsModal = ({ isOpen, onClose, order, showToast }) => {
         sku: item.product?.sku || item.sku || "N/A",
         quantity: item.quantity || 1,
         size: item.size || "One Size",
-        price: `₱ ${parseFloat(item.price || 0).toFixed(2)}`,
-        subtotal: `₱ ${(parseFloat(item.price || 0) * (item.quantity || 1)).toFixed(2)}`
+        price: `PHP ${parseFloat(item.price || 0).toFixed(2)}`,
+        subtotal: `PHP ${(parseFloat(item.price || 0) * (item.quantity || 1)).toFixed(2)}`
       })),
       pricing: {
-        subtotal: `₱ ${parseFloat(order.rawTotalPrice || 0).toFixed(2)}`,
-        shipping: `₱ 80.00`,
+        subtotal: `PHP ${parseFloat(order.rawTotalPrice || 0).toFixed(2)}`,
+        shipping: `PHP 80.00`,
         discount: "-",
-        total: order.amount || "₱ 0.00"
+        total: order.amount || "PHP 0.00"
       },
       customer: {
         name: order.customer,
@@ -705,8 +705,8 @@ const ViewDetailsModal = ({ isOpen, onClose, order, showToast }) => {
                 </div>
                   <div className="text-center text-sm text-gray-600 avant uppercase">{item.sku || item.product?.sku || "N/A"}</div>
                   <div className="text-center font-medium text-black avant">{item.quantity || 1}</div>
-                  <div className="text-center font-medium text-black avant">{item.price || item.product?.price || "₱ 0.00"}</div>
-                  <div className="text-center font-medium text-black avant">{item.subtotal || item.total || "₱ 0.00"}</div>
+                  <div className="text-center font-medium text-black avant">{item.price || item.product?.price || "PHP 0.00"}</div>
+                  <div className="text-center font-medium text-black avant">{item.subtotal || item.total || "PHP 0.00"}</div>
               </div>
               ))
             ) : (
@@ -879,7 +879,7 @@ const AdminOrders = ({ hasAccess = true }) => {
     const transformedOrder = {
       id: `#${orderId}`,
       customer: customerName || 'N/A',
-      amount: `₱ ${totalAmount.toFixed(2)}`,
+      amount: `PHP ${totalAmount.toFixed(2)}`,
       status: order.status || 'Pending',
       date: new Date(order.created_at || Date.now()).toLocaleDateString('en-US', {
         month: 'short',

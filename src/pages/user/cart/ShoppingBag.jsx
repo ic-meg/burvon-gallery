@@ -178,7 +178,7 @@ const ShoppingBagMobile = ({
                 </div>
                 <div className="avant text-xs mt-2">
                   Subtotal: <span className="avantbold text-xs">
-                    ₱ {(parseFloat(item.price.replace(/[^\d.]/g, '')) * (() => {
+                    PHP {(parseFloat(item.price.replace(/[^\d.]/g, '')) * (() => {
                       const isRing = item.category_id === ringCategoryId || (item.category && (
                         item.category.toLowerCase() === 'ring' || 
                         item.category.toLowerCase() === 'rings' ||
@@ -243,7 +243,7 @@ const ShoppingBagMobile = ({
       <div className="sticky w-full bg-[#181818] p-6 z-30 mt-4 mx-auto">
         <div className="flex justify-between mb-2 avantbold text-sm">
           <span>Subtotal ( {getSelectedItemsCount()} items )</span>
-          <span>₱ {getSelectedItemsTotal().toFixed(2)}</span>
+          <span>PHP {getSelectedItemsTotal().toFixed(2)}</span>
         </div>
         <div className="flex justify-between mb-2 avantbold text-sm">
           <span>Discount</span>
@@ -700,7 +700,7 @@ const ShoppingBag = () => {
                   >+</span>
                 </div>
                 <div className="text-center avantbold text-lg">
-                  ₱ {(parseFloat(item.price.replace(/[^\d.]/g, '')) * (() => {
+                  PHP {(parseFloat(item.price.replace(/[^\d.]/g, '')) * (() => {
                     const isRing = item.category_id === ringCategoryId || (item.category && (
                       item.category.toLowerCase() === 'ring' || 
                       item.category.toLowerCase() === 'rings' ||
@@ -718,7 +718,7 @@ const ShoppingBag = () => {
               {/* subtotal */}
               <div className="flex justify-between mb-2 avantbold text-lg">
                 <span>Subtotal ( {getSelectedItemsCount()} items )</span>
-                <span>₱ {getSelectedItemsTotal().toFixed(2)}</span>
+                <span>PHP {getSelectedItemsTotal().toFixed(2)}</span>
               </div>
               {/* discount */}
               <div className="flex justify-between mb-2 avantbold text-lg">

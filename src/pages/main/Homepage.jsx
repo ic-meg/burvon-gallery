@@ -277,14 +277,14 @@ const Homepage = () => {
         if (hasSalePrice && hasOriginalPrice) {
           // Product is on sale - show both prices
           showStrikethrough = true;
-          oldPrice = `₱${product.original_price}`;
-          price = `₱${product.sale_price}`;
+          oldPrice = `PHP${product.original_price}`;
+          price = `PHP${product.sale_price}`;
         } else if (hasOriginalPrice) {
           // Has original price but no sale - show original price
-          price = `₱${product.original_price}`;
+          price = `PHP${product.original_price}`;
         } else if (hasRegularPrice) {
           // Regular price only
-          price = `₱${product.price}`;
+          price = `PHP${product.price}`;
         } else {
           // Fallback
           price = "PRICE NOT SET";

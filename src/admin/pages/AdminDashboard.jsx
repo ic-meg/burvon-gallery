@@ -375,11 +375,11 @@ const AdminDashboard = () => {
                 name: product?.name?.toUpperCase() || topProduct.name?.toUpperCase() || 'PRODUCT',
                 collection: product?.collection?.name?.toUpperCase() || 'COLLECTION',
                 oldPrice: product?.original_price
-                  ? `₱${parseFloat(product.original_price).toFixed(2)}`
-                  : '₱790.00',
+                  ? `PHP${parseFloat(product.original_price).toFixed(2)}`
+                  : 'PHP790.00',
                 price: product?.price
-                  ? `₱${parseFloat(product.price).toFixed(2)}`
-                  : '₱711.00',
+                  ? `PHP${parseFloat(product.price).toFixed(2)}`
+                  : 'PHP711.00',
                 image: product?.images?.[0] || product?.image || defaultImage,
                 sold: topProduct.sold || 0,
               }
@@ -393,32 +393,32 @@ const AdminDashboard = () => {
                 id: 1,
                 name: "LYRIC",
                 collection: "LOVE LANGUAGE COLLECTION",
-                oldPrice: "₱790.00",
-                price: "₱711.00",
+                oldPrice: "PHP790.00",
+                price: "PHP711.00",
                 image: LyricImage,
               },
               {
                 id: 2,
                 name: "AGATHA",
                 collection: "CLASH COLLECTION",
-                oldPrice: "₱790.00",
-                price: "₱711.00",
+                oldPrice: "PHP790.00",
+                price: "PHP711.00",
                 image: AgathaImage,
               },
               {
                 id: 3,
                 name: "RIOM",
                 collection: "THE REBELLION COLLECTION",
-                oldPrice: "₱790.00",
-                price: "₱711.00",
+                oldPrice: "PHP790.00",
+                price: "PHP711.00",
                 image: RiomImage,
               },
               {
                 id: 4,
                 name: "CELINE",
                 collection: "THE REBELLION COLLECTION",
-                oldPrice: "₱790.00",
-                price: "₱711.00",
+                oldPrice: "PHP790.00",
+                price: "PHP711.00",
                 image: CelineImage,
               },
             ])
@@ -427,32 +427,32 @@ const AdminDashboard = () => {
                 id: 1,
                 name: "LYRIC",
                 collection: "LOVE LANGUAGE COLLECTION",
-                oldPrice: "₱790.00",
-                price: "₱711.00",
+                oldPrice: "PHP790.00",
+                price: "PHP711.00",
                 image: LyricImage,
               },
               {
                 id: 2,
                 name: "AGATHA",
                 collection: "CLASH COLLECTION",
-                oldPrice: "₱790.00",
-                price: "₱711.00",
+                oldPrice: "PHP790.00",
+                price: "PHP711.00",
                 image: AgathaImage,
               },
               {
                 id: 3,
                 name: "RIOM",
                 collection: "THE REBELLION COLLECTION",
-                oldPrice: "₱790.00",
-                price: "₱711.00",
+                oldPrice: "PHP790.00",
+                price: "PHP711.00",
                 image: RiomImage,
               },
               {
                 id: 4,
                 name: "CELINE",
                 collection: "THE REBELLION COLLECTION",
-                oldPrice: "₱790.00",
-                price: "₱711.00",
+                oldPrice: "PHP790.00",
+                price: "PHP711.00",
                 image: CelineImage,
               },
             ])
@@ -474,7 +474,7 @@ const AdminDashboard = () => {
   const canNext = carouselIndex < topPicks.length - maxVisible
 
   const formatCurrency = (amount) => {
-    return `₱${parseFloat(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+    return `PHP${parseFloat(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
   }
 
   const formatPercentage = (value) => {
@@ -606,11 +606,11 @@ const AdminDashboard = () => {
               name: product.name?.toUpperCase() || 'PRODUCT',
               collection: product.collection?.name?.toUpperCase() || 'COLLECTION',
               oldPrice: product.original_price
-                ? `₱${parseFloat(product.original_price).toFixed(2)}`
+                ? `PHP${parseFloat(product.original_price).toFixed(2)}`
                 : null,
               price: product.price
-                ? `₱${parseFloat(product.price).toFixed(2)}`
-                : '₱0.00',
+                ? `PHP${parseFloat(product.price).toFixed(2)}`
+                : 'PHP0.00',
               image: product.images?.[0] || product.image || defaultImage,
             }
           })

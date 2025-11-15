@@ -54,7 +54,7 @@ const CheckoutDesktop = ({ onImageClick, products, subtotal, total, itemCount, f
             <div className="avant text-md pl-45 text-center">{p.size || '-'}</div>
             <div className="avantbold pl-20 text-md text-center">{p.price}</div>
             <div className="avantbold text-md text-center">{p.quantity}</div>
-            <div className="avantbold text-md pr-15 text-center">₱ {(parseFloat(p.price.replace(/[^\d.]/g, '')) * p.quantity).toFixed(2)}</div>
+            <div className="avantbold text-md pr-15 text-center">PHP {(parseFloat(p.price.replace(/[^\d.]/g, '')) * p.quantity).toFixed(2)}</div>
           </div>
         ))}
       </div>
@@ -180,7 +180,7 @@ const CheckoutDesktop = ({ onImageClick, products, subtotal, total, itemCount, f
           <div className="bg-[#181818] p-6 rounded-xl border border-[#fff7dc]/30 mb-4">
             <div className="bebas cream-text text-2xl mb-2">SHIPPING METHOD</div>
             <div className="avant cream-text text-md mb-2">Standard (Metro Manila: 5-7 working days, Outside Metro Manila: 12-15 working days)</div>
-            <div className="avantbold cream-text text-md">₱ {shipping.toFixed(2)}</div>
+            <div className="avantbold cream-text text-md">PHP {shipping.toFixed(2)}</div>
           </div>
           {/* Notes */}
           <div className="bg-[#181818] p-6 rounded-xl border border-[#fff7dc]/30 mb-4">
@@ -200,15 +200,15 @@ const CheckoutDesktop = ({ onImageClick, products, subtotal, total, itemCount, f
             <div className="bg-[#181818] p-6 rounded-xl border border-[#fff7dc]/30 mb-4">
               <div className="flex justify-between mb-2 avantbold text-lg">
                 <span>Subtotal ( {itemCount} items )</span>
-                <span>₱ {subtotal.toFixed(2)}</span>
+                <span>PHP{subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between mb-2 avantbold text-lg">
                 <span>Shipping</span>
-                <span>₱ {shipping.toFixed(2)}</span>
+                <span>PHP{shipping.toFixed(2)}</span>
               </div>
               <div className="flex justify-between avantbold text-xl mt-4 border-t border-[#fff7dc]/30 pt-2">
                 <span>Total</span>
-                <span>₱ {total.toFixed(2)}</span>
+                <span>PHP{total.toFixed(2)}</span>
               </div>
             </div>
             {/* Payment Section */}
@@ -276,7 +276,7 @@ const CheckoutMobile = ({ onImageClick, products, subtotal, total, itemCount, fo
             <div>{p.size || '-'}</div>
             <div>{p.price}</div>
             <div>{p.quantity}</div>
-            <div>₱ {(parseFloat(p.price.replace(/[^\d.]/g, '')) * p.quantity).toFixed(2)}</div>
+            <div>PHP {(parseFloat(p.price.replace(/[^\d.]/g, '')) * p.quantity).toFixed(2)}</div>
           </div>
         </div>
       ))}
@@ -386,7 +386,7 @@ const CheckoutMobile = ({ onImageClick, products, subtotal, total, itemCount, fo
     <div className="bg-[#181818] p-4 rounded-xl border border-[#fff7dc]/30 mb-4">
       <div className="bebas cream-text text-xl mb-2">SHIPPING METHOD</div>
       <div className="avant cream-text text-xs mb-2">Standard (Metro Manila: 5-7 working days, Outside Metro Manila: 12-15 working days)</div>
-      <div className="avantbold cream-text text-xs">₱ {shipping.toFixed(2)}</div>
+      <div className="avantbold cream-text text-xs">PHP {shipping.toFixed(2)}</div>
     </div>
     {/* Notes */}
     <div className="bg-[#181818] p-4 rounded-xl border border-[#fff7dc]/30 mb-4">
@@ -403,15 +403,15 @@ const CheckoutMobile = ({ onImageClick, products, subtotal, total, itemCount, fo
     <div className="bg-[#181818] p-4 rounded-xl border border-[#fff7dc]/30 mb-4">
       <div className="flex justify-between mb-2 avantbold text-xs">
         <span>Subtotal ( {itemCount} items )</span>
-        <span>₱ {subtotal.toFixed(2)}</span>
+        <span>PHP {subtotal.toFixed(2)}</span>
       </div>
       <div className="flex justify-between mb-2 avantbold text-xs">
         <span>Shipping</span>
-        <span>₱ {shipping.toFixed(2)}</span>
+        <span>PHP {shipping.toFixed(2)}</span>
       </div>
       <div className="flex justify-between avantbold text-sm mt-2 border-t border-[#fff7dc]/30 pt-2">
         <span>Total</span>
-        <span>₱ {total.toFixed(2)}</span>
+        <span>PHP {total.toFixed(2)}</span>
       </div>
       {/* Payment Section */}
       <div className="flex gap-2 mb-2 items-center justify-center mt-4">

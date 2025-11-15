@@ -176,9 +176,9 @@ const ReturnRefundDesktop = () => {
                 </div>
               </div>
               <div className="w-22 text-center avantbold">-</div>
-              <div className="w-32 text-center avantbold text-nowrap">₱ {item.price.toLocaleString(undefined, {minimumFractionDigits:2})}</div>
+              <div className="w-32 text-center avantbold text-nowrap">PHP {item.price.toLocaleString(undefined, {minimumFractionDigits:2})}</div>
               <div className="w-32 text-center avantbold">{item.quantity}</div>
-              <div className="w-32 text-center avantbold">₱ {(item.price * item.quantity).toLocaleString(undefined, {minimumFractionDigits:2})}</div>
+              <div className="w-32 text-center avantbold">PHP {(item.price * item.quantity).toLocaleString(undefined, {minimumFractionDigits:2})}</div>
             </div>
           ))}
         </div>
@@ -218,7 +218,7 @@ const ReturnRefundDesktop = () => {
             <input className="w-full rounded-lg px-4 py-3 bg-transparent border-2 border-[#FFF7DC] cream-text" placeholder="Refund Amount" value={amount} onChange={e => setAmount(e.target.value)} />
             <div className="flex justify-between mt-2">
               <div className="avant cream-text text-sm">Refund to: <span className="avantbold">GCash</span></div>
-              <div className="avant cream-text text-sm">Actual Amount: <span className="avantbold">₱ {order.items[selectedIdx].price.toLocaleString(undefined, {minimumFractionDigits:2})}</span></div>
+              <div className="avant cream-text text-sm">Actual Amount: <span className="avantbold">PHP {order.items[selectedIdx].price.toLocaleString(undefined, {minimumFractionDigits:2})}</span></div>
             </div>
           </div>
           <div className="grid grid-cols-[1fr_auto] gap-6 items-start">
@@ -319,9 +319,9 @@ const ReturnRefundMobile = () => {
             {/* Info row */}
             <div className="flex flex-row justify-between avant cream-text text-xs w-full mt-1">
               <div className="w-1/4 text-left">Size<br/><span className="avantbold">-</span></div>
-              <div className="w-23 text-left">Price<br/><span className="avantbold">₱ {item.price.toLocaleString(undefined, {minimumFractionDigits:2})}</span></div>
+              <div className="w-23 text-left">Price<br/><span className="avantbold">PHP {item.price.toLocaleString(undefined, {minimumFractionDigits:2})}</span></div>
               <div className="w-1/4 text-left">Qty<br/><span className="avantbold">{item.quantity}</span></div>
-              <div className="w-23 text-left">Subtotal<br/><span className="avantbold">₱ {(item.price * item.quantity).toLocaleString(undefined, {minimumFractionDigits:2})}</span></div>
+              <div className="w-23 text-left">Subtotal<br/><span className="avantbold">PHP {(item.price * item.quantity).toLocaleString(undefined, {minimumFractionDigits:2})}</span></div>
             </div>
           </div>
         </div>
@@ -361,7 +361,7 @@ const ReturnRefundMobile = () => {
           />
           <div className="flex justify-between mt-2">
             <div className="avant cream-text text-xs">Refund to: <span className="avantbold">GCash</span></div>
-            <div className="avant cream-text text-xs">Actual Amount: <span className="avantbold">₱ {order.items[selectedIdx].price.toLocaleString(undefined, {minimumFractionDigits:2})}</span></div>
+            <div className="avant cream-text text-xs">Actual Amount: <span className="avantbold">PHP {order.items[selectedIdx].price.toLocaleString(undefined, {minimumFractionDigits:2})}</span></div>
           </div>
         </div>
         <div className="grid grid-cols-[1fr_auto] gap-3 items-start">

@@ -87,7 +87,7 @@ const CartNotification = ({ show, onClose, addedItem, onNavigateToBag }) => {
                   </p>
                 )}
                 <p className="avantbold text-[#1F1F21] text-sm mt-1">
-                  ₱{parseFloat(addedItem.price.replace(/[^\d.]/g, '')).toLocaleString()}
+                  PHP{parseFloat(addedItem.price.replace(/[^\d.]/g, '')).toLocaleString()}
                 </p>
               </div>
             </div>
@@ -99,7 +99,7 @@ const CartNotification = ({ show, onClose, addedItem, onNavigateToBag }) => {
           <div className="flex justify-between items-center">
             <span className="avantbold text-[#1F1F21]">Subtotal</span>
             <span className="avantbold text-[#1F1F21] text-lg">
-              ₱{getSubtotal().toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              PHP{getSubtotal().toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
           </div>
           <p className="avant text-[#1F1F21] text-xs opacity-70 mt-1">

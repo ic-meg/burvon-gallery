@@ -259,9 +259,9 @@ const ShoppingBagEmpty = () => {
                     </span>
                     <div className="flex justify-center items-center gap-2 text-[14px] avantbold mt-1">
                       <span className="line-through text-[#FFF7DC] opacity-50">
-                        ₱{product.priceOld.toFixed(2)}
+                        PHP{product.priceOld.toFixed(2)}
                       </span>
-                      <span className="text-[#FFF7DC]">₱{product.priceNew.toFixed(2)}</span>
+                      <span className="text-[#FFF7DC]">PHP{product.priceNew.toFixed(2)}</span>
                     </div>
                     {/* Add to Bag Button */}
                     {isHovered && (
@@ -355,10 +355,10 @@ const ShoppingBagEmpty = () => {
                   </span>
                   <div className="flex justify-center items-center gap-2 text-[14px] avantbold mt-1">
                     <span className="line-through text-[#FFF7DC] opacity-50">
-                      ₱{product.priceOld.toFixed(2)}
+                      PHP{product.priceOld.toFixed(2)}
                     </span>
                     <span className="text-[#FFF7DC]">
-                      ₱{product.priceNew.toFixed(2)}
+                      PHP{product.priceNew.toFixed(2)}
                     </span>
                   </div>
                 </div>

@@ -218,8 +218,8 @@ const FilterComponent = ({
             />
           </div>
           <div className="flex justify-between text-sm avant text-[#FFF7DC]/90 mt-1">
-            <span>₱{minPrice}</span>
-            <span>₱{maxPrice}</span>
+            <span>PHP{minPrice}</span>
+            <span>PHP{maxPrice}</span>
           </div>
         </div>
       </div>
@@ -454,8 +454,8 @@ const FilterComponent = ({
               />
             </div>
             <div className="flex justify-between text-base avant text-[#1F1F21] mt-1">
-              <span>₱{minPrice}</span>
-              <span>₱{maxPrice}</span>
+              <span>PHP{minPrice}</span>
+              <span>PHP{maxPrice}</span>
             </div>
           </div>
 

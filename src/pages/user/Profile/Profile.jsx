@@ -250,10 +250,10 @@ const ProfileDesktop = ({ openModal, onEditProfile, userData, ordersByTab, activ
                                 className="avant text-md line-through"
                                 style={{ color: '#959595' }}
                               >
-                                ₱ {item.oldPrice.toFixed(2)}
+                                PHP {item.oldPrice.toFixed(2)}
                               </span>
                             )}
-                            <span className="avantbold cream-text text-lg">₱ {item.price.toFixed(2)}</span>
+                            <span className="avantbold cream-text text-lg">PHP {item.price.toFixed(2)}</span>
                           </div>
                           <div className="avantbold cream-text text-md mt-1" style={{ color: '#959595' }}>
                             QUANTITY: {item.quantity} &nbsp; SIZE: {item.size}
@@ -281,7 +281,7 @@ const ProfileDesktop = ({ openModal, onEditProfile, userData, ordersByTab, activ
                               </div>
                               <div>
                                 <div className="bebas cream-text text-md">SUBTOTAL:</div>
-                                <div className="avant cream-text text-lg">₱ {order.subtotal.toLocaleString(undefined, {minimumFractionDigits:2})}</div>
+                                <div className="avant cream-text text-lg">PHP {order.subtotal.toLocaleString(undefined, {minimumFractionDigits:2})}</div>
                               </div>
                             </div>
                           </div>
@@ -460,9 +460,9 @@ const ProfileMobile = ({ openModal, onEditProfile, userData, ordersByTab, active
                       </div>
                       <div className="flex gap-2 justify-end mt-2">
                         {item.oldPrice && (
-                          <span className="avant text-sm line-through" style={{ color: '#959595' }}>₱ {item.oldPrice.toFixed(2)}</span>
+                          <span className="avant text-sm line-through" style={{ color: '#959595' }}>PHP {item.oldPrice.toFixed(2)}</span>
                         )}
-                        <span className="avantbold cream-text text-sm">₱ {item.price.toFixed(2)}</span>
+                        <span className="avantbold cream-text text-sm">PHP {item.price.toFixed(2)}</span>
                       </div>
                       {itemIdx === 0 && (
                         <>
@@ -476,7 +476,7 @@ const ProfileMobile = ({ openModal, onEditProfile, userData, ordersByTab, active
                           {showSubtotal && (
                             <div className="flex justify-end mt-2">
                               <span className="avantbold cream-text text-md" style={{ color: '#959595' }}>Subtotal:</span>
-                              <span className="avantbold cream-text text-md ml-2">₱ {order.subtotal.toLocaleString(undefined, {minimumFractionDigits:2})}</span>
+                              <span className="avantbold cream-text text-md ml-2">PHP {order.subtotal.toLocaleString(undefined, {minimumFractionDigits:2})}</span>
                             </div>
                           )}
                         </>

@@ -1289,10 +1289,10 @@ const AdminProducts = ({ hasAccess = true }) => {
       ...product,
       id: product.product_id || product.id,
       price: product.original_price
-        ? `₱${parseFloat(product.original_price).toFixed(2)}`
+        ? `PHP${parseFloat(product.original_price).toFixed(2)}`
         : "N/A",
       soldPrice: product.current_price
-        ? `₱${parseFloat(product.current_price).toFixed(2)}`
+        ? `PHP${parseFloat(product.current_price).toFixed(2)}`
         : "N/A",
       collection: collectionName,
       category: categoryName,

@@ -99,7 +99,7 @@ const OrderCompleted = () => {
                         <span className="font-bold">Order ID:</span> #{orderData.order_id}
                       </p>
                       <p className="avant text-sm text-[#FFF7DC]">
-                        <span className="font-bold">Total:</span> ₱{orderData.total_price}
+                        <span className="font-bold">Total:</span> PHP{orderData.total_price}
                       </p>
                       <p className="avant text-sm text-[#FFF7DC]">
                         <span className="font-bold">Status:</span> {orderData.status}

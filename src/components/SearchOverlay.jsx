@@ -327,7 +327,7 @@ const SearchOverlay = ({ isOpen, onClose }) => {
                           </p>
                           {product.price && (
                             <p className="avantbold text-sm text-black mt-1">
-                              ₱ {typeof product.price === 'number' ? product.price.toFixed(2) : product.price}
+                              PHP {typeof product.price === 'number' ? product.price.toFixed(2) : product.price}
                             </p>
                           )}
                         </div>
