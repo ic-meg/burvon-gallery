@@ -47,3 +47,8 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 # Backend generated
 backend/generated/prisma
+
+.env 
+.env.local
+env.example
+env.production
