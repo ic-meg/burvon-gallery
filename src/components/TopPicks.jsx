@@ -29,9 +29,9 @@ const TopPicks = ({
         let url = '';
 
         if (categorySlug) {
-          url = `${import.meta.env.VITE_API_URL}/product/top-picks/category/${categorySlug}?limit=${limit}`;
+          url = `${import.meta.env.VITE_API_URL}product/top-picks/category/${categorySlug}?limit=${limit}`;
         } else if (collectionId) {
-          url = `${import.meta.env.VITE_API_URL}/product/top-picks/collection/${collectionId}?limit=${limit}`;
+          url = `${import.meta.env.VITE_API_URL}product/top-picks/collection/${collectionId}?limit=${limit}`;
         } else {
           console.error("Either categorySlug or collectionId must be provided");
           setLoading(false);
