@@ -371,7 +371,7 @@ export class OrderController {
               'grab_pay',
               'paymaya'
             ],
-            success_url: `${frontendUrl}/profile/ordercompleted?session_id={CHECKOUT_SESSION_ID}`,
+            success_url: `${frontendUrl}/order-completed?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${frontendUrl}/user/cart/checkout`,
             send_email_receipt: false
           }
