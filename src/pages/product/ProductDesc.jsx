@@ -509,8 +509,8 @@ const ProductDesc = () => {
     });
   };
 
-  const handleImageTouchMove = (e) => {
-    e.preventDefault();
+  const handleImageTouchMove = () => {
+    // Don't call preventDefault on passive events to avoid warnings
   };
 
   const handleImageTouchEnd = (e) => {

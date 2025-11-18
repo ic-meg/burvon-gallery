@@ -258,7 +258,7 @@ export const Experience = ({ modelPath, onEnvironmentError }) => {
           background
           blur={0.2}
           onError={(error) => {
-            console.warn("Warehouse preset failed, switching to fallback HDRIs:", error);
+            console.warn("Warehouse preset failed (CDN may be down), switching to fallback HDRIs:", error);
             setEnvError(true);
             if (onEnvironmentError) {
               onEnvironmentError(error);
@@ -266,7 +266,7 @@ export const Experience = ({ modelPath, onEnvironmentError }) => {
           }}
         />
       ) : (
-        // Fallback HDRIs when warehouse preset fails
+        // Fallback HDRIs when warehouse preset fails (e.g., CDN down)
         <Environment
           files="/hdri/Jewel-hdri-diamond-set1-3.hdr"
           background
@@ -280,8 +280,7 @@ export const Experience = ({ modelPath, onEnvironmentError }) => {
         ref={modelRef}
         onPointerOver={() => (document.body.style.cursor = "grab")}
         onPointerOut={() => (document.body.style.cursor = "default")}
-        onPointerDown={(e) => {
-          e.stopPropagation();
+        onPointerDown={() => {
           document.body.style.cursor = "grabbing";
         }}
         onPointerUp={() => (document.body.style.cursor = "grab")}
