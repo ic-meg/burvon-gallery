@@ -5,10 +5,11 @@ import { degToRad } from "three/src/math/MathUtils.js";
 import * as THREE from "three";
 // import { useControls } from "leva";
 
-export const Experience = ({ modelPath }) => {
+export const Experience = ({ modelPath, onEnvironmentError }) => {
   const blobCacheRef = useRef(new Map());
   const [blobUrl, setBlobUrl] = useState(null);
   const [fetching, setFetching] = useState(false);
+  const [envError, setEnvError] = useState(false);
   const effectiveModelPath = blobUrl || null;
 
   
@@ -249,7 +250,29 @@ export const Experience = ({ modelPath }) => {
         maxPolarAngle={degToRad(80)}
       />
 
-      <Environment preset="warehouse" files="/hdri/Jewel-hdri-diamond-set1-3.hdr" background blur={0.2} />
+      {/* Primary environment with fallback */}
+      {!envError ? (
+        <Environment
+          preset="warehouse"
+          files="/hdri/Jewel-hdri-diamond-set1-3.hdr"
+          background
+          blur={0.2}
+          onError={(error) => {
+            console.warn("Warehouse preset failed, switching to fallback HDRIs:", error);
+            setEnvError(true);
+            if (onEnvironmentError) {
+              onEnvironmentError(error);
+            }
+          }}
+        />
+      ) : (
+        // Fallback HDRIs when warehouse preset fails
+        <Environment
+          files="/hdri/Jewel-hdri-diamond-set1-3.hdr"
+          background
+          blur={0.2}
+        />
+      )}
       {isBracelet && (
         <Environment files="/hdri/Contrast-Black-Jewelry-HDRI-Vol2.hdr" background={false} />
       )}

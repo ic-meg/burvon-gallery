@@ -68,6 +68,7 @@ const ProductDesc = () => {
   const [error, setError] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [has3DBeenViewed, setHas3DBeenViewed] = useState(false);
+  const [env3DError, setEnv3DError] = useState(false);
 
   const scrollRef = useRef(null);
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
@@ -828,9 +829,11 @@ const ProductDesc = () => {
                   </button>
                 )}
                 {resolvedModelPath && show3D ? (
-
                   <div className="w-full h-full">
-                    <ThreePage modelPath={resolvedModelPath} />
+                    <ThreePage
+                      modelPath={resolvedModelPath}
+                      onEnvironmentError={() => setEnv3DError(true)}
+                    />
                   </div>
                 ) : (
                   <img
@@ -1122,7 +1125,10 @@ const ProductDesc = () => {
                 )}
                 {resolvedModelPath && show3D ? (
                   <div className="w-full h-full">
-                    <ThreePage modelPath={resolvedModelPath} />
+                    <ThreePage
+                      modelPath={resolvedModelPath}
+                      onEnvironmentError={() => setEnv3DError(true)}
+                    />
                   </div>
                 ) : (
                   <img
