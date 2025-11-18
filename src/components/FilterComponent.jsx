@@ -412,14 +412,14 @@ const FilterComponent = ({
               <div
                 className="absolute top-1/2 h-[3px] bg-[#232] rounded-full -translate-y-1/2"
                 style={{
-                  left: `${((minPrice - 300) / (1200 - 300)) * 100}%`,
-                  right: `${100 - ((maxPrice - 300) / (1200 - 300)) * 100}%`,
+                  left: `${((minPrice - priceMin) / (priceMax - priceMin)) * 100}%`,
+                  right: `${100 - ((maxPrice - priceMin) / (priceMax - priceMin)) * 100}%`,
                 }}
               ></div>
               <input
                 type="range"
-                min="300"
-                max="1200"
+                min={priceMin}
+                max={priceMax}
                 step="50"
                 value={minPrice}
                 onChange={(e) =>
@@ -436,8 +436,8 @@ const FilterComponent = ({
               />
               <input
                 type="range"
-                min="300"
-                max="1200"
+                min={priceMin}
+                max={priceMax}
                 step="50"
                 value={maxPrice}
                 onChange={(e) =>

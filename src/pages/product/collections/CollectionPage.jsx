@@ -188,10 +188,50 @@ const CollectionPage = () => {
     setMaxPrice(newMaxPrice);
   };
 
+  // Calculate dynamic price range from actual products
+  const dynamicPriceRange = React.useMemo(() => {
+    const sourceProducts = rawProducts.length > 0 ? rawProducts : collectionProducts;
+
+    if (sourceProducts.length === 0) {
+      return { min: 0, max: 10000 };
+    }
+
+    const prices = sourceProducts
+      .map(p => {
+        const price = parseFloat(
+          p.current_price?.replace?.(/[^\d.]/g, "") ||
+          p.price?.replace?.(/[^\d.]/g, "") ||
+          0
+        );
+        return price;
+      })
+      .filter(p => p > 0);
+
+    if (prices.length === 0) {
+      return { min: 0, max: 10000 };
+    }
+
+    const maxProductPrice = Math.max(...prices);
+    // Round up to nearest 1000 for cleaner slider values
+    const roundedMax = Math.ceil(maxProductPrice / 1000) * 1000;
+
+    return {
+      min: 0,
+      max: Math.max(roundedMax, 2000) // Ensure at least 2000 as max
+    };
+  }, [rawProducts, collectionProducts]);
+
+  // Update maxPrice when dynamic range changes (only on initial load)
+  useEffect(() => {
+    if ((rawProducts.length > 0 || collectionProducts.length > 0) && maxPrice === 10000) {
+      setMaxPrice(dynamicPriceRange.max);
+    }
+  }, [dynamicPriceRange, rawProducts.length, collectionProducts.length]);
+
   const applyFilters = () => {
     const sourceProducts =
       rawProducts.length > 0 ? rawProducts : collectionProducts;
-    
+
     let filtered = [...sourceProducts];
 
 
@@ -879,8 +919,8 @@ const CollectionPage = () => {
             sortValue={sortValue}
             minPrice={minPrice}
             maxPrice={maxPrice}
-            priceMin={0}
-            priceMax={10000}
+            priceMin={dynamicPriceRange.min}
+            priceMax={dynamicPriceRange.max}
             onCollectionChange={handleCollectionChange}
             onCategoryChange={setCategoryValue}
             onSortChange={handleSortChange}

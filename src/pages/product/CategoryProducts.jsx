@@ -245,6 +245,37 @@ const CategoryProducts = () => {
     return allProducts.map(formatProductData).filter(Boolean);
   }, [allProducts]);
 
+  // Calculate dynamic price range from actual products
+  const dynamicPriceRange = useMemo(() => {
+    if (formattedProducts.length === 0) {
+      return { min: 0, max: 10000 };
+    }
+
+    const prices = formattedProducts.map(p => p.price || 0).filter(p => p > 0);
+    if (prices.length === 0) {
+      return { min: 0, max: 10000 };
+    }
+
+    const minProductPrice = Math.min(...prices);
+    const maxProductPrice = Math.max(...prices);
+
+    // Round up to nearest 1000 for cleaner slider values
+    const roundedMax = Math.ceil(maxProductPrice / 1000) * 1000;
+
+    return {
+      min: 0,
+      max: Math.max(roundedMax, 2000) // Ensure at least 2000 as max
+    };
+  }, [formattedProducts]);
+
+  // Update maxPrice when dynamic range changes (only on initial load)
+  useEffect(() => {
+    if (!isInitialized && formattedProducts.length > 0) {
+      setMaxPrice(dynamicPriceRange.max);
+      setIsInitialized(true);
+    }
+  }, [dynamicPriceRange, formattedProducts.length, isInitialized]);
+
   const applyFilters = useCallback(() => {
     let filtered = [...formattedProducts];
 
@@ -426,8 +457,8 @@ const CategoryProducts = () => {
               sortValue={sortValue}
               minPrice={minPrice}
               maxPrice={maxPrice}
-              priceMin={0}
-              priceMax={2000}
+              priceMin={dynamicPriceRange.min}
+              priceMax={dynamicPriceRange.max}
               onCollectionChange={handleCollectionChange}
               onSortChange={handleSortChange}
               onPriceChange={handlePriceChange}
