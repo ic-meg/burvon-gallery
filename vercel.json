@@ -1,7 +1,8 @@
 {
-    "installCommand": "npm install --include=optional",
+    "installCommand": "npm install --legacy-peer-deps",
     "buildCommand": "npm run build",
     "rewrites": [
         { "source": "/(.*)", "destination": "/" }
-    ]
+    ],
+    "framework": "vite"
 }

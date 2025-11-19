@@ -7,11 +7,10 @@
     "dev": "vite",
     "dev:backend": "cd backend && npm run start:dev",
     "dev:all": "concurrently \"npm run dev\" \"npm run dev:backend\" --names \"FRONTEND,BACKEND\" --prefix-colors \"blue,green\" --kill-others-on-fail",
-    "build": "npm run generate:tryon && vite build",
+    "build": "node scripts/generate-tryon-products.js && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "generate:tryon": "node scripts/generate-tryon-products.js",
-    "postinstall": "npm run generate:tryon"
+    "generate:tryon": "node scripts/generate-tryon-products.js"
   },
   "dependencies": {
     "@mediapipe/camera_utils": "^0.3.1675466862",
