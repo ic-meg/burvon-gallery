@@ -3,22 +3,23 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '../../../components/Layout';
 import { useCart } from '../../../contexts/CartContext';
 import AddressDropdowns from '../../../components/AddressDropdowns';
-import { philippineLocations } from '../../../data/philippineLocations';
+import { fetchBarangays } from '../../../services/psgcService';
 import { createCheckoutSession } from '../../../services/paymongoService'; // Remove after testing
 import Toast from '../../../components/Toast';
 import { getUser } from '../../../services/authService';
 import { checkAndRedirectAdmin } from '../../../utils/authUtils';
-import { 
-    visa, 
-    mastercard, 
-    gcash, 
-    maya, 
+import usePostalPH from 'use-postal-ph';
+import {
+    visa,
+    mastercard,
+    gcash,
+    maya,
     paymongo
 } from '../../../assets/index.js'; 
 
 const shipping = 80;
 
-const CheckoutDesktop = ({ onImageClick, products, subtotal, total, itemCount, formData, handleInputChange, errors, handleSubmit, handleCityChange, handleProvinceChange, availableBarangays, isLoggedIn }) => (
+const CheckoutDesktop = ({ onImageClick, products, subtotal, total, itemCount, formData, handleInputChange, errors, handleSubmit, handleRegionChange, handleProvinceChange, handleCityChange, availableBarangays, availablePostalCodes, isLoggedIn }) => (
   <div className="hidden lg:block min-h-screen bg-[#181818] px-0 py-20 text-[#fff7dc] bebas">
     <div className="flex flex-col items-center pt-20">
       <h1 className="bebas cream-text mb-12" style={{fontSize: '85px'}}>CHECKOUT</h1>
@@ -128,30 +129,17 @@ const CheckoutDesktop = ({ onImageClick, products, subtotal, total, itemCount, f
                 />
                 {errors.street_address && <p className="text-red-500 text-sm avant">{errors.street_address}</p>}
               </div>
-              <AddressDropdowns 
+              <AddressDropdowns
                 formData={formData}
                 errors={errors}
                 handleInputChange={handleInputChange}
-                handleCityChange={handleCityChange}
+                handleRegionChange={handleRegionChange}
                 handleProvinceChange={handleProvinceChange}
+                handleCityChange={handleCityChange}
                 availableBarangays={availableBarangays}
+                availablePostalCodes={availablePostalCodes}
                 isMobile={false}
               />
-              {/* POSTAL CODE */}
-              <div>
-                  <label className="bebas text-lg mb-1 block">POSTAL CODE *</label>
-                <input 
-                  type="text" 
-                  name="postal_code"
-                  value={formData.postal_code}
-                  onChange={handleInputChange}
-                  className={`w-full px-4 py-2 rounded-lg bg-transparent border avant cream-text text-md mb-2 placeholder-avant ${
-                    errors.postal_code ? 'border-red-500' : 'border-[#FFF7DC]'
-                  }`}
-                  placeholder="Enter your Postal Code" 
-                />
-                {errors.postal_code && <p className="text-red-500 text-sm avant">{errors.postal_code}</p>}
-              </div>
               {/* PHONE NUMBER */}
               <div className="flex gap-4">
                 <div className="flex-1">
@@ -241,7 +229,7 @@ const CheckoutDesktop = ({ onImageClick, products, subtotal, total, itemCount, f
   </div>
 );
 
-const CheckoutMobile = ({ onImageClick, products, subtotal, total, itemCount, formData, handleInputChange, errors, handleSubmit, handleCityChange, handleProvinceChange, availableBarangays, isLoggedIn }) => (
+const CheckoutMobile = ({ onImageClick, products, subtotal, total, itemCount, formData, handleInputChange, errors, handleSubmit, handleRegionChange, handleProvinceChange, handleCityChange, availableBarangays, availablePostalCodes, isLoggedIn }) => (
   <div className="lg:hidden w-full min-h-screen bg-[#181818] px-4 pt-22 text-[#fff7dc] bebas">
     <h1 className="bebas cream-text text-center text-4xl mb-6">CHECKOUT</h1>
     {/* Products List */}
@@ -339,28 +327,17 @@ const CheckoutMobile = ({ onImageClick, products, subtotal, total, itemCount, fo
         />
         {errors.street_address && <p className="text-red-500 text-xs avant">{errors.street_address}</p>}
 
-        <AddressDropdowns 
+        <AddressDropdowns
           formData={formData}
           errors={errors}
           handleInputChange={handleInputChange}
-          handleCityChange={handleCityChange}
+          handleRegionChange={handleRegionChange}
           handleProvinceChange={handleProvinceChange}
+          handleCityChange={handleCityChange}
           availableBarangays={availableBarangays}
+          availablePostalCodes={availablePostalCodes}
           isMobile={true}
         />
-
-        <label className="bebas text-md block">POSTAL CODE *</label>
-        <input 
-          type="text" 
-          name="postal_code"
-          value={formData.postal_code}
-          onChange={handleInputChange}
-          className={`w-full px-3 py-2 rounded-md bg-transparent border avant cream-text text-xs mb-2 placeholder-avant ${
-            errors.postal_code ? 'border-red-500' : 'border-[#FFF7DC]'
-          }`}
-          placeholder="Enter your Postal Code" 
-        />
-        {errors.postal_code && <p className="text-red-500 text-xs avant">{errors.postal_code}</p>}
 
         <label className="bebas text-md block">PHONE NUMBER *</label>
         <input 
@@ -450,9 +427,15 @@ const Checkout = () => {
     first_name: '',
     last_name: '',
     street_address: '',
-    barangay: '',
-    city_municipality: '',
-    province_region: '',
+    region_code: '',
+    region_name: '',
+    province_code: '',
+    province_name: '',
+    city_code: '',
+    city_name: '',
+    barangay_code: '',
+    barangay_name: '',
+    barangay: '', // For text input fallback
     postal_code: '',
     phone: '',
     notes: ''
@@ -460,6 +443,11 @@ const Checkout = () => {
   
   const [errors, setErrors] = useState({});
   const [availableBarangays, setAvailableBarangays] = useState([]);
+  const [availablePostalCodes, setAvailablePostalCodes] = useState([]);
+  const [loadingBarangays, setLoadingBarangays] = useState(false);
+
+  // Initialize postal PH library
+  const postalPH = usePostalPH();
 
   const [toast, setToast] = useState({
     show: false,
@@ -486,6 +474,15 @@ const Checkout = () => {
       setIsLoggedIn(false);
     }
   }, [navigate]);
+
+  // Fetch postal codes when city is selected (for reference/suggestions)
+  useEffect(() => {
+    if (formData.city_name) {
+      fetchPostalCodesForCity();
+    } else {
+      setAvailablePostalCodes([]);
+    }
+  }, [formData.city_name]);
 
   const showToast = (message, type = 'error') => {
     setToast({
@@ -517,18 +514,38 @@ const Checkout = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    
+
     // For phone field, only allow numbers
     let finalValue = value;
     if (name === 'phone') {
       finalValue = value.replace(/[^0-9]/g, '').slice(0, 11);
     }
-    
-    setFormData(prev => ({
-      ...prev,
-      [name]: finalValue
-    }));
-    
+
+    // Handle barangay selection (code and name)
+    if (name === 'barangay') {
+      const selectedBarangay = availableBarangays.find(b => b.code === value);
+      if (selectedBarangay) {
+        setFormData(prev => ({
+          ...prev,
+          barangay_code: value,
+          barangay_name: selectedBarangay.name
+        }));
+      } else {
+        // Text input fallback
+        setFormData(prev => ({
+          ...prev,
+          barangay: finalValue,
+          barangay_code: '',
+          barangay_name: ''
+        }));
+      }
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: finalValue
+      }));
+    }
+
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -537,74 +554,209 @@ const Checkout = () => {
     }
   };
 
-  // Handle city/municipality change
-  const handleCityChange = (e) => {
-    const selectedCity = e.target.value;
-    const selectedProvince = formData.province_region;
-    
-    setFormData(prev => ({
-      ...prev,
-      city_municipality: selectedCity,
-      barangay: ''
-    }));
-    
-    if (selectedProvince && selectedCity) {
-      let foundBarangays = [];
-      
-      for (const regionName in philippineLocations) {
-        const regionData = philippineLocations[regionName];
-        if (regionData[selectedProvince]) {
-          const provinceData = regionData[selectedProvince];
-          
-          if (typeof provinceData === 'object' && !Array.isArray(provinceData) && provinceData[selectedCity]) {
-            foundBarangays = provinceData[selectedCity];
-            break;
-          } else if (Array.isArray(provinceData)) {
-            // City list is disabled for NCR; barangays will be looked up via province-as-city
-            const ncr = philippineLocations['National Capital Region'];
-            if (ncr && Array.isArray(ncr[selectedProvince])) {
-              foundBarangays = ncr[selectedProvince];
-            }
-            break;
-          }
+  // Fetch postal codes based on selected city
+  const fetchPostalCodesForCity = () => {
+    try {
+      if (!formData.city_name) {
+        setAvailablePostalCodes([]);
+        return;
+      }
+
+      let cityName = formData.city_name;
+      console.log('Fetching postal codes for city:', cityName); // Debug log
+
+      // Remove "City of " prefix if present (PSGC uses "City of X" but postal library uses just "X")
+      const cleanCityName = cityName.replace(/^City of /i, '').trim();
+
+      // List of NCR cities that need full postal code fetch
+      const ncrCities = ['manila', 'quezon city', 'makati', 'pasig', 'taguig', 'mandaluyong',
+                         'san juan', 'marikina', 'pasay', 'paranaque', 'las pinas',
+                         'muntinlupa', 'valenzuela', 'caloocan', 'malabon', 'navotas', 'pateros'];
+
+      const isNCRCity = ncrCities.includes(cleanCityName.toLowerCase());
+
+      let postalData = [];
+
+      if (isNCRCity) {
+        // For NCR cities, fetch ALL postal codes and filter by location
+        console.log('NCR city detected, fetching all postal codes...'); // Debug log
+        const allPostalCodesData = postalPH.fetchPostCodes();
+
+        // Normalize data structure - the library returns { data: Array, count: Number }
+        let allPostalCodes = [];
+        if (allPostalCodesData && allPostalCodesData.data && Array.isArray(allPostalCodesData.data)) {
+          allPostalCodes = allPostalCodesData.data;
+        } else if (Array.isArray(allPostalCodesData)) {
+          allPostalCodes = allPostalCodesData;
+        }
+
+        console.log(`Total postal codes loaded: ${allPostalCodes.length}`); // Debug log
+        console.log('Sample entries from postal data:', allPostalCodes.slice(0, 3));
+        console.log('Looking for city:', cleanCityName);
+
+        // Filter by location field that contains the city name
+        postalData = allPostalCodes.filter(entry => {
+          const location = (entry?.location || '').toLowerCase();
+          const municipality = (entry?.municipality || '').toLowerCase();
+          const region = (entry?.region || '').toLowerCase();
+
+          const cityLower = cleanCityName.toLowerCase();
+
+          // Check if city name is in location, municipality, or region fields
+          return location.includes(cityLower) ||
+                 municipality.includes(cityLower) ||
+                 region.includes(cityLower);
+        });
+
+        console.log(`Filtered ${postalData.length} entries for ${cleanCityName}`); // Debug log
+      } else {
+        // For non-NCR cities, use the regular municipality search
+        const response = postalPH.fetchDataLists({ municipality: cleanCityName });
+        console.log('Postal data from library (non-NCR):', response); // Debug log
+
+        // Check if response has a 'data' property (array)
+        if (response && response.data && Array.isArray(response.data)) {
+          postalData = response.data;
+        } else if (Array.isArray(response)) {
+          postalData = response;
+        } else if (response) {
+          postalData = [response];
         }
       }
-      
-      setAvailableBarangays(foundBarangays);
-    } else {
-      setAvailableBarangays([]);
+
+      if (!postalData || (Array.isArray(postalData) && postalData.length === 0)) {
+        console.log('No postal codes found for city:', cityName);
+        setAvailablePostalCodes([]);
+        return;
+      }
+
+      // Extract unique postal codes and sort them
+      const postalCodes = [...new Set(postalData.map(entry => entry?.post_code).filter(Boolean))];
+
+      // Convert to strings and sort numerically
+      const sortedPostalCodes = postalCodes.map(code => String(code)).sort((a, b) => {
+        return parseInt(a) - parseInt(b);
+      });
+
+      console.log('Final postal codes:', sortedPostalCodes); // Debug log
+      setAvailablePostalCodes(sortedPostalCodes);
+
+      // Auto-fill postal code if there's only one option
+      if (sortedPostalCodes.length === 1) {
+        console.log('Auto-filling postal code:', sortedPostalCodes[0]);
+        setFormData(prev => ({
+          ...prev,
+          postal_code: sortedPostalCodes[0]
+        }));
+      } else if (sortedPostalCodes.length === 0) {
+        // Clear postal code if no options
+        setFormData(prev => ({
+          ...prev,
+          postal_code: ''
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to fetch postal codes:', error);
+      setAvailablePostalCodes([]);
     }
-    
-    if (errors.city_municipality) {
+  };
+
+  // Handle region change
+  const handleRegionChange = (e) => {
+    const selectedCode = e.target.value;
+    const selectedOption = e.target.options[e.target.selectedIndex];
+    const selectedName = selectedOption.text;
+
+    setFormData(prev => ({
+      ...prev,
+      region_code: selectedCode,
+      region_name: selectedName,
+      province_code: '',
+      province_name: '',
+      city_code: '',
+      city_name: '',
+      barangay_code: '',
+      barangay_name: '',
+      barangay: '',
+      postal_code: ''
+    }));
+
+    setAvailableBarangays([]);
+    setAvailablePostalCodes([]);
+
+    if (errors.region) {
       setErrors(prev => ({
         ...prev,
-        city_municipality: ''
+        region: ''
       }));
     }
   };
 
+  // Handle province change
   const handleProvinceChange = (e) => {
-    const selectedProvince = e.target.value;
-    
-    // Detect NCR city-as-province and auto-select city
-    const ncr = philippineLocations['National Capital Region'];
-    const isNCRProvince = !!(ncr && Array.isArray(ncr[selectedProvince]));
-    const autoCity = isNCRProvince ? selectedProvince : '';
-    const autoBarangays = isNCRProvince ? (ncr[selectedProvince] || []) : [];
-    
+    const selectedCode = e.target.value;
+    const selectedOption = e.target.options[e.target.selectedIndex];
+    const selectedName = selectedOption.text;
+
     setFormData(prev => ({
       ...prev,
-      province_region: selectedProvince,
-      city_municipality: autoCity,
-      barangay: ''
+      province_code: selectedCode,
+      province_name: selectedName,
+      city_code: '',
+      city_name: '',
+      barangay_code: '',
+      barangay_name: '',
+      barangay: '',
+      postal_code: ''
     }));
-    
-    setAvailableBarangays(autoBarangays);
-    
-    if (errors.province_region) {
+
+    setAvailableBarangays([]);
+    setAvailablePostalCodes([]);
+
+    if (errors.province) {
       setErrors(prev => ({
         ...prev,
-        province_region: ''
+        province: ''
+      }));
+    }
+  };
+
+  // Handle city/municipality change
+  const handleCityChange = async (e) => {
+    const selectedCode = e.target.value;
+    const selectedOption = e.target.options[e.target.selectedIndex];
+    const selectedName = selectedOption.text;
+
+    setFormData(prev => ({
+      ...prev,
+      city_code: selectedCode,
+      city_name: selectedName,
+      barangay_code: '',
+      barangay_name: '',
+      barangay: '',
+      postal_code: ''
+    }));
+
+    // Fetch barangays for the selected city
+    if (selectedCode) {
+      setLoadingBarangays(true);
+      try {
+        const barangays = await fetchBarangays(selectedCode);
+        setAvailableBarangays(barangays);
+      } catch (error) {
+        console.error('Failed to load barangays:', error);
+        setAvailableBarangays([]);
+      } finally {
+        setLoadingBarangays(false);
+      }
+    } else {
+      setAvailableBarangays([]);
+    }
+
+    if (errors.city) {
+      setErrors(prev => ({
+        ...prev,
+        city: ''
       }));
     }
   };
@@ -612,47 +764,54 @@ const Checkout = () => {
   // Form validation
   const validateForm = () => {
     const newErrors = {};
-    
+    const isNCR = formData.region_code === '130000000';
+
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email';
     }
-    
+
     if (!formData.first_name.trim()) {
       newErrors.first_name = 'First name is required';
     }
-    
+
     if (!formData.last_name.trim()) {
       newErrors.last_name = 'Last name is required';
     }
-    
+
     if (!formData.street_address.trim()) {
       newErrors.street_address = 'Street address is required';
     }
-    
-    if (!formData.barangay.trim()) {
+
+    if (!formData.region_code) {
+      newErrors.region = 'Region is required';
+    }
+
+    // Province not required for NCR
+    if (!isNCR && !formData.province_code) {
+      newErrors.province = 'Province is required';
+    }
+
+    if (!formData.city_code) {
+      newErrors.city = 'City/Municipality is required';
+    }
+
+    // Check both barangay_code (dropdown) and barangay (text input)
+    if (!formData.barangay_code && !formData.barangay.trim()) {
       newErrors.barangay = 'Barangay is required';
     }
-    
-    if (!formData.city_municipality.trim()) {
-      newErrors.city_municipality = 'City/Municipality is required';
-    }
-    
-    if (!formData.province_region.trim()) {
-      newErrors.province_region = 'Province/Region is required';
-    }
-    
+
     if (!formData.postal_code.trim()) {
       newErrors.postal_code = 'Postal code is required';
     }
-    
+
     if (!formData.phone.trim()) {
       newErrors.phone = 'Phone number is required';
     } else if (!/^[0-9]{11}$/.test(formData.phone.replace(/\s/g, ''))) {
       newErrors.phone = 'Phone number must be 11 digits';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -667,14 +826,16 @@ const Checkout = () => {
         const userId = currentUser?.user_id || null;
 
         // Prepare data for PayMongo checkout session
+        const isNCR = formData.region_code === '130000000';
         const paymongoData = {
           email: formData.email,
           first_name: formData.first_name,
           last_name: formData.last_name,
           street_address: formData.street_address,
-          barangay: formData.barangay,
-          city_municipality: formData.city_municipality,
-          province_region: formData.province_region,
+          barangay: formData.barangay_name || formData.barangay, // Use barangay_name from dropdown or text input
+          city_municipality: formData.city_name,
+          province_region: isNCR ? formData.region_name : formData.province_name, // Use region name for NCR
+          region: formData.region_name, // Include region for better address data
           postal_code: formData.postal_code,
           phone: formData.phone,
           notes: formData.notes || '',
@@ -690,11 +851,11 @@ const Checkout = () => {
               quantity: product.quantity,
               price: parseFloat(product.price.replace(/[^\d.]/g, ''))
             };
-            
+
             if (product.size && product.size !== 'default' && product.size !== null) {
               item.size = String(product.size); // Convert to string as required by backend validation
             }
-            
+
             return item;
           })
         };
@@ -823,22 +984,7 @@ const Checkout = () => {
           </button>
         </div>
       )}
-      <CheckoutDesktop 
-        onImageClick={handleImageClick} 
-        products={selectedProducts}
-        subtotal={subtotal}
-        total={total}
-        itemCount={itemCount}
-        formData={formData}
-        handleInputChange={handleInputChange}
-        errors={errors}
-        handleSubmit={handleSubmit}
-        handleCityChange={handleCityChange}
-        handleProvinceChange={handleProvinceChange}
-        availableBarangays={availableBarangays}
-        isLoggedIn={isLoggedIn}
-      />
-      <CheckoutMobile 
+      <CheckoutDesktop
         onImageClick={handleImageClick}
         products={selectedProducts}
         subtotal={subtotal}
@@ -848,9 +994,28 @@ const Checkout = () => {
         handleInputChange={handleInputChange}
         errors={errors}
         handleSubmit={handleSubmit}
-        handleCityChange={handleCityChange}
+        handleRegionChange={handleRegionChange}
         handleProvinceChange={handleProvinceChange}
+        handleCityChange={handleCityChange}
         availableBarangays={availableBarangays}
+        availablePostalCodes={availablePostalCodes}
+        isLoggedIn={isLoggedIn}
+      />
+      <CheckoutMobile
+        onImageClick={handleImageClick}
+        products={selectedProducts}
+        subtotal={subtotal}
+        total={total}
+        itemCount={itemCount}
+        formData={formData}
+        handleInputChange={handleInputChange}
+        errors={errors}
+        handleSubmit={handleSubmit}
+        handleRegionChange={handleRegionChange}
+        handleProvinceChange={handleProvinceChange}
+        handleCityChange={handleCityChange}
+        availableBarangays={availableBarangays}
+        availablePostalCodes={availablePostalCodes}
         isLoggedIn={isLoggedIn}
       />
       
