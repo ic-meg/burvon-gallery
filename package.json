@@ -34,7 +34,8 @@
     "socket.io-client": "^4.8.1",
     "tailwindcss": "^4.1.11",
     "three": "^0.179.1",
-    "use-postal-ph": "^1.1.13"
+    "use-postal-ph": "^1.1.13",
+    "virtual-viewport": "^1.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.30.1",

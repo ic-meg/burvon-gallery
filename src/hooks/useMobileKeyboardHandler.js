@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import VirtualViewport from 'virtual-viewport';
 
 /**
  * Custom hook for handling mobile keyboard visibility
@@ -34,6 +35,7 @@ export const useMobileKeyboardHandler = ({
 }) => {
   const initialWindowHeightRef = useRef(null);
   const keyboardOpenRef = useRef(false);
+  const virtualViewportRef = useRef(null);
 
   useEffect(() => {
     if (!enabled || !containerRef?.current) return;
@@ -47,6 +49,105 @@ export const useMobileKeyboardHandler = ({
 
     // Initialize height
     initialWindowHeightRef.current = window.innerHeight;
+
+    // Handler for virtual-viewport resize events
+    const handleVirtualViewportResize = (viewport) => {
+      if (!containerRef.current) return;
+      
+      // Get viewport dimensions (handle different API formats)
+      const viewportHeight = viewport.height || viewport.innerHeight || window.innerHeight;
+      const viewportTop = viewport.offsetTop || viewport.top || 0;
+      const windowHeight = window.innerHeight;
+      const keyboardHeight = windowHeight - viewportHeight;
+      
+      if (keyboardHeight > keyboardThreshold) {
+        keyboardOpenRef.current = true;
+        // Adjust container to fit viewport above keyboard
+        containerRef.current.style.height = `${viewportHeight}px`;
+        containerRef.current.style.top = `${viewportTop}px`;
+        containerRef.current.style.position = 'fixed';
+        containerRef.current.style.left = '0';
+        containerRef.current.style.right = '0';
+        containerRef.current.style.width = '100%';
+        
+        // Ensure input is visible
+        const activeInput = inputRef?.current || alternativeInputRef?.current;
+        const inputContainer = inputContainerRef?.current || (activeInput?.closest('.p-4') || activeInput?.parentElement);
+        
+        if (activeInput) {
+          setTimeout(() => {
+            // Scroll input into view
+            activeInput.scrollIntoView({ 
+              behavior: 'smooth', 
+              block: 'end',
+              inline: 'nearest'
+            });
+            
+            // Scroll messages container
+            if (scrollContainerRef?.current) {
+              scrollContainerRef.current.scrollTo({
+                top: scrollContainerRef.current.scrollHeight,
+                behavior: 'smooth'
+              });
+            }
+            
+            // Additional adjustment for input container
+            if (inputContainer && scrollContainerRef?.current) {
+              const containerRect = scrollContainerRef.current.getBoundingClientRect();
+              const inputRect = inputContainer.getBoundingClientRect();
+              
+              if (inputRect.bottom > containerRect.bottom - 20) {
+                const scrollAmount = inputRect.bottom - containerRect.bottom + 20;
+                scrollContainerRef.current.scrollTop += scrollAmount;
+              }
+            }
+          }, 300);
+        }
+      } else {
+        keyboardOpenRef.current = false;
+        containerRef.current.style.height = `${initialWindowHeightRef.current}px`;
+        containerRef.current.style.top = '0';
+        containerRef.current.style.left = '';
+        containerRef.current.style.right = '';
+        containerRef.current.style.width = '';
+      }
+    };
+
+    // Initialize virtual-viewport for iOS (provides better viewport tracking)
+    if (isIOS && VirtualViewport) {
+      try {
+        // Try different initialization patterns based on library API
+        let vvInstance = null;
+        
+        // Pattern 1: Constructor with options object
+        if (typeof VirtualViewport === 'function') {
+          try {
+            vvInstance = new VirtualViewport({
+              target: containerRef.current,
+              onResize: handleVirtualViewportResize
+            });
+          } catch (e1) {
+            // Pattern 2: Constructor with element and callback
+            try {
+              vvInstance = new VirtualViewport(containerRef.current, handleVirtualViewportResize);
+            } catch (e2) {
+              // Pattern 3: Static method
+              if (VirtualViewport.init) {
+                vvInstance = VirtualViewport.init(containerRef.current, handleVirtualViewportResize);
+              }
+            }
+          }
+        } else if (VirtualViewport && VirtualViewport.init) {
+          // Pattern 4: Static init method
+          vvInstance = VirtualViewport.init(containerRef.current, handleVirtualViewportResize);
+        }
+        
+        virtualViewportRef.current = vvInstance;
+      } catch (error) {
+        console.warn('Failed to initialize virtual-viewport, using fallback:', error);
+        virtualViewportRef.current = null;
+      }
+    }
 
     // Android: Use visualViewport API (works reliably)
     const handleViewportResize = () => {
@@ -316,6 +417,20 @@ export const useMobileKeyboardHandler = ({
     document.addEventListener('focusin', handleInputFocus);
 
     return () => {
+      // Cleanup virtual-viewport
+      if (virtualViewportRef.current) {
+        try {
+          if (typeof virtualViewportRef.current.destroy === 'function') {
+            virtualViewportRef.current.destroy();
+          } else if (typeof virtualViewportRef.current.dispose === 'function') {
+            virtualViewportRef.current.dispose();
+          }
+        } catch (error) {
+          console.warn('Error cleaning up virtual-viewport:', error);
+        }
+        virtualViewportRef.current = null;
+      }
+      
       if (window.visualViewport && !isIOS) {
         window.visualViewport.removeEventListener('resize', handleViewportResize);
         window.visualViewport.removeEventListener('scroll', handleViewportResize);
@@ -323,6 +438,9 @@ export const useMobileKeyboardHandler = ({
       
       if (isIOS) {
         window.removeEventListener('resize', handleWindowResize);
+        if (window._iosKeyboardTimeout) {
+          clearTimeout(window._iosKeyboardTimeout);
+        }
       }
       
       if (inputRef?.current) {
@@ -342,6 +460,9 @@ export const useMobileKeyboardHandler = ({
         containerRef.current.style.height = '';
         containerRef.current.style.bottom = '';
         containerRef.current.style.position = '';
+        containerRef.current.style.left = '';
+        containerRef.current.style.right = '';
+        containerRef.current.style.width = '';
       }
     };
   }, [enabled, containerRef, scrollContainerRef, inputRef, alternativeInputRef, inputContainerRef, keyboardThreshold]);
