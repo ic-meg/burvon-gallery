@@ -63,33 +63,25 @@ const FloatingChatButton = () => {
     };
   }, [chatOpen]);
 
-  // Handle keyboard visibility on mobile
+  // Handle keyboard visibility on mobile - scroll input into view
   useEffect(() => {
     if (!chatOpen) return;
 
     const isMobile = window.innerWidth < 768;
     if (!isMobile) return;
 
-    const handleViewportResize = () => {
-      if (window.visualViewport && chatContainerRef.current) {
-        const viewportHeight = window.visualViewport.height;
-        chatContainerRef.current.style.height = `${viewportHeight}px`;
+    const handleFocusIn = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        setTimeout(() => {
+          e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 300);
       }
     };
 
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', handleViewportResize);
-      // Set initial height
-      handleViewportResize();
-    }
+    document.addEventListener('focusin', handleFocusIn);
 
     return () => {
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener('resize', handleViewportResize);
-      }
-      if (chatContainerRef.current) {
-        chatContainerRef.current.style.height = '';
-      }
+      document.removeEventListener('focusin', handleFocusIn);
     };
   }, [chatOpen]);
 
