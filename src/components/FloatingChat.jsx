@@ -66,13 +66,17 @@ const FloatingChatButton = () => {
       if (window.visualViewport) {
         const viewportHeight = window.visualViewport.height;
         const windowHeight = window.innerHeight;
-        const keyboardVisible = windowHeight - viewportHeight > 150;
+        const keyboardHeight = windowHeight - viewportHeight;
+        const keyboardVisible = keyboardHeight > 150;
         setIsKeyboardOpen(keyboardVisible);
 
         if (chatContainerRef.current) {
           if (keyboardVisible) {
-            chatContainerRef.current.style.height = `${viewportHeight}px`;
+            // Move chat up by keyboard height to keep input above keyboard
+            chatContainerRef.current.style.transform = `translateY(-${keyboardHeight}px)`;
+            chatContainerRef.current.style.height = `${windowHeight}px`;
           } else {
+            chatContainerRef.current.style.transform = 'translateY(0)';
             chatContainerRef.current.style.height = '100vh';
           }
         }
@@ -108,6 +112,7 @@ const FloatingChatButton = () => {
       document.removeEventListener('focusin', handleFocus);
       if (chatContainerRef.current) {
         chatContainerRef.current.style.height = '';
+        chatContainerRef.current.style.transform = '';
       }
     };
   }, [chatOpen]);
