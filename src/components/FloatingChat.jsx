@@ -72,8 +72,12 @@ const FloatingChatButton = () => {
         if (chatContainerRef.current) {
           if (keyboardVisible) {
             chatContainerRef.current.style.height = `${viewportHeight}px`;
+            chatContainerRef.current.style.top = '0';
+            chatContainerRef.current.style.bottom = 'auto';
           } else {
             chatContainerRef.current.style.height = '100dvh';
+            chatContainerRef.current.style.top = '';
+            chatContainerRef.current.style.bottom = '';
           }
         }
       }
@@ -82,7 +86,7 @@ const FloatingChatButton = () => {
     const handleFocus = (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
         setTimeout(() => {
-          e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          e.target.scrollIntoView({ behavior: 'smooth', block: 'end' });
         }, 300);
       }
     };
@@ -99,6 +103,8 @@ const FloatingChatButton = () => {
       document.removeEventListener('focusin', handleFocus);
       if (chatContainerRef.current) {
         chatContainerRef.current.style.height = '';
+        chatContainerRef.current.style.top = '';
+        chatContainerRef.current.style.bottom = '';
       }
     };
   }, [chatOpen]);
@@ -568,7 +574,7 @@ const FloatingChatButton = () => {
                       onKeyPress={handleEmailKeyPress}
                       onFocus={(e) => {
                         setTimeout(() => {
-                          e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                          e.target.scrollIntoView({ behavior: 'smooth', block: 'end' });
                         }, 300);
                       }}
                       placeholder="your.email@example.com"
@@ -659,7 +665,7 @@ const FloatingChatButton = () => {
                     onKeyPress={handleKeyPress}
                     onFocus={(e) => {
                       setTimeout(() => {
-                        e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        e.target.scrollIntoView({ behavior: 'smooth', block: 'end' });
                       }, 300);
                     }}
                     disabled={!isConnected}
