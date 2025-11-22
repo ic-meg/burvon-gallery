@@ -63,25 +63,48 @@ const FloatingChatButton = () => {
     };
   }, [chatOpen]);
 
-  // Handle keyboard visibility on mobile - scroll input into view
+  // Handle keyboard visibility on mobile - add padding to keep input visible
   useEffect(() => {
     if (!chatOpen) return;
 
     const isMobile = window.innerWidth < 768;
     if (!isMobile) return;
 
-    const handleFocusIn = (e) => {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-        setTimeout(() => {
-          e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 300);
+    const handleViewportResize = () => {
+      if (window.visualViewport && chatContainerRef.current) {
+        const keyboardHeight = window.innerHeight - window.visualViewport.height;
+
+        if (keyboardHeight > 150) {
+          // Keyboard is open - add padding to bottom
+          chatContainerRef.current.style.paddingBottom = `${keyboardHeight}px`;
+        } else {
+          // Keyboard is closed - remove padding
+          chatContainerRef.current.style.paddingBottom = '0px';
+        }
       }
     };
 
+    const handleFocusIn = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        setTimeout(() => {
+          e.target.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }, 100);
+      }
+    };
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleViewportResize);
+    }
     document.addEventListener('focusin', handleFocusIn);
 
     return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', handleViewportResize);
+      }
       document.removeEventListener('focusin', handleFocusIn);
+      if (chatContainerRef.current) {
+        chatContainerRef.current.style.paddingBottom = '';
+      }
     };
   }, [chatOpen]);
 
