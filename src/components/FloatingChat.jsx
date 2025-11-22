@@ -63,7 +63,7 @@ const FloatingChatButton = () => {
     };
   }, [chatOpen]);
 
-  // Handle keyboard visibility on mobile - resize to viewport height
+  // Handle keyboard visibility on mobile - adjust position and height
   useEffect(() => {
     if (!chatOpen) return;
 
@@ -73,8 +73,12 @@ const FloatingChatButton = () => {
     const handleViewportResize = () => {
       if (window.visualViewport && chatContainerRef.current) {
         const viewportHeight = window.visualViewport.height;
-        // Set chat height to visible viewport so input sits right above keyboard
+        const offsetTop = window.innerHeight - viewportHeight;
+
+        // Position chat at top and set height to viewport
+        chatContainerRef.current.style.top = `${offsetTop}px`;
         chatContainerRef.current.style.height = `${viewportHeight}px`;
+        chatContainerRef.current.style.bottom = 'auto';
       }
     };
 
@@ -99,7 +103,9 @@ const FloatingChatButton = () => {
       }
       document.removeEventListener('focusin', handleFocusIn);
       if (chatContainerRef.current) {
+        chatContainerRef.current.style.top = '';
         chatContainerRef.current.style.height = '';
+        chatContainerRef.current.style.bottom = '';
       }
     };
   }, [chatOpen]);
