@@ -24,6 +24,8 @@ const FloatingChatButton = () => {
   const inputRef = useRef(null);
   const emailInputRef = useRef(null);
   const buttonsContainerRef = useRef(null);
+  const inputContainerRef = useRef(null);
+  const messagesContainerRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
@@ -63,7 +65,7 @@ const FloatingChatButton = () => {
     };
   }, [chatOpen]);
 
-  // Handle keyboard visibility on mobile - adjust position and height
+  // Handle keyboard visibility on mobile - dynamically position input above keyboard
   useEffect(() => {
     if (!chatOpen) return;
 
@@ -71,49 +73,129 @@ const FloatingChatButton = () => {
     if (!isMobile) return;
 
     const handleViewportResize = () => {
-      if (window.visualViewport && chatContainerRef.current) {
-        const viewportHeight = window.visualViewport.height;
-        const windowHeight = window.innerHeight;
-        const keyboardHeight = windowHeight - viewportHeight;
+      if (!window.visualViewport || !chatContainerRef.current) return;
 
-        // Only resize if keyboard is actually open (significant difference)
-        if (keyboardHeight > 150) {
-          // Keyboard is open - resize to viewport
-          chatContainerRef.current.style.height = `${viewportHeight}px`;
-        } else {
-          // Keyboard is closed - use full window height
-          chatContainerRef.current.style.height = `${windowHeight}px`;
+      const viewportHeight = window.visualViewport.height;
+      const viewportTop = window.visualViewport.offsetTop;
+      const windowHeight = window.innerHeight;
+      const keyboardHeight = windowHeight - viewportHeight;
+
+      // Check if keyboard is open (significant viewport height difference)
+      if (keyboardHeight > 150) {
+        // Keyboard is open - adjust container to fit viewport
+        chatContainerRef.current.style.height = `${viewportHeight}px`;
+        chatContainerRef.current.style.top = `${viewportTop}px`;
+        chatContainerRef.current.style.bottom = 'auto';
+        chatContainerRef.current.style.position = 'fixed';
+        
+        // Ensure input is visible by scrolling messages if needed
+        if (messagesContainerRef.current && inputContainerRef.current) {
+          setTimeout(() => {
+            // Scroll messages container to show input area
+            const inputTop = inputContainerRef.current.getBoundingClientRect().top;
+            const viewportBottom = viewportTop + viewportHeight;
+            const inputHeight = inputContainerRef.current.offsetHeight;
+            
+            // If input is below visible area, scroll messages up
+            if (inputTop + inputHeight > viewportBottom) {
+              const scrollAmount = (inputTop + inputHeight) - viewportBottom + 20; // 20px padding
+              messagesContainerRef.current.scrollTop += scrollAmount;
+            }
+            
+            // Always ensure we can see the input by scrolling to bottom
+            messagesContainerRef.current.scrollTo({
+              top: messagesContainerRef.current.scrollHeight,
+              behavior: 'smooth'
+            });
+          }, 150);
         }
-
+      } else {
+        // Keyboard is closed - use full screen
+        chatContainerRef.current.style.height = `${windowHeight}px`;
         chatContainerRef.current.style.top = '0';
         chatContainerRef.current.style.bottom = 'auto';
       }
     };
 
-    const handleFocusIn = (e) => {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+    const handleInputFocus = (e) => {
+      if (e.target === inputRef.current || e.target === emailInputRef.current) {
+        // Small delay to let keyboard animation start
         setTimeout(() => {
-          e.target.scrollIntoView({ behavior: 'smooth', block: 'end' });
+          handleViewportResize();
+          
+          // Additional scroll to ensure input is visible
+          if (messagesContainerRef.current) {
+            setTimeout(() => {
+              messagesContainerRef.current.scrollTo({
+                top: messagesContainerRef.current.scrollHeight,
+                behavior: 'smooth'
+              });
+            }, 300);
+          }
         }, 100);
       }
     };
 
+    const handleInputBlur = () => {
+      // Reset to full height when keyboard closes
+      setTimeout(() => {
+        if (chatContainerRef.current && window.visualViewport) {
+          const viewportHeight = window.visualViewport.height;
+          const windowHeight = window.innerHeight;
+          const keyboardHeight = windowHeight - viewportHeight;
+          
+          if (keyboardHeight <= 150) {
+            chatContainerRef.current.style.height = `${windowHeight}px`;
+            chatContainerRef.current.style.top = '0';
+          }
+        }
+      }, 200);
+    };
+
+    // Set initial state
+    handleViewportResize();
+
+    // Add event listeners
     if (window.visualViewport) {
       window.visualViewport.addEventListener('resize', handleViewportResize);
-      // Set initial height
-      handleViewportResize();
+      window.visualViewport.addEventListener('scroll', handleViewportResize);
     }
-    document.addEventListener('focusin', handleFocusIn);
+    
+    if (inputRef.current) {
+      inputRef.current.addEventListener('focus', handleInputFocus);
+      inputRef.current.addEventListener('blur', handleInputBlur);
+    }
+    
+    if (emailInputRef.current) {
+      emailInputRef.current.addEventListener('focus', handleInputFocus);
+      emailInputRef.current.addEventListener('blur', handleInputBlur);
+    }
+
+    document.addEventListener('focusin', handleInputFocus);
 
     return () => {
       if (window.visualViewport) {
         window.visualViewport.removeEventListener('resize', handleViewportResize);
+        window.visualViewport.removeEventListener('scroll', handleViewportResize);
       }
-      document.removeEventListener('focusin', handleFocusIn);
+      
+      if (inputRef.current) {
+        inputRef.current.removeEventListener('focus', handleInputFocus);
+        inputRef.current.removeEventListener('blur', handleInputBlur);
+      }
+      
+      if (emailInputRef.current) {
+        emailInputRef.current.removeEventListener('focus', handleInputFocus);
+        emailInputRef.current.removeEventListener('blur', handleInputBlur);
+      }
+      
+      document.removeEventListener('focusin', handleInputFocus);
+      
       if (chatContainerRef.current) {
         chatContainerRef.current.style.top = '';
         chatContainerRef.current.style.height = '';
         chatContainerRef.current.style.bottom = '';
+        chatContainerRef.current.style.position = '';
       }
     };
   }, [chatOpen]);
@@ -522,7 +604,7 @@ const FloatingChatButton = () => {
           </div>
 
           {/* Chat Messages */}
-          <div className="flex-1 p-4 space-y-4 overflow-y-auto custom-scrollbar">
+          <div ref={messagesContainerRef} className="flex-1 p-4 space-y-4 overflow-y-auto custom-scrollbar">
             {/* Welcome Message - Always shown */}
             <div className="flex justify-start">
               <div className="metallic-bg cream-text rounded-2xl px-4 py-3 max-w-[80%]">
@@ -561,7 +643,7 @@ const FloatingChatButton = () => {
           </div>
 
           {/* Input Field */}
-          <div className="p-4 overflow-hidden">
+          <div ref={inputContainerRef} className="p-4 overflow-hidden">
             {/* Email Input for Anonymous Users */}
             {showEmailInput && userIdentifier.type === 'anonymous' && !getChatEmail() ? (
               <div className="space-y-3">
