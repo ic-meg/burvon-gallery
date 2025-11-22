@@ -73,10 +73,19 @@ const FloatingChatButton = () => {
     const handleViewportResize = () => {
       if (window.visualViewport && chatContainerRef.current) {
         const viewportHeight = window.visualViewport.height;
+        const windowHeight = window.innerHeight;
+        const keyboardHeight = windowHeight - viewportHeight;
 
-        // Keep chat at top (0) and adjust height to viewport
+        // Only resize if keyboard is actually open (significant difference)
+        if (keyboardHeight > 150) {
+          // Keyboard is open - resize to viewport
+          chatContainerRef.current.style.height = `${viewportHeight}px`;
+        } else {
+          // Keyboard is closed - use full window height
+          chatContainerRef.current.style.height = `${windowHeight}px`;
+        }
+
         chatContainerRef.current.style.top = '0';
-        chatContainerRef.current.style.height = `${viewportHeight}px`;
         chatContainerRef.current.style.bottom = 'auto';
       }
     };
