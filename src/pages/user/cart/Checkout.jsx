@@ -563,7 +563,7 @@ const Checkout = () => {
       }
 
       let cityName = formData.city_name;
-      console.log('Fetching postal codes for city:', cityName); // Debug log
+
 
       // Remove "City of " prefix if present (PSGC uses "City of X" but postal library uses just "X")
       const cleanCityName = cityName.replace(/^City of /i, '').trim();
@@ -579,7 +579,7 @@ const Checkout = () => {
 
       if (isNCRCity) {
         // For NCR cities, fetch ALL postal codes and filter by location
-        console.log('NCR city detected, fetching all postal codes...'); // Debug log
+
         const allPostalCodesData = postalPH.fetchPostCodes();
 
         // Normalize data structure - the library returns { data: Array, count: Number }
@@ -590,9 +590,6 @@ const Checkout = () => {
           allPostalCodes = allPostalCodesData;
         }
 
-        console.log(`Total postal codes loaded: ${allPostalCodes.length}`); // Debug log
-        console.log('Sample entries from postal data:', allPostalCodes.slice(0, 3));
-        console.log('Looking for city:', cleanCityName);
 
         // Filter by location field that contains the city name
         postalData = allPostalCodes.filter(entry => {
@@ -608,11 +605,11 @@ const Checkout = () => {
                  region.includes(cityLower);
         });
 
-        console.log(`Filtered ${postalData.length} entries for ${cleanCityName}`); // Debug log
+     
       } else {
         // For non-NCR cities, use the regular municipality search
         const response = postalPH.fetchDataLists({ municipality: cleanCityName });
-        console.log('Postal data from library (non-NCR):', response); // Debug log
+ 
 
         // Check if response has a 'data' property (array)
         if (response && response.data && Array.isArray(response.data)) {
@@ -625,7 +622,7 @@ const Checkout = () => {
       }
 
       if (!postalData || (Array.isArray(postalData) && postalData.length === 0)) {
-        console.log('No postal codes found for city:', cityName);
+      
         setAvailablePostalCodes([]);
         return;
       }
@@ -638,12 +635,12 @@ const Checkout = () => {
         return parseInt(a) - parseInt(b);
       });
 
-      console.log('Final postal codes:', sortedPostalCodes); // Debug log
+    
       setAvailablePostalCodes(sortedPostalCodes);
 
       // Auto-fill postal code if there's only one option
       if (sortedPostalCodes.length === 1) {
-        console.log('Auto-filling postal code:', sortedPostalCodes[0]);
+ 
         setFormData(prev => ({
           ...prev,
           postal_code: sortedPostalCodes[0]
