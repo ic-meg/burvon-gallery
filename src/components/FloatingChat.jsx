@@ -72,12 +72,8 @@ const FloatingChatButton = () => {
         if (chatContainerRef.current) {
           if (keyboardVisible) {
             chatContainerRef.current.style.height = `${viewportHeight}px`;
-            chatContainerRef.current.style.top = '0';
-            chatContainerRef.current.style.bottom = 'auto';
           } else {
-            chatContainerRef.current.style.height = '100dvh';
-            chatContainerRef.current.style.top = '';
-            chatContainerRef.current.style.bottom = '';
+            chatContainerRef.current.style.height = '100vh';
           }
         }
       }
@@ -86,8 +82,17 @@ const FloatingChatButton = () => {
     const handleFocus = (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
         setTimeout(() => {
-          e.target.scrollIntoView({ behavior: 'smooth', block: 'end' });
-        }, 300);
+          const scrollContainer = chatContainerRef.current;
+
+          if (scrollContainer) {
+            // Scroll the container so input is near the bottom
+            const scrollAmount = scrollContainer.scrollHeight - scrollContainer.clientHeight;
+            scrollContainer.scrollTop = scrollAmount;
+          }
+
+          // Also use scrollIntoView as fallback
+          e.target.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+        }, 350);
       }
     };
 
@@ -103,8 +108,6 @@ const FloatingChatButton = () => {
       document.removeEventListener('focusin', handleFocus);
       if (chatContainerRef.current) {
         chatContainerRef.current.style.height = '';
-        chatContainerRef.current.style.top = '';
-        chatContainerRef.current.style.bottom = '';
       }
     };
   }, [chatOpen]);
@@ -478,18 +481,21 @@ const FloatingChatButton = () => {
       {/* Fixed Chat Panel */}
       <div
         ref={chatContainerRef}
-        className={`fixed bottom-28 right-6 h-[500px] w-96 cream-bg shadow-2xl z-[2000] flex flex-col rounded-lg transition-all duration-800 ease-out overflow-hidden md:bottom-28 md:right-6 md:h-[500px] md:w-96 md:rounded-lg md:shadow-2xl ${
-          chatOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-full pointer-events-none'
-        } ${
-          chatOpen ? 'md:top-auto md:left-auto md:right-6 md:bottom-28 md:h-[500px] md:w-96 md:rounded-lg md:shadow-2xl top-0 left-0 right-0 bottom-0 h-dvh w-screen rounded-none shadow-none transition-all duration-800 ease-out' : 'transition-none md:transition-all md:duration-500 md:ease-out'
-        }`}
+        className={`fixed cream-bg shadow-2xl z-[2000] flex flex-col transition-all duration-800 ease-out overflow-hidden
+          md:bottom-28 md:right-6 md:h-[500px] md:w-96 md:rounded-lg md:shadow-2xl
+          ${chatOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-full pointer-events-none'}
+          ${chatOpen
+            ? 'inset-0 w-full h-full md:top-auto md:left-auto md:right-6 md:bottom-28 md:h-[500px] md:w-96 md:rounded-lg'
+            : 'bottom-28 right-6 h-[500px] w-96 rounded-lg'
+          }`}
         style={{
           filter: "drop-shadow(0 0 8px rgba(255, 255, 255, 0.5))",
-          borderRadius: "8px"
+          borderRadius: window.innerWidth >= 768 ? "8px" : chatOpen ? "0" : "8px",
+          overscrollBehavior: 'contain'
         }}
       >
           {/* Header */}
-          <div className="metallic-bg text-white p-4 flex items-center justify-between rounded-t-lg md:rounded-t-lg">
+          <div className="metallic-bg text-white p-4 flex items-center justify-between md:rounded-t-lg">
             <div className="flex items-center gap-3">
               <img src={whiteIcon} alt="Chat" className="w-6 h-6" />
               <div>
@@ -552,7 +558,7 @@ const FloatingChatButton = () => {
           </div>
 
           {/* Input Field */}
-          <div className="p-4 overflow-hidden md:p-4">
+          <div className="p-4 overflow-hidden md:p-4 cream-bg">
             {/* Email Input for Anonymous Users */}
             {showEmailInput && userIdentifier.type === 'anonymous' && !getChatEmail() ? (
               <div className="space-y-3">
@@ -572,11 +578,6 @@ const FloatingChatButton = () => {
                         setEmailError("");
                       }}
                       onKeyPress={handleEmailKeyPress}
-                      onFocus={(e) => {
-                        setTimeout(() => {
-                          e.target.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                        }, 300);
-                      }}
                       placeholder="your.email@example.com"
                       className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm text-black"
                       required
@@ -663,11 +664,6 @@ const FloatingChatButton = () => {
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    onFocus={(e) => {
-                      setTimeout(() => {
-                        e.target.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                      }, 300);
-                    }}
                     disabled={!isConnected}
                     className="w-full px-4 py-3 pr-12 border metallic-text rounded-lg text-md avant focus:outline-none focus:border-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
