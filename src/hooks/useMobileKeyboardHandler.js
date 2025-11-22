@@ -48,8 +48,18 @@ export const useMobileKeyboardHandler = ({
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
                   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-    // Initialize height
+    // Initialize height - store the full window height when chat opens
     initialWindowHeightRef.current = window.innerHeight;
+    
+    // Ensure container starts at full height when chat opens (keyboard not open yet)
+    if (containerRef.current) {
+      containerRef.current.style.height = `${window.innerHeight}px`;
+      containerRef.current.style.top = '0';
+      containerRef.current.style.position = 'fixed';
+      containerRef.current.style.left = '0';
+      containerRef.current.style.right = '0';
+      containerRef.current.style.width = '100%';
+    }
 
     // Android: Use visualViewport API (works reliably)
     const handleViewportResize = () => {
@@ -286,13 +296,12 @@ export const useMobileKeyboardHandler = ({
       }, 200);
     };
 
-    // Set initial state
+    // Set initial state - don't adjust on mount, only when keyboard actually opens
+    // The container should start at full height when chat opens
     initialWindowHeightRef.current = window.innerHeight;
-    if (isIOS) {
-      handleIOSKeyboard();
-    } else {
-      handleViewportResize();
-    }
+    
+    // Don't call handleIOSKeyboard or handleViewportResize on initial mount
+    // They will be called when keyboard actually opens (via focus/resize events)
 
     // Add event listeners
     if (window.visualViewport && !isIOS) {
