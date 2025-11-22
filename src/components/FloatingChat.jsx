@@ -66,12 +66,21 @@ const FloatingChatButton = () => {
   }, [chatOpen]);
 
   // Handle keyboard visibility on mobile - dynamically position input above keyboard
+  // Works for both Android (visualViewport) and iOS (fallback methods)
   useEffect(() => {
     if (!chatOpen) return;
 
     const isMobile = window.innerWidth < 768;
     if (!isMobile) return;
 
+    // Detect iOS - iOS Safari has unreliable visualViewport support
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+    let initialWindowHeight = window.innerHeight;
+    let keyboardOpen = false;
+
+    // Android: Use visualViewport API (works reliably)
     const handleViewportResize = () => {
       if (!window.visualViewport || !chatContainerRef.current) return;
 
@@ -82,6 +91,7 @@ const FloatingChatButton = () => {
 
       // Check if keyboard is open (significant viewport height difference)
       if (keyboardHeight > 150) {
+        keyboardOpen = true;
         // Keyboard is open - adjust container to fit viewport
         chatContainerRef.current.style.height = `${viewportHeight}px`;
         chatContainerRef.current.style.top = `${viewportTop}px`;
@@ -110,6 +120,7 @@ const FloatingChatButton = () => {
           }, 150);
         }
       } else {
+        keyboardOpen = false;
         // Keyboard is closed - use full screen
         chatContainerRef.current.style.height = `${windowHeight}px`;
         chatContainerRef.current.style.top = '0';
@@ -117,48 +128,139 @@ const FloatingChatButton = () => {
       }
     };
 
-    const handleInputFocus = (e) => {
-      if (e.target === inputRef.current || e.target === emailInputRef.current) {
-        // Small delay to let keyboard animation start
-        setTimeout(() => {
-          handleViewportResize();
-          
-          // Additional scroll to ensure input is visible
-          if (messagesContainerRef.current) {
-            setTimeout(() => {
+    // iOS: Fallback using window resize and scrollIntoView
+    const handleIOSKeyboard = () => {
+      if (!isIOS || !chatContainerRef.current) return;
+
+      const currentHeight = window.innerHeight;
+      const heightDiff = initialWindowHeight - currentHeight;
+      const isKeyboardVisible = heightDiff > 150;
+
+      if (isKeyboardVisible && !keyboardOpen) {
+        keyboardOpen = true;
+        // Adjust container height
+        chatContainerRef.current.style.height = `${currentHeight}px`;
+        chatContainerRef.current.style.top = '0';
+        chatContainerRef.current.style.position = 'fixed';
+        
+        // Scroll input into view - iOS needs this approach
+        const activeInput = inputRef.current || emailInputRef.current;
+        if (activeInput && messagesContainerRef.current) {
+          // Multiple attempts for iOS which can be slow
+          setTimeout(() => {
+            activeInput.scrollIntoView({ 
+              behavior: 'smooth', 
+              block: 'end',
+              inline: 'nearest'
+            });
+            
+            // Also scroll messages container
+            if (messagesContainerRef.current) {
               messagesContainerRef.current.scrollTo({
                 top: messagesContainerRef.current.scrollHeight,
                 behavior: 'smooth'
               });
-            }, 300);
-          }
-        }, 100);
+            }
+          }, 300);
+          
+          // Second attempt for slower iOS devices
+          setTimeout(() => {
+            activeInput.scrollIntoView({ 
+              behavior: 'smooth', 
+              block: 'end'
+            });
+          }, 600);
+        }
+      } else if (!isKeyboardVisible && keyboardOpen) {
+        keyboardOpen = false;
+        chatContainerRef.current.style.height = `${initialWindowHeight}px`;
+        chatContainerRef.current.style.top = '0';
+      }
+    };
+
+    const handleWindowResize = () => {
+      // iOS fallback: detect keyboard via window height changes
+      if (isIOS) {
+        handleIOSKeyboard();
+      }
+    };
+
+    const handleInputFocus = (e) => {
+      if (e.target === inputRef.current || e.target === emailInputRef.current) {
+        // Store initial height
+        initialWindowHeight = window.innerHeight;
+        
+        if (isIOS) {
+          // iOS: Use window resize detection
+          setTimeout(() => {
+            handleIOSKeyboard();
+          }, 100);
+        } else {
+          // Android: Use visualViewport
+          setTimeout(() => {
+            handleViewportResize();
+            
+            // Additional scroll to ensure input is visible
+            if (messagesContainerRef.current) {
+              setTimeout(() => {
+                messagesContainerRef.current.scrollTo({
+                  top: messagesContainerRef.current.scrollHeight,
+                  behavior: 'smooth'
+                });
+              }, 300);
+            }
+          }, 100);
+        }
       }
     };
 
     const handleInputBlur = () => {
-      // Reset to full height when keyboard closes
+      // Reset when keyboard closes
       setTimeout(() => {
-        if (chatContainerRef.current && window.visualViewport) {
-          const viewportHeight = window.visualViewport.height;
-          const windowHeight = window.innerHeight;
-          const keyboardHeight = windowHeight - viewportHeight;
-          
-          if (keyboardHeight <= 150) {
-            chatContainerRef.current.style.height = `${windowHeight}px`;
+        if (!chatContainerRef.current) return;
+        
+        if (isIOS) {
+          const currentHeight = window.innerHeight;
+          const heightDiff = initialWindowHeight - currentHeight;
+          if (heightDiff <= 50) {
+            keyboardOpen = false;
+            chatContainerRef.current.style.height = `${initialWindowHeight}px`;
             chatContainerRef.current.style.top = '0';
+          }
+        } else {
+          if (window.visualViewport) {
+            const viewportHeight = window.visualViewport.height;
+            const windowHeight = window.innerHeight;
+            const keyboardHeight = windowHeight - viewportHeight;
+            
+            if (keyboardHeight <= 150) {
+              keyboardOpen = false;
+              chatContainerRef.current.style.height = `${windowHeight}px`;
+              chatContainerRef.current.style.top = '0';
+            }
           }
         }
       }, 200);
     };
 
     // Set initial state
-    handleViewportResize();
+    initialWindowHeight = window.innerHeight;
+    if (isIOS) {
+      handleIOSKeyboard();
+    } else {
+      handleViewportResize();
+    }
 
     // Add event listeners
-    if (window.visualViewport) {
+    if (window.visualViewport && !isIOS) {
+      // Android: Use visualViewport API
       window.visualViewport.addEventListener('resize', handleViewportResize);
       window.visualViewport.addEventListener('scroll', handleViewportResize);
+    }
+    
+    // iOS: Use window resize as fallback
+    if (isIOS) {
+      window.addEventListener('resize', handleWindowResize);
     }
     
     if (inputRef.current) {
@@ -174,9 +276,13 @@ const FloatingChatButton = () => {
     document.addEventListener('focusin', handleInputFocus);
 
     return () => {
-      if (window.visualViewport) {
+      if (window.visualViewport && !isIOS) {
         window.visualViewport.removeEventListener('resize', handleViewportResize);
         window.visualViewport.removeEventListener('scroll', handleViewportResize);
+      }
+      
+      if (isIOS) {
+        window.removeEventListener('resize', handleWindowResize);
       }
       
       if (inputRef.current) {
@@ -604,7 +710,14 @@ const FloatingChatButton = () => {
           </div>
 
           {/* Chat Messages */}
-          <div ref={messagesContainerRef} className="flex-1 p-4 space-y-4 overflow-y-auto custom-scrollbar">
+          <div 
+            ref={messagesContainerRef} 
+            className="flex-1 p-4 space-y-4 overflow-y-auto custom-scrollbar"
+            style={{
+              WebkitOverflowScrolling: 'touch',
+              overscrollBehavior: 'contain'
+            }}
+          >
             {/* Welcome Message - Always shown */}
             <div className="flex justify-start">
               <div className="metallic-bg cream-text rounded-2xl px-4 py-3 max-w-[80%]">
@@ -665,6 +778,9 @@ const FloatingChatButton = () => {
                       onKeyPress={handleEmailKeyPress}
                       placeholder="your.email@example.com"
                       className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm text-black"
+                      style={{
+                        fontSize: '16px' // Prevents iOS zoom on focus
+                      }}
                       required
                     />
                     <button
@@ -751,6 +867,9 @@ const FloatingChatButton = () => {
                     onKeyPress={handleKeyPress}
                     disabled={!isConnected}
                     className="w-full px-4 py-3 pr-12 border metallic-text rounded-lg text-md avant focus:outline-none focus:border-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{
+                      fontSize: '16px' // Prevents iOS zoom on focus
+                    }}
                   />
                   <button
                     onClick={handleSendMessage}
