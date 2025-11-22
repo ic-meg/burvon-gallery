@@ -29,7 +29,6 @@ const FloatingChatButton = () => {
   const [scrollLeft, setScrollLeft] = useState(0);
   const [hasMoved, setHasMoved] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
-  const chatContainerRef = useRef(null);
 
   const userIdentifier = getChatUserIdentifier();
   const { isConnected, sendMessage, markAsRead, error: wsError, socket } = useWebSocket(false);
@@ -39,41 +38,27 @@ const FloatingChatButton = () => {
     if (chatOpen) {
       const user = getUser();
       setCurrentUser(user);
-    }
-  }, [chatOpen]);
 
-  // Handle keyboard on mobile - move chat up when keyboard appears
-  useEffect(() => {
-    if (!chatOpen) return;
-
-    const isMobile = window.innerWidth < 768;
-    if (!isMobile) return;
-
-    const handleViewportResize = () => {
-      if (window.visualViewport && chatContainerRef.current) {
-        const keyboardHeight = window.innerHeight - window.visualViewport.height;
-
-        if (keyboardHeight > 150) {
-          // Keyboard is open - move chat up
-          chatContainerRef.current.style.transform = `translateY(-${keyboardHeight}px)`;
-        } else {
-          // Keyboard is closed - reset position
-          chatContainerRef.current.style.transform = 'translateY(0)';
-        }
+      // Prevent scrolling background on mobile
+      const isMobile = window.innerWidth < 768;
+      if (isMobile) {
+        document.body.style.overflow = 'hidden';
+        document.body.style.position = 'fixed';
+        document.body.style.width = '100%';
+        document.body.style.height = '100%';
       }
-    };
-
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', handleViewportResize);
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.height = '';
     }
 
     return () => {
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener('resize', handleViewportResize);
-      }
-      if (chatContainerRef.current) {
-        chatContainerRef.current.style.transform = '';
-      }
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.height = '';
     };
   }, [chatOpen]);
 
@@ -444,8 +429,7 @@ const FloatingChatButton = () => {
       </div>
 
       {/* Fixed Chat Panel */}
-      <div
-        ref={chatContainerRef}
+      <div 
         className={`fixed bottom-28 right-6 h-[500px] w-96 cream-bg shadow-2xl z-[2000] flex flex-col rounded-lg transition-all duration-800 ease-out overflow-hidden md:bottom-28 md:right-6 md:h-[500px] md:w-96 md:rounded-lg md:shadow-2xl ${
           chatOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-full pointer-events-none'
         } ${
