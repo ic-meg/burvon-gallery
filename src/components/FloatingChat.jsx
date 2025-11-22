@@ -73,10 +73,9 @@ const FloatingChatButton = () => {
     const handleViewportResize = () => {
       if (window.visualViewport && chatContainerRef.current) {
         const viewportHeight = window.visualViewport.height;
-        const offsetTop = window.innerHeight - viewportHeight;
 
-        // Position chat at top and set height to viewport
-        chatContainerRef.current.style.top = `${offsetTop}px`;
+        // Keep chat at top (0) and adjust height to viewport
+        chatContainerRef.current.style.top = '0';
         chatContainerRef.current.style.height = `${viewportHeight}px`;
         chatContainerRef.current.style.bottom = 'auto';
       }
