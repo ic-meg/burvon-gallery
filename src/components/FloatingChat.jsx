@@ -29,6 +29,8 @@ const FloatingChatButton = () => {
   const [scrollLeft, setScrollLeft] = useState(0);
   const [hasMoved, setHasMoved] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  const chatContainerRef = useRef(null);
 
   const userIdentifier = getChatUserIdentifier();
   const { isConnected, sendMessage, markAsRead, error: wsError, socket } = useWebSocket(false);
@@ -38,7 +40,67 @@ const FloatingChatButton = () => {
     if (chatOpen) {
       const user = getUser();
       setCurrentUser(user);
+
+      // Prevent body scroll on mobile when chat is open
+      const isMobile = window.innerWidth < 768;
+      if (isMobile) {
+        document.body.style.overflow = 'hidden';
+      }
+    } else {
+      document.body.style.overflow = '';
     }
+
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [chatOpen]);
+
+  useEffect(() => {
+    if (!chatOpen) return;
+
+    const isMobile = window.innerWidth < 768;
+    if (!isMobile) return;
+
+    // Use visualViewport API for better keyboard detection
+    const handleViewportResize = () => {
+      if (window.visualViewport) {
+        const viewportHeight = window.visualViewport.height;
+        const windowHeight = window.innerHeight;
+        const keyboardVisible = windowHeight - viewportHeight > 150;
+        setIsKeyboardOpen(keyboardVisible);
+
+        if (chatContainerRef.current) {
+          if (keyboardVisible) {
+            chatContainerRef.current.style.height = `${viewportHeight}px`;
+          } else {
+            chatContainerRef.current.style.height = '100dvh';
+          }
+        }
+      }
+    };
+
+    const handleFocus = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        setTimeout(() => {
+          e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 300);
+      }
+    };
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleViewportResize);
+    }
+    document.addEventListener('focusin', handleFocus);
+
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', handleViewportResize);
+      }
+      document.removeEventListener('focusin', handleFocus);
+      if (chatContainerRef.current) {
+        chatContainerRef.current.style.height = '';
+      }
+    };
   }, [chatOpen]);
 
 
@@ -408,11 +470,12 @@ const FloatingChatButton = () => {
       </div>
 
       {/* Fixed Chat Panel */}
-      <div 
+      <div
+        ref={chatContainerRef}
         className={`fixed bottom-28 right-6 h-[500px] w-96 cream-bg shadow-2xl z-[2000] flex flex-col rounded-lg transition-all duration-800 ease-out overflow-hidden md:bottom-28 md:right-6 md:h-[500px] md:w-96 md:rounded-lg md:shadow-2xl ${
           chatOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-full pointer-events-none'
         } ${
-          chatOpen ? 'md:top-auto md:left-auto md:right-6 md:bottom-28 md:h-[500px] md:w-96 md:rounded-lg md:shadow-2xl top-0 left-0 right-0 bottom-0 h-screen w-screen rounded-none shadow-none transition-all duration-800 ease-out' : 'transition-none md:transition-all md:duration-500 md:ease-out'
+          chatOpen ? 'md:top-auto md:left-auto md:right-6 md:bottom-28 md:h-[500px] md:w-96 md:rounded-lg md:shadow-2xl top-0 left-0 right-0 bottom-0 h-dvh w-screen rounded-none shadow-none transition-all duration-800 ease-out' : 'transition-none md:transition-all md:duration-500 md:ease-out'
         }`}
         style={{
           filter: "drop-shadow(0 0 8px rgba(255, 255, 255, 0.5))",
@@ -444,7 +507,7 @@ const FloatingChatButton = () => {
           </div>
 
           {/* Chat Messages */}
-          <div className="flex-1 p-4 space-y-4 overflow-y-auto custom-scrollbar">
+          <div className="flex-1 p-4 space-y-4 overflow-y-auto custom-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
             {/* Welcome Message - Always shown */}
             <div className="flex justify-start">
               <div className="metallic-bg cream-text rounded-2xl px-4 py-3 max-w-[80%]">
@@ -483,7 +546,7 @@ const FloatingChatButton = () => {
           </div>
 
           {/* Input Field */}
-          <div className="p-4 overflow-hidden">
+          <div className="p-4 overflow-hidden md:p-4">
             {/* Email Input for Anonymous Users */}
             {showEmailInput && userIdentifier.type === 'anonymous' && !getChatEmail() ? (
               <div className="space-y-3">
@@ -503,6 +566,11 @@ const FloatingChatButton = () => {
                         setEmailError("");
                       }}
                       onKeyPress={handleEmailKeyPress}
+                      onFocus={(e) => {
+                        setTimeout(() => {
+                          e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }, 300);
+                      }}
                       placeholder="your.email@example.com"
                       className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm text-black"
                       required
@@ -589,6 +657,11 @@ const FloatingChatButton = () => {
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
+                    onFocus={(e) => {
+                      setTimeout(() => {
+                        e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      }, 300);
+                    }}
                     disabled={!isConnected}
                     className="w-full px-4 py-3 pr-12 border metallic-text rounded-lg text-md avant focus:outline-none focus:border-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
