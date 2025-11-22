@@ -28,6 +28,7 @@ export const useMobileKeyboardHandler = ({
   scrollContainerRef = null,
   inputRef = null,
   alternativeInputRef = null,
+  inputContainerRef = null,
   enabled = true,
   keyboardThreshold = 150
 }) => {
@@ -109,50 +110,105 @@ export const useMobileKeyboardHandler = ({
 
       if (isKeyboardVisible && !keyboardOpenRef.current) {
         keyboardOpenRef.current = true;
-        // Adjust container height
+        // Adjust container height to fit above keyboard
         containerRef.current.style.height = `${currentHeight}px`;
         containerRef.current.style.top = '0';
         containerRef.current.style.position = 'fixed';
+        containerRef.current.style.left = '0';
+        containerRef.current.style.right = '0';
+        containerRef.current.style.width = '100%';
         
-        // Scroll input into view - iOS needs this approach
+        // Scroll input into view - iOS needs aggressive approach
         const activeInput = inputRef?.current || alternativeInputRef?.current;
+        const inputContainer = inputContainerRef?.current || (activeInput?.closest('.p-4') || activeInput?.parentElement);
+        
         if (activeInput) {
-          // Multiple attempts for iOS which can be slow
-          setTimeout(() => {
+          
+          // Multiple attempts with different strategies for iOS
+          const scrollInputIntoView = () => {
+            // Strategy 1: Scroll the input element itself
             activeInput.scrollIntoView({ 
               behavior: 'smooth', 
               block: 'end',
               inline: 'nearest'
             });
             
-            // Also scroll scroll container if provided
+            // Strategy 2: Scroll scroll container to bottom
             if (scrollContainerRef?.current) {
               scrollContainerRef.current.scrollTo({
                 top: scrollContainerRef.current.scrollHeight,
                 behavior: 'smooth'
               });
             }
-          }, 300);
+            
+            // Strategy 3: Scroll window to show input container
+            if (inputContainer) {
+              const inputRect = inputContainer.getBoundingClientRect();
+              const viewportHeight = window.innerHeight;
+              const inputBottom = inputRect.bottom;
+              
+              // If input is below viewport, scroll window
+              if (inputBottom > viewportHeight - 20) {
+                const scrollAmount = inputBottom - viewportHeight + 20;
+                window.scrollTo({
+                  top: window.scrollY + scrollAmount,
+                  behavior: 'smooth'
+                });
+              }
+            }
+            
+            // Strategy 4: Force scroll container to show input
+            if (scrollContainerRef?.current && inputContainer) {
+              const containerRect = scrollContainerRef.current.getBoundingClientRect();
+              const inputRect = inputContainer.getBoundingClientRect();
+              
+              // If input is below visible area of scroll container
+              if (inputRect.bottom > containerRect.bottom - 20) {
+                const scrollAmount = inputRect.bottom - containerRect.bottom + 20;
+                scrollContainerRef.current.scrollTop += scrollAmount;
+              }
+            }
+          };
           
-          // Second attempt for slower iOS devices
+          // Immediate attempt
+          setTimeout(scrollInputIntoView, 100);
+          
+          // Second attempt after keyboard animation
+          setTimeout(scrollInputIntoView, 400);
+          
+          // Third attempt for slower devices
+          setTimeout(scrollInputIntoView, 700);
+          
+          // Fourth attempt - most aggressive
           setTimeout(() => {
             activeInput.scrollIntoView({ 
-              behavior: 'smooth', 
-              block: 'end'
+              behavior: 'auto', 
+              block: 'center'
             });
-          }, 600);
+            
+            if (scrollContainerRef?.current) {
+              scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+            }
+          }, 1000);
         }
       } else if (!isKeyboardVisible && keyboardOpenRef.current) {
         keyboardOpenRef.current = false;
         containerRef.current.style.height = `${initialWindowHeightRef.current}px`;
         containerRef.current.style.top = '0';
+        containerRef.current.style.left = '';
+        containerRef.current.style.right = '';
+        containerRef.current.style.width = '';
       }
     };
 
     const handleWindowResize = () => {
       // iOS fallback: detect keyboard via window height changes
       if (isIOS) {
-        handleIOSKeyboard();
+        // Debounce to avoid too many calls
+        clearTimeout(window._iosKeyboardTimeout);
+        window._iosKeyboardTimeout = setTimeout(() => {
+          handleIOSKeyboard();
+        }, 50);
       }
     };
 
@@ -163,10 +219,22 @@ export const useMobileKeyboardHandler = ({
         initialWindowHeightRef.current = window.innerHeight;
         
         if (isIOS) {
-          // iOS: Use window resize detection
-          setTimeout(() => {
+          // iOS: More aggressive approach - check multiple times
+          const checkAndAdjust = () => {
             handleIOSKeyboard();
-          }, 100);
+          };
+          
+          // Immediate check
+          setTimeout(checkAndAdjust, 50);
+          
+          // Check after keyboard starts appearing
+          setTimeout(checkAndAdjust, 200);
+          
+          // Check after keyboard should be fully visible
+          setTimeout(checkAndAdjust, 500);
+          
+          // Final check
+          setTimeout(checkAndAdjust, 800);
         } else {
           // Android: Use visualViewport
           setTimeout(() => {
@@ -276,6 +344,6 @@ export const useMobileKeyboardHandler = ({
         containerRef.current.style.position = '';
       }
     };
-  }, [enabled, containerRef, scrollContainerRef, inputRef, alternativeInputRef, keyboardThreshold]);
+  }, [enabled, containerRef, scrollContainerRef, inputRef, alternativeInputRef, inputContainerRef, keyboardThreshold]);
 };
 

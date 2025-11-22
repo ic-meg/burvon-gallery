@@ -72,6 +72,7 @@ const FloatingChatButton = () => {
     scrollContainerRef: messagesContainerRef,
     inputRef: inputRef,
     alternativeInputRef: emailInputRef,
+    inputContainerRef: inputContainerRef,
     enabled: chatOpen,
     keyboardThreshold: 150
   });
