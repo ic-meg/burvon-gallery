@@ -17,10 +17,10 @@ import HandDetectionGuide from "../../../components/3Dcomponents/TryOn/HandDetec
 import { mapCategoryToTryOn, tryOnProducts as products } from "../../../utils/tryOnUtils";
 
 const categories = [
-  { key: "necklace", label: "NECKLACES", icon: necklace, iconBlack: necklaceBlack },
-  { key: "earrings", label: "EARRINGS", icon: earrings, iconBlack: earringsBlack },
-  { key: "rings", label: "RINGS", icon: rings, iconBlack: ringsBlack },
-  { key: "bracelet", label: "BRACELETS", icon: bracelet, iconBlack: braceletBlack },
+  { key: "necklace", label: "Necklaces", icon: necklace, iconBlack: necklaceBlack },
+  { key: "earrings", label: "Earrings", icon: earrings, iconBlack: earringsBlack },
+  { key: "rings", label: "Rings", icon: rings, iconBlack: ringsBlack },
+  { key: "bracelet", label: "Bracelets", icon: bracelet, iconBlack: braceletBlack },
 ];
 
 
@@ -38,7 +38,7 @@ const generateImagePath = (category, productName) => {
 
 // Products are now imported from tryOnUtils.js
 
-const fingers = ["THUMB", "INDEX", "MIDDLE", "RING", "PINKY"];
+const fingers = ["Thumb", "Index", "Middle", "Ring", "Pinky"];
 
 const fingerHandMap = {
   THUMB: ringThumb,
@@ -118,8 +118,8 @@ const TryOnDesktop = ({
                         onMouseEnter={() => setHoveredCategory(cat.key)}
                         onMouseLeave={() => setHoveredCategory(null)}
                       >
-                        <img src={iconSrc} alt={cat.label} className="w-11 h-11" />
-                        <span className="bebas text-2xl">{cat.label}</span>
+                        <img src={iconSrc} alt={cat.label} className="w-8 h-8" />
+                        <span className="avant text-lg">{cat.label}</span>
                       </button>
                     );
                   })}
@@ -388,8 +388,8 @@ const TryOnMobile = ({
               onMouseEnter={() => setHoveredCategory(cat.key)}
               onMouseLeave={() => setHoveredCategory(null)}
             >
-              <img src={iconSrc} alt={cat.label} className="w-6 h-6 mb-1" />
-              <span className="bebas text-xs">{cat.label}</span>
+              <img src={iconSrc} alt={cat.label} className="w-5 h-5 mb-1" />
+              <span className="avant text-xs">{cat.label}</span>
             </button>
           );
         })}

@@ -138,7 +138,7 @@ export default function ProductCard({
           }`}
           style={{ height: mobileImageHeight }}
         >
-          <div className="absolute top-2 left-2 right-2 flex justify-between items-center z-10">
+          <div className="absolute top-3 left-4 right-4 flex justify-between items-center z-10">
             {hasTryOnAvailable(item.category, item.name) && (
               <button
                 type="button"
@@ -151,7 +151,7 @@ export default function ProductCard({
                   if (productName) params.set("product", productName);
                   navigate(`/tryon?${params.toString()}`);
                 }}
-                className="w-4 h-4 p-0 bg-transparent border-0 cursor-pointer hover:opacity-80 flex items-center justify-center"
+                className="w-5 h-5 p-0 bg-transparent border-0 cursor-pointer hover:opacity-80 flex items-center justify-center"
                 aria-label="Try on this product"
                 title="Try on this product"
               >
@@ -166,7 +166,7 @@ export default function ProductCard({
             <button
               type="button"
               onClick={handleWishlistToggle}
-              className="w-4 h-4 p-0 bg-transparent border-0 cursor-pointer hover:opacity-80 flex items-center justify-center"
+              className="w-5 h-5 p-0 bg-transparent border-0 cursor-pointer hover:opacity-80 flex items-center justify-center"
               aria-label={isInWishlist(item.id) ? "Remove from wishlist" : "Add to wishlist"}
               title={isInWishlist(item.id) ? "Remove from wishlist" : "Add to wishlist"}
             >

@@ -164,6 +164,13 @@ const Homepage = () => {
   const [openIndex, setOpenIndex] = useState(null);
   const [dynamicCollections, setDynamicCollections] = useState([]);
 
+  // Hero drag/swipe state
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [currentTranslate, setCurrentTranslate] = useState(0);
+  const [prevTranslate, setPrevTranslate] = useState(0);
+  const heroRef = useRef(null);
+
   // Homepage content from admin context
   const { homepageContent, loading: contentLoading } = useContent();
 
@@ -507,18 +514,68 @@ const Homepage = () => {
     touchEndXBurvon.current = null;
   };
 
-  // Infinite scroll effect for rebels top picks on mobile to loop left/right indefinitely
-  // Removed because we handle natural scroll snapping now.
+  // Hero drag/swipe handlers
+  const getPositionX = (event) => {
+    return event.type.includes('mouse') ? event.pageX : event.touches[0].clientX;
+  };
 
-  // Get dynamic hero images from admin content
+  const handleDragStart = (e) => {
+    const heroImages = getDynamicHeroImages();
+    if (heroImages.length <= 1) return; // Don't allow drag if only one image
+
+    setIsDragging(true);
+    setStartX(getPositionX(e));
+    setPrevTranslate(currentIndex * -100);
+  };
+
+  const handleDragMove = (e) => {
+    if (!isDragging) return;
+
+    const currentPosition = getPositionX(e);
+    const diff = currentPosition - startX;
+    const heroImages = getDynamicHeroImages();
+    const containerWidth = heroRef.current?.offsetWidth || 1;
+    const percentMoved = (diff / containerWidth) * 100;
+
+    const newTranslate = prevTranslate + percentMoved;
+    const maxTranslate = 0; // First slide
+    const minTranslate = -(heroImages.length - 1) * 100; // Last slide
+
+    const constrainedTranslate = Math.max(minTranslate, Math.min(maxTranslate, newTranslate));
+
+    setCurrentTranslate(constrainedTranslate);
+  };
+
+  const handleDragEnd = () => {
+    if (!isDragging) return;
+
+    setIsDragging(false);
+    const movedBy = currentTranslate - prevTranslate;
+    const heroImages = getDynamicHeroImages();
+
+    let newIndex = currentIndex;
+
+    if (movedBy < -20 && currentIndex < heroImages.length - 1) {
+      newIndex = currentIndex + 1;
+    } else if (movedBy > 20 && currentIndex > 0) {
+      newIndex = currentIndex - 1;
+    }
+
+    setCurrentIndex(newIndex);
+
+    setCurrentTranslate(newIndex * -100);
+    setPrevTranslate(newIndex * -100);
+  };
+
+  
+
   const getDynamicHeroImages = () => {
     if (homepageContent?.hero_images && Array.isArray(homepageContent.hero_images) && homepageContent.hero_images.length > 0) {
       return homepageContent.hero_images.map(url => ({ src: url, webp: url }));
     }
-    return []; // No fallback - return empty array if no dynamic images
+    return []; 
   };
 
-  // Get dynamic collections from API or fallback to placeholder data
   const getDynamicCollections = () => {
     // console.log('getDynamicCollections called');
     // console.log('dynamicCollections:', dynamicCollections);
@@ -530,15 +587,15 @@ const Homepage = () => {
       return dynamicCollections;
     }
     // console.log('Using fallback placeholder data');
-    return burvonsCollections; // fallback to placeholder data
+    return burvonsCollections; 
   };
 
-  // Get dynamic top picks from API or fallback to placeholder data
+  
   const getDynamicTopPicks = () => {
     if (topPicksProducts && topPicksProducts.length > 0) {
       return topPicksProducts;
     }
-    return rebelsTopPicks; // fallback to placeholder data
+    return rebelsTopPicks; 
   };
 
   const MAX_VISIBLE_REBELS = HOMEPAGE_COLLECTION_VISIBLE_DESKTOP; // 4
@@ -588,11 +645,25 @@ const Homepage = () => {
       {getDynamicHeroImages().length > 0 && (
         <section
           id="hero"
-          className="relative w-full h-[450px] lg:h-[550px] xl:h-[730px] overflow-hidden bg-black flex items-center justify-center"
+          ref={heroRef}
+          className="relative w-full h-[450px] lg:h-[550px] xl:h-[730px] overflow-hidden bg-black flex items-center justify-center select-none"
+          onMouseDown={handleDragStart}
+          onMouseMove={handleDragMove}
+          onMouseUp={handleDragEnd}
+          onMouseLeave={handleDragEnd}
+          onTouchStart={handleDragStart}
+          onTouchMove={handleDragMove}
+          onTouchEnd={handleDragEnd}
         >
           <div
-            className="flex h-full w-full transition-transform duration-700"
-            style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+            className="flex h-full w-full transition-transform"
+            style={{
+              transform: isDragging
+                ? `translateX(${currentTranslate}%)`
+                : `translateX(-${currentIndex * 100}%)`,
+              transitionDuration: isDragging ? '0ms' : '700ms',
+              cursor: isDragging ? 'grabbing' : 'grab'
+            }}
             aria-live="polite"
           >
             {getDynamicHeroImages().map((image, index) => (
@@ -601,7 +672,7 @@ const Homepage = () => {
                 <img
                   src={image.src}
                   alt={`Burvon homepage banner collection ${index + 1}`}
-                  className="w-full h-full object-cover object-center"
+                  className="w-full h-full object-cover object-center pointer-events-none"
                   draggable={false}
                 />
               </picture>
@@ -611,7 +682,7 @@ const Homepage = () => {
             {getDynamicHeroImages().map((_, index) => (
               <span
                 key={index}
-                className={`w-2 h-2 rounded-full border border-[#FFF7DC] ${
+                className={`w-2 h-2 rounded-full border border-[#FFF7DC] cursor-pointer ${
                   index === currentIndex
                     ? "bg-[#FFF7DC]"
                     : "bg-gray-400 opacity-40"
