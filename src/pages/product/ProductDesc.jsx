@@ -94,6 +94,13 @@ const ProductDesc = () => {
     startTime: 0,
   });
 
+  // Image zoom state (in-place zoom, not modal)
+  const [zoomTransform, setZoomTransform] = useState({ scale: 1, x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
+  const [hasPanned, setHasPanned] = useState(false);
+  const [panStart, setPanStart] = useState({ x: 0, y: 0 });
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+
   useEffect(() => {
     const fetchProductData = async () => {
       if (!productSlug) return;
@@ -160,7 +167,7 @@ const ProductDesc = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const result = await categoryApi.getCategories();
+        const result = await categoryApi.fetchAllCategories();
         if (!result.error && result.data) {
           setCategories(result.data);
         }
@@ -171,6 +178,60 @@ const ProductDesc = () => {
 
     fetchCategories();
   }, []);
+
+  useEffect(() => {
+    const fetchRelatedProducts = async () => {
+      if (!product || !product.category) {
+
+        return;
+      }
+
+      try {
+        // Get the category slug from the product
+        const categorySlug = product.category?.slug || product.categorySlug || product.category;
+
+        if (!categorySlug) {
+    
+          return;
+        }
+
+     
+        const result = await productApi.fetchProductsByCategory(categorySlug);
+     
+        if (!result.error && result.data) {
+          let categoryProducts = result.data;
+
+          if (Array.isArray(categoryProducts)) {
+           
+            const filtered = categoryProducts.filter(p => {
+              const isSame = String(p.id) === String(product.id);
+              return !isSame;
+            });
+
+        
+            setRelatedProducts(filtered.slice(0, 8));
+          } else if (categoryProducts.products && Array.isArray(categoryProducts.products)) {
+         
+
+            const filtered = categoryProducts.products.filter(p => {
+              // Check both id and product_id fields
+              const productIdToCheck = p.product_id || p.id;
+              const isSame = String(productIdToCheck) === String(product.id);
+              return !isSame;
+            });
+
+            setRelatedProducts(filtered.slice(0, 8));
+          } else {
+          }
+        } else {
+        }
+      } catch (err) {
+        console.error("Fetch related products error", err);
+      }
+    };
+
+    fetchRelatedProducts();
+  }, [product]);
 
   const generateSlug = (name, collectionName) => {
     if (!name) return "unnamed-product";
@@ -437,7 +498,7 @@ const ProductDesc = () => {
   const reviewCount = formattedProduct?.reviews?.length || 0;
 
   const formatRelatedProduct = (productData) => ({
-    id: productData.id,
+    id: productData.product_id || productData.id,
     name: productData.name || "Unnamed Product",
     collection: productData.collection?.name?.toUpperCase() || "COLLECTION",
     oldPrice: productData.original_price
@@ -452,6 +513,13 @@ const ProductDesc = () => {
       Array.isArray(productData.images) && productData.images.length > 0
         ? productData.images
         : fallbackImages.slice(0, 2),
+    // Include all necessary fields for ProductCard
+    stock: productData.stock || 0,
+    category: productData.category?.name || productData.category || "",
+    category_id: productData.category_id || productData.category?.id,
+    sizeStocks: productData.sizeStocks || [],
+    variant: productData.variant || null,
+    slug: productData.slug || null,
   });
 
   const youMayAlsoLike = relatedProducts.map(formatRelatedProduct);
@@ -584,6 +652,8 @@ const ProductDesc = () => {
       formattedProduct?.images?.length || fallbackImages.length;
     setShow3D(false);
     setHas3DBeenViewed(false);
+    setZoomTransform({ scale: 1, x: 0, y: 0 });
+    setPanOffset({ x: 0, y: 0 });
     setCurrentImageIndex((prev) => (prev === 0 ? imageCount - 1 : prev - 1));
   };
 
@@ -592,12 +662,16 @@ const ProductDesc = () => {
       formattedProduct?.images?.length || fallbackImages.length;
     setShow3D(false);
     setHas3DBeenViewed(false);
+    setZoomTransform({ scale: 1, x: 0, y: 0 });
+    setPanOffset({ x: 0, y: 0 });
     setCurrentImageIndex((prev) => (prev === imageCount - 1 ? 0 : prev + 1));
   };
 
   const handleThumbnailClick = (index) => {
     setShow3D(false);
     setHas3DBeenViewed(false);
+    setZoomTransform({ scale: 1, x: 0, y: 0 });
+    setPanOffset({ x: 0, y: 0 });
     setCurrentImageIndex(index);
   };
 
@@ -723,15 +797,113 @@ const ProductDesc = () => {
     if (isInWishlist(formattedProduct.id)) {
       removeFromWishlist(formattedProduct.id);
       setIsFavorited(false);
-      setToastMessage("Product removed from wishlist.");
-      setToastType("warning");
+      // setToastMessage("Product removed from wishlist.");
+      // setToastType("warning");
     } else {
       addToWishlist(productData);
       setIsFavorited(true);
-      setToastMessage("Product added to wishlist.");
-      setToastType("success");
+      // setToastMessage("Product added to wishlist.");
+      // setToastType("success");
     }
-    setShowToast(true);
+    // setShowToast(true);
+  };
+
+  // Image zoom handler - zooms in place
+  const handleImageClick = (e) => {
+    if (!show3D && !hasPanned) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+      if (zoomTransform.scale === 1) {
+        // Zoom in at click position
+        setZoomTransform({ scale: 2, x, y });
+        setPanOffset({ x: 0, y: 0 });
+      } else {
+        // Zoom out
+        setZoomTransform({ scale: 1, x: 0, y: 0 });
+        setPanOffset({ x: 0, y: 0 });
+      }
+    }
+    // Reset pan flag after click
+    setHasPanned(false);
+  };
+
+  const handleMouseDown = (e) => {
+    if (zoomTransform.scale > 1) {
+      e.preventDefault();
+      setIsPanning(true);
+      setHasPanned(false);
+      setPanStart({
+        x: e.clientX - panOffset.x,
+        y: e.clientY - panOffset.y
+      });
+    }
+  };
+
+ 
+  const constrainPanOffset = (newOffset, containerSize) => {
+    const scale = zoomTransform.scale;
+
+    const maxOffset = (containerSize * (scale - 1)) / 2;
+
+    return {
+      x: Math.max(-maxOffset, Math.min(maxOffset, newOffset.x)),
+      y: Math.max(-maxOffset, Math.min(maxOffset, newOffset.y))
+    };
+  };
+
+  const handleMouseMove = (e) => {
+    if (isPanning && zoomTransform.scale > 1 && imageRef.current) {
+      e.preventDefault();
+      setHasPanned(true); 
+
+      const rect = imageRef.current.getBoundingClientRect();
+      const newOffset = {
+        x: e.clientX - panStart.x,
+        y: e.clientY - panStart.y
+      };
+
+      const constrainedOffset = constrainPanOffset(newOffset, rect.width);
+      setPanOffset(constrainedOffset);
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsPanning(false);
+  };
+
+  const handleTouchStartPan = (e) => {
+    if (zoomTransform.scale > 1) {
+      const touch = e.touches[0];
+      setIsPanning(true);
+      setHasPanned(false);
+      setPanStart({
+        x: touch.clientX - panOffset.x,
+        y: touch.clientY - panOffset.y
+      });
+    }
+  };
+
+  const handleTouchMovePan = (e) => {
+    if (isPanning && zoomTransform.scale > 1 && imageRef.current) {
+      const touch = e.touches[0];
+      setHasPanned(true); 
+
+      const rect = imageRef.current.getBoundingClientRect();
+      const newOffset = {
+        x: touch.clientX - panStart.x,
+        y: touch.clientY - panStart.y
+      };
+
+     
+      const constrainedOffset = constrainPanOffset(newOffset, rect.width);
+      setPanOffset(constrainedOffset);
+    }
+  };
+
+  const handleTouchEndPan = () => {
+    setIsPanning(false);
   };
 
   const renderStars = (rating) => {
@@ -759,12 +931,12 @@ const ProductDesc = () => {
   };
 
   // Check if product is Espoir for try-on feature
-  const isEspoirProduct = () => {
-    if (!formattedProduct) return false;
-    const productName = formattedProduct.name?.toLowerCase() || '';
-    const collectionName = formattedProduct.collectionName?.toLowerCase() || '';
-    return productName.includes('espoir') || collectionName.includes('love language');
-  };
+  // const isEspoirProduct = () => {
+  //   if (!formattedProduct) return false;
+  //   const productName = formattedProduct.name?.toLowerCase() || '';
+  //   const collectionName = formattedProduct.collectionName?.toLowerCase() || '';
+  //   return productName.includes('espoir') || collectionName.includes('love language');
+  // };
 
   // Show skeleton only on initial load when we don't have data yet
   // Check if we have any data to display
@@ -799,7 +971,7 @@ const ProductDesc = () => {
   return (
     <Layout full noPadding>
       <div className="bg-[#1f1f21] text-[#FFF7DC] min-h-screen">
-        <div className="max-w-7xl mx-auto px-4 pt-20 pb-8">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8 pt-20 lg:pt-32 pb-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
             {/* MOBILE LAYOUT - Visible only on mobile */}
             <div className="block lg:hidden">
@@ -808,14 +980,40 @@ const ProductDesc = () => {
               <div
                 ref={imageRef}
                 className="w-full bg-black rounded-lg overflow-hidden aspect-square select-none mb-2 relative"
-                onTouchStart={handleImageTouchStart}
-                onTouchMove={handleImageTouchMove}
-                onTouchEnd={handleImageTouchEnd}
+                onTouchStart={(e) => {
+                  if (zoomTransform.scale > 1) {
+                    handleTouchStartPan(e);
+                  } else {
+                    handleImageTouchStart(e);
+                  }
+                }}
+                onTouchMove={(e) => {
+                  if (zoomTransform.scale > 1) {
+                    handleTouchMovePan(e);
+                  } else {
+                    handleImageTouchMove(e);
+                  }
+                }}
+                onTouchEnd={(e) => {
+                  if (zoomTransform.scale > 1) {
+                    handleTouchEndPan();
+                  } else {
+                    handleImageTouchEnd(e);
+                  }
+                }}
+                onClick={handleImageClick}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
               >
                 {/* Interactive 3D toggle (mobile) */}
                 {modelAvailable && (
                   <button
-                    onClick={handle3DButtonClick}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handle3DButtonClick();
+                    }}
                     title={has3DBeenViewed && hasTryOnAvailable(formattedProduct.category || product?.category, formattedProduct.name || product?.name) ? "Try on this product" : "Click to open Interactive 3D"}
                     className="absolute top-4 right-4 z-10 flex items-center gap-2 bg-gradient-to-r from-[#FFDFAF] to-[#FFF7DC] text-[#1f1f21] px-3 py-1 rounded-md shadow-[0_6px_20px_rgba(0,0,0,0.35)] border border-[#f1e6c9] hover:scale-105 transform transition-all duration-200 active:scale-95 cursor-pointer"
                     aria-label={has3DBeenViewed && hasTryOnAvailable(formattedProduct.category || product?.category, formattedProduct.name || product?.name) ? "Try on this product" : "Open Interactive 3D viewer"}
@@ -842,14 +1040,20 @@ const ProductDesc = () => {
                       fallbackImages[0]
                     }
                     alt={formattedProduct?.name || ""}
-                    className="w-full h-full object-cover pointer-events-none"
+                    className="w-full h-full object-cover pointer-events-auto ease-out"
+                    style={{
+                      transform: `translate(${panOffset.x / zoomTransform.scale}px, ${panOffset.y / zoomTransform.scale}px) scale(${zoomTransform.scale})`,
+                      transformOrigin: `${zoomTransform.x}% ${zoomTransform.y}%`,
+                      cursor: zoomTransform.scale > 1 ? (isPanning ? 'grabbing' : 'grab') : 'zoom-in',
+                      transition: isPanning ? 'none' : 'transform 0.3s ease-out'
+                    }}
                     draggable={false}
                   />
                 )}
               </div>
 
               {/* Thumbnails in a row below */}
-              <div className="flex flex-row gap-3 justify-center mb-4">
+              <div className="flex flex-row gap-3 mb-4">
                 {(formattedProduct?.images || fallbackImages)
                   .slice(0, 4)
                   .map((image, index) => (
@@ -904,11 +1108,11 @@ const ProductDesc = () => {
                           if (productName) params.set("product", productName);
                           navigate(`/tryon?${params.toString()}`);
                         }}
-                        className="p-1.5 opacity-100 hover:opacity-80 transition-opacity cursor-pointer"
+                        className="w-6 h-6 p-0 opacity-100 hover:opacity-80 transition-opacity cursor-pointer flex items-center justify-center"
                         aria-label="Try on this product"
                         title="Try on this product"
                       >
-                        <img src={TryOnIcon} alt="Try On" className="w-6 h-6" />
+                        <img src={TryOnIcon} alt="Try On" className="w-full h-full object-contain" draggable={false} />
                       </button>
                     )}
                     <button
@@ -949,12 +1153,14 @@ const ProductDesc = () => {
                   <span className="text-sm text-[#959595] avantbold tracking-wider uppercase">
                     QUANTITY
                   </span>
-                  <div className="relative flex items-center justify-between bg-[#464647] bg-opacity-75 rounded-full w-[80px] h-[32px]">
+                  <div className="relative flex items-center justify-between bg-[#464647] bg-opacity-75 rounded-full w-[100px] h-[45px]">
                     <button
                       onClick={() => handleQuantityChange("decrease")}
-                      disabled={quantity <= 1}
+                      disabled={quantity <= 1 || getAvailableStock() === 0}
                       type="button"
-                      className="flex items-center justify-center w-[24px] h-full z-20"
+                      className={`flex items-center justify-center w-[24px] h-full z-20 ${
+                        quantity <= 1 || getAvailableStock() === 0 ? 'opacity-30 cursor-not-allowed' : ''
+                      }`}
                     >
                       <img src={MinusIcon} alt="Minus" className="w-2 h-2" />
                     </button>
@@ -966,13 +1172,18 @@ const ProductDesc = () => {
                     <button
                       onClick={() => handleQuantityChange("increase")}
                       disabled={
+                        getAvailableStock() === 0 ||
                         quantity >=
                         (formattedProduct?.sizeStocks?.length > 0
                           ? getSelectedSizeStock()
                           : getAvailableStock())
                       }
                       type="button"
-                      className="flex items-center justify-center w-[24px] h-full z-20"
+                      className={`flex items-center justify-center w-[24px] h-full z-20 ${
+                        getAvailableStock() === 0 || quantity >= (formattedProduct?.sizeStocks?.length > 0 ? getSelectedSizeStock() : getAvailableStock())
+                          ? 'opacity-30 cursor-not-allowed'
+                          : ''
+                      }`}
                     >
                       <img src={PlusIcon} alt="Plus" className="w-2 h-2" />
                     </button>
@@ -982,7 +1193,7 @@ const ProductDesc = () => {
                 {/* Show SIZE section only if product has sizes (e.g., rings) */}
                 {formattedProduct?.sizes &&
                   formattedProduct.sizes.length > 0 && (
-                    <div className="space-y-2 mb-4">
+                    <div className="space-y-2 mb-4 top-2">
                       <span className="block text-sm text-[#959595] avantbold tracking-wider uppercase">
                         SIZE
                       </span>
@@ -1017,7 +1228,7 @@ const ProductDesc = () => {
                                   inStock && handleSizeSelect(size)
                                 }
                                 disabled={!inStock}
-                                className={`relative w-8 h-8 rounded-md border-2 transition-all duration-200 flex items-center justify-center text-xs avantbold ${selectedSize === size
+                                className={`relative w-10 h-10 rounded-md border-2 transition-all duration-200 flex items-center justify-center text-sm avantbold ${selectedSize === size
                                     ? "bg-[#FFF7DC] text-[#1f1f21] border-[#FFF7DC]"
                                     : inStock
                                       ? "bg-transparent text-[#FFF7DC] border-[#959595] hover:border-[#FFF7DC]"
@@ -1047,6 +1258,7 @@ const ProductDesc = () => {
                           });
                         })()}
                       </div>
+                      
                       <button onClick={() => {
                         const params = new URLSearchParams();
                         const category = formattedProduct.category || product?.category || "";
@@ -1054,9 +1266,9 @@ const ProductDesc = () => {
                         if (category) params.set("category", category);
                         if (productName) params.set("product", productName);
                         navigate(`/customer-care/size-guide?${params.toString()}`);
-                      }} className="flex items-center gap-1.5 text-[#959595] hover:opacity-80 transition-opacity cursor-pointer">
-                        <img src={Ruler} alt="Ruler" className="w-4 h-4" />
-                        <span className="text-xs avantbold tracking-wider uppercase">
+                      }} className="flex items-center gap-1.5  text-[#959595] hover:opacity-80 transition-opacity cursor-pointer">
+                        <img src={Ruler} alt="Ruler" className="w-5 h-5" />
+                        <span className="text-sm avantbold tracking-wider uppercase">
                           CHECK MY SIZE
                         </span>
                       </button>
@@ -1098,14 +1310,40 @@ const ProductDesc = () => {
               <div
                 ref={imageRef}
                 className="relative bg-black rounded-lg overflow-hidden aspect-square max-w-[600px] mx-auto select-none"
-                onTouchStart={handleImageTouchStart}
-                onTouchMove={handleImageTouchMove}
-                onTouchEnd={handleImageTouchEnd}
+                onTouchStart={(e) => {
+                  if (zoomTransform.scale > 1) {
+                    handleTouchStartPan(e);
+                  } else {
+                    handleImageTouchStart(e);
+                  }
+                }}
+                onTouchMove={(e) => {
+                  if (zoomTransform.scale > 1) {
+                    handleTouchMovePan(e);
+                  } else {
+                    handleImageTouchMove(e);
+                  }
+                }}
+                onTouchEnd={(e) => {
+                  if (zoomTransform.scale > 1) {
+                    handleTouchEndPan();
+                  } else {
+                    handleImageTouchEnd(e);
+                  }
+                }}
+                onClick={handleImageClick}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
               >
                 {/* Interactive 3D toggle (desktop) */}
                 {modelAvailable && (
                   <button
-                    onClick={handle3DButtonClick}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handle3DButtonClick();
+                    }}
                     title={has3DBeenViewed && hasTryOnAvailable(formattedProduct.category || product?.category, formattedProduct.name || product?.name) ? "Try on this product" : "Click to open Interactive 3D"}
                     className="absolute top-4 right-4 z-10 cursor-pointer flex items-center gap-4 bg-gradient-to-r from-[#FFDFAF] to-[#FFF7DC] text-[#1f1f21] px-5 py-3 rounded-3xl shadow-[0_10px_30px_rgba(0,0,0,0.35)] border border-[#f1e6c9] hover:scale-105 transform transition-all duration-200 active:scale-98"
                     aria-label={has3DBeenViewed && hasTryOnAvailable(formattedProduct.category || product?.category, formattedProduct.name || product?.name) ? "Try on this product" : "Open Interactive 3D viewer"}
@@ -1137,7 +1375,13 @@ const ProductDesc = () => {
                       fallbackImages[0]
                     }
                     alt={formattedProduct?.name || ""}
-                    className="w-full h-full object-cover pointer-events-none"
+                    className="w-full h-full object-cover pointer-events-auto ease-out"
+                    style={{
+                      transform: `translate(${panOffset.x / zoomTransform.scale}px, ${panOffset.y / zoomTransform.scale}px) scale(${zoomTransform.scale})`,
+                      transformOrigin: `${zoomTransform.x}% ${zoomTransform.y}%`,
+                      cursor: zoomTransform.scale > 1 ? (isPanning ? 'grabbing' : 'grab') : 'zoom-in',
+                      transition: isPanning ? 'none' : 'transform 0.3s ease-out'
+                    }}
                     draggable={false}
                   />
                 )}
@@ -1195,11 +1439,11 @@ const ProductDesc = () => {
                         if (productName) params.set("product", productName);
                         navigate(`/tryon?${params.toString()}`);
                       }}
-                      className="p-2 opacity-100 hover:opacity-80 transition-opacity cursor-pointer"
+                      className="w-8 h-8 p-0 opacity-100 hover:opacity-80 transition-opacity cursor-pointer flex items-center justify-center"
                       aria-label="Try on this product"
                       title="Try on this product"
                     >
-                      <img src={TryOnIcon} alt="Try On" className="w-8 h-8" />
+                      <img src={TryOnIcon} alt="Try On" className="w-full h-full object-contain" draggable={false} />
                     </button>
                   )}
 
@@ -1246,9 +1490,11 @@ const ProductDesc = () => {
                   <div className="relative flex items-center justify-between bg-[#464647] bg-opacity-75 rounded-full w-full h-[40px]">
                     <button
                       onClick={() => handleQuantityChange("decrease")}
-                      disabled={quantity <= 1}
+                      disabled={quantity <= 1 || getAvailableStock() === 0}
                       type="button"
-                      className="flex items-center justify-center w-[30px] h-full z-20"
+                      className={`flex items-center justify-center w-[30px] h-full z-20 ${
+                        quantity <= 1 || getAvailableStock() === 0 ? 'opacity-30 cursor-not-allowed' : ''
+                      }`}
                     >
                       <img
                         src={MinusIcon}
@@ -1264,13 +1510,18 @@ const ProductDesc = () => {
                     <button
                       onClick={() => handleQuantityChange("increase")}
                       disabled={
+                        getAvailableStock() === 0 ||
                         quantity >=
                         (formattedProduct?.sizeStocks?.length > 0
                           ? getSelectedSizeStock()
                           : getAvailableStock())
                       }
                       type="button"
-                      className="flex items-center justify-center w-[30px] h-full z-20"
+                      className={`flex items-center justify-center w-[30px] h-full z-20 ${
+                        getAvailableStock() === 0 || quantity >= (formattedProduct?.sizeStocks?.length > 0 ? getSelectedSizeStock() : getAvailableStock())
+                          ? 'opacity-30 cursor-not-allowed'
+                          : ''
+                      }`}
                     >
                       <img src={PlusIcon} alt="Plus" className="w-2.5 h-2.5" />
                     </button>
@@ -1284,7 +1535,7 @@ const ProductDesc = () => {
                       <h3 className="text-lg avantbold tracking-wider text-[#959595] uppercase">
                         SIZE
                       </h3>
-                      <div className="flex flex-wrap gap-2 justify-start">
+                      <div className="flex flex-nowrap gap-2 justify-start">
                         {(() => {
                           const sizes =
                             formattedProduct?.sizes &&
@@ -1437,28 +1688,30 @@ const ProductDesc = () => {
             handleReviewsTouchEnd={handleReviewsTouchEnd}
           />
 
-          <YouMayAlsoLike
-            youMayAlsoLike={youMayAlsoLike}
-            carouselIndex={carouselIndex}
-            maxVisible={maxVisible}
-            handlePrev={handlePrev}
-            handleNext={handleNext}
-            canPrev={canPrev}
-            canNext={canNext}
-            TryOnIcon={TryOnIcon}
-            AddFavorite={AddFavorite}
-            PrevIcon={PrevIcon}
-            NextIcon={NextIcon}
-            AddBag={AddBag}
-            AddBagHover={AddBagHover}
-            hoveredCardId={hoveredCardId}
-            setHoveredCardId={setHoveredCardId}
-            hoveredImageIndexes={hoveredImageIndexes}
-            setHoveredImageIndexes={setHoveredImageIndexes}
-            handleImageChange={handleImageChange}
-            hoveredButtonId={hoveredButtonId}
-            setHoveredButtonId={setHoveredButtonId}
-          />
+          {youMayAlsoLike.length > 0 && (
+            <YouMayAlsoLike
+              youMayAlsoLike={youMayAlsoLike}
+              carouselIndex={carouselIndex}
+              maxVisible={maxVisible}
+              handlePrev={handlePrev}
+              handleNext={handleNext}
+              canPrev={canPrev}
+              canNext={canNext}
+              TryOnIcon={TryOnIcon}
+              AddFavorite={AddFavorite}
+              PrevIcon={PrevIcon}
+              NextIcon={NextIcon}
+              AddBag={AddBag}
+              AddBagHover={AddBagHover}
+              hoveredCardId={hoveredCardId}
+              setHoveredCardId={setHoveredCardId}
+              hoveredImageIndexes={hoveredImageIndexes}
+              setHoveredImageIndexes={setHoveredImageIndexes}
+              handleImageChange={handleImageChange}
+              hoveredButtonId={hoveredButtonId}
+              setHoveredButtonId={setHoveredButtonId}
+            />
+          )}
         </div>
       </div>
       <Toast
@@ -1468,6 +1721,7 @@ const ProductDesc = () => {
         onClose={() => setShowToast(false)}
         duration={3000}
       />
+
     </Layout>
   );
 };
