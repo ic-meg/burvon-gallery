@@ -1,3 +1,4 @@
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,6 +8,7 @@ datasource db {
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
+        
 
 model UserAccount {
   user_id            Int                 @id @default(autoincrement())
@@ -28,6 +30,7 @@ model UserAccount {
   orders             Order[]
   refunds            Refund[]
   Wishlist           Wishlist[]
+  reviews            Review[]
 }
 
 model Category {
@@ -71,6 +74,7 @@ model Product {
   collection     Collection? @relation(fields: [collection_id], references: [collection_id])
   sizeStocks     SizeStock[]
   wishlistItems  Wishlist[]
+  reviews         Review[]
 }
 
 model SizeStock {
@@ -153,6 +157,8 @@ model OrderItem {
   size          String?
   order         Order    @relation(fields: [order_id], references: [order_id])
   product       Product? @relation(fields: [product_id], references: [product_id])
+
+  review     Review[]
 }
 
 
@@ -256,6 +262,29 @@ model CollectionContent {
   UserAccount        UserAccount? @relation(fields: [userAccountUser_id], references: [user_id])
 }
 
+model Review {
+  review_id Int    @id @default(autoincrement())
+  user_id   Int
+  product_id Int
+  order_item_id Int? 
+  rating Int
+  review_text String? @db.Text
+  images Json? 
+  videos Json? 
+  show_username Boolean @default(false)
+  status ReviewStatus @default(PENDING)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user          UserAccount @relation(fields: [user_id], references: [user_id])
+  product       Product     @relation(fields: [product_id], references: [product_id])
+  order_item    OrderItem?  @relation(fields: [order_item_id], references: [order_item_id])
+
+  @@index([product_id])
+  @@index([user_id])
+  @@map("reviews")
+}
+
 enum UserRole {
   super_admin
   customer
@@ -289,4 +318,10 @@ enum OrderStatus {
 
 enum ShippingMethod {
   Standard
+}
+
+enum ReviewStatus {
+  PENDING 
+  APPROVED
+  REJECTED
 }
