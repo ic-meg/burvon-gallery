@@ -173,7 +173,10 @@ const ProfileDesktop = ({ openModal, onEditProfile, userData, ordersByTab, activ
             <button
               key={tab}
               className={`text-left pl-2 py-2 w-full transition-all ${activeTab === tab ? 'font-bold' : ''}`}
-              onClick={() => setActiveTab(tab)}
+              onClick={() => {
+                setActiveTab(tab)
+                navigate(tabRoutes[tab])
+              }}
               style={{ height: '48px' }}
             >
               {tab}
@@ -211,9 +214,9 @@ const ProfileDesktop = ({ openModal, onEditProfile, userData, ordersByTab, activ
           {selectedOrder ? (
             <>
               {/* ORDER ID */}
-              <div className="avantbold cream-text text-2xl mb-2 font-bold">ORDER ID : #{selectedOrder.id}</div>
-              {selectedOrder.items.map((item, idx) => (
-                <div key={item.variant} className="flex items-center justify-between rounded-lg px-0 py-2 w-full">
+              <div className="avantbold cream-text text-2xl mb-2 font-bold">ORDER ID : #{selectedOrder.order_id}</div>
+              {selectedOrder.items.map((item) => (
+                <div key={item.order_item_id} className="flex items-center justify-between rounded-lg px-0 py-2 w-full">
                   {/* Image and product info */}
                   <div className="flex items-center gap-4 min-w-[320px]">
                     <img
@@ -240,36 +243,34 @@ const ProfileDesktop = ({ openModal, onEditProfile, userData, ordersByTab, activ
                         <span className="avantbold cream-text text-lg">PHP {item.price.toFixed(2)}</span>
                       </div>
                       <div className="avantbold cream-text text-md mt-1" style={{ color: '#959595' }}>QUANTITY: {item.quantity} &nbsp; SIZE: {item.size}
-                      
+
                       </div>
                     </div>
                   </div>
-                  {/* Order details and actions */}
-                  {idx === 0 && (
-                    <div className="flex flex-row items-center justify-between w-full ml-8">
-                      <div className="flex flex-col gap-1 ml-45 mt-[-40px] mr-12">
-                        <div className="flex gap-20"> {/* gap between order date and expected delivery */}
-                          <div>
-                            <div className="bebas cream-text text-md">TOTAL AMOUNT:</div>
-                            <div className="avant cream-text text-lg">PHP {item.price.toFixed(2)}</div>
-                          </div>
-                          <div>
-                            <div className="bebas cream-text text-md">REFUND AMOUNT:</div>
-                            <div className="avant cream-text text-lg">PHP {selectedOrder.subtotal.toLocaleString(undefined, {minimumFractionDigits:2})}</div>
-                          </div>
+                  {/* Order details and actions - now shown for each item */}
+                  <div className="flex flex-row items-center justify-between w-full ml-8">
+                    <div className="flex flex-col gap-1 ml-45 mt-[-40px] mr-12">
+                      <div className="flex gap-20"> {/* gap between item total and refund amount */}
+                        <div>
+                          <div className="bebas cream-text text-md">ITEM TOTAL:</div>
+                          <div className="avant cream-text text-lg">PHP {selectedOrder.subtotal.toLocaleString(undefined, {minimumFractionDigits:2})}</div>
+                        </div>
+                        <div>
+                          <div className="bebas cream-text text-md">REFUND AMOUNT:</div>
+                          <div className="avant cream-text text-lg">PHP {selectedOrder.subtotal.toLocaleString(undefined, {minimumFractionDigits:2})}</div>
                         </div>
                       </div>
-                      <div className="flex gap-2 mb-17">
-                        <button className="avantbold cream-text px-4 py-2 cursor-pointer">REVIEW IN PROGRESS</button>
-                        <button 
-                          className="avantbold cream-bg metallic-text px-4 py-2 rounded border border-[#FFF7DC] cursor-pointer"
-                          onClick={() => navigate(`/profile/reviewdetails?orderId=${selectedOrder.id}`)}
-                        >
-                          VIEW DETAILS
-                        </button>
-                      </div>
                     </div>
-                  )}
+                    <div className="flex gap-2 mb-17">
+                      <button className="avantbold cream-text px-4 py-2 cursor-pointer">REVIEW IN PROGRESS</button>
+                      <button
+                        className="avantbold cream-bg metallic-text px-4 py-2 rounded border border-[#FFF7DC] cursor-pointer"
+                        onClick={() => navigate(`/profile/reviewdetails?orderId=${selectedOrder.order_id}`)}
+                      >
+                        VIEW DETAILS
+                      </button>
+                    </div>
+                  </div>
                 </div>
               ))}
             </>
@@ -335,7 +336,7 @@ const ProfileMobile = ({ openModal, onEditProfile, userData, ordersByTab, active
         {selectedOrder ? (
           <>
             <div className="flex justify-between items-center mb-2">
-              <span className="avantbold cream-text text-xs">ORDER ID : #{selectedOrder.id}</span>
+              <span className="avantbold cream-text text-xs">ORDER ID : #{selectedOrder.order_id}</span>
               <span className="avantbold cream-text text-xs">EXPECTED DELIVERY: {selectedOrder.delivery}</span>
             </div>
             <div className="flex gap-4 items-start rounded-lg p-2">
@@ -384,7 +385,7 @@ const ProfileMobile = ({ openModal, onEditProfile, userData, ordersByTab, active
               <button className="avantbold cream-text px-4 py-3 text-sm">REVIEW IN PROGRESS</button>
               <button 
                 className="avantbold cream-bg metallic-text px-4 py-0 rounded border border-[#FFF7DC] text-sm"
-                onClick={() => navigate(`/profile/reviewdetails?orderId=${selectedOrder.id}`)}
+                onClick={() => navigate(`/profile/reviewdetails?orderId=${selectedOrder.order_id}`)}
               >
                 VIEW DETAILS
               </button>
@@ -418,6 +419,10 @@ const Refund = () => {
     'CANCELLED': [],
   })
   const [loading, setLoading] = useState(true)
+  const [initialLoad, setInitialLoad] = useState(() => {
+    // Check sessionStorage to see if profile has been loaded before in this session
+    return !sessionStorage.getItem('profileLoaded')
+  })
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -439,7 +444,10 @@ const Refund = () => {
         return
       }
 
-      setLoading(true)
+      // Only show loading skeleton on initial load
+      if (initialLoad) {
+        setLoading(true)
+      }
       try {
         // Fetch user profile
         const userResult = await userApi.fetchUserProfile(currentUser.user_id)
@@ -455,20 +463,58 @@ const Refund = () => {
           setUserData(user)
         }
 
-        // Fetch user orders
-        const ordersResult = await orderApi.fetchOrdersByUserId(currentUser.user_id)
-        if (ordersResult.error) {
-          console.error('Error fetching orders:', ordersResult.error)
-        } else if (ordersResult.data && ordersResult.data.success) {
-          const orders = ordersResult.data.data || []
-          setOrdersByTab(groupOrdersByTab(orders))
-        } else {
-          console.error('Unexpected orders response format:', ordersResult.data)
+        // Fetch user orders - try both user_id and email to get all orders
+        console.log('[Refund] Fetching orders for user_id:', currentUser.user_id, 'and email:', userData?.email || currentUser.email)
+
+        const [ordersByUserIdResult, ordersByEmailResult] = await Promise.all([
+          orderApi.fetchOrdersByUserId(currentUser.user_id),
+          userData?.email || currentUser.email
+            ? orderApi.fetchOrdersByEmail(userData?.email || currentUser.email)
+            : Promise.resolve({ error: null, data: { success: true, data: [] } })
+        ])
+
+        console.log('[Refund] Orders by user_id response:', ordersByUserIdResult)
+        console.log('[Refund] Orders by email response:', ordersByEmailResult)
+
+        // Combine orders from both sources and remove duplicates
+        const allOrders = []
+        const orderIds = new Set()
+
+        // Add orders from user_id fetch
+        if (!ordersByUserIdResult.error && ordersByUserIdResult.data?.success) {
+          const orders = ordersByUserIdResult.data.data || []
+          orders.forEach(order => {
+            if (!orderIds.has(order.order_id)) {
+              orderIds.add(order.order_id)
+              allOrders.push(order)
+            }
+          })
         }
+
+        // Add orders from email fetch
+        if (!ordersByEmailResult.error && ordersByEmailResult.data?.success) {
+          const orders = ordersByEmailResult.data.data || []
+          orders.forEach(order => {
+            if (!orderIds.has(order.order_id)) {
+              orderIds.add(order.order_id)
+              allOrders.push(order)
+            }
+          })
+        }
+
+        console.log('[Refund] Total unique orders found:', allOrders.length)
+        if (allOrders.length > 0) {
+          console.log('[Refund] Order statuses:', allOrders.map(o => ({ id: o.order_id, status: o.status })))
+        }
+
+        setOrdersByTab(groupOrdersByTab(allOrders))
       } catch (error) {
         console.error('Error fetching profile data:', error)
       } finally {
         setLoading(false)
+        setInitialLoad(false)
+        // Mark that profile has been loaded in this session
+        sessionStorage.setItem('profileLoaded', 'true')
       }
     }
 
@@ -491,7 +537,7 @@ const Refund = () => {
     localStorage.setItem('user', JSON.stringify(updatedUser))
   }
 
-  if (loading) {
+  if (loading && initialLoad) {
     return (
       <Layout full>
         <ProfileSkeleton />

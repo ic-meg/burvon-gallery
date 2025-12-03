@@ -134,7 +134,7 @@ const EditProfileModal = ({ open, onClose, userData, onUpdate }) => {
 }
 
 // Desktop Layout
-const ProfileDesktop = ({ openModal, onEditProfile, userData, ordersByTab, activeTab, setActiveTab }) => {
+const ProfileDesktop = ({ openModal, onEditProfile, userData, ordersByTab, activeTab, setActiveTab, loading }) => {
   const orders = ordersByTab[activeTab] || []
   const navigate = useNavigate()
   const [currentPage, setCurrentPage] = useState(1)
@@ -190,7 +190,10 @@ const ProfileDesktop = ({ openModal, onEditProfile, userData, ordersByTab, activ
             <button
               key={tab}
               className={`text-left pl-2 py-2 w-full transition-all ${activeTab === tab ? 'font-bold' : ''}`}
-              onClick={() => setActiveTab(tab)}
+              onClick={() => {
+                setActiveTab(tab)
+                navigate(tabRoutes[tab])
+              }}
               style={{ height: '48px' }}
             >
               {tab}
@@ -303,6 +306,10 @@ const ProfileDesktop = ({ openModal, onEditProfile, userData, ordersByTab, activ
                 </div>
               ))}
             </>
+          ) : loading && paginatedOrders.length === 0 ? (
+            <div className="avant cream-text text-lg mt-12 text-center">
+              <p className="mb-2">Loading orders...</p>
+            </div>
           ) : (
             <div className="avant cream-text text-lg mt-12 text-center">
               <p className="mb-2">No orders in this category.</p>
@@ -364,7 +371,7 @@ const ProfileDesktop = ({ openModal, onEditProfile, userData, ordersByTab, activ
 }
 
 // Mobile Layout
-const ProfileMobile = ({ openModal, onEditProfile, userData, ordersByTab, activeTab, setActiveTab }) => {
+const ProfileMobile = ({ openModal, onEditProfile, userData, ordersByTab, activeTab, setActiveTab, loading }) => {
   const [showSubtotal, setShowSubtotal] = useState(false)
   const orders = ordersByTab[activeTab] || []
   const navigate = useNavigate()
@@ -501,6 +508,10 @@ const ProfileMobile = ({ openModal, onEditProfile, userData, ordersByTab, active
               </div>
             ))}
           </>
+        ) : loading && paginatedOrders.length === 0 ? (
+          <div className="avant cream-text text-lg mt-12 text-center">
+            <p className="mb-2">Loading orders...</p>
+          </div>
         ) : (
           <div className="avant cream-text text-lg mt-12 text-center">
             <p className="mb-2">No orders in this category.</p>
@@ -574,6 +585,10 @@ const Profile = () => {
     'CANCELLED': [],
   })
   const [loading, setLoading] = useState(true)
+  const [initialLoad, setInitialLoad] = useState(() => {
+    // Check sessionStorage to see if profile has been loaded before in this session
+    return !sessionStorage.getItem('profileLoaded')
+  })
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -595,10 +610,10 @@ const Profile = () => {
         return
       }
 
-      // console.log('Current user from localStorage:', currentUser)
-      // console.log('User ID being used:', currentUser.user_id)
-
-      setLoading(true)
+      // Only show loading skeleton on initial load
+      if (initialLoad) {
+        setLoading(true)
+      }
       try {
         // Fetch user profile
         const userResult = await userApi.fetchUserProfile(currentUser.user_id)
@@ -615,20 +630,15 @@ const Profile = () => {
           setUserData(user)
         }
 
-        // Fetch user orders - try both user_id and email to get all orders
-        // Some orders might have user_id as null but still belong to the user via email
-        // console.log('Fetching orders for user_id:', currentUser.user_id, 'and email:', userData?.email || currentUser.email)
-        
+       
         const [ordersByUserIdResult, ordersByEmailResult] = await Promise.all([
           orderApi.fetchOrdersByUserId(currentUser.user_id),
-          userData?.email || currentUser.email 
+          userData?.email || currentUser.email
             ? orderApi.fetchOrdersByEmail(userData?.email || currentUser.email)
             : Promise.resolve({ error: null, data: { success: true, data: [] } })
         ])
-        
-        // console.log('Orders by user_id response:', ordersByUserIdResult)
-        // console.log('Orders by email response:', ordersByEmailResult)
-        
+
+   
         // Combine orders from both sources and remove duplicates
         const allOrders = []
         const orderIds = new Set()
@@ -655,16 +665,19 @@ const Profile = () => {
           })
         }
         
-        // console.log('Total unique orders found:', allOrders.length)
+      
         if (allOrders.length > 0) {
           // console.log('Order statuses:', allOrders.map(o => ({ id: o.order_id, status: o.status })))
         }
-        
+
         setOrdersByTab(groupOrdersByTab(allOrders))
       } catch (error) {
         console.error('Error fetching profile data:', error)
       } finally {
         setLoading(false)
+        setInitialLoad(false)
+        // Mark that profile has been loaded in this session
+        sessionStorage.setItem('profileLoaded', 'true')
       }
     }
 
@@ -688,7 +701,7 @@ const Profile = () => {
     localStorage.setItem('user', JSON.stringify(updatedUser))
   }
 
-  if (loading) {
+  if (loading && initialLoad) {
     return (
       <Layout full>
         <ProfileSkeleton />
@@ -698,21 +711,23 @@ const Profile = () => {
 
   return (
     <Layout full>
-      <ProfileDesktop 
-        openModal={openModal} 
+      <ProfileDesktop
+        openModal={openModal}
         onEditProfile={openEditProfile}
         userData={userData}
         ordersByTab={ordersByTab}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        loading={loading}
       />
-      <ProfileMobile 
-        openModal={openModal} 
+      <ProfileMobile
+        openModal={openModal}
         onEditProfile={openEditProfile}
         userData={userData}
         ordersByTab={ordersByTab}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        loading={loading}
       />
       {modalOpen && (
         <div

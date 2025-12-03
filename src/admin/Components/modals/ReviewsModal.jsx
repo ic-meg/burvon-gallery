@@ -1,26 +1,154 @@
-import React from 'react';
+import { useState, useEffect } from 'react';
+import { getProductReviews, approveReview, rejectReview } from '../../../api/reviewApi';
+import Toast from '../../../components/Toast';
 
 const ReviewsModal = ({
   showModal,
   onClose,
   selectedProduct,
   reviewFilter,
-  setReviewFilter,
-  getReviewStats,
-  getFilteredReviews,
-  getStarDisplay,
-  handleReviewStatusChange
+  setReviewFilter
 }) => {
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+
+  useEffect(() => {
+    if (showModal && selectedProduct?.product_id) {
+      fetchReviews();
+    }
+  }, [showModal, selectedProduct?.product_id]);
+
+  const fetchReviews = async () => {
+    setLoading(true);
+    try {
+      const result = await getProductReviews(selectedProduct.product_id, '');
+
+      if (result.error) {
+        setToast({ show: true, message: result.error || 'Failed to fetch reviews', type: 'error' });
+        setReviews([]);
+      } else {
+        setReviews(result.data || []);
+      }
+    } catch (error) {
+      setToast({ show: true, message: 'Failed to fetch reviews', type: 'error' });
+      setReviews([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReviewStatusChange = async (reviewId, newStatus) => {
+    try {
+      const token = localStorage.getItem('adminAuthToken') || localStorage.getItem('authToken');
+      if (!token) {
+        setToast({ show: true, message: 'Please login as admin to manage reviews', type: 'error' });
+        return;
+      }
+
+      let result;
+
+      if (newStatus === 'approved' || newStatus === 'APPROVED') {
+        result = await approveReview(reviewId);
+      } else if (newStatus === 'rejected' || newStatus === 'REJECTED') {
+        result = await rejectReview(reviewId);
+      } else {
+        setToast({ show: true, message: 'Invalid status', type: 'error' });
+        return;
+      }
+
+      if (result.error) {
+        const errorMsg = result.error === 'Missing authorization header'
+          ? 'Session expired. Please login again as admin.'
+          : result.error || 'Failed to update review status';
+        setToast({ show: true, message: errorMsg, type: 'error' });
+      } else {
+        setToast({ show: true, message: 'Review status updated successfully', type: 'success' });
+        // Refresh reviews after status change
+        await fetchReviews();
+      }
+    } catch (error) {
+      setToast({ show: true, message: 'An error occurred while updating review status', type: 'error' });
+    }
+  };
+
+  const getFilteredReviews = () => {
+    if (!reviews || reviews.length === 0) return [];
+
+    const filterMap = {
+      'all': null,
+      'pending': 'PENDING',
+      'approved': 'APPROVED',
+      'rejected': 'REJECTED'
+    };
+
+    const statusFilter = filterMap[reviewFilter.toLowerCase()];
+    if (!statusFilter) return reviews;
+
+    return reviews.filter(review => review.status === statusFilter);
+  };
+
+  const getReviewStats = () => {
+    if (!reviews || reviews.length === 0) {
+      return { total: 0, pending: 0, approved: 0, rejected: 0, avgRating: 0 };
+    }
+
+    const approvedReviews = reviews.filter(r => r.status === 'APPROVED');
+    const avgRating = approvedReviews.length > 0
+      ? (approvedReviews.reduce((sum, r) => sum + r.rating, 0) / approvedReviews.length).toFixed(1)
+      : 0;
+
+    return {
+      total: reviews.length,
+      pending: reviews.filter(r => r.status === 'PENDING').length,
+      approved: reviews.filter(r => r.status === 'APPROVED').length,
+      rejected: reviews.filter(r => r.status === 'REJECTED').length,
+      avgRating: avgRating,
+    };
+  };
+
+  const getStarDisplay = (rating) => {
+    return Array.from({ length: 5 }, (_, i) => (
+      <span
+        key={i}
+        className={i < rating ? "text-yellow-400" : "text-gray-300"}
+      >
+        ★
+      </span>
+    ));
+  };
+
+  const formatReviewData = (review) => {
+    return {
+      id: review.review_id,
+      customerName: review.show_username && review.user?.full_name
+        ? review.user.full_name
+        : 'Anonymous',
+      email: review.user?.email || 'N/A',
+      rating: review.rating,
+      comment: review.review_text || 'No comment provided',
+      date: new Date(review.created_at).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      }),
+      status: review.status.toLowerCase(),
+      images: review.images || [],
+      videos: review.videos || []
+    };
+  };
+
   if (!showModal || !selectedProduct) return null;
 
   return (
-    <div 
-      className="fixed inset-0 flex items-center justify-center z-50"
-      style={{ 
-        backgroundColor: 'rgba(255, 255, 255, 0.65)',
-        backdropFilter: 'blur(5px)'
-      }}
-    >
+    <>
+      <div
+        className="fixed inset-0 flex items-center justify-center z-50"
+        style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.65)',
+          backdropFilter: 'blur(5px)'
+        }}
+      >
       <div className="bg-white rounded-2xl border-2 border-black w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto shadow-2xl">
         {/* Modal Header */}
         <div className="flex justify-between items-center p-6 border-b border-gray-200">
@@ -108,69 +236,96 @@ const ReviewsModal = ({
 
           {/* Reviews List */}
           <div className="space-y-4 max-h-96 overflow-y-auto">
-            {getFilteredReviews().length > 0 ? (
-              getFilteredReviews().map((review) => (
-                <div key={review.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <h4 className="avantbold text-black">{review.customerName}</h4>
-                        <div className="flex">{getStarDisplay(review.rating)}</div>
-                        <span className="text-xs avant text-gray-500">{review.date}</span>
+            {loading ? (
+              <div className="text-center py-8">
+                <p className="text-gray-500 avant">Loading reviews...</p>
+              </div>
+            ) : getFilteredReviews().length > 0 ? (
+              getFilteredReviews().map((review) => {
+                const formattedReview = formatReviewData(review);
+                return (
+                  <div key={formattedReview.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-3 mb-2">
+                          <h4 className="avantbold text-black">{formattedReview.customerName}</h4>
+                          <div className="flex">{getStarDisplay(formattedReview.rating)}</div>
+                          <span className="text-xs avant text-gray-500">{formattedReview.date}</span>
+                        </div>
+                        <p className="text-xs avant text-gray-600 mb-2">{formattedReview.email}</p>
+                        <p className="avant text-sm text-black">{formattedReview.comment}</p>
+
+                        {/* Display images if any */}
+                        {formattedReview.images && formattedReview.images.length > 0 && (
+                          <div className="flex gap-2 mt-3 flex-wrap">
+                            {formattedReview.images.map((img, idx) => (
+                              <img
+                                key={idx}
+                                src={img}
+                                alt={`Review ${idx + 1}`}
+                                className="w-16 h-16 object-cover rounded border border-gray-300"
+                              />
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Display videos if any */}
+                        {formattedReview.videos && formattedReview.videos.length > 0 && (
+                          <div className="flex gap-2 mt-3 flex-wrap">
+                            {formattedReview.videos.map((vid, idx) => (
+                              <video
+                                key={idx}
+                                src={vid}
+                                controls
+                                className="w-32 h-20 object-cover rounded border border-gray-300"
+                              />
+                            ))}
+                          </div>
+                        )}
                       </div>
-                      <p className="text-xs avant text-gray-600 mb-2">{review.email}</p>
-                      <p className="avant text-sm text-black">{review.comment}</p>
+                      <div className="flex items-center space-x-2 ml-4">
+                        <span className={`px-2 py-1 rounded text-xs avantbold ${
+                          formattedReview.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                          formattedReview.status === 'approved' ? 'bg-green-100 text-green-700' :
+                          'bg-red-100 text-red-700'
+                        }`}>
+                          {formattedReview.status.charAt(0).toUpperCase() + formattedReview.status.slice(1)}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-2 ml-4">
-                      <span className={`px-2 py-1 rounded text-xs avantbold ${ 
-                        review.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                        review.status === 'approved' ? 'bg-green-100 text-green-700' :
-                        'bg-red-100 text-red-700'
-                      }`}>
-                        {review.status.charAt(0).toUpperCase() + review.status.slice(1)}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  {/* Action Buttons */}
-                  <div className="flex space-x-2 pt-3 border-t border-gray-200">
-                    <button
-                      onClick={() => handleReviewStatusChange(review.id, 'approved')}
-                      disabled={review.status === 'approved'}
-                      className={`px-4 py-2 text-xs avant font-medium rounded transition-colors ${
-                        review.status === 'approved'
-                          ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                          : 'bg-green-600 text-white hover:bg-green-700'
-                      }`}
-                    >
-                      Approve
-                    </button>
-                    <button
-                      onClick={() => handleReviewStatusChange(review.id, 'rejected')}
-                      disabled={review.status === 'rejected'}
-                      className={`px-4 py-2 text-xs avant font-medium rounded transition-colors ${
-                        review.status === 'rejected'
-                          ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                          : 'bg-red-600 text-white hover:bg-red-700'
-                      }`}
-                    >
-                      Reject
-                    </button>
-                    {review.status !== 'pending' && (
+
+                    {/* Action Buttons */}
+                    <div className="flex space-x-2 pt-3 border-t border-gray-200">
                       <button
-                        onClick={() => handleReviewStatusChange(review.id, 'pending')}
-                        className="px-4 py-2 text-xs avant font-medium bg-yellow-600 text-white hover:bg-yellow-700 rounded transition-colors"
+                        onClick={() => handleReviewStatusChange(formattedReview.id, 'approved')}
+                        disabled={formattedReview.status === 'approved'}
+                        className={`px-4 py-2 text-xs avant font-medium rounded transition-colors ${
+                          formattedReview.status === 'approved'
+                            ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                            : 'bg-green-600 text-white hover:bg-green-700'
+                        }`}
                       >
-                        Set Pending
+                        Approve
                       </button>
-                    )}
+                      <button
+                        onClick={() => handleReviewStatusChange(formattedReview.id, 'rejected')}
+                        disabled={formattedReview.status === 'rejected'}
+                        className={`px-4 py-2 text-xs avant font-medium rounded transition-colors ${
+                          formattedReview.status === 'rejected'
+                            ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                            : 'bg-red-600 text-white hover:bg-red-700'
+                        }`}
+                      >
+                        Reject
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             ) : (
               <div className="text-center py-8">
                 <p className="text-gray-500 avant">
-                  {reviewFilter === 'all' 
+                  {reviewFilter === 'all'
                     ? 'No reviews found for this product.'
                     : `No ${reviewFilter} reviews found.`
                   }
@@ -190,7 +345,20 @@ const ReviewsModal = ({
           </div>
         </div>
       </div>
-    </div>
+      </div>
+
+      {toast.show && (
+        <div style={{ zIndex: 9999, position: 'fixed', top: '1rem', right: '1rem' }}>
+          <Toast
+            show={toast.show}
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast({ ...toast, show: false })}
+            duration={3000}
+          />
+        </div>
+      )}
+    </>
   );
 };
 

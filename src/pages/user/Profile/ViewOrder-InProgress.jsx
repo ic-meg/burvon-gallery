@@ -1,39 +1,8 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import Layout from '../../../components/Layout.jsx'
-import { Friden, Odyssey } from '../../../assets/index.js'
-
-const order = {
-  id: '38940123',
-  items: [
-    {
-      name: 'Clash Collection Necklaces',
-      variant: 'ODYSSEY',
-      price: 590,
-      quantity: 1,
-      image: Odyssey,
-    },
-    {
-      name: 'Clash Collection Necklaces',
-      variant: 'FRIDEN',
-      price: 590,
-      quantity: 2,
-      image: Friden,
-    },
-  ],
-  date: 'March 01, 2025',
-  delivery: 'March 07, 2025',
-  subtotal: 1770,
-  shipping: 80,
-  total: 1850,
-  customer: {
-    email: 'gilcalais@gmail.com',
-    phone: '+63926484997',
-    name: 'Giuliani Calais',
-    address: 'Blk 2 Lot 8 Greenfields, Mambog 1\nBacoor City, Cavite',
-    payment: 'Gcash',
-  },
-}
+import orderApi from '../../../api/orderApi'
+import { getUser } from '../../../services/authService'
 
 const ViewOrderDesktop = ({ openCancelModal }) => {
   const navigate = useNavigate()
@@ -72,7 +41,7 @@ const ViewOrderDesktop = ({ openCancelModal }) => {
                 <div className="avantbold text-nowrap cream-text text-lg leading-tight">
                   {item.name}
                   <br />
-                  <span className="avantbold cream-text text-md">(Elegant Pendant Jewelry)</span>
+                  {/* <span className="avantbold cream-text text-md">(Elegant Pendant Jewelry)</span> */}
                 </div>
                 <div className="bebas cream-text text-md mt-1" style={{ color: '#959595' }}>{item.variant}</div>
               </div>
@@ -168,7 +137,7 @@ const ViewOrderMobile = ({ openCancelModal }) => {
             <div className="avantbold cream-text text-sm leading-tight">
               {item.name}
               <br />
-              <span className="avantbold cream-text text-xs">(Elegant Pendant Jewelry)</span>
+              {/* <span className="avantbold cream-text text-xs">(Elegant Pendant Jewelry)</span> */}
             </div>
             <div className="bebas cream-text text-xs mt-1"style={{ color: '#959595' }}>{item.variant}</div>
             <div className="flex gap-2 mt-1 avant cream-text text-xs">
@@ -269,7 +238,7 @@ const CancelOrderModal = ({ open, onClose, order, onConfirm }) => {
                 <div className="avantbold cream-text text-lg leading-tight">
                   {item.name}
                   <br />
-                  <span className="avantbold cream-text text-md">(Elegant Pendant Jewelry)</span>
+                  {/* <span className="avantbold cream-text text-md">(Elegant Pendant Jewelry)</span> */}
                 </div>
                 <div className="bebas text-md mt-1" style={{color: '#959595'}}>{item.variant} - PHP {item.price.toLocaleString(undefined, {minimumFractionDigits:2})}</div>
                 <div className="avant text-md" style={{color: '#959595'}}>Quantity: {item.quantity}</div>
@@ -332,7 +301,7 @@ const CancelOrderModal = ({ open, onClose, order, onConfirm }) => {
                 <div className="avantbold cream-text text-xs leading-tight">
                   {item.name}
                   <br />
-                  <span className="avantbold cream-text text-xs">(Elegant Pendant Jewelry)</span>
+                  {/* <span className="avantbold cream-text text-xs">(Elegant Pendant Jewelry)</span> */}
                 </div>
                 <div className="bebas text-xs mt-1" style={{color: '#959595'}}>{item.variant} - PHP {item.price.toLocaleString(undefined, {minimumFractionDigits:2})}</div>
                 <div className="avant text-xs" style={{color: '#959595'}}>Quantity: {item.quantity}</div>

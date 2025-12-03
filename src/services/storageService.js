@@ -175,10 +175,64 @@ class StorageService {
   // Clean up old images when updating
   async cleanupOldImages(oldImagePaths) {
     const deletePromises = oldImagePaths
-      .filter(path => path) 
+      .filter(path => path)
       .map(path => this.deleteImage(path))
-    
+
     return await Promise.all(deletePromises)
+  }
+
+  // ------------------- Review Media Upload -------------------
+
+  // Upload review image
+  async uploadReviewImage(file, userId, productId) {
+    const timestamp = Date.now()
+    const randomString = Math.random().toString(36).substring(2, 8)
+    const fileExtension = file.name.split('.').pop()
+    const filePath = `reviews/user_${userId}/product_${productId}/images/${timestamp}_${randomString}.${fileExtension}`
+
+    return await uploadImage(file, filePath)
+  }
+
+  // Upload review video
+  async uploadReviewVideo(file, userId, productId) {
+    const timestamp = Date.now()
+    const randomString = Math.random().toString(36).substring(2, 8)
+    const fileExtension = file.name.split('.').pop()
+    const filePath = `reviews/user_${userId}/product_${productId}/videos/${timestamp}_${randomString}.${fileExtension}`
+
+    return await uploadImage(file, filePath)
+  }
+
+  // Upload multiple review images
+  async uploadMultipleReviewImages(imageFiles, userId, productId) {
+    const results = []
+
+    for (const file of imageFiles) {
+      if (file) {
+        const result = await this.uploadReviewImage(file, userId, productId)
+        if (result.success) {
+          results.push(getImageUrl(result.filePath))
+        }
+      }
+    }
+
+    return results
+  }
+
+  // Upload multiple review videos
+  async uploadMultipleReviewVideos(videoFiles, userId, productId) {
+    const results = []
+
+    for (const file of videoFiles) {
+      if (file) {
+        const result = await this.uploadReviewVideo(file, userId, productId)
+        if (result.success) {
+          results.push(getImageUrl(result.filePath))
+        }
+      }
+    }
+
+    return results
   }
 }
 

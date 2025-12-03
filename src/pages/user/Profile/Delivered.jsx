@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Layout from '../../../components/Layout'
-import { 
-  editIcon, 
-  DropDown,
-  AddImageCream, 
-  AddVideoCream 
+import {
+  editIcon,
+  DropDown
 } from '../../../assets/index.js'
 import { logout, getUser, getAuthToken } from '../../../services/authService'
 import { checkAndRedirectAdmin } from '../../../utils/authUtils'
 import userApi from '../../../api/userApi'
 import orderApi from '../../../api/orderApi'
+import { getMyReviews } from '../../../api/reviewApi'
 import Toast from '../../../components/Toast'
 import ProfileSkeleton from '../../../components/ProfileSkeleton'
+import ReviewModal from '../../../components/ReviewModal'
+import ReviewModalMobile from '../../../components/ReviewModalMobile'
 import { groupOrdersByTab } from './profileUtils'
 
 const tabs = [
@@ -135,197 +136,10 @@ const EditProfileModal = ({ open, onClose, userData, onUpdate }) => {
   )
 }
 
-// Rate Product modal
-const RateProductModal = ({ open, onClose, products }) => {
-  const [rating, setRating] = useState(4)
-  const [review, setReview] = useState('')
-  const [showUsername, setShowUsername] = useState(false)
-
-  if (!open) return null
-
-  return (
-    <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50" onClick={onClose}>
-      <div
-        className="bg-[#181818] rounded-2xl p-8 min-w-[700px] max-w-[95vw] flex flex-col gap-6"
-        style={{ boxShadow: '0 0 32px #000' }}
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between mb-6">
-          <div className="bebas cream-text text-2xl">RATE PRODUCT</div>
-          <div>
-            <span className="avantbold cream-text text-md mr-2">YOUR RATING:</span>
-            {[1,2,3,4,5].map(star => (
-              <span
-                key={star}
-                className={`text-2xl cursor-pointer ${star <= rating ? 'cream-text' : 'text-[#959595]'}`}
-                onClick={() => setRating(star)}
-              >★</span>
-            ))}
-            <span className="avantbold cream-text ml-2 italic">{['Poor','Fair','Good','Great','Excellent'][rating-1]}</span>
-          </div>
-        </div>
-        <div className="flex gap-8">
-          {/* Product List */}
-          <div className="flex flex-col gap-6">
-            {products.map((item, idx) => (
-              <div key={idx} className="flex gap-4 items-center">
-                <img src={item.image} alt={item.variant} className="w-28 h-28 object-cover rounded-md" />
-                <div>
-                  <div className="avantbold cream-text text-lg leading-tight">{item.name} <span className="text-sm"><br/>(Elegant Pendant Jewelry)</span></div>
-                  <div className="bebas cream-text text-md mt-1" style={{ color: '#959595' }}>{item.variant}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-          {/* Rating & Review */}
-          <div className="flex-1 flex flex-col gap-4">
-            
-            <textarea
-              className="w-full h-34 rounded-lg bg-transparent border-2 border-[#FFF7DC] avant cream-text text-md p-3"
-              placeholder="Share your experience (optional)"
-              value={review}
-              onChange={e => setReview(e.target.value)}
-            />
-            <div className="flex gap-4">
-              <button className="w-16 h-16 border-2 border-dashed border-[#FFF7DC] rounded-lg flex items-center justify-center">
-                <img src={AddImageCream} alt="Add Image" className="w-8 h-8" />
-              </button>
-              <button className="w-16 h-16 border-2 border-dashed border-[#FFF7DC] rounded-lg flex items-center justify-center">
-                <img src={AddVideoCream} alt="Add Video" className="w-8 h-8" />
-              </button>
-              <button className="w-16 h-16 border-2 border-dashed border-[#FFF7DC] rounded-lg flex items-center justify-center ">
-                <span className="text-3xl cream-text">+</span>
-              </button>
-            </div>
-            <label className="flex items-center gap-2 mt-2 avant cream-text text-md cursor-pointer">
-              <input
-                type="checkbox"
-                checked={showUsername}
-                onChange={e => setShowUsername(e.target.checked)}
-                className="accent-[#FFF7DC] w-4 h-4"
-              />
-              Show username
-            </label>
-            <div className="flex gap-4 mt-4">
-              <button
-                className="avantbold px-8 py-3 rounded-lg text-md border-2 border-[#FFF7DC] cream-text bg-transparent" style={{ cursor: 'pointer' }}
-                onClick={onClose}
-              >
-                CANCEL
-              </button>
-              <button
-                className="avantbold cream-bg metallic-text px-8 py-3 rounded-lg text-md" style={{ cursor: 'pointer' }}
-                onClick={() => {/* handle confirm */}}
-              >
-                CONFIRM
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// Rate Product modal - Mobile
-const RateProductModalMobile = ({ open, onClose, products }) => {
-  const [rating, setRating] = useState(4)
-  const [review, setReview] = useState('')
-  const [showUsername, setShowUsername] = useState(false)
-
-  if (!open) return null
-
-  return (
-    <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50" onClick={onClose}>
-      <div
-        className="bg-[#181818] rounded-2xl p-4 w-[95vw] max-w-[420px] flex flex-col gap-4"
-        style={{ boxShadow: '0 0 32px #000' }}
-        onClick={e => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between mb-2">
-          <div className="bebas cream-text text-xl">RATE PRODUCT</div>
-          <button className="text-2xl cream-text" onClick={onClose}>&times;</button>
-        </div>
-        {/* Product List */}
-        <div className="flex flex-col gap-3">
-          {products.map((item, idx) => (
-            <div key={idx} className="flex gap-3 items-center">
-              <img src={item.image} alt={item.variant} className="w-16 h-16 object-cover rounded-md" />
-              <div>
-                <div className="avantbold cream-text text-sm leading-tight">{item.name}</div>
-                <div className="bebas text-xs" style={{ color: '#959595' }}>{item.variant}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-        {/* Rating */}
-        <div className="flex items-center justify-between mt-2">
-          <span className="avantbold cream-text text-sm">YOUR RATING:</span>
-          <div className="flex items-center gap-1">
-            {[1,2,3,4,5].map(star => (
-              <span
-                key={star}
-                className={`text-xl cursor-pointer ${star <= rating ? 'cream-text' : 'text-[#959595]'}`}
-                onClick={() => setRating(star)}
-              >★</span>
-            ))}
-            <span className="avantbold cream-text ml-1 text-xs italic">{['Poor','Fair','Good','Great','Excellent'][rating-1]}</span>
-          </div>
-        </div>
-        {/* Review */}
-        <textarea
-          className="w-full h-30 rounded-lg bg-transparent border-1 border-[#FFF7DC] avant cream-text text-sm p-2 mt-2"
-          placeholder="Share your experience (optional)"
-          value={review}
-          onChange={e => setReview(e.target.value)}
-        />
-        {/* Upload buttons */}
-        <div className="flex gap-2 mt-2">
-          <button className="w-12 h-12 border-2 border-dashed border-[#FFF7DC] rounded-lg flex items-center justify-center">
-            <img src={AddImageCream} alt="Add Image" className="w-6 h-6" />
-          </button>
-          <button className="w-12 h-12 border-2 border-dashed border-[#FFF7DC] rounded-lg flex items-center justify-center">
-            <img src={AddVideoCream} alt="Add Video" className="w-6 h-6" />
-          </button>
-          <button className="w-12 h-12 border-2 border-dashed border-[#FFF7DC] rounded-lg flex items-center justify-center">
-            <span className="text-2xl cream-text">+</span>
-          </button>
-        </div>
-        {/* Show username */}
-        <label className="flex items-center gap-2 mt-2 avant cream-text text-sm">
-          <input
-            type="checkbox"
-            checked={showUsername}
-            onChange={e => setShowUsername(e.target.checked)}
-            className="accent-[#FFF7DC] w-4 h-4"
-          />
-          Show username
-        </label>
-        {/* Actions */}
-        <div className="flex gap-2 mt-4">
-          <button
-            className="avantbold px-4 py-2 rounded-lg text-sm border-2 border-[#FFF7DC] cream-text bg-transparent flex-1"
-            onClick={onClose}
-          >
-            CANCEL
-          </button>
-          <button
-            className="avantbold cream-bg metallic-text px-4 py-2 rounded-lg text-sm flex-1"
-            onClick={() => {/* handle confirm */}}
-          >
-            CONFIRM
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 // Desktop Layout
-const ProfileDesktop = ({ openModal, onEditProfile, openRateModal, userData, ordersByTab, activeTab, setActiveTab }) => {
+const ProfileDesktop = ({ openModal, onEditProfile, openRateModal, userData, ordersByTab, activeTab, setActiveTab, loading, reviewedProducts, onRateItem }) => {
   const orders = ordersByTab[activeTab] || []
-  const selectedOrder = orders[0]
   const navigate = useNavigate()
 
   const handleLogout = () => {
@@ -362,7 +176,10 @@ const ProfileDesktop = ({ openModal, onEditProfile, openRateModal, userData, ord
             <button
               key={tab}
               className={`text-left pl-2 py-2 w-full transition-all ${activeTab === tab ? 'font-bold' : ''}`}
-              onClick={() => setActiveTab(tab)}
+              onClick={() => {
+                setActiveTab(tab)
+                navigate(tabRoutes[tab])
+              }}
               style={{ height: '48px' }}
             >
               {tab}
@@ -397,82 +214,99 @@ const ProfileDesktop = ({ openModal, onEditProfile, openRateModal, userData, ord
         <div className="flex-shrink-0" style={{ width: '60px' }}></div>
         {/* Orders and Details */}
         <div className="flex flex-col flex-1 gap-6">
-          {selectedOrder ? (
+          {loading && orders.length === 0 ? (
+            <div className="avant cream-text text-lg mt-12 text-center">
+              <p className="mb-2">Loading orders...</p>
+            </div>
+          ) : orders.length > 0 ? (
             <>
-              {/* ORDER ID */}
-              <div className="avantbold cream-text text-2xl mb-2 font-bold">ORDER ID : #{selectedOrder.id}</div>
-              {selectedOrder.items.map((item, idx) => (
-                <div key={item.variant} className="flex items-center justify-between rounded-lg px-0 py-2 w-full">
-                  {/* Image and product info */}
-                  <div className="flex items-center gap-4 min-w-[320px]">
-                    <img
-                      src={item.image}
-                      alt={item.variant}
-                      className="w-25 h-25 object-cover rounded-md cursor-pointer"
-                      onClick={() => openModal(item.image)}
-                      onError={(e) => {
-                        e.target.src = 'https://via.placeholder.com/200'
-                      }}
-                    />
-                    <div>
-                      <div className="avantbold cream-text text-lg text-nowrap">{item.name}</div> {/* product name */}
-                      <div className="bebas cream-text text-lg">{item.variant}</div> {/* product type "odyssey" */}
-                      <div className="flex gap-2 items-center mt-1">
-                        {item.oldPrice && (
-                          <span
-                            className="avant text-md line-through"
-                            style={{ color: '#959595' }}
-                          >
-                            PHP {item.oldPrice.toFixed(2)}
-                          </span>
-                        )}
-                        <span className="avantbold cream-text text-lg">PHP {item.price.toFixed(2)}</span>
+              {/* Loop through all order items */}
+              {orders.map((order) => {
+                const isProductReviewed = order.items?.[0]?.product_id && reviewedProducts.has(order.items[0].product_id)
+                return (
+                  <div key={order.id} className="mb-6">
+                    {/* ORDER ID */}
+                    <div className="avantbold cream-text text-2xl mb-2 font-bold">ORDER ID : #{order.order_id}</div>
+                    {/* Display the single item */}
+                    {order.items.map((item) => (
+                      <div key={item.order_item_id} className="flex items-center justify-between rounded-lg px-0 py-2 w-full">
+                        {/* Image and product info */}
+                        <div className="flex items-center gap-4 min-w-[320px]">
+                          <img
+                            src={item.image}
+                            alt={item.variant}
+                            className="w-25 h-25 object-cover rounded-md cursor-pointer"
+                            onClick={() => openModal(item.image)}
+                            onError={(e) => {
+                              e.target.src = 'https://via.placeholder.com/200'
+                            }}
+                          />
+                          <div>
+                            <div className="avantbold cream-text text-lg text-nowrap">{item.name}</div> {/* product name */}
+                            <div className="bebas cream-text text-lg">{item.variant}</div> {/* product type "odyssey" */}
+                            <div className="flex gap-2 items-center mt-1">
+                              {item.oldPrice && (
+                                <span
+                                  className="avant text-md line-through"
+                                  style={{ color: '#959595' }}
+                                >
+                                  PHP {item.oldPrice.toFixed(2)}
+                                </span>
+                              )}
+                              <span className="avantbold cream-text text-lg">PHP {item.price.toFixed(2)}</span>
+                            </div>
+                            <div className="avantbold cream-text text-md mt-1" style={{ color: '#959595' }}>QUANTITY: {item.quantity} &nbsp; SIZE: {item.size}
+
+                            </div>
+                          </div>
+                        </div>
+                        {/* Order details and actions - now shown for each item */}
+                        <div className="flex flex-row items-center justify-between w-full ml-8">
+                          <div className="flex flex-col gap-1 ml-45 mr-12">
+                            <div className="flex gap-20"> {/* gap between order date and expected delivery */}
+                              <div>
+                                <div className="bebas cream-text text-md">ORDER DATE:</div>
+                                <div className="avant cream-text text-lg">{order.date}</div>
+                              </div>
+                              <div>
+                                <div className="bebas cream-text text-md">EXPECTED DELIVERY:</div>
+                                <div className="avant cream-text text-lg">{order.delivery}</div>
+                              </div>
+                            </div>
+                            <div className="flex gap-14 mt-2"> {/* gap between total quantity and subtotal */}
+                              <div>
+                                <div className="bebas cream-text text-md">QUANTITY:</div>
+                                <div className="avant cream-text text-lg">{order.totalQty}</div>
+                              </div>
+                              <div className='ml-8'>
+                                <div className="bebas cream-text text-md">ITEM TOTAL:</div>
+                                <div className="avant cream-text text-lg">PHP {order.subtotal.toLocaleString(undefined, {minimumFractionDigits:2})}</div>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex gap-2 mb-17">
+                            <button
+                              className="avantbold rounded border border-[#FFF7DC] cream-text px-4 py-2 cursor-pointer"
+                              onClick={() => navigate('/profile/requestreturn')}
+                            >
+                              RETURN/REFUND
+                            </button>
+                            {!isProductReviewed ? (
+                              <button className="avantbold cream-bg metallic-text px-4 py-2 rounded border border-[#FFF7DC] cursor-pointer" onClick={() => onRateItem(order)}>
+                                RATE
+                              </button>
+                            ) : (
+                              <button className="avantbold rounded border border-[#FFF7DC] cream-text px-4 py-2 cursor-not-allowed opacity-50" disabled>
+                                REVIEWED
+                              </button>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <div className="avantbold cream-text text-md mt-1" style={{ color: '#959595' }}>QUANTITY: {item.quantity} &nbsp; SIZE: {item.size}
-                      
-                      </div>
-                    </div>
+                    ))}
                   </div>
-                  {/* Order details and actions */}
-                  {idx === 0 && (
-                    <div className="flex flex-row items-center justify-between w-full ml-8">
-                      <div className="flex flex-col gap-1 ml-45 mr-12">
-                        <div className="flex gap-20"> {/* gap between order date and expected delivery */}
-                          <div>
-                            <div className="bebas cream-text text-md">ORDER DATE:</div>
-                            <div className="avant cream-text text-lg">{selectedOrder.date}</div>
-                          </div>
-                          <div>
-                            <div className="bebas cream-text text-md">EXPECTED DELIVERY:</div>
-                            <div className="avant cream-text text-lg">{selectedOrder.delivery}</div>
-                          </div>
-                        </div>
-                        <div className="flex gap-14 mt-2"> {/* gap between total quantity and subtotal */}
-                          <div>
-                            <div className="bebas cream-text text-md">TOTAL QUANTITY:</div>
-                            <div className="avant cream-text text-lg">{selectedOrder.totalQty}</div>
-                          </div>
-                          <div>
-                            <div className="bebas cream-text text-md">SUBTOTAL:</div>
-                            <div className="avant cream-text text-lg">PHP {selectedOrder.subtotal.toLocaleString(undefined, {minimumFractionDigits:2})}</div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex gap-2 mb-17">
-                        <button
-                          className="avantbold rounded border border-[#FFF7DC] cream-text px-4 py-2 cursor-pointer"
-                          onClick={() => navigate('/profile/requestreturn')}
-                        >
-                          RETURN/REFUND
-                        </button>
-                        <button className="avantbold cream-bg metallic-text px-4 py-2 rounded border border-[#FFF7DC] cursor-pointer" onClick={openRateModal}>
-                          RATE
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
+                )
+              })}
             </>
           ) : (
             <div className="avant cream-text text-lg mt-12 text-center">
@@ -488,11 +322,10 @@ const ProfileDesktop = ({ openModal, onEditProfile, openRateModal, userData, ord
   )
 }
 
-// Mobile Layout 
-const ProfileMobile = ({ openModal, onEditProfile, openRateModal, userData, ordersByTab, activeTab, setActiveTab }) => {
-  const [showSubtotal, setShowSubtotal] = useState(false)
+// Mobile Layout
+const ProfileMobile = ({ openModal, onEditProfile, openRateModal, userData, ordersByTab, activeTab, setActiveTab, loading, reviewedProducts, onRateItem }) => {
+  const [showSubtotal, setShowSubtotal] = useState({})
   const orders = ordersByTab[activeTab] || []
-  const selectedOrder = orders[0]
   const navigate = useNavigate()
 
   return (
@@ -533,66 +366,91 @@ const ProfileMobile = ({ openModal, onEditProfile, openRateModal, userData, orde
       </div>
       {/* Order Section */}
       <div className="mt-4">
-        {selectedOrder ? (
+        {loading && orders.length === 0 ? (
+          <div className="avant cream-text text-lg mt-12 text-center">
+            <p className="mb-2">Loading orders...</p>
+          </div>
+        ) : orders.length > 0 ? (
           <>
-            <div className="flex justify-between items-center mb-2">
-              <span className="avantbold cream-text text-xs">ORDER ID : #{selectedOrder.id}</span>
-              <span className="avantbold cream-text text-xs">EXPECTED DELIVERY: {selectedOrder.delivery}</span>
-            </div>
-            <div className="flex gap-4 items-start rounded-lg p-2">
-              <img
-                src={selectedOrder.items[0]?.image}
-                alt={selectedOrder.items[0]?.variant}
-                className="w-32 h-32 object-cover rounded-md cursor-pointer"
-                onClick={() => openModal(selectedOrder.items[0]?.image)}
-                onError={(e) => {
-                  e.target.src = 'https://via.placeholder.com/200'
-                }}
-              />
-              <div className="flex-1">
-                <div className="avantbold cream-text text-sm text-nowrap leading-tight">
-                  {selectedOrder.items[0]?.name}
-                </div>
-                <div className="bebas cream-text text-sm mt-1">{selectedOrder.items[0]?.variant}</div>
-                <div className="flex gap-6 mt-1">
-                  <span className="avantbold text-sm" style={{ color: '#959595' }}>QUANTITY: {selectedOrder.items[0]?.quantity}</span>
-                  <span className="avantbold text-sm" style={{ color: '#959595' }}>SIZE: {selectedOrder.items[0]?.size}</span>
-                </div>
-                <div className="flex gap-2 justify-end mt-2">
-                  {selectedOrder.items[0]?.oldPrice && (
-                    <span className="avant text-sm line-through" style={{ color: '#959595' }}>PHP {selectedOrder.items[0].oldPrice.toFixed(2)}</span>
-                  )}
-                  <span className="avantbold cream-text text-sm">PHP {selectedOrder.items[0]?.price.toFixed(2)}</span>
-                </div>
-                {/* View More button */}
-                <button
-                  className="avantbold cream-text text-sm mt-2 flex items-center gap-2 focus:outline-none"
-                  onClick={() => setShowSubtotal((prev) => !prev)}
-                  style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
-                >
-                  View More <img src={DropDown} alt="Dropdown" className={`w-3 h-3 inline-block transition-transform ${showSubtotal ? 'rotate-180' : ''}`} />
-                </button>
-                {/* Subtotal */}
-                {showSubtotal && (
-                  <div className="flex justify-end mt-2">
-                    <span className="avantbold cream-text text-md" style={{ color: '#959595' }}>Subtotal:</span>
-                    <span className="avantbold cream-text text-md ml-2">PHP {selectedOrder.subtotal.toLocaleString(undefined, {minimumFractionDigits:2})}</span>
+            {/* Loop through all order items */}
+            {orders.map((order) => {
+              const isProductReviewed = order.items?.[0]?.product_id && reviewedProducts.has(order.items[0].product_id)
+              const isExpanded = showSubtotal[order.id]
+
+              return (
+                <div key={order.id} className="mb-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="avantbold cream-text text-xs">ORDER ID : #{order.order_id}</span>
+                    <span className="avantbold cream-text text-xs">EXPECTED DELIVERY: {order.delivery}</span>
                   </div>
-                )}
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 mt-6 mb-2">
-              <button 
-                className="avantbold rounded border border-[#FFF7DC] cream-text px-4 py-3 text-sm"
-                onClick={() => navigate(`/profile/requestreturn?orderId=${selectedOrder.id}`)}
-              >
-                RETURN/REFUND
-              </button>
-              <button className="avantbold cream-bg metallic-text px-4 py-0 rounded border border-[#FFF7DC] text-sm" onClick={openRateModal}>
-                RATE
-              </button>
-            </div>
-            <div className="w-full h-[1px] bg-[#FFF7DC] mt-4" />
+                  <div className="flex gap-4 items-start rounded-lg p-2">
+                    <img
+                      src={order.items[0]?.image}
+                      alt={order.items[0]?.variant}
+                      className="w-32 h-32 object-cover rounded-md cursor-pointer"
+                      onClick={() => openModal(order.items[0]?.image)}
+                      onError={(e) => {
+                        e.target.src = 'https://via.placeholder.com/200'
+                      }}
+                    />
+                    <div className="flex-1">
+                      <div className="avantbold cream-text text-sm text-nowrap leading-tight">
+                        {order.items[0]?.name}
+                      </div>
+                      <div className="bebas cream-text text-sm mt-1">{order.items[0]?.variant}</div>
+                      <div className="flex gap-6 mt-1">
+                        <span className="avantbold text-sm" style={{ color: '#959595' }}>QUANTITY: {order.items[0]?.quantity}</span>
+                        <span className="avantbold text-sm" style={{ color: '#959595' }}>SIZE: {order.items[0]?.size}</span>
+                      </div>
+                      <div className="flex gap-2 justify-end mt-2">
+                        {order.items[0]?.oldPrice && (
+                          <span
+                            className="avant text-sm line-through"
+                            style={{ color: '#959595' }}
+                          >
+                            PHP {order.items[0].oldPrice.toFixed(2)}
+                          </span>
+                        )}
+                        <span className="avantbold cream-text text-sm">PHP {order.items[0]?.price.toFixed(2)}</span>
+                      </div>
+                      {/* View More button */}
+                      <button
+                        className="avantbold cream-text text-sm mt-2 flex items-center gap-2 focus:outline-none"
+                        onClick={() => setShowSubtotal((prev) => ({ ...prev, [order.id]: !prev[order.id] }))}
+                        style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                      >
+                        View More <img src={DropDown} alt="Dropdown" className={`w-3 h-3 inline-block transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                      </button>
+                      {/* Item Total */}
+                      {isExpanded && (
+                        <div className="flex justify-end mt-2">
+                          <span className="avantbold cream-text text-md" style={{ color: '#959595' }}>Item Total:</span>
+                          <span className="avantbold cream-text text-md ml-2">PHP {order.subtotal.toLocaleString(undefined, {minimumFractionDigits:2})}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2 mt-6 mb-2">
+                    <button
+                      className="avantbold rounded border border-[#FFF7DC] cream-text px-4 py-3 text-sm"
+                      onClick={() => navigate(`/profile/requestreturn?orderId=${order.order_id}`)}
+                    >
+                      RETURN/REFUND
+                    </button>
+                    {!isProductReviewed ? (
+                      <button className="avantbold cream-bg metallic-text px-4 py-0 rounded border border-[#FFF7DC] text-sm" onClick={() => onRateItem(order)}>
+                        RATE
+                      </button>
+                    ) : (
+                      <button className="avantbold rounded border border-[#FFF7DC] cream-text px-4 py-3 text-sm cursor-not-allowed opacity-50" disabled>
+                        REVIEWED
+                      </button>
+                    )}
+                  </div>
+                  <div className="w-full h-[1px] bg-[#FFF7DC] mt-4" />
+                </div>
+              )
+            })}
           </>
         ) : (
           <div className="avant cream-text text-lg mt-12 text-center">
@@ -612,6 +470,7 @@ const Delivered = () => {
   const [modalImg, setModalImg] = useState(null)
   const [editProfileOpen, setEditProfileOpen] = useState(false)
   const [rateModalOpen, setRateModalOpen] = useState(false)
+  const [selectedItemForReview, setSelectedItemForReview] = useState(null)
   const [activeTab, setActiveTab] = useState('DELIVERED')
   const [userData, setUserData] = useState(null)
   const [ordersByTab, setOrdersByTab] = useState({
@@ -622,6 +481,11 @@ const Delivered = () => {
     'CANCELLED': [],
   })
   const [loading, setLoading] = useState(true)
+  const [initialLoad, setInitialLoad] = useState(() => {
+    // Check sessionStorage to see if profile has been loaded before in this session
+    return !sessionStorage.getItem('profileLoaded')
+  })
+  const [reviewedProducts, setReviewedProducts] = useState(new Set())
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -643,7 +507,10 @@ const Delivered = () => {
         return
       }
 
-      setLoading(true)
+      // Only show loading skeleton on initial load
+      if (initialLoad) {
+        setLoading(true)
+      }
       try {
         // Fetch user profile
         const userResult = await userApi.fetchUserProfile(currentUser.user_id)
@@ -659,20 +526,63 @@ const Delivered = () => {
           setUserData(user)
         }
 
-        // Fetch user orders
-        const ordersResult = await orderApi.fetchOrdersByUserId(currentUser.user_id)
-        if (ordersResult.error) {
-          console.error('Error fetching orders:', ordersResult.error)
-        } else if (ordersResult.data && ordersResult.data.success) {
-          const orders = ordersResult.data.data || []
-          setOrdersByTab(groupOrdersByTab(orders))
-        } else {
-          console.error('Unexpected orders response format:', ordersResult.data)
+
+        const [ordersByUserIdResult, ordersByEmailResult] = await Promise.all([
+          orderApi.fetchOrdersByUserId(currentUser.user_id),
+          userData?.email || currentUser.email
+            ? orderApi.fetchOrdersByEmail(userData?.email || currentUser.email)
+            : Promise.resolve({ error: null, data: { success: true, data: [] } })
+        ])
+
+  
+
+        // Combine orders from both sources and remove duplicates
+        const allOrders = []
+        const orderIds = new Set()
+
+        // Add orders from user_id fetch
+        if (!ordersByUserIdResult.error && ordersByUserIdResult.data?.success) {
+          const orders = ordersByUserIdResult.data.data || []
+          orders.forEach(order => {
+            if (!orderIds.has(order.order_id)) {
+              orderIds.add(order.order_id)
+              allOrders.push(order)
+            }
+          })
+        }
+
+        // Add orders from email fetch
+        if (!ordersByEmailResult.error && ordersByEmailResult.data?.success) {
+          const orders = ordersByEmailResult.data.data || []
+          orders.forEach(order => {
+            if (!orderIds.has(order.order_id)) {
+              orderIds.add(order.order_id)
+              allOrders.push(order)
+            }
+          })
+        }
+
+   
+        if (allOrders.length > 0) {
+          // console.log('[Delivered] Order statuses:', allOrders.map(o => ({ id: o.order_id, status: o.status })))
+        }
+
+        setOrdersByTab(groupOrdersByTab(allOrders))
+
+        // Fetch user's reviews to check which products have been reviewed
+        const reviewsResult = await getMyReviews()
+        if (!reviewsResult.error && reviewsResult.data) {
+          const reviews = Array.isArray(reviewsResult.data) ? reviewsResult.data : []
+          const reviewedProductIds = new Set(reviews.map(review => review.product_id))
+          setReviewedProducts(reviewedProductIds)
         }
       } catch (error) {
         console.error('Error fetching profile data:', error)
       } finally {
         setLoading(false)
+        setInitialLoad(false)
+        // Mark that profile has been loaded in this session
+        sessionStorage.setItem('profileLoaded', 'true')
       }
     }
 
@@ -691,13 +601,29 @@ const Delivered = () => {
   const closeEditProfile = () => setEditProfileOpen(false)
   const openRateModal = () => setRateModalOpen(true)
   const closeRateModal = () => setRateModalOpen(false)
+  const handleRateItem = (order) => {
+    setSelectedItemForReview(order)
+    setRateModalOpen(true)
+  }
 
   const handleUserUpdate = (updatedUser) => {
     setUserData(updatedUser)
     localStorage.setItem('user', JSON.stringify(updatedUser))
   }
 
-  if (loading) {
+  const handleReviewSuccess = async (productId) => {
+    // Add the product to reviewed list
+    setReviewedProducts(prev => new Set([...prev, productId]))
+    // Refresh reviews from backend
+    const reviewsResult = await getMyReviews()
+    if (!reviewsResult.error && reviewsResult.data) {
+      const reviews = Array.isArray(reviewsResult.data) ? reviewsResult.data : []
+      const reviewedProductIds = new Set(reviews.map(review => review.product_id))
+      setReviewedProducts(reviewedProductIds)
+    }
+  }
+
+  if (loading && initialLoad) {
     return (
       <Layout full>
         <ProfileSkeleton />
@@ -707,23 +633,29 @@ const Delivered = () => {
 
   return (
     <Layout full>
-      <ProfileDesktop 
-        openModal={openModal} 
-        onEditProfile={openEditProfile} 
+      <ProfileDesktop
+        openModal={openModal}
+        onEditProfile={openEditProfile}
         openRateModal={openRateModal}
         userData={userData}
         ordersByTab={ordersByTab}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        loading={loading}
+        reviewedProducts={reviewedProducts}
+        onRateItem={handleRateItem}
       />
-      <ProfileMobile 
-        openModal={openModal} 
-        onEditProfile={openEditProfile} 
+      <ProfileMobile
+        openModal={openModal}
+        onEditProfile={openEditProfile}
         openRateModal={openRateModal}
         userData={userData}
         ordersByTab={ordersByTab}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        loading={loading}
+        reviewedProducts={reviewedProducts}
+        onRateItem={handleRateItem}
       />
       {modalOpen && (
         <div
@@ -744,18 +676,38 @@ const Delivered = () => {
         userData={userData}
         onUpdate={handleUserUpdate}
       />
-      {rateModalOpen && (
-        <>
-          {/* Desktop only */}
-          <div className="hidden md:block">
-            <RateProductModal open={rateModalOpen} onClose={closeRateModal} products={ordersByTab['DELIVERED'][0]?.items || []} />
-          </div>
-          {/* Mobile only */}
-          <div className="md:hidden">
-            <RateProductModalMobile open={rateModalOpen} onClose={closeRateModal} products={ordersByTab['DELIVERED'][0]?.items || []} />
-          </div>
-        </>
-      )}
+      {/* Desktop Review Modal */}
+      <div className="hidden md:block">
+        <ReviewModal
+          open={rateModalOpen}
+          onClose={closeRateModal}
+          products={selectedItemForReview?.items || []}
+          productId={selectedItemForReview?.items[0]?.product_id}
+          orderItemId={selectedItemForReview?.items[0]?.order_item_id}
+          onSuccess={() => {
+            const productId = selectedItemForReview?.items[0]?.product_id
+            if (productId) {
+              handleReviewSuccess(productId)
+            }
+          }}
+        />
+      </div>
+      {/* Mobile Review Modal */}
+      <div className="md:hidden">
+        <ReviewModalMobile
+          open={rateModalOpen}
+          onClose={closeRateModal}
+          products={selectedItemForReview?.items || []}
+          productId={selectedItemForReview?.items[0]?.product_id}
+          orderItemId={selectedItemForReview?.items[0]?.order_item_id}
+          onSuccess={() => {
+            const productId = selectedItemForReview?.items[0]?.product_id
+            if (productId) {
+              handleReviewSuccess(productId)
+            }
+          }}
+        />
+      </div>
     </Layout>
   )
 }

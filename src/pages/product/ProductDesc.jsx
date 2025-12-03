@@ -9,6 +9,7 @@ import productApi from "../../api/productApi";
 import categoryApi from "../../api/categoryApi";
 import Toast from "../../components/Toast";
 import { hasTryOnAvailable } from "../../utils/tryOnUtils";
+import { getProductReviews } from "../../api/reviewApi";
 
 import {
   TryOnBlack,
@@ -69,6 +70,7 @@ const ProductDesc = () => {
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [has3DBeenViewed, setHas3DBeenViewed] = useState(false);
   const [env3DError, setEnv3DError] = useState(false);
+  const [productReviews, setProductReviews] = useState([]);
 
   const scrollRef = useRef(null);
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
@@ -233,6 +235,30 @@ const ProductDesc = () => {
     fetchRelatedProducts();
   }, [product]);
 
+  // Fetch product reviews
+  useEffect(() => {
+    const fetchReviews = async () => {
+      if (product?.id) {
+        const result = await getProductReviews(product.id, 'APPROVED');
+        if (!result.error && result.data) {
+          const formattedReviews = result.data.map(review => ({
+            id: review.review_id,
+            name: review.show_username && review.user?.full_name
+              ? review.user.full_name
+              : 'Anonymous',
+            collection: product.collection || product.collectionName || '',
+            rating: review.rating,
+            comment: review.review_text || '',
+            images: review.images || []
+          }));
+          setProductReviews(formattedReviews);
+        }
+      }
+    };
+
+    fetchReviews();
+  }, [product?.id, product?.collection, product?.collectionName]);
+
   const generateSlug = (name, collectionName) => {
     if (!name) return "unnamed-product";
     const fullName = collectionName ? `${collectionName}-${name}` : name;
@@ -321,7 +347,7 @@ const ProductDesc = () => {
         }
         return [];
       })(),
-      reviews: productData.reviews || [],
+      reviews: [],
       sizeStocks: productData.sizeStocks || [],
       category_id: productData.category_id || null,
       collection:
@@ -330,7 +356,7 @@ const ProductDesc = () => {
     };
   };
 
-  const formattedProduct = product;
+  const formattedProduct = product ? { ...product, reviews: productReviews } : null;
 
   const getModelPathForProduct = (p) => {
     if (!p || !p.name) return null;

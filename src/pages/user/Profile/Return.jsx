@@ -170,7 +170,7 @@ const ReturnRefundDesktop = () => {
                 <div>
                   <div className="avantbold cream-text text-lg text-nowrap leading-tight">
                     {item.name}
-                    <span className="text-sm"><br/>(Elegant Pendant Jewelry)</span>
+                    {/* <span className="text-sm"><br/>(Elegant Pendant Jewelry)</span> */}
                   </div>
                   <div className="bebas cream-text text-md" style={{ color: '#959595' }}>{item.variant}</div>
                 </div>
@@ -314,7 +314,7 @@ const ReturnRefundMobile = () => {
           <img src={item.image} alt={item.variant} className="w-16 h-16 object-cover rounded-md" />
           <div className="flex-1 flex flex-col">
             <div className="avantbold cream-text text-sm leading-tight">{item.name}</div>
-            <div className="avantbold text-xs">(Elegant Pendant Jewelry)</div>
+            {/* <div className="avantbold text-xs">(Elegant Pendant Jewelry)</div> */}
             <div className="bebas text-xs mb-1" style={{ color: '#959595' }}>{item.variant}</div>
             {/* Info row */}
             <div className="flex flex-row justify-between avant cream-text text-xs w-full mt-1">

@@ -85,7 +85,7 @@ const ViewOrderDesktop = ({ order, loading, error }) => {
                   <div className="avantbold text-nowrap cream-text text-lg leading-tight">
                     {item.name}
                     <br />
-                    <span className="avantbold cream-text text-md">(Elegant Pendant Jewelry)</span>
+                    {/* <span className="avantbold cream-text text-md">(Elegant Pendant Jewelry)</span> */}
                   </div>
                   <div className="bebas cream-text text-md mt-1" style={{ color: '#959595' }}>{item.variant || 'N/A'}</div>
                 </div>
@@ -241,7 +241,7 @@ const ViewOrderMobile = ({ order, loading, error }) => {
               <div className="avantbold cream-text text-sm leading-tight">
                 {item.name}
                 <br />
-                <span className="avantbold cream-text text-xs">(Elegant Pendant Jewelry)</span>
+                {/* <span className="avantbold cream-text text-xs">(Elegant Pendant Jewelry)</span> */}
               </div>
               <div className="bebas cream-text text-xs mt-1" style={{ color: '#959595' }}>{item.variant || 'N/A'}</div>
               <div className="flex gap-2 mt-1 avant cream-text text-xs">
