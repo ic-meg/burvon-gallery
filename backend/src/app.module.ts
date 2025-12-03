@@ -12,9 +12,10 @@ import { WishlistModule } from './wishlist/wishlist.module';
 import { OrderModule } from './order/order.module';
 import { ChatModule } from './chat/chat.module';
 import { ContentModule } from './content/content.module';
+import { ReviewModule } from './review/review.module';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, UserModule, ProductModule, CategoryModule, CollectionModule, CartModule, WishlistModule, OrderModule, ChatModule, ContentModule],
+  imports: [DatabaseModule, AuthModule, UserModule, ProductModule, CategoryModule, CollectionModule, CartModule, WishlistModule, OrderModule, ChatModule, ContentModule, ReviewModule],
   controllers: [AppController],
   providers: [AppService],
 })
