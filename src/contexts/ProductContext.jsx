@@ -81,6 +81,7 @@ export const ProductProvider = ({ children }) => {
 
       if (response.error) {
         console.warn("Products API error:", response.error);
+        setError(response.error);
         setProducts([]);
       } else if (response.data) {
         let productsData = response.data;

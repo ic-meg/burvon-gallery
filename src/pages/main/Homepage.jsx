@@ -6,6 +6,7 @@ import { useCollection } from "../../contexts/CollectionContext";
 import { useProduct } from "../../contexts/ProductContext";
 import ProductCard from "../../components/ProductCard";
 import HomepageSkeleton from "../../components/HomepageSkeleton";
+import ServerDownError from "../../components/ServerDownError";
 
 import {
   NextIcon,
@@ -163,6 +164,8 @@ const Homepage = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [openIndex, setOpenIndex] = useState(null);
   const [dynamicCollections, setDynamicCollections] = useState([]);
+  const [serverDown, setServerDown] = useState(false);
+  const [serverDownRetrying, setServerDownRetrying] = useState(false);
 
   // Hero drag/swipe state
   const [isDragging, setIsDragging] = useState(false);
@@ -172,13 +175,13 @@ const Homepage = () => {
   const heroRef = useRef(null);
 
   // Homepage content from admin context
-  const { homepageContent, loading: contentLoading } = useContent();
+  const { homepageContent, loading: contentLoading, error: contentError, refreshContent } = useContent();
 
   // Collections from admin context
-  const { collections, loading: collectionsLoading, fetchAllCollections } = useCollection();
+  const { collections, loading: collectionsLoading, error: collectionsError, fetchAllCollections } = useCollection();
 
   // Products from admin context
-  const { products, loading: productsLoading, fetchAllProducts } = useProduct();
+  const { products, loading: productsLoading, error: productsError, fetchAllProducts } = useProduct();
   const [topPicksProducts, setTopPicksProducts] = useState([]);
 
   const rebelsScrollRef = useRef(null);
@@ -317,6 +320,58 @@ const Homepage = () => {
     }
   }, [products]);
 
+  // Detect server-down state when all APIs timeout
+  useEffect(() => {
+    // Only check after initial load attempt
+    if (!contentLoading && !collectionsLoading && !productsLoading && !serverDownRetrying) {
+      const hasAnyData =
+        homepageContent !== null ||
+        dynamicCollections.length > 0 ||
+        topPicksProducts.length > 0 ||
+        collections.length > 0 ||
+        products.length > 0;
+
+      const hasErrors = contentError || collectionsError || productsError;
+
+  
+      if (hasErrors && !hasAnyData && !serverDown) {
+        // Check if all errors are timeouts or network errors
+        const errors = [contentError, collectionsError, productsError].filter(Boolean);
+     
+        const allTimeouts = errors.length > 0 && errors.every(err =>
+          err.includes("timeout") || err.includes("Network error") || err.includes("Failed to fetch")
+        );
+
+        if (allTimeouts) {
+         
+          setServerDown(true);
+        }
+      } else if (hasAnyData && serverDown) {
+        // Only reset server down if we actually have data
+       
+        setServerDown(false);
+      }
+    }
+  }, [contentLoading, collectionsLoading, productsLoading, contentError, collectionsError, productsError, homepageContent, dynamicCollections, topPicksProducts, collections, products, serverDown, serverDownRetrying]);
+
+  // Handle retry when server is down
+  const handleRetry = async () => {
+    setServerDownRetrying(true);
+    setServerDown(false);
+
+    try {
+      // Re-fetch all data sources in parallel
+      await Promise.all([
+        refreshContent(),
+        fetchAllProducts(),
+        fetchAllCollections()
+      ]);
+    } catch (err) {
+      console.error("Retry failed:", err);
+    } finally {
+      setServerDownRetrying(false);
+    }
+  };
 
   useEffect(() => {
     const preloadImages = () => {
@@ -620,20 +675,29 @@ const Homepage = () => {
   // Show skeleton only on initial load when we don't have data yet
   // Don't show skeleton if we already have data (even if loading is true for refetch)
   // Check if we have any data to display
-  const hasAnyData = 
+  const hasAnyData =
     homepageContent !== null ||
     dynamicCollections.length > 0 ||
     topPicksProducts.length > 0 ||
     collections.length > 0 ||
     products.length > 0;
 
-  // Only show skeleton if we're loading AND don't have any data yet
+  // Show skeleton during initial load or retry
   const isInitialLoad = (contentLoading || collectionsLoading || productsLoading) && !hasAnyData;
 
-  if (isInitialLoad) {
+  if (isInitialLoad || serverDownRetrying) {
     return (
       <Layout full>
         <HomepageSkeleton />
+      </Layout>
+    );
+  }
+
+  // Show server down error
+  if (serverDown) {
+    return (
+      <Layout full>
+        <ServerDownError onRetry={handleRetry} retrying={serverDownRetrying} />
       </Layout>
     );
   }
@@ -809,8 +873,8 @@ const Homepage = () => {
       </section>
 
       {/* Burvons Collection Section */}
-      <section className="w-full bg-black py-14">
-        <div className="max-w-7xl mx-auto px-6">
+      <section className="w-full bg-black py-14" style={{ overflow: "visible" }}>
+        <div className="max-w-7xl mx-auto px-6" style={{ overflow: "visible" }}>
           <div className="flex justify-between items-center mb-10">
             <h2 className="font-bold bebas text-3xl lg:text-5xl tracking-wide text-[#FFF7DC]">
               BURVON’S COLLECTION
@@ -903,48 +967,53 @@ const Homepage = () => {
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 justify-center px-4 py-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 justify-center px-4 py-16" style={{ overflow: "visible" }}>
               {burvonVisibleCards().map((col) => {
                 const isHovered = burvonHoveredId === col.id;
                 return (
                   <div
                     key={col.id}
-                    onMouseEnter={() => setBurvonHoveredId(col.id)}
-                    onMouseLeave={() => setBurvonHoveredId(null)}
-                    onClick={() => navigate(col.path)}
-                    className={`shadow-lg mx-auto transition-all duration-300 cursor-pointer relative
-                ${isHovered ? "scale-105 shadow-2xl z-30" : "shadow-lg"}
-              `}
-                    style={{
-                      maxWidth: 320,
-                      boxShadow: isHovered
-                        ? "0 2px 6px rgba(255, 247, 220, 0.3)"
-                        : "0 1px 3px rgba(0,0,0,0.2)",
-                      backgroundColor: "transparent",
-                      transformOrigin: "center",
-                      transition: "transform 0.3s ease, box-shadow 0.3s ease",
-                      transform: isHovered ? "scale(1.05)" : "scale(1)",
-                      borderRadius: 0,
-                    }}
+                    className="flex justify-center items-center"
+                    style={{ overflow: "visible" }}
                   >
-                    {col.image.includes('PLACEHOLDER') ? (
-                      <div className="w-full h-[200px] bg-[#1F1F21] flex items-center justify-center p-4">
-                        <span className="text-[#FFF7DC] text-sm avant text-center leading-tight">
-                          {col.image}
-                        </span>
-                      </div>
-                    ) : (
-                      <picture className="w-full">
-                        <source src={col.webp} type="image/webp" />
-                        <img
-                          src={col.image}
-                          alt={`Burvon Collection ${col.id}`}
-                          className="w-full h-auto object-cover select-none transition-transform duration-300"
-                          draggable={false}
-                          style={{ display: "block", borderRadius: 3 }} // remove rounding on img
-                        />
-                      </picture>
-                    )}
+                    <div
+                      onMouseEnter={() => setBurvonHoveredId(col.id)}
+                      onMouseLeave={() => setBurvonHoveredId(null)}
+                      onClick={() => navigate(col.path)}
+                      className="shadow-lg transition-all duration-300 cursor-pointer relative"
+                      style={{
+                        width: "100%",
+                        maxWidth: 320,
+                        boxShadow: isHovered
+                          ? "0 2px 6px rgba(255, 247, 220, 0.3)"
+                          : "0 1px 3px rgba(0,0,0,0.2)",
+                        backgroundColor: "transparent",
+                        transformOrigin: "center",
+                        transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                        transform: isHovered ? "scale(1.05)" : "scale(1)",
+                        borderRadius: 0,
+                        zIndex: isHovered ? 30 : 1,
+                      }}
+                    >
+                      {col.image.includes('PLACEHOLDER') ? (
+                        <div className="w-full h-[200px] bg-[#1F1F21] flex items-center justify-center p-4">
+                          <span className="text-[#FFF7DC] text-sm avant text-center leading-tight">
+                            {col.image}
+                          </span>
+                        </div>
+                      ) : (
+                        <picture className="w-full block">
+                          <source src={col.webp} type="image/webp" />
+                          <img
+                            src={col.image}
+                            alt={`Burvon Collection ${col.id}`}
+                            className="object-cover select-none transition-transform duration-300"
+                            draggable={false}
+                            style={{ display: "block", borderRadius: 3, height: "370px", width: "380px" }}
+                          />
+                        </picture>
+                      )}
+                    </div>
                   </div>
                 );
               })}

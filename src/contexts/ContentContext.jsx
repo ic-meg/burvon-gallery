@@ -26,7 +26,8 @@ export const ContentProvider = ({ children }) => {
       
       if (response.error) {
         console.warn('Content API error:', response.error);
-        // Don't throw error, just set content to null
+        // Set error state so Homepage can detect server down
+        setError(response.error);
         setHomepageContent(null);
       } else if (response.data) {
         setHomepageContent(response.data);
