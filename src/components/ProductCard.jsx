@@ -138,7 +138,7 @@ export default function ProductCard({
           }`}
           style={{ height: mobileImageHeight }}
         >
-          <div className="absolute top-3 left-4 right-4 flex justify-between items-center z-10">
+          <div className="absolute top-3 left-4 right-4 flex justify-between items-center z-30">
             {hasTryOnAvailable(item.category, item.name) && (
               <button
                 type="button"
@@ -245,7 +245,7 @@ export default function ProductCard({
       onMouseLeave={onMouseLeave}
     >
       {/* Try-on and Heart Icons */}
-      <div className="w-full flex justify-between items-center px-6 pt-6 absolute top-0 left-0 z-10">
+      <div className="w-full flex justify-between items-center px-6 pt-6 absolute top-0 left-0 z-30">
         {hasTryOnAvailable(item.category, item.name) ? (
           <button
             type="button"
