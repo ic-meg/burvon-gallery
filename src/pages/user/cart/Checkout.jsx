@@ -158,10 +158,6 @@ const CheckoutDesktop = ({ onImageClick, products, subtotal, total, itemCount, f
                   {errors.phone && <p className="text-red-500 text-sm avant">{errors.phone}</p>}
                 </div>
               </div>
-              <label className="flex items-center gap-2 mt-2 avant cream-text text-sm cursor-pointer">
-                <input type="checkbox" className="accent-[#FFF7DC] w-4 h-4" />
-                Save this information for next time
-              </label>
             </form>
           </div>
           {/* Shipping Method */}
@@ -349,14 +345,9 @@ const CheckoutMobile = ({ onImageClick, products, subtotal, total, itemCount, fo
           className={`w-full px-3 py-2 rounded-md bg-transparent border avant cream-text text-xs mb-2 placeholder-avant ${
             errors.phone ? 'border-red-500' : 'border-[#FFF7DC]'
           }`}
-          placeholder="09XXXXXXXXX" 
+          placeholder="09XXXXXXXXX"
         />
         {errors.phone && <p className="text-red-500 text-xs avant">{errors.phone}</p>}
-        
-        <label className="flex items-center gap-2 mt-2 avant cream-text text-xs cursor-pointer">
-          <input type="checkbox" className="accent-[#FFF7DC] w-4 h-4" />
-          Save this information for next time
-        </label>
       </form>
     </div>
     {/* Shipping Method */}
@@ -457,22 +448,149 @@ const Checkout = () => {
 
   // Pre-fill email if user is logged in
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  
+
   useEffect(() => {
-    const currentUser = getUser();
-    if (currentUser && currentUser.email) {
-      // Check if admin user is trying to access customer page
-      if (checkAndRedirectAdmin(currentUser, navigate)) {
-        return;
+    const loadUserDataAndOrders = async () => {
+      const currentUser = getUser();
+      if (currentUser && currentUser.email) {
+        if (checkAndRedirectAdmin(currentUser, navigate)) {
+          return;
+        }
+        setIsLoggedIn(true);
+
+        // Fetch user's most recent order by email to pre-fill delivery information
+        try {
+          const apiUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, '');
+
+          const response = await fetch(`${apiUrl}/orders/email/${encodeURIComponent(currentUser.email)}`);
+
+          if (response.ok) {
+            const result = await response.json();
+            const orders = result.data || [];
+
+        
+            if (orders.length > 0) {
+              const mostRecentOrder = orders[0];
+
+            
+              // Pre-fill text fields immediately
+              setFormData(prev => ({
+                ...prev,
+                email: currentUser.email,
+                first_name: mostRecentOrder.first_name || '',
+                last_name: mostRecentOrder.last_name || '',
+                street_address: mostRecentOrder.street_address || '',
+                phone: mostRecentOrder.phone || ''
+              }));
+
+              // Step 1: Set region first
+              if (mostRecentOrder.region_code) {
+                setTimeout(() => {
+                  setFormData(prev => ({
+                    ...prev,
+                    region_code: mostRecentOrder.region_code,
+                    region_name: mostRecentOrder.region_name
+                  }));
+
+                  // Step 2: After region is set, set province (if not NCR)
+                  if (mostRecentOrder.province_code && mostRecentOrder.region_code !== '130000000') {
+                    setTimeout(() => {
+                      setFormData(prev => ({
+                        ...prev,
+                        province_code: mostRecentOrder.province_code,
+                        province_name: mostRecentOrder.province_name
+                      }));
+
+                      // Step 3: After province is set, set city
+                      if (mostRecentOrder.city_code) {
+                        setTimeout(async () => {
+                          setFormData(prev => ({
+                            ...prev,
+                            city_code: mostRecentOrder.city_code,
+                            city_name: mostRecentOrder.city_name
+                          }));
+
+                          // Step 4: Load barangays and set barangay
+                          if (mostRecentOrder.city_code) {
+                            try {
+                              const barangays = await fetchBarangays(mostRecentOrder.city_code);
+                              setAvailableBarangays(barangays);
+
+                              setTimeout(() => {
+                                setFormData(prev => ({
+                                  ...prev,
+                                  barangay_code: mostRecentOrder.barangay_code || '',
+                                  barangay_name: mostRecentOrder.barangay_name || '',
+                                  barangay: mostRecentOrder.barangay || '',
+                                  postal_code: mostRecentOrder.postal_code || ''
+                                }));
+                              }, 300);
+                            } catch (error) {
+                              console.error('Failed to load barangays:', error);
+                            }
+                          }
+                        }, 500);
+                      }
+                    }, 500);
+                  } else if (mostRecentOrder.city_code && mostRecentOrder.region_code === '130000000') {
+                    // For NCR, skip province and go directly to city
+                    setTimeout(async () => {
+                      setFormData(prev => ({
+                        ...prev,
+                        city_code: mostRecentOrder.city_code,
+                        city_name: mostRecentOrder.city_name
+                      }));
+
+                      // Load barangays and set barangay
+                      if (mostRecentOrder.city_code) {
+                        try {
+                          const barangays = await fetchBarangays(mostRecentOrder.city_code);
+                          setAvailableBarangays(barangays);
+
+                          setTimeout(() => {
+                            setFormData(prev => ({
+                              ...prev,
+                              barangay_code: mostRecentOrder.barangay_code || '',
+                              barangay_name: mostRecentOrder.barangay_name || '',
+                              barangay: mostRecentOrder.barangay || '',
+                              postal_code: mostRecentOrder.postal_code || ''
+                            }));
+                          }, 300);
+                        } catch (error) {
+                          console.error('Failed to load barangays:', error);
+                        }
+                      }
+                    }, 500);
+                  }
+                }, 500);
+              }
+
+            } else {
+          
+              setFormData(prev => ({
+                ...prev,
+                email: currentUser.email
+              }));
+            }
+          } else {
+            setFormData(prev => ({
+              ...prev,
+              email: currentUser.email
+            }));
+          }
+        } catch (error) {
+          console.error('Failed to load user orders:', error);
+          setFormData(prev => ({
+            ...prev,
+            email: currentUser.email
+          }));
+        }
+      } else {
+        setIsLoggedIn(false);
       }
-      setIsLoggedIn(true);
-      setFormData(prev => ({
-        ...prev,
-        email: currentUser.email
-      }));
-    } else {
-      setIsLoggedIn(false);
-    }
+    };
+
+    loadUserDataAndOrders();
   }, [navigate]);
 
   // Fetch postal codes when city is selected (for reference/suggestions)
@@ -554,7 +672,7 @@ const Checkout = () => {
     }
   };
 
-  // Fetch postal codes based on selected city
+
   const fetchPostalCodesForCity = () => {
     try {
       if (!formData.city_name) {
@@ -565,7 +683,6 @@ const Checkout = () => {
       let cityName = formData.city_name;
 
 
-      // Remove "City of " prefix if present (PSGC uses "City of X" but postal library uses just "X")
       const cleanCityName = cityName.replace(/^City of /i, '').trim();
 
       // List of NCR cities that need full postal code fetch
@@ -578,11 +695,9 @@ const Checkout = () => {
       let postalData = [];
 
       if (isNCRCity) {
-        // For NCR cities, fetch ALL postal codes and filter by location
 
         const allPostalCodesData = postalPH.fetchPostCodes();
 
-        // Normalize data structure - the library returns { data: Array, count: Number }
         let allPostalCodes = [];
         if (allPostalCodesData && allPostalCodesData.data && Array.isArray(allPostalCodesData.data)) {
           allPostalCodes = allPostalCodesData.data;
@@ -591,7 +706,6 @@ const Checkout = () => {
         }
 
 
-        // Filter by location field that contains the city name
         postalData = allPostalCodes.filter(entry => {
           const location = (entry?.location || '').toLowerCase();
           const municipality = (entry?.municipality || '').toLowerCase();
@@ -599,7 +713,6 @@ const Checkout = () => {
 
           const cityLower = cleanCityName.toLowerCase();
 
-          // Check if city name is in location, municipality, or region fields
           return location.includes(cityLower) ||
                  municipality.includes(cityLower) ||
                  region.includes(cityLower);
@@ -607,11 +720,9 @@ const Checkout = () => {
 
      
       } else {
-        // For non-NCR cities, use the regular municipality search
         const response = postalPH.fetchDataLists({ municipality: cleanCityName });
  
 
-        // Check if response has a 'data' property (array)
         if (response && response.data && Array.isArray(response.data)) {
           postalData = response.data;
         } else if (Array.isArray(response)) {
@@ -627,10 +738,8 @@ const Checkout = () => {
         return;
       }
 
-      // Extract unique postal codes and sort them
       const postalCodes = [...new Set(postalData.map(entry => entry?.post_code).filter(Boolean))];
 
-      // Convert to strings and sort numerically
       const sortedPostalCodes = postalCodes.map(code => String(code)).sort((a, b) => {
         return parseInt(a) - parseInt(b);
       });
@@ -658,7 +767,6 @@ const Checkout = () => {
     }
   };
 
-  // Handle region change
   const handleRegionChange = (e) => {
     const selectedCode = e.target.value;
     const selectedOption = e.target.options[e.target.selectedIndex];
@@ -689,7 +797,6 @@ const Checkout = () => {
     }
   };
 
-  // Handle province change
   const handleProvinceChange = (e) => {
     const selectedCode = e.target.value;
     const selectedOption = e.target.options[e.target.selectedIndex];
@@ -822,17 +929,16 @@ const Checkout = () => {
         const currentUser = getUser();
         const userId = currentUser?.user_id || null;
 
-        // Prepare data for PayMongo checkout session
         const isNCR = formData.region_code === '130000000';
         const paymongoData = {
           email: formData.email,
           first_name: formData.first_name,
           last_name: formData.last_name,
           street_address: formData.street_address,
-          barangay: formData.barangay_name || formData.barangay, // Use barangay_name from dropdown or text input
+          barangay: formData.barangay_name || formData.barangay, 
           city_municipality: formData.city_name,
-          province_region: isNCR ? formData.region_name : formData.province_name, // Use region name for NCR
-          region: formData.region_name, // Include region for better address data
+          province_region: isNCR ? formData.region_name : formData.province_name, 
+          region: formData.region_name,
           postal_code: formData.postal_code,
           phone: formData.phone,
           notes: formData.notes || '',
@@ -892,26 +998,26 @@ const Checkout = () => {
           return;
         }
 
-        
+
         if (checkoutSession.data && checkoutSession.data.attributes.checkout_url) {
           localStorage.removeItem('checkout_email');
           localStorage.removeItem('checkout_session_id');
           localStorage.removeItem(`payment_methods_${localStorage.getItem('checkout_session_id')}`);
-          
+
           localStorage.setItem('checkout_email', formData.email);
-          
+
           localStorage.setItem('checkout_session_id', sessionId);
-          
+
           localStorage.setItem(`payment_methods_${sessionId}`, JSON.stringify([
             'card',
             'gcash',
             'grab_pay',
             'paymaya'
           ]));
-          
+
           if (import.meta.env.DEV) {
           }
-          
+
           showToast('Redirecting to secure payment...', 'success');
 
           // Clear the cart before redirecting to payment
