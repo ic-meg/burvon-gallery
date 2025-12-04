@@ -143,7 +143,7 @@ const Header = () => {
       >
         {/* Logo */}
         <img
-          src={homepageContent?.logo_url || WhiteLogo}
+          src={homepageContent?.mobile_logo_url || homepageContent?.logo_url || WhiteLogo}
           alt="BURVON Logo"
           className="max-h-[80px] w-auto object-contain"
           onClick={() => navigate("/")}

@@ -9,6 +9,8 @@ const Homepage = ({ hasAccess = true }) => {
   const [formData, setFormData] = useState({
     logo: null,
     logoUrl: null, // Supabase URL
+    mobileLogo: null,
+    mobileLogoUrl: null, // Supabase URL for mobile
     heroImages: [null, null, null, null, null, null, null, null],
     heroImageUrls: [null, null, null, null, null, null, null, null],
     tryOnTitle: "Style It On You",
@@ -43,6 +45,7 @@ const Homepage = ({ hasAccess = true }) => {
     setUploading(true);
     const uploadResults = {
       logoUrl: formData.logoUrl,
+      mobileLogoUrl: formData.mobileLogoUrl,
       heroImageUrls: [...formData.heroImageUrls],
       tryOnImageUrl: formData.tryOnImageUrl,
     };
@@ -58,6 +61,19 @@ const Homepage = ({ hasAccess = true }) => {
           );
         } else {
           throw new Error(`Logo upload failed: ${logoResult.error}`);
+        }
+      }
+
+      // Upload mobile logo hereee
+      if (formData.mobileLogo) {
+        showToast("Uploading mobile logo...", "loading", 3000);
+        const mobileLogoResult = await storageService.uploadMobileLogo(formData.mobileLogo);
+        if (mobileLogoResult.success) {
+          uploadResults.mobileLogoUrl = storageService.getImageUrl(
+            mobileLogoResult.filePath
+          );
+        } else {
+          throw new Error(`Mobile logo upload failed: ${mobileLogoResult.error}`);
         }
       }
 
@@ -112,6 +128,7 @@ const Homepage = ({ hasAccess = true }) => {
       title: formData.tryOnTitle || null,
       description: formData.tryOnDescription || null,
       logo_url: imageUrls.logoUrl || null,
+      mobile_logo_url: imageUrls.mobileLogoUrl || null,
       hero_images: heroImagesFiltered.length > 0 ? heroImagesFiltered : null,
       promo_image: imageUrls.tryOnImageUrl || null,
     };
@@ -149,6 +166,8 @@ const Homepage = ({ hasAccess = true }) => {
         setFormData({
           logo: null,
           logoUrl: result.data.logo_url || null,
+          mobileLogo: null,
+          mobileLogoUrl: result.data.mobile_logo_url || null,
           heroImages: [null, null, null, null, null, null, null, null],
           heroImageUrls: result.data.hero_images || [
             null,
@@ -188,6 +207,7 @@ const Homepage = ({ hasAccess = true }) => {
     try {
       const hasNewImages =
         formData.logo !== null ||
+        formData.mobileLogo !== null ||
         formData.heroImages.some((img) => img !== null) ||
         formData.tryOnImage !== null;
 
@@ -230,9 +250,11 @@ const Homepage = ({ hasAccess = true }) => {
       setFormData((prev) => ({
         ...prev,
         logoUrl: imageUrls.logoUrl,
+        mobileLogoUrl: imageUrls.mobileLogoUrl,
         heroImageUrls: imageUrls.heroImageUrls,
         tryOnImageUrl: imageUrls.tryOnImageUrl,
         logo: null, // Clear file objects after successful upload
+        mobileLogo: null,
         heroImages: [null, null, null, null, null, null, null, null],
         tryOnImage: null,
       }));
@@ -291,6 +313,16 @@ const Homepage = ({ hasAccess = true }) => {
           }
         }
 
+        // Add mobile logo
+        if (currentContent.data.mobile_logo_url) {
+          const filePath = storageService.extractFilePathFromUrl(
+            currentContent.data.mobile_logo_url
+          );
+          if (filePath) {
+            imagesToDelete.push(filePath);
+          }
+        }
+
         // Add hero images
         if (currentContent.data.hero_images) {
           currentContent.data.hero_images.forEach((url) => {
@@ -319,6 +351,16 @@ const Homepage = ({ hasAccess = true }) => {
         if (formData.logoUrl) {
           const filePath = storageService.extractFilePathFromUrl(
             formData.logoUrl
+          );
+          if (filePath) {
+            imagesToDelete.push(filePath);
+          }
+        }
+
+        // Add mobile logo from formData
+        if (formData.mobileLogoUrl) {
+          const filePath = storageService.extractFilePathFromUrl(
+            formData.mobileLogoUrl
           );
           if (filePath) {
             imagesToDelete.push(filePath);
@@ -374,6 +416,8 @@ const Homepage = ({ hasAccess = true }) => {
       setFormData({
         logo: null,
         logoUrl: null,
+        mobileLogo: null,
+        mobileLogoUrl: null,
         heroImages: [null, null, null, null, null, null, null, null],
         heroImageUrls: [null, null, null, null, null, null, null, null],
         tryOnTitle: "Style It On You",
@@ -408,6 +452,7 @@ const Homepage = ({ hasAccess = true }) => {
       // Homepage-related folders
       const foldersToClean = [
         "admin/logos",
+        "admin/mobile-logos",
         "admin/hero/hero_0",
         "admin/hero/hero_1",
         "admin/hero/hero_2",
@@ -466,6 +511,21 @@ const Homepage = ({ hasAccess = true }) => {
   const handleLogoRemove = () => {
     if (!hasAccess) return;
     setFormData((prev) => ({ ...prev, logo: null, logoUrl: null }));
+    setHasUnsavedChanges(true);
+  };
+
+  const handleMobileLogoUpload = (e) => {
+    if (!hasAccess) return;
+    const file = e.target.files[0];
+    if (file) {
+      setFormData((prev) => ({ ...prev, mobileLogo: file }));
+      setHasUnsavedChanges(true);
+    }
+  };
+
+  const handleMobileLogoRemove = () => {
+    if (!hasAccess) return;
+    setFormData((prev) => ({ ...prev, mobileLogo: null, mobileLogoUrl: null }));
     setHasUnsavedChanges(true);
   };
 
@@ -560,68 +620,142 @@ const Homepage = ({ hasAccess = true }) => {
         {/* Logo Section */}
         <div className="space-y-4">
           <h2 className="text-left text-5xl bebas text-black">LOGO</h2>
-          <div className="flex items-center space-x-4">
-            {/* Make the logo box clickable */}
-            <div className="relative">
-              <label className="cursor-pointer">
-                <div className="w-48 h-24 border-2 border-dashed border-black rounded-lg flex items-center justify-center bg-white">
-                  {formData.logo ? (
-                    <img
-                      src={URL.createObjectURL(formData.logo)}
-                      alt="Logo preview"
-                      className="max-w-full max-h-full object-contain"
-                    />
-                  ) : formData.logoUrl ? (
-                    <img
-                      src={formData.logoUrl}
-                      alt="Current logo"
-                      className="max-w-full max-h-full object-contain"
-                    />
-                  ) : (
-                    <img
-                      src={AddImage}
-                      alt="Add image"
-                      className="w-8 h-8 opacity-60"
-                    />
-                  )}
-                </div>
-                <input
-                  type="file"
-                  className="hidden"
-                  accept="image/*"
-                  onChange={handleLogoUpload}
-                  disabled={!hasAccess}
-                />
-              </label>
-              {(formData.logo || formData.logoUrl) && (
-                <button
-                  onClick={handleLogoRemove}
-                  disabled={!hasAccess}
-                  title={!hasAccess ? 'You do not have permission to perform this action' : ''}
-                  className="absolute -top-2 -right-2 w-6 h-6 bg-transparent rounded-full flex items-center justify-center cursor-pointer transition-all duration-150 hover:scale-125 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <img src={Remove} alt="Remove" className="w-4 h-4" />
-                </button>
-              )}
-            </div>
 
-            {/* Align button with the box */}
-            <div className="flex flex-col justify-center h-24">
-              <label className="block">
-                <span className={`px-4 py-3 bg-black text-white rounded-lg cursor-pointer uppercase hover:bg-gray-800 transition-colors avantbold text-sm ${!hasAccess ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                  Upload New Logo
-                </span>
-                <input
-                  type="file"
-                  className="hidden"
-                  accept="image/*"
-                  onChange={handleLogoUpload}
-                  disabled={!hasAccess}
-                />
-              </label>
-              <p className="text-xs text-gray-500 avant mt-2">
-                At least 270x90 px recommended.
-              </p>
+          {/* Desktop Logo */}
+          <div>
+            <h3 className="text-left text-lg avantbold text-black mb-3">Desktop Logo</h3>
+            <div className="flex items-center space-x-4">
+              {/* Make the logo box clickable */}
+              <div className="relative">
+                <label className="cursor-pointer">
+                  <div className="w-48 h-24 border-2 border-dashed border-black rounded-lg flex items-center justify-center bg-white">
+                    {formData.logo ? (
+                      <img
+                        src={URL.createObjectURL(formData.logo)}
+                        alt="Logo preview"
+                        className="max-w-full max-h-full object-contain"
+                      />
+                    ) : formData.logoUrl ? (
+                      <img
+                        src={formData.logoUrl}
+                        alt="Current logo"
+                        className="max-w-full max-h-full object-contain"
+                      />
+                    ) : (
+                      <img
+                        src={AddImage}
+                        alt="Add image"
+                        className="w-8 h-8 opacity-60"
+                      />
+                    )}
+                  </div>
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleLogoUpload}
+                    disabled={!hasAccess}
+                  />
+                </label>
+                {(formData.logo || formData.logoUrl) && (
+                  <button
+                    onClick={handleLogoRemove}
+                    disabled={!hasAccess}
+                    title={!hasAccess ? 'You do not have permission to perform this action' : ''}
+                    className="absolute -top-2 -right-2 w-6 h-6 bg-transparent rounded-full flex items-center justify-center cursor-pointer transition-all duration-150 hover:scale-125 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <img src={Remove} alt="Remove" className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+
+              {/* Align button with the box */}
+              <div className="flex flex-col justify-center h-24">
+                <label className="block">
+                  <span className={`px-4 py-3 bg-black text-white rounded-lg cursor-pointer uppercase hover:bg-gray-800 transition-colors avantbold text-sm ${!hasAccess ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                    Upload Desktop Logo
+                  </span>
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleLogoUpload}
+                    disabled={!hasAccess}
+                  />
+                </label>
+                <p className="text-xs text-gray-500 avant mt-2">
+                  At least 270x90 px recommended.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile Logo */}
+          <div>
+            <h3 className="text-left text-lg avantbold text-black mb-3">Mobile Logo</h3>
+            <div className="flex items-center space-x-4">
+              {/* Make the mobile logo box clickable */}
+              <div className="relative">
+                <label className="cursor-pointer">
+                  <div className="w-48 h-24 border-2 border-dashed border-black rounded-lg flex items-center justify-center bg-white">
+                    {formData.mobileLogo ? (
+                      <img
+                        src={URL.createObjectURL(formData.mobileLogo)}
+                        alt="Mobile logo preview"
+                        className="max-w-full max-h-full object-contain"
+                      />
+                    ) : formData.mobileLogoUrl ? (
+                      <img
+                        src={formData.mobileLogoUrl}
+                        alt="Current mobile logo"
+                        className="max-w-full max-h-full object-contain"
+                      />
+                    ) : (
+                      <img
+                        src={AddImage}
+                        alt="Add image"
+                        className="w-8 h-8 opacity-60"
+                      />
+                    )}
+                  </div>
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleMobileLogoUpload}
+                    disabled={!hasAccess}
+                  />
+                </label>
+                {(formData.mobileLogo || formData.mobileLogoUrl) && (
+                  <button
+                    onClick={handleMobileLogoRemove}
+                    disabled={!hasAccess}
+                    title={!hasAccess ? 'You do not have permission to perform this action' : ''}
+                    className="absolute -top-2 -right-2 w-6 h-6 bg-transparent rounded-full flex items-center justify-center cursor-pointer transition-all duration-150 hover:scale-125 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <img src={Remove} alt="Remove" className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+
+              {/* Align button with the box */}
+              <div className="flex flex-col justify-center h-24">
+                <label className="block">
+                  <span className={`px-4 py-3 bg-black text-white rounded-lg cursor-pointer uppercase hover:bg-gray-800 transition-colors avantbold text-sm ${!hasAccess ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                    Upload Mobile Logo
+                  </span>
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleMobileLogoUpload}
+                    disabled={!hasAccess}
+                  />
+                </label>
+                <p className="text-xs text-gray-500 avant mt-2">
+                  Optimized for mobile display.
+                </p>
+              </div>
             </div>
           </div>
         </div>

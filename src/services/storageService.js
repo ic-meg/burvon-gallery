@@ -15,6 +15,12 @@ class StorageService {
     return await uploadImage(file, filePath)
   }
 
+  // Upload mobile logo image
+  async uploadMobileLogo(file) {
+    const filePath = this.generateFilePath(file, 'mobile-logos')
+    return await uploadImage(file, filePath)
+  }
+
   // Upload hero image
   async uploadHeroImage(file, index) {
     const filePath = this.generateFilePath(file, `hero/hero_${index}`)
