@@ -41,11 +41,11 @@ const generateImagePath = (category, productName) => {
 const fingers = ["Thumb", "Index", "Middle", "Ring", "Pinky"];
 
 const fingerHandMap = {
-  THUMB: ringThumb,
-  INDEX: ringIndex,
-  MIDDLE: ringMiddle,
-  RING: ringRing,
-  PINKY: ringPinky,
+  Thumb: ringThumb,
+  Index: ringIndex,
+  Middle: ringMiddle,
+  Ring: ringRing,
+  Pinky: ringPinky,
 };
 
 // Desktop Layout
@@ -112,8 +112,8 @@ const TryOnDesktop = ({
                         onClick={() => {
                           setSelectedCategory(cat.key);
                           setSelectedProductIdx(0);
-                          // Set default finger to MIDDLE when rings category is selected
-                          setSelectedFinger(cat.key === "rings" ? "MIDDLE" : null);
+                          // Set default finger to Middle when rings category is selected
+                          setSelectedFinger(cat.key === "rings" ? "Middle" : null);
                         }}
                         onMouseEnter={() => setHoveredCategory(cat.key)}
                         onMouseLeave={() => setHoveredCategory(null)}
@@ -382,8 +382,8 @@ const TryOnMobile = ({
               onClick={() => {
                 setSelectedCategory(cat.key);
                 setSelectedProductIdx(0);
-                // Set default finger to MIDDLE when rings category is selected
-                setSelectedFinger(cat.key === "rings" ? "MIDDLE" : null);
+                // Set default finger to Middle when rings category is selected
+                setSelectedFinger(cat.key === "rings" ? "Middle" : null);
               }}
               onMouseEnter={() => setHoveredCategory(cat.key)}
               onMouseLeave={() => setHoveredCategory(null)}
@@ -538,7 +538,7 @@ const TryOnMobile = ({
             return (
               <div
                 key={prod.name}
-                className="flex flex-col items-center transition-all duration-300 absolute"
+                className="flex flex-col items-center transition-all duration-300 absolute mb-5"
                 style={{
                   transform: `translateX(${translateX}px) scale(${scale})`,
                   opacity: opacity,
@@ -585,15 +585,15 @@ const TryOnMobile = ({
 // Helper function to position ring on hand based on selected finger
 const getRingPosition = (finger) => {
   switch (finger) {
-    case "THUMB":
+    case "Thumb":
       return "translate(5px, 10px) scale(0.8)";
-    case "INDEX":
+    case "Index":
       return "translate(-2px, 15px) scale(0.9)";
-    case "MIDDLE":
+    case "Middle":
       return "translate(-8px, 18px) scale(0.9)";
-    case "RING":
+    case "Ring":
       return "translate(-14px, 15px) scale(0.9)";
-    case "PINKY":
+    case "Pinky":
       return "translate(-20px, 10px) scale(0.8)";
     default:
       return "translate(0px, 15px) scale(0.9)";
@@ -633,7 +633,7 @@ const TryOn = () => {
   
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [selectedProductIdx, setSelectedProductIdx] = useState(safeProductIdx);
-  const [selectedFinger, setSelectedFinger] = useState(initialCategory === "rings" ? "MIDDLE" : null);
+  const [selectedFinger, setSelectedFinger] = useState(initialCategory === "rings" ? "Middle" : null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [photo, setPhoto] = useState(null);
   const initialImagePath = products[initialCategory] && products[initialCategory][safeProductIdx]
@@ -826,7 +826,12 @@ const TryOn = () => {
         }
 
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { width: 640, height: 480 },
+          video: {
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+            facingMode: "user",
+            frameRate: { ideal: 30, max: 30 }
+          },
           audio: false,
         });
 
@@ -999,8 +1004,9 @@ const TryOn = () => {
       // Start MediaPipe Camera if not already started
       if (videoRef.current && !cameraRef.current) {
         // Set frame rate based on device type
-        // Android: 33ms = 30fps (faster), iOS: 33ms = 30fps, Desktop: 33ms = ~30fps
-        const frameInterval = isAndroid ? 33 : (isMobileDevice ? 33 : 33);
+        // Mobile (Android/iOS): 67ms = 15fps for much better performance and reduced lag
+        // Desktop: 33ms = 30fps for smoother tracking
+        const frameInterval = isMobileDevice ? 67 : 33;
 
         const camera = new Camera(videoRef.current, {
           onFrame: async () => {
@@ -1066,8 +1072,8 @@ const TryOn = () => {
               }
             }
           },
-          width: 640,
-          height: 480,
+          width: 1920,
+          height: 1080,
         });
         camera.start();
         cameraRef.current = camera;
@@ -1155,9 +1161,8 @@ const TryOn = () => {
               const currentNeedsFaceMesh = currentCategory === "necklace" || currentCategory === "earrings";
               const currentNeedsHands = currentCategory === "rings" || currentCategory === "bracelet";
 
-              // Set frame rate based on device type
-              // Android: 33ms = 30fps (faster), iOS: 33ms = 30fps, Desktop: 33ms = ~30fps
-              const frameInterval = isAndroid ? 33 : (isMobileDevice ? 33 : 33);
+              // Same frame interval -33 ms = 30 fps for mobile and desktop
+              const frameInterval = 33;
 
               const camera = new Camera(videoRef.current, {
                 onFrame: async () => {
@@ -1196,8 +1201,8 @@ const TryOn = () => {
                     }
                   }
                 },
-                width: 640,
-                height: 480,
+                width: 1920,
+                height: 1080,
               });
               camera.start();
               cameraRef.current = camera;
