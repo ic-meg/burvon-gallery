@@ -113,111 +113,76 @@ export const useMobileKeyboardHandler = ({
       }
     };
 
-    // iOS: Fallback using window resize and scrollIntoView
     const handleIOSKeyboard = () => {
       if (!isIOS || !containerRef.current) return;
 
-      const currentHeight = window.innerHeight;
-      const heightDiff = initialWindowHeightRef.current - currentHeight;
-      const isKeyboardVisible = heightDiff > keyboardThreshold;
+      //  use visualViewport first
+      if (window.visualViewport) {
+        const viewportHeight = window.visualViewport.height;
+        const viewportTop = window.visualViewport.offsetTop;
+        const windowHeight = window.innerHeight;
+        const keyboardHeight = windowHeight - viewportHeight;
 
-      if (isKeyboardVisible && !keyboardOpenRef.current) {
-        keyboardOpenRef.current = true;
-        // Adjust container height to fit above keyboard
-        containerRef.current.style.height = `${currentHeight}px`;
-        containerRef.current.style.top = '0';
-        containerRef.current.style.position = 'fixed';
-        containerRef.current.style.left = '0';
-        containerRef.current.style.right = '0';
-        containerRef.current.style.width = '100%';
-        
-        // Scroll input into view - iOS needs aggressive approach
-        const activeInput = inputRef?.current || alternativeInputRef?.current;
-        const inputContainer = inputContainerRef?.current || (activeInput?.closest('.p-4') || activeInput?.parentElement);
-        
-        if (activeInput) {
-          
-          // Multiple attempts with different strategies for iOS
-          const scrollInputIntoView = () => {
-            // Strategy 1: Scroll the input element itself
-            activeInput.scrollIntoView({ 
-              behavior: 'smooth', 
-              block: 'end',
-              inline: 'nearest'
-            });
-            
-            // Strategy 2: Scroll scroll container to bottom
-            if (scrollContainerRef?.current) {
+        if (keyboardHeight > keyboardThreshold) {
+          keyboardOpenRef.current = true;
+          // Keyboard is open - position container to fill visible viewport
+          containerRef.current.style.height = `${viewportHeight}px`;
+          containerRef.current.style.top = `${viewportTop}px`;
+          containerRef.current.style.bottom = 'auto';
+          containerRef.current.style.position = 'fixed';
+          containerRef.current.style.left = '0';
+          containerRef.current.style.right = '0';
+          containerRef.current.style.width = '100%';
+
+          // Scroll to bottom to show input
+          if (scrollContainerRef?.current) {
+            setTimeout(() => {
               scrollContainerRef.current.scrollTo({
                 top: scrollContainerRef.current.scrollHeight,
                 behavior: 'smooth'
               });
-            }
-            
-            // Strategy 3: Scroll window to show input container
-            if (inputContainer) {
-              const inputRect = inputContainer.getBoundingClientRect();
-              const viewportHeight = window.innerHeight;
-              const inputBottom = inputRect.bottom;
-              
-              // If input is below viewport, scroll window
-              if (inputBottom > viewportHeight - 20) {
-                const scrollAmount = inputBottom - viewportHeight + 20;
-                window.scrollTo({
-                  top: window.scrollY + scrollAmount,
-                  behavior: 'smooth'
-                });
-              }
-            }
-            
-            // Strategy 4: Force scroll container to show input
-            if (scrollContainerRef?.current && inputContainer) {
-              const containerRect = scrollContainerRef.current.getBoundingClientRect();
-              const inputRect = inputContainer.getBoundingClientRect();
-              
-              // If input is below visible area of scroll container
-              if (inputRect.bottom > containerRect.bottom - 20) {
-                const scrollAmount = inputRect.bottom - containerRect.bottom + 20;
-                scrollContainerRef.current.scrollTop += scrollAmount;
-              }
-            }
-          };
-          
-          // Immediate attempt
-          setTimeout(scrollInputIntoView, 100);
-          
-          // Second attempt after keyboard animation
-          setTimeout(scrollInputIntoView, 400);
-          
-          // Third attempt for slower devices
-          setTimeout(scrollInputIntoView, 700);
-          
-          // Fourth attempt - most aggressive
-          setTimeout(() => {
-            activeInput.scrollIntoView({ 
-              behavior: 'auto', 
-              block: 'center'
-            });
-            
-            if (scrollContainerRef?.current) {
-              scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
-            }
-          }, 1000);
+            }, 150);
+          }
+        } else {
+          keyboardOpenRef.current = false;
+          // Keyboard is closed - use full screen
+          containerRef.current.style.height = `${initialWindowHeightRef.current}px`;
+          containerRef.current.style.top = '0';
+          containerRef.current.style.bottom = 'auto';
         }
-      } else if (!isKeyboardVisible && keyboardOpenRef.current) {
-        keyboardOpenRef.current = false;
-        containerRef.current.style.height = `${initialWindowHeightRef.current}px`;
-        containerRef.current.style.top = '0';
-        containerRef.current.style.left = '';
-        containerRef.current.style.right = '';
-        containerRef.current.style.width = '';
+      } else {
+        const currentHeight = window.innerHeight;
+        const heightDiff = initialWindowHeightRef.current - currentHeight;
+        const isKeyboardVisible = heightDiff > keyboardThreshold;
+
+        if (isKeyboardVisible && !keyboardOpenRef.current) {
+          keyboardOpenRef.current = true;
+          containerRef.current.style.height = `${currentHeight}px`;
+          containerRef.current.style.top = '0';
+          containerRef.current.style.position = 'fixed';
+          containerRef.current.style.left = '0';
+          containerRef.current.style.right = '0';
+          containerRef.current.style.width = '100%';
+
+          if (scrollContainerRef?.current) {
+            setTimeout(() => {
+              scrollContainerRef.current.scrollTo({
+                top: scrollContainerRef.current.scrollHeight,
+                behavior: 'smooth'
+              });
+            }, 150);
+          }
+        } else if (!isKeyboardVisible && keyboardOpenRef.current) {
+          keyboardOpenRef.current = false;
+          containerRef.current.style.height = `${initialWindowHeightRef.current}px`;
+          containerRef.current.style.top = '0';
+        }
       }
     };
 
     const handleWindowResize = () => {
       // iOS fallback: detect keyboard via window height changes
       if (isIOS) {
-        // Debounce to avoid too many calls
         clearTimeout(window._iosKeyboardTimeout);
         window._iosKeyboardTimeout = setTimeout(() => {
           handleIOSKeyboard();
@@ -228,32 +193,25 @@ export const useMobileKeyboardHandler = ({
     const handleInputFocus = (e) => {
       const targetInput = inputRef?.current || alternativeInputRef?.current;
       if (e.target === targetInput) {
-        // Store initial height
         initialWindowHeightRef.current = window.innerHeight;
-        
+
         if (isIOS) {
-          // iOS: More aggressive approach - check multiple times
           const checkAndAdjust = () => {
             handleIOSKeyboard();
           };
-          
-          // Immediate check
+
           setTimeout(checkAndAdjust, 50);
-          
-          // Check after keyboard starts appearing
+
           setTimeout(checkAndAdjust, 200);
-          
-          // Check after keyboard should be fully visible
+
           setTimeout(checkAndAdjust, 500);
-          
-          // Final check
+
           setTimeout(checkAndAdjust, 800);
         } else {
           // Android: Use visualViewport
           setTimeout(() => {
             handleViewportResize();
-            
-            // Additional scroll to ensure input is visible
+
             if (scrollContainerRef?.current) {
               setTimeout(() => {
                 scrollContainerRef.current.scrollTo({
@@ -296,22 +254,24 @@ export const useMobileKeyboardHandler = ({
       }, 200);
     };
 
-    // Set initial state - don't adjust on mount, only when keyboard actually opens
-    // The container should start at full height when chat opens
     initialWindowHeightRef.current = window.innerHeight;
     
-    // Don't call handleIOSKeyboard or handleViewportResize on initial mount
-    // They will be called when keyboard actually opens (via focus/resize events)
+    
 
-    // Add event listeners
     if (window.visualViewport && !isIOS) {
       // Android: Use visualViewport API
       window.visualViewport.addEventListener('resize', handleViewportResize);
       window.visualViewport.addEventListener('scroll', handleViewportResize);
     }
-    
-    // iOS: Use window resize as fallback
+
+    // iOS: Use visualViewport 
     if (isIOS) {
+      if (window.visualViewport) {
+        // Modern iOS with visualViewport support
+        window.visualViewport.addEventListener('resize', handleIOSKeyboard);
+        window.visualViewport.addEventListener('scroll', handleIOSKeyboard);
+      }
+      // Also listen to window resize as backup
       window.addEventListener('resize', handleWindowResize);
     }
     
@@ -332,8 +292,12 @@ export const useMobileKeyboardHandler = ({
         window.visualViewport.removeEventListener('resize', handleViewportResize);
         window.visualViewport.removeEventListener('scroll', handleViewportResize);
       }
-      
+
       if (isIOS) {
+        if (window.visualViewport) {
+          window.visualViewport.removeEventListener('resize', handleIOSKeyboard);
+          window.visualViewport.removeEventListener('scroll', handleIOSKeyboard);
+        }
         window.removeEventListener('resize', handleWindowResize);
         if (window._iosKeyboardTimeout) {
           clearTimeout(window._iosKeyboardTimeout);
