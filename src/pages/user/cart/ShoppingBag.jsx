@@ -208,22 +208,22 @@ const ShoppingBagMobile = ({
                     }}
                   />
                   {isItemSelected(item.id) && (
-                    <div 
-                      className="absolute top-0 left-0 w-4 h-4 flex items-center justify-center z-10"
+                    <div
+                      className="absolute inset-0 flex items-center justify-center z-10"
                       style={{ pointerEvents: 'none' }}
                     >
-                      <svg 
-                        width="8" 
-                        height="8" 
-                        viewBox="0 0 8 8" 
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 1.5 12 12"
                         fill="none"
                         className="text-[#181818]"
                       >
-                        <path 
-                          d="M2 5L4 7L6 3" 
-                          stroke="currentColor" 
-                          strokeWidth="1.5" 
-                          strokeLinecap="round" 
+                        <path
+                          d="M3 6L5 8L9 4"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
                           strokeLinejoin="round"
                         />
                       </svg>
@@ -505,22 +505,22 @@ const ShoppingBag = () => {
                     }}
                   />
                   {(cart.length > 0 && cart.every(item => isItemSelected(item.id))) && (
-                    <div 
-                      className="absolute top-0 left-0 w-4 h-4 flex items-center justify-center z-10"
+                    <div
+                      className="absolute inset-0 flex items-center justify-center z-10"
                       style={{ pointerEvents: 'none' }}
                     >
-                      <svg 
-                        width="8" 
-                        height="8" 
-                        viewBox="0 -3 8 8" 
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 1.5 12 12"
                         fill="none"
                         className="text-[#181818]"
                       >
-                        <path 
-                          d="M2 6L4 5L6 4" 
-                          stroke="currentColor" 
-                          strokeWidth="1.5" 
-                          strokeLinecap="round" 
+                        <path
+                          d="M3 6L5 8L9 4"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
                           strokeLinejoin="round"
                         />
                       </svg>
@@ -555,22 +555,22 @@ const ShoppingBag = () => {
                       }}
                     />
                     {isItemSelected(item.id) && (
-                      <div 
-                        className="absolute top-0 left-0 w-4 h-4 flex items-center justify-center z-10"
+                      <div
+                        className="absolute inset-0 flex items-center justify-center z-10"
                         style={{ pointerEvents: 'none' }}
                       >
-                        <svg 
-                          width="8" 
-                          height="8" 
-                          viewBox="0 0 8 8" 
+                        <svg
+                          width="12"
+                          height="12"
+                          viewBox="0 3 12 12"
                           fill="none"
                           className="text-[#181818]"
                         >
-                          <path 
-                            d="M2 5L4 7L6 3" 
-                            stroke="currentColor" 
-                            strokeWidth="1.5" 
-                            strokeLinecap="round" 
+                          <path
+                            d="M3 6L5 8L9 4"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
                             strokeLinejoin="round"
                           />
                         </svg>

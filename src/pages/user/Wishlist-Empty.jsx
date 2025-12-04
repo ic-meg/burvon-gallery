@@ -141,7 +141,7 @@ const WishlistEmpty = () => {
           </Link>
         </div>
         {/* You May Also Like text */}
-        <div className="bg-[#181818] px-4 pb-8">
+        {/* <div className="bg-[#181818] px-4 pb-8">
           <h2 className="bebas text-[#fff7dc] text-3xl mb-4">YOU MAY ALSO LIKE</h2>
           <div className="flex overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-mandatory flex-nowrap pb-2" style={{ scrollBehavior: "smooth" }}>
             {recommendedProducts.map(product => (
@@ -155,7 +155,6 @@ const WishlistEmpty = () => {
                 }}
                 onClick={() => navigate(`/product/${product.type}`)}
               >
-                {/* Try-on and Heart Icons */}
                 <div className="absolute top-4 left-2 right-2 flex justify-between items-center z-10">
                   <img
                     src={TryOnIcon}
@@ -170,7 +169,6 @@ const WishlistEmpty = () => {
                     draggable={false}
                   />
                 </div>
-                {/* Product Image */}
                 <div className="relative w-full min-h-[150px] sm:min-h-[200px] flex items-center justify-center overflow-hidden bg-black">
                   <picture className="w-full h-full">
                     {product.webpImages[0] && (
@@ -185,7 +183,6 @@ const WishlistEmpty = () => {
                     />
                   </picture>
                 </div>
-                {/* Info Section */}
                 <div
                   className="w-full py-3 px-2 text-center flex flex-col items-center rounded-none"
                   style={{
@@ -210,7 +207,7 @@ const WishlistEmpty = () => {
               </div>
             ))}
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* Desktop Layout */}
@@ -252,7 +249,7 @@ const WishlistEmpty = () => {
           </Link>
         </div>
         {/* You May Also Like text */}
-        <div className="bg-[#181818] px-12 pb-16">
+        {/* <div className="bg-[#181818] px-12 pb-16">
           <h2 className="bebas text-[#fff7dc] text-5xl mb-8">YOU MAY ALSO LIKE</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-10">
             {recommendedProducts.map(product => {
@@ -275,7 +272,6 @@ const WishlistEmpty = () => {
                     transition: "height 0.3s ease, transform 0.3s ease",
                   }}
                 >
-                  {/* Try-on and Heart Icons */}
                   <div className="w-full flex justify-between items-center px-6 pt-6 absolute top-0 left-0 z-10">
                     <img
                       src={TryOnIcon}
@@ -290,7 +286,6 @@ const WishlistEmpty = () => {
                       draggable={false}
                     />
                   </div>
-                  {/* product image */}
                   <div className="relative w-full h-[300px] flex items-center justify-center overflow-hidden bg-black">
                     <picture className="w-full h-full">
                       {product.webpImages[currentImageIndex] && (
@@ -331,7 +326,6 @@ const WishlistEmpty = () => {
                       </>
                     )}
                   </div>
-                  {/* names + price + add to bag button */}
                   <div
                     style={{
                       background: "linear-gradient(90deg, #000000 46%, #666666 100%)",
@@ -350,7 +344,6 @@ const WishlistEmpty = () => {
                       </span>
                       <span className="text-[#FFF7DC]">PHP{product.priceNew.toFixed(2)}</span>
                     </div>
-                    {/* Add to Bag Button */}
                     {isHovered && (
                       <button
                         style={{
@@ -384,7 +377,7 @@ const WishlistEmpty = () => {
               );
             })}
           </div>
-        </div>
+        </div> */}
       </div>
     </Layout>
   );

@@ -163,9 +163,9 @@ const ShoppingBagEmpty = () => {
       </div>
 
     
-      <div className="bg-[#181818] px-4 md:px-12 pb-16 pt-15">
+      {/* <div className="bg-[#181818] px-4 md:px-12 pb-16 pt-15"> */}
         {/* Desktop Layout */}
-        <div className="hidden md:block">
+        {/* <div className="hidden md:block">
           <h2 className="bebas text-[#fff7dc] text-5xl mb-8">YOU MAY ALSO LIKE</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-10">
             {recommendedProducts.map(product => {
@@ -188,7 +188,6 @@ const ShoppingBagEmpty = () => {
                     transition: "height 0.3s ease, transform 0.3s ease",
                   }}
                 >
-                  {/* Try-on and Heart Icons */}
                   <div className="w-full flex justify-between items-center px-6 pt-6 absolute top-0 left-0 z-10">
                     <img
                       src={TryOnIcon}
@@ -203,7 +202,6 @@ const ShoppingBagEmpty = () => {
                       draggable={false}
                     />
                   </div>
-                  {/* product image */}
                   <div className="relative w-full h-[300px] flex items-center justify-center overflow-hidden bg-black">
                     <picture className="w-full h-full">
                       {product.webpImages[currentImageIndex] && (
@@ -244,7 +242,6 @@ const ShoppingBagEmpty = () => {
                       </>
                     )}
                   </div>
-                  {/* names + price + add to bag button */}
                   <div
                     style={{
                       background: "linear-gradient(90deg, #000000 46%, #666666 100%)",
@@ -263,7 +260,6 @@ const ShoppingBagEmpty = () => {
                       </span>
                       <span className="text-[#FFF7DC]">PHP{product.priceNew.toFixed(2)}</span>
                     </div>
-                    {/* Add to Bag Button */}
                     {isHovered && (
                       <button
                         style={{
@@ -297,10 +293,10 @@ const ShoppingBagEmpty = () => {
               );
             })}
           </div>
-        </div>
+        </div> */}
 
         {/* Mobile Layout */}
-        <div className="md:hidden">
+        {/* <div className="md:hidden">
           <h2 className="bebas text-[#fff7dc] text-3xl mb-4">YOU MAY ALSO LIKE</h2>
           <div className="flex overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-mandatory flex-nowrap pb-2" style={{ scrollBehavior: "smooth" }}>
             {recommendedProducts.map(product => (
@@ -366,7 +362,7 @@ const ShoppingBagEmpty = () => {
             ))}
           </div>
         </div>
-      </div>
+      </div> */}
     </Layout>
   );
 }
