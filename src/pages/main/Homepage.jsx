@@ -704,10 +704,10 @@ const Homepage = () => {
 
       {/* Rebels Top Picks */}
       <section className="bg-[#1f1f21] py-14">
-        <div className="max-w-7xl mx-auto px-5 relative">
+        <div className="max-w-7xl mx-auto px-6 relative">
           <div className="flex justify-between items-center pb-8">
             <h2 className="font-bold bebas text-3xl lg:text-5xl tracking-wide text-[#FFF7DC]">
-              REBEL’S TOP PICKS
+              REBEL'S TOP PICKS
             </h2>
             {!isMobile ? (
               <div className="flex space-x-4">
@@ -753,19 +753,20 @@ const Homepage = () => {
     {isMobile ? (
       <div
         ref={rebelsScrollRef}
-        className="flex overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-mandatory flex-nowrap md:grid md:grid-cols-4 md:gap-5 md:overflow-visible"
+        className="flex overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-mandatory flex-nowrap md:grid md:grid-cols-4 md:gap-5 md:overflow-visible -mx-5 px-6"
         style={{
           scrollBehavior: "smooth",
           WebkitOverflowScrolling: "touch",
         }}
       >
-        {getDynamicTopPicks().map((item) => (
+        {getDynamicTopPicks().map((item, index) => (
           <div
             key={item.id}
             className="flex-shrink-0"
             style={{
               width: "65vw",
-              margin: "0 8px",
+              marginLeft: index === 0 ? "0" : "8px",
+              marginRight: "8px",
               scrollSnapAlign: "center",
             }}
           >
@@ -779,7 +780,7 @@ const Homepage = () => {
       </div>
     ) : (
       /* Desktop Grid */
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
         {rebelsVisibleCards().map((item) => {
           const isHovered = hoveredCardId === item.id;
           return (
@@ -902,7 +903,7 @@ const Homepage = () => {
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 justify-center">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 justify-center px-4 py-4">
               {burvonVisibleCards().map((col) => {
                 const isHovered = burvonHoveredId === col.id;
                 return (
@@ -911,7 +912,7 @@ const Homepage = () => {
                     onMouseEnter={() => setBurvonHoveredId(col.id)}
                     onMouseLeave={() => setBurvonHoveredId(null)}
                     onClick={() => navigate(col.path)}
-                    className={`overflow-hidden shadow-lg mx-auto transition-all duration-300 cursor-pointer
+                    className={`shadow-lg mx-auto transition-all duration-300 cursor-pointer relative
                 ${isHovered ? "scale-105 shadow-2xl z-30" : "shadow-lg"}
               `}
                     style={{
@@ -922,8 +923,8 @@ const Homepage = () => {
                       backgroundColor: "transparent",
                       transformOrigin: "center",
                       transition: "transform 0.3s ease, box-shadow 0.3s ease",
-                      transform: isHovered ? "scale(1.03)" : "scale(1)",
-                      borderRadius: 0, //  remove border radius
+                      transform: isHovered ? "scale(1.05)" : "scale(1)",
+                      borderRadius: 0,
                     }}
                   >
                     {col.image.includes('PLACEHOLDER') ? (
