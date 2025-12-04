@@ -22,7 +22,7 @@ const tabs = [
 ]
 
 const tabRoutes = {
-  'TO SHIP': '/profile',
+  'TO SHIP': '/profile/inprogress',
   'TO RECEIVED': '/profile/inprogress',
   'DELIVERED': '/profile/delivered',
   'RETURN/REFUND': '/profile/refund',
@@ -49,8 +49,7 @@ const EditProfileModal = ({ open, onClose, userData, onUpdate }) => {
     setLoading(true)
     try {
       const result = await userApi.updateUserProfile(userData.user_id, {
-        name: name.trim(),
-        email: email.trim(),
+        full_name: name.trim(),
       })
 
       if (result.error) {
@@ -58,7 +57,7 @@ const EditProfileModal = ({ open, onClose, userData, onUpdate }) => {
       } else {
         setToast({ show: true, message: 'Profile updated successfully!', type: 'success' })
         if (onUpdate) {
-          onUpdate({ ...userData, name: name.trim(), email: email.trim() })
+          onUpdate({ ...userData, name: name.trim(), full_name: name.trim() })
         }
         setTimeout(() => {
           onClose()
@@ -99,9 +98,9 @@ const EditProfileModal = ({ open, onClose, userData, onUpdate }) => {
             <label className="bebas cream-text text-md mb-1 block">EMAIL:</label>
             <input
               type="email"
-              className="w-full px-4 py-3 rounded-lg bg-transparent border-1 border-[#FFF7DC] avant cream-text text-md mb-4"
+              className="w-full px-4 py-3 rounded-lg bg-transparent border-1 border-[#FFF7DC] avant cream-text text-md mb-4 opacity-60 cursor-not-allowed"
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              disabled
             />
           </div>
           <div className="flex justify-end gap-2 mt-1">
@@ -139,6 +138,16 @@ const ProfileDesktop = ({ openModal, onEditProfile, userData, ordersByTab, activ
   const navigate = useNavigate()
   const [currentPage, setCurrentPage] = useState(1)
   const ordersPerPage = 3
+
+  // Helper function to extract clean order ID
+  const getOrderId = (order) => {
+    if (!order) return null
+    const orderId = order.order_id || order.id
+    if (typeof orderId === 'string' && orderId.includes('-')) {
+      return orderId.split('-')[0]
+    }
+    return orderId
+  }
 
   // Reset to page 1 when activeTab changes
   useEffect(() => {
@@ -192,7 +201,11 @@ const ProfileDesktop = ({ openModal, onEditProfile, userData, ordersByTab, activ
               className={`text-left pl-2 py-2 w-full transition-all ${activeTab === tab ? 'font-bold' : ''}`}
               onClick={() => {
                 setActiveTab(tab)
-                navigate(tabRoutes[tab])
+                if (tab === 'TO SHIP' || tab === 'TO RECEIVED') {
+                  navigate(`${tabRoutes[tab]}?tab=${encodeURIComponent(tab)}`)
+                } else {
+                  navigate(tabRoutes[tab])
+                }
               }}
               style={{ height: '48px' }}
             >
@@ -230,7 +243,7 @@ const ProfileDesktop = ({ openModal, onEditProfile, userData, ordersByTab, activ
             <>
               {paginatedOrders.map((order, orderIdx) => (
                 <div key={order.id || orderIdx} className="mb-8">
-                  <div className="avantbold cream-text text-2xl mb-2 font-bold">ORDER ID : #{order.id}</div>
+                  <div className="avantbold cream-text text-2xl mb-2 font-bold">ORDER ID : #{getOrderId(order)}</div>
                   {order.items.map((item, idx) => (
                     <div key={`${item.variant}-${idx}`} className="flex items-center justify-between rounded-lg px-0 py-2 w-full">
                       <div className="flex items-center gap-4 min-w-[320px]">
@@ -378,6 +391,16 @@ const ProfileMobile = ({ openModal, onEditProfile, userData, ordersByTab, active
   const [currentPage, setCurrentPage] = useState(1)
   const ordersPerPage = 3
 
+  // Helper function to extract clean order ID
+  const getOrderId = (order) => {
+    if (!order) return null
+    const orderId = order.order_id || order.id
+    if (typeof orderId === 'string' && orderId.includes('-')) {
+      return orderId.split('-')[0]
+    }
+    return orderId
+  }
+
   // Reset to page 1 when activeTab changes
   useEffect(() => {
     setCurrentPage(1)
@@ -422,7 +445,11 @@ const ProfileMobile = ({ openModal, onEditProfile, userData, ordersByTab, active
               style={{ position: 'relative' }}
               onClick={() => {
                 setActiveTab(tab)
-                navigate(tabRoutes[tab])
+                if (tab === 'TO SHIP' || tab === 'TO RECEIVED') {
+                  navigate(`${tabRoutes[tab]}?tab=${encodeURIComponent(tab)}`)
+                } else {
+                  navigate(tabRoutes[tab])
+                }
               }}
             >
               <span>{tab}</span>
@@ -442,7 +469,7 @@ const ProfileMobile = ({ openModal, onEditProfile, userData, ordersByTab, active
             {paginatedOrders.map((order, orderIdx) => (
               <div key={order.id || orderIdx} className="mb-6">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="avantbold cream-text text-xs">ORDER ID : #{order.id}</span>
+                  <span className="avantbold cream-text text-xs">ORDER ID : #{getOrderId(order)}</span>
                   <span className="avantbold cream-text text-xs">EXPECTED DELIVERY: {order.delivery}</span>
                 </div>
                 {order.items.map((item, itemIdx) => (

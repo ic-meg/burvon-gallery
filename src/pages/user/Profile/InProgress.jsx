@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import Layout from '../../../components/Layout'
 import { 
   editIcon, 
@@ -175,7 +175,12 @@ const ProfileDesktop = ({ openModal, onEditProfile, userData, ordersByTab, activ
               className={`text-left pl-2 py-2 w-full transition-all ${activeTab === tab ? 'font-bold' : ''}`}
               onClick={() => {
                 setActiveTab(tab)
-                navigate(tabRoutes[tab])
+                // For TO SHIP and TO RECEIVED, add tab query parameter to distinguish them
+                if (tab === 'TO SHIP' || tab === 'TO RECEIVED') {
+                  navigate(`${tabRoutes[tab]}?tab=${encodeURIComponent(tab)}`)
+                } else {
+                  navigate(tabRoutes[tab])
+                }
               }}
               style={{ height: '48px' }}
             >
@@ -218,7 +223,7 @@ const ProfileDesktop = ({ openModal, onEditProfile, userData, ordersByTab, activ
           ) : selectedOrder ? (
             <>
               {/* ORDER ID */}
-              <div className="avantbold cream-text text-2xl mb-2 font-bold">ORDER ID : #{selectedOrder.order_id}</div>
+              <div className="avantbold cream-text text-2xl mb-2 font-bold">ORDER ID : #{typeof selectedOrder.order_id === 'string' ? selectedOrder.order_id.split('-')[0] : selectedOrder.order_id}</div>
               {selectedOrder.items.map((item) => (
                 <div key={item.order_item_id} className="flex items-center justify-between rounded-lg px-0 py-2 w-full">
                   {/* Image and product info */}
@@ -269,7 +274,7 @@ const ProfileDesktop = ({ openModal, onEditProfile, userData, ordersByTab, activ
                           <div className="bebas cream-text text-md">QUANTITY:</div>
                           <div className="avant cream-text text-lg">{selectedOrder.totalQty}</div>
                         </div>
-                        <div>
+                        <div className="ml-9">
                           <div className="bebas cream-text text-md">ITEM TOTAL:</div>
                           <div className="avant cream-text text-lg">PHP {selectedOrder.subtotal.toLocaleString(undefined, {minimumFractionDigits:2})}</div>
                         </div>
@@ -282,12 +287,21 @@ const ProfileDesktop = ({ openModal, onEditProfile, userData, ordersByTab, activ
                       >
                         VIEW ORDER
                       </button>
-                      <button
-                        className="avantbold cream-bg metallic-text px-4 py-2 rounded border border-[#FFF7DC] cursor-pointer"
-                        onClick={() => onOrderReceived(selectedOrder.order_id)}
-                      >
-                        ORDER RECEIVED
-                      </button>
+                      {activeTab === 'TO RECEIVED' ? (
+                        <button
+                          className="avantbold cream-bg metallic-text px-4 py-2 rounded border border-[#FFF7DC] cursor-pointer"
+                          onClick={() => onOrderReceived(selectedOrder.order_id)}
+                        >
+                          ORDER RECEIVED
+                        </button>
+                      ) : (
+                        <button
+                          className="avantbold cream-bg metallic-text px-4 py-2 rounded border border-[#FFF7DC] cursor-pointer"
+                          onClick={() => navigate(`/contact`)}
+                        >
+                          CONTACT SELLER
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -336,7 +350,11 @@ const ProfileMobile = ({ openModal, onEditProfile, userData, ordersByTab, active
               style={{ position: 'relative' }}
               onClick={() => {
                 setActiveTab(tab)
-                navigate(tabRoutes[tab])
+                if (tab === 'TO SHIP' || tab === 'TO RECEIVED') {
+                  navigate(`${tabRoutes[tab]}?tab=${encodeURIComponent(tab)}`)
+                } else {
+                  navigate(tabRoutes[tab])
+                }
               }}
             >
               <span>{tab}</span>
@@ -359,7 +377,7 @@ const ProfileMobile = ({ openModal, onEditProfile, userData, ordersByTab, active
         ) : selectedOrder ? (
           <>
             <div className="flex justify-between items-center mb-2">
-              <span className="avantbold cream-text text-xs">ORDER ID : #{selectedOrder.order_id}</span>
+              <span className="avantbold cream-text text-xs">ORDER ID : #{typeof selectedOrder.order_id === 'string' ? selectedOrder.order_id.split('-')[0] : selectedOrder.order_id}</span>
               <span className="avantbold cream-text text-xs">EXPECTED DELIVERY: {selectedOrder.delivery}</span>
             </div>
             <div className="flex gap-4 items-start rounded-lg p-2">
@@ -413,12 +431,21 @@ const ProfileMobile = ({ openModal, onEditProfile, userData, ordersByTab, active
               >
                 VIEW ORDER
               </button>
-              <button
-                className="avantbold cream-bg metallic-text px-4 py-0 rounded border border-[#FFF7DC] text-sm"
-                onClick={() => onOrderReceived(selectedOrder.order_id)}
-              >
-                ORDER RECEIVED
-              </button>
+              {activeTab === 'TO RECEIVED' ? (
+                <button
+                  className="avantbold cream-bg metallic-text px-4 py-0 rounded border border-[#FFF7DC] text-sm"
+                  onClick={() => onOrderReceived(selectedOrder.order_id)}
+                >
+                  ORDER RECEIVED
+                </button>
+              ) : (
+                <button
+                  className="avantbold cream-bg metallic-text px-4 py-0 rounded border border-[#FFF7DC] text-sm"
+                  onClick={() => navigate(`/contact`)}
+                >
+                  CONTACT SELLER
+                </button>
+              )}
             </div>
             <div className="w-full h-[1px] bg-[#FFF7DC] mt-4" />
           </>
@@ -439,7 +466,15 @@ const InProgress = () => {
   const [modalOpen, setModalOpen] = useState(false)
   const [modalImg, setModalImg] = useState(null)
   const [editProfileOpen, setEditProfileOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState('TO RECEIVED')
+  // Determine initial tab based on URL query parameter or default to TO SHIP
+  const [activeTab, setActiveTab] = useState(() => {
+    const params = new URLSearchParams(window.location.search)
+    const tab = params.get('tab')
+    if (tab && ['TO SHIP', 'TO RECEIVED'].includes(tab)) {
+      return tab
+    }
+    return 'TO SHIP'
+  })
   const [userData, setUserData] = useState(null)
   const [ordersByTab, setOrdersByTab] = useState({
     'TO SHIP': [],
@@ -455,6 +490,16 @@ const InProgress = () => {
   })
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' })
   const navigate = useNavigate()
+  const location = useLocation()
+
+  // Listen for URL changes and update activeTab
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    const tab = params.get('tab')
+    if (tab && ['TO SHIP', 'TO RECEIVED'].includes(tab) && tab !== activeTab) {
+      setActiveTab(tab)
+    }
+  }, [location.search, activeTab])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -530,9 +575,7 @@ const InProgress = () => {
           })
         }
 
-   
-
-        setOrdersByTab(groupOrdersByTab(allOrders))
+     
       } catch (error) {
         console.error('Error fetching profile data:', error)
       } finally {
