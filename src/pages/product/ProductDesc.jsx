@@ -10,6 +10,7 @@ import categoryApi from "../../api/categoryApi";
 import Toast from "../../components/Toast";
 import { hasTryOnAvailable } from "../../utils/tryOnUtils";
 import { getProductReviews } from "../../api/reviewApi";
+import storageService from "../../services/storageService";
 
 import {
   TryOnBlack,
@@ -353,6 +354,7 @@ const ProductDesc = () => {
       collection:
         productData.collection?.name || productData.collection || null,
       category: getCategoryName(productData.category_id),
+      model_3d_path: productData.model_3d_path || null,
     };
   };
 
@@ -375,9 +377,29 @@ const ProductDesc = () => {
   const [resolvedModelPath, setResolvedModelPath] = useState(null);
 
   useEffect(() => {
-
     let cancelled = false;
 
+    // First: Check if product has model_3d_path from Supabase
+    const checkSupabaseModel = async () => {
+      if (!formattedProduct?.model_3d_path) return false;
+      
+      const supabaseUrl = storageService.get3DModelUrl(formattedProduct.model_3d_path);
+      if (!supabaseUrl) return false;
+
+      try {
+        const response = await fetch(supabaseUrl, { method: 'GET' });
+        if (response.ok && !cancelled) {
+          setResolvedModelPath(supabaseUrl);
+          setModelAvailable(true);
+          return true;
+        }
+      } catch (error) {
+        console.debug('Supabase 3D model check failed:', error);
+      }
+      return false;
+    };
+
+    // Fallback: Check local /models folder
     const makeCandidates = (p) => {
       if (!p || !p.name) return [];
       const raw = p.name.toString().trim();
@@ -423,16 +445,12 @@ const ProductDesc = () => {
       return uniq;
     };
 
-    const candidates = makeCandidates(formattedProduct);
-    if (!candidates || candidates.length === 0) {
-      setModelAvailable(false);
-      setResolvedModelPath(null);
-      return;
-    }
+    const checkLocalCandidates = async () => {
+      const candidates = makeCandidates(formattedProduct);
+      if (!candidates || candidates.length === 0) return false;
 
-    const checkCandidates = async () => {
       for (const candidate of candidates) {
-        if (cancelled) return;
+        if (cancelled) return false;
         try {
           const resHead = await fetch(candidate, { method: "HEAD" });
           const ctHead = resHead.headers.get("content-type") || "";
@@ -442,73 +460,58 @@ const ProductDesc = () => {
               setResolvedModelPath(candidate);
               setModelAvailable(true);
             }
-            return;
+            return true;
           }
-          try {
-            const resGet = await fetch(candidate, {
-              method: "GET",
-              cache: "no-store",
-            });
-            const ctGet = resGet.headers.get("content-type") || "";
-            // Reject HTML responses (index.html) — accept binary/model content types
-            if (resGet.ok && !/text\/html/i.test(ctGet)) {
-              if (!cancelled) {
-                setResolvedModelPath(candidate);
-                setModelAvailable(true);
-              }
-              return;
-            } else {
-              console.debug(
-                "Model probe rejected (HTML or non-GLB):",
-                candidate,
-                ctGet,
-                resGet.status
-              );
+          const resGet = await fetch(candidate, { method: "GET", cache: "no-store" });
+          const ctGet = resGet.headers.get("content-type") || "";
+          if (resGet.ok && !/text\/html/i.test(ctGet)) {
+            if (!cancelled) {
+              setResolvedModelPath(candidate);
+              setModelAvailable(true);
             }
-          } catch (errGet) {
-            console.debug("Model probe GET failed:", candidate, errGet);
+            return true;
           }
-        } catch (errHead) {
-          // HEAD failed — try GET as a fallback and check content-type
+        } catch (err) {
           try {
-            const resGet2 = await fetch(candidate, {
-              method: "GET",
-              cache: "no-store",
-            });
+            const resGet2 = await fetch(candidate, { method: "GET", cache: "no-store" });
             const ctGet2 = resGet2.headers.get("content-type") || "";
             if (resGet2.ok && !/text\/html/i.test(ctGet2)) {
               if (!cancelled) {
                 setResolvedModelPath(candidate);
                 setModelAvailable(true);
               }
-              return;
-            } else {
-
-              console.debug(
-                "Model probe fallback GET rejected:",
-                candidate,
-                ctGet2,
-                resGet2.status
-              );
+              return true;
             }
           } catch (_err) {
-            // ignore and continue
+            // ignore
           }
         }
       }
+      return false;
+    };
 
+    const checkAllModels = async () => {
+      // Priority 1: Check Supabase storage
+      const foundSupabase = await checkSupabaseModel();
+      if (foundSupabase || cancelled) return;
+
+      // Priority 2: Check local /models folder
+      const foundLocal = await checkLocalCandidates();
+      if (foundLocal || cancelled) return;
+
+      // No model found
       if (!cancelled) {
         setResolvedModelPath(null);
         setModelAvailable(false);
       }
     };
 
-    checkCandidates();
+    checkAllModels();
 
     return () => {
       cancelled = true;
     };
-  }, [productModelPath, formattedProduct]);
+  }, [productModelPath, formattedProduct?.id, formattedProduct?.model_3d_path, formattedProduct?.name, formattedProduct?.category]);
 
   const calculateOverallRating = () => {
     if (!formattedProduct?.reviews || formattedProduct.reviews.length === 0)

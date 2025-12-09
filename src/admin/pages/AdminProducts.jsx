@@ -17,6 +17,7 @@ import {
   DropDownIconBlack,
   DropUpIconBlack,
 } from "../../assets/index.js";
+import storageService from "../../services/storageService";
 
 const AdminProducts = ({ hasAccess = true }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -48,6 +49,7 @@ const AdminProducts = ({ hasAccess = true }) => {
     images: [null, null, null, null, null],
     imageUrls: [null, null, null, null, null],
     description: "",
+    model3DFile: null,
   });
   const [editProduct, setEditProduct] = useState({
     id: null,
@@ -61,6 +63,9 @@ const AdminProducts = ({ hasAccess = true }) => {
     images: [null, null, null, null, null],
     imageUrls: [null, null, null, null, null],
     description: "",
+    model3DFile: null,
+    model3DPath: null,
+    model3DUrl: null,
   });
   const [originalEditProduct, setOriginalEditProduct] = useState(null);
   const [stockData, setStockData] = useState({
@@ -414,6 +419,34 @@ const AdminProducts = ({ hasAccess = true }) => {
     });
   };
 
+  const handle3DModelUpload = (file, isEdit = false) => {
+    if (!file) return;
+    const validation = storageService.validate3DModelFile(file);
+    if (!validation.valid) {
+      showMessage("error", validation.error);
+      return;
+    }
+    if (isEdit) {
+      setEditProduct((prev) => ({ ...prev, model3DFile: file }));
+    } else {
+      setNewProduct((prev) => ({ ...prev, model3DFile: file }));
+    }
+    showMessage("success", "3D model file selected");
+  };
+
+  const handleRemove3DModel = (isEdit = false) => {
+    if (isEdit) {
+      setEditProduct((prev) => ({
+        ...prev,
+        model3DFile: null,
+        model3DPath: null,
+        model3DUrl: null,
+      }));
+    } else {
+      setNewProduct((prev) => ({ ...prev, model3DFile: null }));
+    }
+  };
+
   const handleStockClick = (product) => {
     setSelectedProduct(product);
 
@@ -632,13 +665,12 @@ const AdminProducts = ({ hasAccess = true }) => {
     }
 
     const hasNewImages = editProduct.images.some((img) => img !== null);
-    if (hasNewImages) {
-      return true;
-    }
+    if (hasNewImages) return true;
 
-    if (deletedImageUrls.length > 0) {
-      return true;
-    }
+    if (deletedImageUrls.length > 0) return true;
+
+    if (editProduct.model3DFile) return true;
+    if (editProduct.model3DPath !== originalEditProduct.model3DPath) return true;
 
     return false;
   };
@@ -701,11 +733,27 @@ const AdminProducts = ({ hasAccess = true }) => {
           ? parseFloat(newProduct.current_price)
           : null;
 
-      // Get the selected category to check if it's rings
       const selectedCategory = modalCategoryOptions.find(
         (cat) => cat.value === newProduct.category
       );
       const isRings = selectedCategory?.slug === "rings";
+      const categoryName = selectedCategory?.label || "";
+
+      let model3DPath = null;
+      if (newProduct.model3DFile) {
+        showMessage("info", "Uploading 3D model...");
+        const modelResult = await storageService.upload3DModel(
+          newProduct.model3DFile,
+          newProduct.name,
+          categoryName
+        );
+        if (!modelResult.success) {
+          showMessage("error", `3D upload failed: ${modelResult.error}`);
+          setSaving(false);
+          return;
+        }
+        model3DPath = modelResult.filePath;
+      }
 
       const productData = {
         name: newProduct.name.trim(),
@@ -720,6 +768,7 @@ const AdminProducts = ({ hasAccess = true }) => {
             : "",
         images: imageUrls,
         description: newProduct.description?.trim() || "",
+        model_3d_path: model3DPath,
       };
 
       const result = await createProduct(productData, imageFiles);
@@ -738,6 +787,7 @@ const AdminProducts = ({ hasAccess = true }) => {
           images: [null, null, null, null, null],
           imageUrls: [null, null, null, null, null],
           description: "",
+          model3DFile: null,
         });
       } else {
         await cleanupFailedImages(uploadedImagePaths);
@@ -816,10 +866,16 @@ const AdminProducts = ({ hasAccess = true }) => {
       images: [null, null, null, null, null],
       imageUrls: imageUrls,
       description: product.description || "",
+      model3DFile: null,
+      model3DPath: product.model_3d_path || null,
+      model3DUrl: product.model_3d_path
+        ? storageService.get3DModelUrl(product.model_3d_path)
+        : null,
     };
 
     setEditProduct(editData);
     setOriginalEditProduct(editData);
+    setDeletedImageUrls([]);
     setShowEditProductModal(true);
   };
 
@@ -897,11 +953,33 @@ const AdminProducts = ({ hasAccess = true }) => {
           ? parseFloat(editProduct.current_price)
           : null;
 
-      // Get the selected category to check if it's rings
       const selectedCategory = modalCategoryOptions.find(
         (cat) => cat.value === editProduct.category
       );
       const isRings = selectedCategory?.slug === "rings";
+      const categoryName = selectedCategory?.label || "";
+
+      let model3DPath = editProduct.model3DPath;
+      if (editProduct.model3DFile) {
+        if (originalEditProduct?.model3DPath) {
+          await storageService.delete3DModel(originalEditProduct.model3DPath);
+        }
+        showMessage("info", "Uploading 3D model...");
+        const modelResult = await storageService.upload3DModel(
+          editProduct.model3DFile,
+          editProduct.name,
+          categoryName
+        );
+        if (!modelResult.success) {
+          showMessage("error", `3D upload failed: ${modelResult.error}`);
+          setSaving(false);
+          return;
+        }
+        model3DPath = modelResult.filePath;
+      } else if (!editProduct.model3DPath && originalEditProduct?.model3DPath) {
+        await storageService.delete3DModel(originalEditProduct.model3DPath);
+        model3DPath = null;
+      }
 
       const productData = {
         name: editProduct.name.trim(),
@@ -916,6 +994,7 @@ const AdminProducts = ({ hasAccess = true }) => {
             : "",
         images: imageUrls,
         description: editProduct.description?.trim() || "",
+        model_3d_path: model3DPath,
       };
 
       const result = await updateProduct(
@@ -939,6 +1018,9 @@ const AdminProducts = ({ hasAccess = true }) => {
           images: [null, null, null, null, null],
           imageUrls: [null, null, null, null, null],
           description: "",
+          model3DFile: null,
+          model3DPath: null,
+          model3DUrl: null,
         });
       } else {
         await cleanupFailedImages(uploadedImagePaths);
@@ -1766,7 +1848,7 @@ const AdminProducts = ({ hasAccess = true }) => {
                           <span className="avant text-xs text-gray-500">
                             Original Price:
                           </span>
-                          <span className="avant text-sm text-gray-500 line-through">
+                          <span className="avant text-sm text-gray-500">
                             {product.price}
                           </span>
                         </div>
@@ -2061,6 +2143,8 @@ const AdminProducts = ({ hasAccess = true }) => {
         sizeOptions={sizeOptions}
         onSizeToggle={handleSizeToggle}
         onImageUpload={handleImageUpload}
+        on3DModelUpload={(file) => handle3DModelUpload(file, false)}
+        onRemove3DModel={() => handleRemove3DModel(false)}
         onAddProduct={handleAddProduct}
         saving={saving}
         uploading={uploading}
@@ -2082,6 +2166,8 @@ const AdminProducts = ({ hasAccess = true }) => {
         onEditSizeToggle={handleEditSizeToggle}
         onEditImageUpload={handleEditImageUpload}
         onRemoveImage={handleRemoveEditImage}
+        on3DModelUpload={(file) => handle3DModelUpload(file, true)}
+        onRemove3DModel={() => handleRemove3DModel(true)}
         onUpdateProduct={handleUpdateProduct}
         saving={saving}
         uploading={uploading}

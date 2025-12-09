@@ -74,4 +74,8 @@ export class CreateProductDto {
   @Type(() => Number)
   @IsInt()
   collection_id: number;
+
+  @IsOptional()
+  @IsString()
+  model_3d_path?: string;
 }

@@ -67,6 +67,7 @@ model Product {
   category_id    Int?
   collection_id  Int?
   slug           String?     @unique
+  model_3d_path  String?
   cartItems      Cart[]
   inventory      Inventory[]
   orderItems     OrderItem[]

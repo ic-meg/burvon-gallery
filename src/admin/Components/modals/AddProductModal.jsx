@@ -1,5 +1,5 @@
 import React from 'react';
-import { Add3D, AddImage, DropDownIconBlack, DropUpIconBlack } from '../../../assets';
+import { Add3D, AddImage, DropDownIconBlack, DropUpIconBlack, Remove } from '../../../assets';
 
 const AddProductModal = ({
   showModal,
@@ -15,6 +15,8 @@ const AddProductModal = ({
   sizeOptions,
   onSizeToggle,
   onImageUpload,
+  on3DModelUpload,
+  onRemove3DModel,
   onAddProduct,
   saving,
   uploading
@@ -250,13 +252,41 @@ const AddProductModal = ({
                     />
                   </label>
                 ))}
-                {/* Additional single box */}
-                <div className="w-16 h-16 border-2 border-dashed border-black rounded-lg flex items-center justify-center bg-white">
-                  <img 
-                    src={Add3D} 
-                    alt="3D model" 
-                    className="w-6 h-6 opacity-60"
-                  />
+                {/* 3D Model Upload Box */}
+                <div className="relative">
+                  <label className="cursor-pointer">
+                    <div className="w-16 h-16 border-2 border-dashed border-black rounded-lg flex items-center justify-center bg-white hover:bg-gray-50 transition-colors relative overflow-visible">
+                      {newProduct.model3DFile ? (
+                        <>
+                          <div className="flex flex-col items-center justify-center">
+                            <img src={Add3D} alt="3D" className="w-5 h-5 opacity-80" />
+                            <span className="text-[8px] text-gray-600 mt-0.5 truncate w-14 text-center">
+                              {newProduct.model3DFile.name.slice(0, 8)}...
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              onRemove3DModel?.();
+                            }}
+                            className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center hover:bg-red-600 z-10"
+                          >
+                            <img src={Remove} alt="Remove" className="w-3 h-3 invert" />
+                          </button>
+                        </>
+                      ) : (
+                        <img src={Add3D} alt="3D model" className="w-6 h-6 opacity-60" />
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept=".glb,.gltf"
+                      onChange={(e) => on3DModelUpload?.(e.target.files[0])}
+                    />
+                  </label>
                 </div>
               </div>
             </div>

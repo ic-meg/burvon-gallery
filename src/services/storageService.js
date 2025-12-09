@@ -240,6 +240,116 @@ class StorageService {
 
     return results
   }
+
+    // ------------------- 3D Model Upload -------------------
+
+  STORAGE_BUCKET_3D = '3DFiles';
+
+  CATEGORY_FOLDERS = {
+    'rings': 'Rings',
+    'necklaces': 'Necklaces',
+    'earrings': 'Earrings',
+    'bracelets': 'Bracelets',
+  };
+
+  getCategoryFolder(categoryName) {
+    if (!categoryName) return 'Uncategorized';
+    const normalized = categoryName.toLowerCase().trim();
+    return this.CATEGORY_FOLDERS[normalized] || categoryName;
+  }
+
+  validate3DModelFile(file) {
+    const maxSize = 50 * 1024 * 1024; // 50MB limit for 3D models
+    const allowedExtensions = ['glb', 'gltf'];
+    
+    const fileExtension = file.name.split('.').pop().toLowerCase();
+    
+    if (!allowedExtensions.includes(fileExtension)) {
+      return { valid: false, error: 'Invalid file type. Only .glb and .gltf files are allowed.' };
+    }
+    
+    if (file.size > maxSize) {
+      return { valid: false, error: 'File too large. Maximum size is 50MB.' };
+    }
+    
+    return { valid: true };
+  }
+
+  generate3DModelPath(file, productName, categoryName) {
+    const timestamp = Date.now();
+    const randomString = Math.random().toString(36).substring(2, 8);
+    const fileExtension = file.name.split('.').pop().toLowerCase();
+    
+    const sanitizedName = productName
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '-')
+      .replace(/-+/g, '-')
+      .substring(0, 50);
+    
+    const categoryFolder = this.getCategoryFolder(categoryName);
+    
+    return `${categoryFolder}/${sanitizedName}_${timestamp}_${randomString}.${fileExtension}`;
+  }
+
+  async upload3DModel(file, productName, categoryName) {
+    const validation = this.validate3DModelFile(file);
+    if (!validation.valid) {
+      return { success: false, error: validation.error, filePath: null };
+    }
+
+    const filePath = this.generate3DModelPath(file, productName, categoryName);
+    
+    try {
+      const { data, error } = await supabase.storage
+        .from(this.STORAGE_BUCKET_3D)
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false,
+          contentType: file.type || 'model/gltf-binary'
+        });
+
+      if (error) {
+        console.error('3D model upload error:', error);
+        return { success: false, error: error.message, filePath: null };
+      }
+
+      return { success: true, filePath: data.path, error: null };
+    } catch (error) {
+      console.error('3D model upload error:', error);
+      return { success: false, error: error.message, filePath: null };
+    }
+  }
+
+  async delete3DModel(filePath) {
+    if (!filePath) return { success: true };
+    
+    try {
+      const { error } = await supabase.storage
+        .from(this.STORAGE_BUCKET_3D)
+        .remove([filePath]);
+
+      if (error) {
+        console.error('3D model delete error:', error);
+        return { success: false, error: error.message };
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('3D model delete error:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  get3DModelUrl(filePath) {
+    if (!filePath) return null;
+    
+    const { data } = supabase.storage
+      .from(this.STORAGE_BUCKET_3D)
+      .getPublicUrl(filePath);
+    
+    return data.publicUrl;
+  }
+
 }
 
 export default new StorageService()

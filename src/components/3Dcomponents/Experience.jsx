@@ -12,14 +12,11 @@ export const Experience = ({ modelPath, onEnvironmentError }) => {
   const [envError, setEnvError] = useState(false);
   const effectiveModelPath = blobUrl || null;
 
-  
-  const isPairModel = modelPath?.toLowerCase().includes('/earrings/') ||
-                       modelPath?.toLowerCase().includes('earring');
+  // Detect model type from path (works with local paths and Supabase URLs)
+  const pathLower = modelPath?.toLowerCase() || '';
+  const isPairModel = pathLower.includes('/earrings/') || pathLower.includes('earring');
+  const isBracelet = pathLower.includes('/bracelets/') || pathLower.includes('bracelet');
 
-  const isBracelet = modelPath?.toLowerCase().includes('/bracelets/') ||
-                     modelPath?.toLowerCase().includes('bracelet');
-
-  // Default values for earring spacing
   const earringGapX = 2.0;
   const earringOffsetZ = 1.0;
   const cameraDistance = isPairModel ? 5.0 : 2.5;
@@ -49,25 +46,16 @@ export const Experience = ({ modelPath, onEnvironmentError }) => {
       return;
     }
 
+    const isSupabaseUrl = modelPath.includes('supabase.co/storage');
+
     const probeAndFetch = async () => {
       setFetching(true);
       try {
-        // Try HEAD first to avoid downloading the whole GLB
-        const head = await fetch(modelPath, { method: "HEAD" });
-        const ctHead = head.headers.get("content-type") || "";
-        if (head.ok && /text\/html/i.test(ctHead)) {
-          console.warn(
-            "Model HEAD returned HTML, rejecting:",
-            modelPath,
-            ctHead,
-            head.status
-          );
-        } else if (head.ok) {
-          // likely binary — fetch blob
-          const get = await fetch(modelPath, { method: "GET" });
-          const ct = get.headers.get("content-type") || "";
-          if (get.ok && !/text\/html/i.test(ct)) {
-            const blob = await get.blob();
+        if (isSupabaseUrl) {
+          // Supabase URL - fetch directly without HEAD check
+          const response = await fetch(modelPath, { method: "GET" });
+          if (response.ok) {
+            const blob = await response.blob();
             const objectUrl = URL.createObjectURL(blob);
             if (!cancelled) {
               blobCacheRef.current.set(modelPath, objectUrl);
@@ -76,9 +64,29 @@ export const Experience = ({ modelPath, onEnvironmentError }) => {
             }
             return;
           }
+        } else {
+          // Local path - use HEAD probe first
+          const head = await fetch(modelPath, { method: "HEAD" });
+          const ctHead = head.headers.get("content-type") || "";
+          if (head.ok && /text\/html/i.test(ctHead)) {
+            console.warn("Model HEAD returned HTML:", modelPath);
+          } else if (head.ok) {
+            const get = await fetch(modelPath, { method: "GET" });
+            const ct = get.headers.get("content-type") || "";
+            if (get.ok && !/text\/html/i.test(ct)) {
+              const blob = await get.blob();
+              const objectUrl = URL.createObjectURL(blob);
+              if (!cancelled) {
+                blobCacheRef.current.set(modelPath, objectUrl);
+                setBlobUrl(objectUrl);
+                setFetching(false);
+              }
+              return;
+            }
+          }
         }
       } catch (err) {
-        // HEAD might be blocked — try GET directly
+        // Fallback: try GET directly
         try {
           const get2 = await fetch(modelPath, { method: "GET" });
           const ct2 = get2.headers.get("content-type") || "";
@@ -92,12 +100,7 @@ export const Experience = ({ modelPath, onEnvironmentError }) => {
             }
             return;
           } else {
-            console.warn(
-              "Model GET returned HTML or non-binary, rejecting:",
-              modelPath,
-              ct2,
-              get2.status
-            );
+            console.warn("Model fetch rejected:", modelPath, ct2);
           }
         } catch (_e) {
           console.warn("Model fetch failed:", modelPath, _e);
@@ -256,7 +259,7 @@ export const Experience = ({ modelPath, onEnvironmentError }) => {
           preset="warehouse"
           files="/hdri/Jewel-hdri-diamond-set1-3.hdr"
           background
-          blur={0.2}
+          blur={10}
           onError={(error) => {
             console.warn("Warehouse preset failed (CDN may be down), switching to fallback HDRIs:", error);
             setEnvError(true);
@@ -270,7 +273,7 @@ export const Experience = ({ modelPath, onEnvironmentError }) => {
         <Environment
           files="/hdri/Jewel-hdri-diamond-set1-3.hdr"
           background
-          blur={0.2}
+          blur={10}
         />
       )}
       {isBracelet && (
