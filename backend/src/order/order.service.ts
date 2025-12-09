@@ -12,6 +12,16 @@ export class OrderService {
     private emailService: EmailService,
   ) { }
 
+  private async generateUniqueOrderId(): Promise<number> {
+    const maxAttempts = 10;
+    for (let i = 0; i < maxAttempts; i++) {
+      const orderId = Math.floor(10000 + Math.random() * 90000);
+      const existing = await this.prisma.order.findUnique({ where: { order_id: orderId } });
+      if (!existing) return orderId;
+    }
+    return Date.now() % 100000;
+  }
+
   async createOrder(createOrderDto: CreateOrderDto) {
     const {
       items,
@@ -39,8 +49,11 @@ export class OrderService {
 
     await this.reduceStockForItems(items);
 
+    const orderId = await this.generateUniqueOrderId();
+
     const order = await this.prisma.order.create({
       data: {
+        order_id: orderId,
         user_id: user_id || null,
         email: email,
         first_name: first_name,

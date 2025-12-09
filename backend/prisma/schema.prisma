@@ -120,7 +120,7 @@ model Wishlist {
 }
 
 model Order {
-  order_id         Int            @id @default(autoincrement())
+  order_id         Int            @id
   user_id          Int?
   email            String
   first_name       String

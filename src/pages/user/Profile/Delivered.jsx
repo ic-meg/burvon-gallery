@@ -287,7 +287,7 @@ const ProfileDesktop = ({ openModal, onEditProfile, openRateModal, userData, ord
                           <div className="flex gap-2 mb-17">
                             <button
                               className="avantbold rounded border border-[#FFF7DC] cream-text px-4 py-2 cursor-pointer"
-                              onClick={() => navigate('/profile/requestreturn')}
+                              onClick={() => navigate('/profile/delivered')}
                             >
                               RETURN/REFUND
                             </button>
@@ -433,7 +433,7 @@ const ProfileMobile = ({ openModal, onEditProfile, openRateModal, userData, orde
                   <div className="flex justify-end gap-2 mt-6 mb-2">
                     <button
                       className="avantbold rounded border border-[#FFF7DC] cream-text px-4 py-3 text-sm"
-                      onClick={() => navigate(`/profile/requestreturn?orderId=${order.order_id}`)}
+                      onClick={() => navigate(`/profile/delivered`)}
                     >
                       RETURN/REFUND
                     </button>

@@ -618,6 +618,11 @@ const Profile = () => {
   })
   const navigate = useNavigate()
 
+  // Redirect to TO SHIP tab on mount
+  useEffect(() => {
+    navigate('/profile/inprogress?tab=TO%20SHIP', { replace: true })
+  }, [navigate])
+
   useEffect(() => {
     const fetchData = async () => {
       const token = getAuthToken()

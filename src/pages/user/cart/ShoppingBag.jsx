@@ -33,6 +33,9 @@ const ShoppingBagMobile = ({
   isItemSelected,
   getSelectedItemsTotal,
   getSelectedItemsCount,
+  isRingWithoutSize,
+  isSizeOutOfStock,
+  hasItemIssue,
 }) => (
   <div className="lg:hidden w-full min-h-screen bg-[#181818] px-5 pt-2 text-[#fff7dc] relative">
  
@@ -50,17 +53,20 @@ const ShoppingBagMobile = ({
         className="flex flex-col overflow-y-auto"
         style={{ maxHeight: '60vh' }} 
       >
-        {cart && cart.map((item, i) => (
+        {cart && cart.map((item, i) => {
+          const itemHasIssue = hasItemIssue(item);
+          const needsSize = isRingWithoutSize(item);
+          const sizeUnavailable = isSizeOutOfStock(item);
+          
+          return (
           <div key={item.id}>
-            <div className="flex gap-3 items-start py-4 px-4 text-nowrap relative">
-              {/* Product image */}
+            <div className={`flex gap-3 items-start py-4 px-4 text-nowrap relative ${itemHasIssue ? 'opacity-60' : ''}`}>
               <img
                 src={item.image}
                 alt={item.name}
                 className="w-24 h-24 object-cover shadow-lg cursor-pointer border border-[#fff7dc]/20"
                 onClick={() => openModal(item.image)}
               />
-              {/* Product details */}
               <div className="flex-1 pl-2">
                 <div className="avantbold text-xs whitespace-normal leading-tight">
                   {item.name}
@@ -188,26 +194,34 @@ const ShoppingBagMobile = ({
                     })()).toFixed(2)}
                   </span>
                 </div>
+                {needsSize && (
+                  <div className="text-red-400 text-xs avant mt-1">⚠ Select a size</div>
+                )}
+                {sizeUnavailable && (
+                  <div className="text-red-400 text-xs avant mt-1">⚠ Size out of stock</div>
+                )}
               </div>
-              {/* Selection checkbox */}
               <div className="absolute top-4 right-2 z-10">
                 <div className="relative">
                   <input
                     type="checkbox"
-                    checked={isItemSelected(item.id)}
-                    onChange={() => toggleItemSelection(item.id)}
-                    className="w-4 h-4 accent-[#FFF7DC] cursor-pointer"
+                    checked={isItemSelected(item.id) && !itemHasIssue}
+                    onChange={() => {
+                      if (!itemHasIssue) toggleItemSelection(item.id);
+                    }}
+                    disabled={itemHasIssue}
+                    className={`w-4 h-4 accent-[#FFF7DC] ${itemHasIssue ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                     style={{
                       appearance: 'none',
                       WebkitAppearance: 'none',
                       MozAppearance: 'none',
-                      border: '2px solid #FFF7DC',
+                      border: `2px solid ${itemHasIssue ? '#666' : '#FFF7DC'}`,
                       borderRadius: '4px',
-                      backgroundColor: isItemSelected(item.id) ? '#FFF7DC' : 'transparent',
+                      backgroundColor: (isItemSelected(item.id) && !itemHasIssue) ? '#FFF7DC' : 'transparent',
                       position: 'relative'
                     }}
                   />
-                  {isItemSelected(item.id) && (
+                  {isItemSelected(item.id) && !itemHasIssue && (
                     <div
                       className="absolute inset-0 flex items-center justify-center z-10"
                       style={{ pointerEvents: 'none' }}
@@ -232,12 +246,11 @@ const ShoppingBagMobile = ({
                 </div>
               </div>
             </div>
-            {/* Divider line between products */}
             {i < cart.length - 1 && (
               <hr className="my-2 border-[#fff7dc]/30" />
             )}
           </div>
-        ))}
+        )})}
       </div>
       {/* sticky checkout content */}
       <div className="sticky w-full bg-[#181818] p-6 z-30 mt-4 mx-auto">
@@ -329,6 +342,33 @@ const ShoppingBag = () => {
     setModalImg(null)
   }
 
+  const isRingItem = (item) => {
+    return item.category_id === ringCategoryId || (item.category && (
+      item.category.toLowerCase() === 'ring' || 
+      item.category.toLowerCase() === 'rings' ||
+      item.category.toLowerCase().includes('ring')
+    ));
+  };
+
+  const isRingWithoutSize = (item) => {
+    return isRingItem(item) && !item.size;
+  };
+
+  const isSizeOutOfStock = (item) => {
+    if (!isRingItem(item) || !item.size) return false;
+    const product = productData[item.product_id];
+    if (!product || !product.sizeStocks) return false;
+    const sizeStock = product.sizeStocks.find(ss => {
+      const sizeMatch = ss.size?.match(/\d+/);
+      return sizeMatch && parseInt(sizeMatch[0]) === item.size;
+    });
+    return !sizeStock || sizeStock.stock <= 0;
+  };
+
+  const hasItemIssue = (item) => {
+    return isRingWithoutSize(item) || isSizeOutOfStock(item);
+  };
+
   // Fetch categories to get ring category ID
   useEffect(() => {
     const fetchCategories = async () => {
@@ -357,11 +397,12 @@ const ShoppingBag = () => {
     fetchCategories();
   }, []);
 
-  // Fetch product data for cart items
+  // Fetch product data for cart items and remove out-of-stock items
   useEffect(() => {
     const fetchProductData = async () => {
       const productIds = [...new Set(cart.map(item => item.product_id))];
       const data = {};
+      const itemsToRemove = [];
       
       for (const productId of productIds) {
         try {
@@ -376,8 +417,31 @@ const ShoppingBag = () => {
             
             data[productId] = {
               sizes: product.sizes || [],
-              sizeStocks: product.sizeStocks || []
+              sizeStocks: product.sizeStocks || [],
+              stock: product.stock || 0
             };
+
+            const cartItemsForProduct = cart.filter(item => item.product_id === productId);
+            
+            for (const cartItem of cartItemsForProduct) {
+              const isRing = cartItem.category && (
+                cartItem.category.toLowerCase() === 'ring' || 
+                cartItem.category.toLowerCase() === 'rings' ||
+                cartItem.category.toLowerCase().includes('ring')
+              );
+              
+              if (isRing) {
+                // For rings: DON'T remove, just let them pick a new size
+                // The hasItemIssue check will disable the checkbox
+                continue;
+              } else {
+                // For non-rings: remove if completely out of stock
+                const isOutOfStock = (product.stock || 0) <= 0;
+                if (isOutOfStock) {
+                  itemsToRemove.push(cartItem.id);
+                }
+              }
+            }
           }
         } catch (error) {
           console.error(`Error fetching product ${productId}:`, error);
@@ -385,12 +449,19 @@ const ShoppingBag = () => {
       }
       
       setProductData(data);
+      
+      // Remove out-of-stock items from cart
+      if (itemsToRemove.length > 0) {
+        itemsToRemove.forEach(itemId => {
+          removeFromCart(itemId);
+        });
+      }
     };
 
     if (cart.length > 0) {
       fetchProductData();
     }
-  }, [cart]);
+  }, [cart.length]); // Only re-run when cart length changes to avoid infinite loop
 
   // Get available sizes for a product
   const getAvailableSizes = (productId, currentItemId = null) => {
@@ -534,27 +605,34 @@ const ShoppingBag = () => {
               <div className="pl-36">Quantity</div> {/* adjust mo na lang mga pl */}
               <div className="text-center">Subtotal</div> {/* dito kung gusto mo rin gawing pl, pl mo na rin */}
             </div>
-            {cart && cart.map((item, i) => (
-              <div key={item.id} className="grid grid-cols-5 items-center border-b border-[#fff7dc]/10 py-6 hover:bg-[#232323] transition-all duration-200">
+            {cart && cart.map((item, i) => {
+              const itemHasIssue = hasItemIssue(item);
+              const needsSize = isRingWithoutSize(item);
+              const sizeUnavailable = isSizeOutOfStock(item);
+              
+              return (
+              <div key={item.id} className={`grid grid-cols-5 items-center border-b border-[#fff7dc]/10 py-6 hover:bg-[#232323] transition-all duration-200 ${itemHasIssue ? 'opacity-60' : ''}`}>
                 <div className="flex items-center gap-5 min-w-[340px]">
-                  {/* selection checkbox */}
                   <div className="relative">
                     <input
                       type="checkbox"
-                      checked={isItemSelected(item.id)}
-                      onChange={() => toggleItemSelection(item.id)}
-                      className="w-4 h-4 accent-[#FFF7DC] cursor-pointer"
+                      checked={isItemSelected(item.id) && !itemHasIssue}
+                      onChange={() => {
+                        if (!itemHasIssue) toggleItemSelection(item.id);
+                      }}
+                      disabled={itemHasIssue}
+                      className={`w-4 h-4 accent-[#FFF7DC] ${itemHasIssue ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                       style={{
                         appearance: 'none',
                         WebkitAppearance: 'none',
                         MozAppearance: 'none',
-                        border: '2px solid #FFF7DC',
+                        border: `2px solid ${itemHasIssue ? '#666' : '#FFF7DC'}`,
                         borderRadius: '4px',
-                        backgroundColor: isItemSelected(item.id) ? '#FFF7DC' : 'transparent',
+                        backgroundColor: (isItemSelected(item.id) && !itemHasIssue) ? '#FFF7DC' : 'transparent',
                         position: 'relative'
                       }}
                     />
-                    {isItemSelected(item.id) && (
+                    {isItemSelected(item.id) && !itemHasIssue && (
                       <div
                         className="absolute inset-0 flex items-center justify-center z-10"
                         style={{ pointerEvents: 'none' }}
@@ -709,8 +787,18 @@ const ShoppingBag = () => {
                     return isRing && !item.size ? 1 : item.quantity;
                   })()).toFixed(2)}
                 </div>
+                {needsSize && (
+                  <div className="col-span-5 text-red-400 text-sm avant mt-2 ml-10">
+                    ⚠ Please select a size to checkout
+                  </div>
+                )}
+                {sizeUnavailable && (
+                  <div className="col-span-5 text-red-400 text-sm avant mt-2 ml-10">
+                    ⚠ Selected size is out of stock
+                  </div>
+                )}
               </div>
-            ))}
+            )})}
           </div>
           {/* right: sticky */}
           <div className="flex-[1] max-w-xl avant text-base sticky top-36 self-start">
@@ -797,6 +885,9 @@ const ShoppingBag = () => {
         isItemSelected={isItemSelected}
         getSelectedItemsTotal={getSelectedItemsTotal}
         getSelectedItemsCount={getSelectedItemsCount}
+        isRingWithoutSize={isRingWithoutSize}
+        isSizeOutOfStock={isSizeOutOfStock}
+        hasItemIssue={hasItemIssue}
       />
     </Layout>
   )
