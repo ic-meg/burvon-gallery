@@ -223,6 +223,7 @@ model AutoReply {
 model HomepageContent {
   id                 Int          @id @default(autoincrement())
   logo_url           String?
+  mobile_logo_url    String?
   hero_images        Json?
   title              String?
   description        String?
