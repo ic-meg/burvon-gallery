@@ -6,6 +6,10 @@ export class HomepageCreateDto {
   logo_url?: string;
 
   @IsOptional()
+  @IsString()
+  mobile_logo_url?: string;
+
+  @IsOptional()
   @IsArray()
   @IsString({ each: true })
   hero_images?: string[] = [];
