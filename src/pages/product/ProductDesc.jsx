@@ -1420,7 +1420,10 @@ const ProductDesc = () => {
                     .map((_, index) => (
                       <button
                         key={index}
-                        onClick={() => handleThumbnailClick(index)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleThumbnailClick(index);
+                        }}
                         className={`w-2 h-2 rounded-full border border-[#FFF7DC] transition-colors duration-300 ${index === currentImageIndex
                             ? "bg-[#FFF7DC]"
                             : "bg-gray-400 opacity-40"
@@ -1436,13 +1439,19 @@ const ProductDesc = () => {
                     ))}
                 </div>
                 <button
-                  onClick={handlePrevImage}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handlePrevImage();
+                  }}
                   className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center hover:opacity-80 transition-opacity z-50 pointer-events-auto"
                 >
                   <img src={PrevIcon} alt="Previous" className="w-6 h-6" />
                 </button>
                 <button
-                  onClick={handleNextImage}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleNextImage();
+                  }}
                   className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center hover:opacity-80 transition-opacity z-50 pointer-events-auto"
                 >
                   <img src={NextIcon} alt="Next" className="w-6 h-6" />
