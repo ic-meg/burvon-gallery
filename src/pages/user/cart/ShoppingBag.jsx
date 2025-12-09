@@ -343,11 +343,11 @@ const ShoppingBag = () => {
   }
 
   const isRingItem = (item) => {
-    return item.category_id === ringCategoryId || (item.category && (
-      item.category.toLowerCase() === 'ring' || 
-      item.category.toLowerCase() === 'rings' ||
-      item.category.toLowerCase().includes('ring')
-    ));
+    if (item.category_id === ringCategoryId) return true;
+    if (!item.category) return false;
+    const cat = item.category.toLowerCase();
+    if (cat.includes('earring')) return false;
+    return cat === 'ring' || cat === 'rings' || cat.includes('ring collection');
   };
 
   const isRingWithoutSize = (item) => {
