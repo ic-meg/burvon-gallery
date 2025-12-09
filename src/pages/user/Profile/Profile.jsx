@@ -11,6 +11,7 @@ import userApi from '../../../api/userApi'
 import orderApi from '../../../api/orderApi'
 import Toast from '../../../components/Toast'
 import ProfileSkeleton from '../../../components/ProfileSkeleton'
+import Pagination from '../../../components/Pagination'
 import { groupOrdersByTab } from './profileUtils'
 
 const tabs = [
@@ -335,48 +336,11 @@ const ProfileDesktop = ({ openModal, onEditProfile, userData, ordersByTab, activ
               </p>
             </div>
           )}
-          {/* Pagination Controls */}
-          {orders.length > ordersPerPage && (
-            <div className="flex items-center justify-center gap-4 mt-8">
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                className={`avantbold px-4 py-2 rounded border border-[#FFF7DC] ${
-                  currentPage === 1
-                    ? 'cream-text opacity-50 cursor-not-allowed'
-                    : 'cream-text cursor-pointer hover:bg-[#FFF7DC] hover:text-[#1F1F21] transition-colors'
-                }`}
-              >
-                Previous
-              </button>
-              <div className="flex gap-2">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <button
-                    key={page}
-                    onClick={() => handlePageChange(page)}
-                    className={`avantbold w-10 h-10 rounded border border-[#FFF7DC] ${
-                      currentPage === page
-                        ? 'cream-bg metallic-text'
-                        : 'cream-text hover:bg-[#FFF7DC] hover:text-[#1F1F21] transition-colors'
-                    } cursor-pointer`}
-                  >
-                    {page}
-                  </button>
-                ))}
-              </div>
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className={`avantbold px-4 py-2 rounded border border-[#FFF7DC] ${
-                  currentPage === totalPages
-                    ? 'cream-text opacity-50 cursor-not-allowed'
-                    : 'cream-text cursor-pointer hover:bg-[#FFF7DC] hover:text-[#1F1F21] transition-colors'
-                }`}
-              >
-                Next
-              </button>
-            </div>
-          )}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
         </div>
       </div>
     </div>
@@ -551,48 +515,12 @@ const ProfileMobile = ({ openModal, onEditProfile, userData, ordersByTab, active
             </p>
           </div>
         )}
-        {/* Pagination Controls */}
-        {orders.length > ordersPerPage && (
-          <div className="flex items-center justify-center gap-3 mt-8 mb-4">
-            <button
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className={`avantbold px-3 py-2 rounded border border-[#FFF7DC] text-sm ${
-                currentPage === 1
-                  ? 'cream-text opacity-50 cursor-not-allowed'
-                  : 'cream-text cursor-pointer hover:bg-[#FFF7DC] hover:text-[#1F1F21] transition-colors'
-              }`}
-            >
-              Prev
-            </button>
-            <div className="flex gap-1">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <button
-                  key={page}
-                  onClick={() => handlePageChange(page)}
-                  className={`avantbold w-8 h-8 rounded border border-[#FFF7DC] text-xs ${
-                    currentPage === page
-                      ? 'cream-bg metallic-text'
-                      : 'cream-text hover:bg-[#FFF7DC] hover:text-[#1F1F21] transition-colors'
-                  } cursor-pointer`}
-                >
-                  {page}
-                </button>
-              ))}
-            </div>
-            <button
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className={`avantbold px-3 py-2 rounded border border-[#FFF7DC] text-sm ${
-                currentPage === totalPages
-                  ? 'cream-text opacity-50 cursor-not-allowed'
-                  : 'cream-text cursor-pointer hover:bg-[#FFF7DC] hover:text-[#1F1F21] transition-colors'
-              }`}
-            >
-              Next
-            </button>
-          </div>
-        )}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          isMobile={true}
+        />
       </div>
     </div>
   )

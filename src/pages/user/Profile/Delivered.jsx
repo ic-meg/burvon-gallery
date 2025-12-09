@@ -12,6 +12,7 @@ import orderApi from '../../../api/orderApi'
 import { getMyReviews } from '../../../api/reviewApi'
 import Toast from '../../../components/Toast'
 import ProfileSkeleton from '../../../components/ProfileSkeleton'
+import Pagination from '../../../components/Pagination'
 import ReviewModal from '../../../components/ReviewModal'
 import ReviewModalMobile from '../../../components/ReviewModalMobile'
 import { groupOrdersByTab } from './profileUtils'
@@ -142,6 +143,24 @@ const ProfileDesktop = ({ openModal, onEditProfile, openRateModal, userData, ord
   const orders = ordersByTab[activeTab] || []
   const navigate = useNavigate()
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const ordersPerPage = 3
+  const totalPages = Math.ceil(orders.length / ordersPerPage)
+  const startIndex = (currentPage - 1) * ordersPerPage
+  const paginatedOrders = orders.slice(startIndex, startIndex + ordersPerPage)
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page)
+    }
+  }
+
+  // Reset to page 1 when tab changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [activeTab])
+
   const handleLogout = () => {
     logout();
     navigate('/login');
@@ -221,7 +240,7 @@ const ProfileDesktop = ({ openModal, onEditProfile, openRateModal, userData, ord
           ) : orders.length > 0 ? (
             <>
               {/* Loop through all order items */}
-              {orders.map((order) => {
+              {paginatedOrders.map((order) => {
                 const isProductReviewed = order.items?.[0]?.product_id && reviewedProducts.has(order.items[0].product_id)
                 return (
                   <div key={order.id} className="mb-6">
@@ -307,6 +326,11 @@ const ProfileDesktop = ({ openModal, onEditProfile, openRateModal, userData, ord
                   </div>
                 )
               })}
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
             </>
           ) : (
             <div className="avant cream-text text-lg mt-12 text-center">
@@ -327,6 +351,24 @@ const ProfileMobile = ({ openModal, onEditProfile, openRateModal, userData, orde
   const [showSubtotal, setShowSubtotal] = useState({})
   const orders = ordersByTab[activeTab] || []
   const navigate = useNavigate()
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const ordersPerPage = 3
+  const totalPages = Math.ceil(orders.length / ordersPerPage)
+  const startIndex = (currentPage - 1) * ordersPerPage
+  const paginatedOrders = orders.slice(startIndex, startIndex + ordersPerPage)
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page)
+    }
+  }
+
+  // Reset to page 1 when tab changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [activeTab])
 
   return (
     <div className="md:hidden w-full min-h-screen px-4 pt-2 text-[#fff7dc] relative">
@@ -373,7 +415,7 @@ const ProfileMobile = ({ openModal, onEditProfile, openRateModal, userData, orde
         ) : orders.length > 0 ? (
           <>
             {/* Loop through all order items */}
-            {orders.map((order) => {
+            {paginatedOrders.map((order) => {
               const isProductReviewed = order.items?.[0]?.product_id && reviewedProducts.has(order.items[0].product_id)
               const isExpanded = showSubtotal[order.id]
 
@@ -451,6 +493,12 @@ const ProfileMobile = ({ openModal, onEditProfile, openRateModal, userData, orde
                 </div>
               )
             })}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              isMobile={true}
+            />
           </>
         ) : (
           <div className="avant cream-text text-lg mt-12 text-center">

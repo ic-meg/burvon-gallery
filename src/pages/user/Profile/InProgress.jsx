@@ -11,6 +11,7 @@ import userApi from '../../../api/userApi'
 import orderApi from '../../../api/orderApi'
 import Toast from '../../../components/Toast'
 import ProfileSkeleton from '../../../components/ProfileSkeleton'
+import Pagination from '../../../components/Pagination'
 import { groupOrdersByTab } from './profileUtils'
 
 const tabs = [
@@ -193,6 +194,21 @@ const ProfileDesktop = ({ openModal, onEditProfile, userData, ordersByTab, activ
   const rawOrders = ordersByTab[activeTab] || []
   const orders = mergeOrdersByOrderId(rawOrders)
   const navigate = useNavigate()
+  const [currentPage, setCurrentPage] = useState(1)
+  const ordersPerPage = 3
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [activeTab])
+
+  const totalPages = Math.ceil(orders.length / ordersPerPage)
+  const startIndex = (currentPage - 1) * ordersPerPage
+  const paginatedOrders = orders.slice(startIndex, startIndex + ordersPerPage)
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   const handleLogout = () => {
     logout();
@@ -277,7 +293,7 @@ const ProfileDesktop = ({ openModal, onEditProfile, userData, ordersByTab, activ
             </div>
           ) : orders.length > 0 ? (
             <>
-              {orders.map((order) => (
+              {paginatedOrders.map((order) => (
                 <div key={order.order_id} className="mb-6">
                   {/* ORDER ID */}
                   <div className="avantbold cream-text text-2xl mb-2 font-bold">ORDER ID : #{typeof order.order_id === 'string' ? order.order_id.split('-')[0] : order.order_id}</div>
@@ -372,6 +388,11 @@ const ProfileDesktop = ({ openModal, onEditProfile, userData, ordersByTab, activ
                   ))}
                 </div>
               ))}
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
             </>
           ) : (
             <div className="avant cream-text text-lg mt-12 text-center">
@@ -393,6 +414,21 @@ const ProfileMobile = ({ openModal, onEditProfile, userData, ordersByTab, active
   const rawOrders = ordersByTab[activeTab] || []
   const orders = mergeOrdersByOrderId(rawOrders)
   const navigate = useNavigate()
+  const [currentPage, setCurrentPage] = useState(1)
+  const ordersPerPage = 3
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [activeTab])
+
+  const totalPages = Math.ceil(orders.length / ordersPerPage)
+  const startIndex = (currentPage - 1) * ordersPerPage
+  const paginatedOrders = orders.slice(startIndex, startIndex + ordersPerPage)
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   const toggleSubtotal = (orderId) => {
     setExpandedOrders(prev => ({ ...prev, [orderId]: !prev[orderId] }))
@@ -446,7 +482,7 @@ const ProfileMobile = ({ openModal, onEditProfile, userData, ordersByTab, active
           </div>
         ) : orders.length > 0 ? (
           <>
-            {orders.map((order) => (
+            {paginatedOrders.map((order) => (
               <div key={order.order_id} className="mb-6">
                 <div className="flex justify-between items-center mb-2">
                   <span className="avantbold cream-text text-xs">ORDER ID : #{typeof order.order_id === 'string' ? order.order_id.split('-')[0] : order.order_id}</span>
@@ -527,6 +563,12 @@ const ProfileMobile = ({ openModal, onEditProfile, userData, ordersByTab, active
                 <div className="w-full h-[1px] bg-[#FFF7DC] mt-4" />
               </div>
             ))}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              isMobile={true}
+            />
           </>
         ) : (
           <div className="avant cream-text text-lg mt-12 text-center">

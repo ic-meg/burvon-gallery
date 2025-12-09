@@ -11,6 +11,7 @@ import userApi from '../../../api/userApi'
 import orderApi from '../../../api/orderApi'
 import Toast from '../../../components/Toast'
 import ProfileSkeleton from '../../../components/ProfileSkeleton'
+import Pagination from '../../../components/Pagination'
 import { groupOrdersByTab } from './profileUtils'
 
 const tabs = [
@@ -136,8 +137,25 @@ const EditProfileModal = ({ open, onClose, userData, onUpdate }) => {
 // Desktop Layout
 const ProfileDesktop = ({ openModal, onEditProfile, userData, ordersByTab, activeTab, setActiveTab }) => {
   const orders = ordersByTab[activeTab] || []
-  const selectedOrder = orders[0]
   const navigate = useNavigate()
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const ordersPerPage = 3
+  const totalPages = Math.ceil(orders.length / ordersPerPage)
+  const startIndex = (currentPage - 1) * ordersPerPage
+  const paginatedOrders = orders.slice(startIndex, startIndex + ordersPerPage)
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page)
+    }
+  }
+
+  // Reset to page 1 when tab changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [activeTab])
 
   const handleLogout = () => {
     logout();
@@ -211,68 +229,77 @@ const ProfileDesktop = ({ openModal, onEditProfile, userData, ordersByTab, activ
         <div className="flex-shrink-0" style={{ width: '60px' }}></div>
         {/* Orders and Details */}
         <div className="flex flex-col flex-1 gap-6">
-          {selectedOrder ? (
+          {orders.length > 0 ? (
             <>
-              {/* ORDER ID */}
-              <div className="avantbold cream-text text-2xl mb-2 font-bold">ORDER ID : #{selectedOrder.order_id}</div>
-              {selectedOrder.items.map((item) => (
-                <div key={item.order_item_id} className="flex items-center justify-between rounded-lg px-0 py-2 w-full">
-                  {/* Image and product info */}
-                  <div className="flex items-center gap-4 min-w-[320px]">
-                    <img
-                      src={item.image}
-                      alt={item.variant}
-                      className="w-25 h-25 object-cover rounded-md cursor-pointer"
-                      onClick={() => openModal(item.image)}
-                      onError={(e) => {
-                        e.target.src = 'https://via.placeholder.com/200'
-                      }}
-                    />
-                    <div>
-                      <div className="avantbold cream-text text-lg text-nowrap">{item.name}</div> {/* product name */}
-                      <div className="bebas cream-text text-lg">{item.variant}</div> {/* product type "odyssey" */}
-                      <div className="flex gap-2 items-center mt-1">
-                        {item.oldPrice && (
-                          <span
-                            className="avant text-md line-through"
-                            style={{ color: '#959595' }}
-                          >
-                            PHP {item.oldPrice.toFixed(2)}
-                          </span>
-                        )}
-                        <span className="avantbold cream-text text-lg">PHP {item.price.toFixed(2)}</span>
-                      </div>
-                      <div className="avantbold cream-text text-md mt-1" style={{ color: '#959595' }}>QUANTITY: {item.quantity} &nbsp; SIZE: {item.size}
+              {paginatedOrders.map((order) => (
+                <div key={order.order_id} className="mb-6">
+                  {/* ORDER ID */}
+                  <div className="avantbold cream-text text-2xl mb-2 font-bold">ORDER ID : #{order.order_id}</div>
+                  {order.items.map((item) => (
+                    <div key={item.order_item_id} className="flex items-center justify-between rounded-lg px-0 py-2 w-full">
+                      {/* Image and product info */}
+                      <div className="flex items-center gap-4 min-w-[320px]">
+                        <img
+                          src={item.image}
+                          alt={item.variant}
+                          className="w-25 h-25 object-cover rounded-md cursor-pointer"
+                          onClick={() => openModal(item.image)}
+                          onError={(e) => {
+                            e.target.src = 'https://via.placeholder.com/200'
+                          }}
+                        />
+                        <div>
+                          <div className="avantbold cream-text text-lg text-nowrap">{item.name}</div> {/* product name */}
+                          <div className="bebas cream-text text-lg">{item.variant}</div> {/* product type "odyssey" */}
+                          <div className="flex gap-2 items-center mt-1">
+                            {item.oldPrice && (
+                              <span
+                                className="avant text-md line-through"
+                                style={{ color: '#959595' }}
+                              >
+                                PHP {item.oldPrice.toFixed(2)}
+                              </span>
+                            )}
+                            <span className="avantbold cream-text text-lg">PHP {item.price.toFixed(2)}</span>
+                          </div>
+                          <div className="avantbold cream-text text-md mt-1" style={{ color: '#959595' }}>QUANTITY: {item.quantity} &nbsp; SIZE: {item.size}
 
-                      </div>
-                    </div>
-                  </div>
-                  {/* Order details and actions - now shown for each item */}
-                  <div className="flex flex-row items-center justify-between w-full ml-8">
-                    <div className="flex flex-col gap-1 ml-45 mt-[-40px] mr-12">
-                      <div className="flex gap-20"> {/* gap between item total and refund amount */}
-                        <div>
-                          <div className="bebas cream-text text-md">ITEM TOTAL:</div>
-                          <div className="avant cream-text text-lg">PHP {selectedOrder.subtotal.toLocaleString(undefined, {minimumFractionDigits:2})}</div>
-                        </div>
-                        <div>
-                          <div className="bebas cream-text text-md">REFUND AMOUNT:</div>
-                          <div className="avant cream-text text-lg">PHP {selectedOrder.subtotal.toLocaleString(undefined, {minimumFractionDigits:2})}</div>
+                          </div>
                         </div>
                       </div>
+                      {/* Order details and actions - now shown for each item */}
+                      <div className="flex flex-row items-center justify-between w-full ml-8">
+                        <div className="flex flex-col gap-1 ml-45 mt-[-40px] mr-12">
+                          <div className="flex gap-20"> {/* gap between item total and refund amount */}
+                            <div>
+                              <div className="bebas cream-text text-md">ITEM TOTAL:</div>
+                              <div className="avant cream-text text-lg">PHP {order.subtotal.toLocaleString(undefined, {minimumFractionDigits:2})}</div>
+                            </div>
+                            <div>
+                              <div className="bebas cream-text text-md">REFUND AMOUNT:</div>
+                              <div className="avant cream-text text-lg">PHP {order.subtotal.toLocaleString(undefined, {minimumFractionDigits:2})}</div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-2 mb-17">
+                          <button className="avantbold cream-text px-4 py-2 cursor-pointer">REVIEW IN PROGRESS</button>
+                          <button
+                            className="avantbold cream-bg metallic-text px-4 py-2 rounded border border-[#FFF7DC] cursor-pointer"
+                            onClick={() => navigate(`/profile/reviewdetails?orderId=${order.order_id}`)}
+                          >
+                            VIEW DETAILS
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex gap-2 mb-17">
-                      <button className="avantbold cream-text px-4 py-2 cursor-pointer">REVIEW IN PROGRESS</button>
-                      <button
-                        className="avantbold cream-bg metallic-text px-4 py-2 rounded border border-[#FFF7DC] cursor-pointer"
-                        onClick={() => navigate(`/profile/reviewdetails?orderId=${selectedOrder.order_id}`)}
-                      >
-                        VIEW DETAILS
-                      </button>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               ))}
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
             </>
           ) : (
             <div className="avant cream-text text-lg mt-12 text-center">
@@ -290,10 +317,27 @@ const ProfileDesktop = ({ openModal, onEditProfile, userData, ordersByTab, activ
 
 // Mobile Layout 
 const ProfileMobile = ({ openModal, onEditProfile, userData, ordersByTab, activeTab, setActiveTab }) => {
-  const [showSubtotal, setShowSubtotal] = useState(false)
+  const [showSubtotal, setShowSubtotal] = useState({})
   const orders = ordersByTab[activeTab] || []
-  const selectedOrder = orders[0]
   const navigate = useNavigate()
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const ordersPerPage = 3
+  const totalPages = Math.ceil(orders.length / ordersPerPage)
+  const startIndex = (currentPage - 1) * ordersPerPage
+  const paginatedOrders = orders.slice(startIndex, startIndex + ordersPerPage)
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page)
+    }
+  }
+
+  // Reset to page 1 when tab changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [activeTab])
 
   return (
     <div className="md:hidden w-full min-h-screen px-4 pt-2 text-[#fff7dc] relative">
@@ -333,64 +377,74 @@ const ProfileMobile = ({ openModal, onEditProfile, userData, ordersByTab, active
       </div>
       {/* Order Section */}
       <div className="mt-4">
-        {selectedOrder ? (
+        {orders.length > 0 ? (
           <>
-            <div className="flex justify-between items-center mb-2">
-              <span className="avantbold cream-text text-xs">ORDER ID : #{selectedOrder.order_id}</span>
-              <span className="avantbold cream-text text-xs">EXPECTED DELIVERY: {selectedOrder.delivery}</span>
-            </div>
-            <div className="flex gap-4 items-start rounded-lg p-2">
-              <img
-                src={selectedOrder.items[0]?.image}
-                alt={selectedOrder.items[0]?.variant}
-                className="w-32 h-32 object-cover rounded-md cursor-pointer"
-                onClick={() => openModal(selectedOrder.items[0]?.image)}
-                onError={(e) => {
-                  e.target.src = 'https://via.placeholder.com/200'
-                }}
-              />
-              <div className="flex-1">
-                <div className="avantbold cream-text text-sm text-nowrap leading-tight">
-                  {selectedOrder.items[0]?.name}
+            {paginatedOrders.map((order) => (
+              <div key={order.order_id} className="mb-6">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="avantbold cream-text text-xs">ORDER ID : #{order.order_id}</span>
+                  <span className="avantbold cream-text text-xs">EXPECTED DELIVERY: {order.delivery}</span>
                 </div>
-                <div className="bebas cream-text text-sm mt-1">{selectedOrder.items[0]?.variant}</div>
-                <div className="flex gap-6 mt-1">
-                  <span className="avantbold text-sm" style={{ color: '#959595' }}>QUANTITY: {selectedOrder.items[0]?.quantity}</span>
-                  <span className="avantbold text-sm" style={{ color: '#959595' }}>SIZE: {selectedOrder.items[0]?.size}</span>
-                </div>
-                <div className="flex gap-2 justify-end mt-2">
-                  {selectedOrder.items[0]?.oldPrice && (
-                    <span className="avant text-sm line-through" style={{ color: '#959595' }}>PHP {selectedOrder.items[0].oldPrice.toFixed(2)}</span>
-                  )}
-                  <span className="avantbold cream-text text-sm">PHP {selectedOrder.items[0]?.price.toFixed(2)}</span>
-                </div>
-                {/* View More button */}
-                <button
-                  className="avantbold cream-text text-sm mt-2 flex items-center gap-2 focus:outline-none"
-                  onClick={() => setShowSubtotal((prev) => !prev)}
-                  style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
-                >
-                  View More <img src={DropDown} alt="Dropdown" className={`w-3 h-3 inline-block transition-transform ${showSubtotal ? 'rotate-180' : ''}`} />
-                </button>
-                {/* Subtotal */}
-                {showSubtotal && (
-                  <div className="flex justify-end mt-2">
-                    <span className="avantbold text-nowrap cream-text text-xs" style={{ color: '#959595' }}>Refund Amount:</span>
-                    <span className="avantbold text-nowrap cream-text text-xs ml-2">PHP {selectedOrder.subtotal.toLocaleString(undefined, {minimumFractionDigits:2})}</span>
+                <div className="flex gap-4 items-start rounded-lg p-2">
+                  <img
+                    src={order.items[0]?.image}
+                    alt={order.items[0]?.variant}
+                    className="w-32 h-32 object-cover rounded-md cursor-pointer"
+                    onClick={() => openModal(order.items[0]?.image)}
+                    onError={(e) => {
+                      e.target.src = 'https://via.placeholder.com/200'
+                    }}
+                  />
+                  <div className="flex-1">
+                    <div className="avantbold cream-text text-sm text-nowrap leading-tight">
+                      {order.items[0]?.name}
+                    </div>
+                    <div className="bebas cream-text text-sm mt-1">{order.items[0]?.variant}</div>
+                    <div className="flex gap-6 mt-1">
+                      <span className="avantbold text-sm" style={{ color: '#959595' }}>QUANTITY: {order.items[0]?.quantity}</span>
+                      <span className="avantbold text-sm" style={{ color: '#959595' }}>SIZE: {order.items[0]?.size}</span>
+                    </div>
+                    <div className="flex gap-2 justify-end mt-2">
+                      {order.items[0]?.oldPrice && (
+                        <span className="avant text-sm line-through" style={{ color: '#959595' }}>PHP {order.items[0].oldPrice.toFixed(2)}</span>
+                      )}
+                      <span className="avantbold cream-text text-sm">PHP {order.items[0]?.price.toFixed(2)}</span>
+                    </div>
+                    {/* View More button */}
+                    <button
+                      className="avantbold cream-text text-sm mt-2 flex items-center gap-2 focus:outline-none"
+                      onClick={() => setShowSubtotal((prev) => ({ ...prev, [order.order_id]: !prev[order.order_id] }))}
+                      style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                    >
+                      View More <img src={DropDown} alt="Dropdown" className={`w-3 h-3 inline-block transition-transform ${showSubtotal[order.order_id] ? 'rotate-180' : ''}`} />
+                    </button>
+                    {/* Subtotal */}
+                    {showSubtotal[order.order_id] && (
+                      <div className="flex justify-end mt-2">
+                        <span className="avantbold text-nowrap cream-text text-xs" style={{ color: '#959595' }}>Refund Amount:</span>
+                        <span className="avantbold text-nowrap cream-text text-xs ml-2">PHP {order.subtotal.toLocaleString(undefined, {minimumFractionDigits:2})}</span>
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
+                <div className="flex justify-end gap-2 mt-6 mb-2">
+                  <button className="avantbold cream-text px-4 py-3 text-sm">REVIEW IN PROGRESS</button>
+                  <button 
+                    className="avantbold cream-bg metallic-text px-4 py-0 rounded border border-[#FFF7DC] text-sm"
+                    onClick={() => navigate(`/profile/reviewdetails?orderId=${order.order_id}`)}
+                  >
+                    VIEW DETAILS
+                  </button>
+                </div>
+                <div className="w-full h-[1px] bg-[#FFF7DC] mt-4" />
               </div>
-            </div>
-            <div className="flex justify-end gap-2 mt-6 mb-2">
-              <button className="avantbold cream-text px-4 py-3 text-sm">REVIEW IN PROGRESS</button>
-              <button 
-                className="avantbold cream-bg metallic-text px-4 py-0 rounded border border-[#FFF7DC] text-sm"
-                onClick={() => navigate(`/profile/reviewdetails?orderId=${selectedOrder.order_id}`)}
-              >
-                VIEW DETAILS
-              </button>
-            </div>
-            <div className="w-full h-[1px] bg-[#FFF7DC] mt-4" />
+            ))}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              isMobile={true}
+            />
           </>
         ) : (
           <div className="avant cream-text text-lg mt-12 text-center">
