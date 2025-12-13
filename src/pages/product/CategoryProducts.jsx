@@ -235,7 +235,7 @@ const CategoryProducts = () => {
       images:
         Array.isArray(product.images) && product.images.length > 0
           ? product.images
-          : ["https://via.placeholder.com/400x400/cccccc/666666?text=Product+Image"],
+          : [],
     };
 
     return formattedProduct;
