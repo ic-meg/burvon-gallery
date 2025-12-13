@@ -139,7 +139,7 @@ export default function ProductCard({
           style={{ height: mobileImageHeight }}
         >
           <div className="absolute top-3 left-4 right-4 flex justify-between items-center z-30">
-            {hasTryOnAvailable(item.category, item.name) && (
+            {hasTryOnAvailable(item.category, item.name, item.try_on_image_path) && (
               <button
                 type="button"
                 onClick={(e) => {
@@ -246,7 +246,7 @@ export default function ProductCard({
     >
       {/* Try-on and Heart Icons */}
       <div className="w-full flex justify-between items-center px-6 pt-6 absolute top-0 left-0 z-30">
-        {hasTryOnAvailable(item.category, item.name) ? (
+        {hasTryOnAvailable(item.category, item.name, item.try_on_image_path) ? (
           <button
             type="button"
             onClick={(e) => {

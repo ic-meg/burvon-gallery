@@ -355,10 +355,18 @@ const ProductDesc = () => {
         productData.collection?.name || productData.collection || null,
       category: getCategoryName(productData.category_id),
       model_3d_path: productData.model_3d_path || null,
+      try_on_image_path: productData.try_on_image_path || null,
     };
   };
 
   const formattedProduct = product ? { ...product, reviews: productReviews } : null;
+
+  const checkTryOnAvailable = () => {
+    const categoryName = formattedProduct?.category || product?.category;
+    const productName = formattedProduct?.name || product?.name;
+    const tryOnPath = formattedProduct?.try_on_image_path || product?.try_on_image_path;
+    return hasTryOnAvailable(categoryName, productName, tryOnPath);
+  };
 
   const getModelPathForProduct = (p) => {
     if (!p || !p.name) return null;
@@ -705,7 +713,7 @@ const ProductDesc = () => {
   };
 
   const handle3DButtonClick = () => {
-    if (has3DBeenViewed && hasTryOnAvailable(formattedProduct.category || product?.category, formattedProduct.name || product?.name)) {
+    if (has3DBeenViewed && checkTryOnAvailable()) {
       // Navigate to try-on page with the specific product and category
       const category = formattedProduct.category || product?.category || "";
       const productName = formattedProduct.name || product?.name || "";
@@ -1043,15 +1051,15 @@ const ProductDesc = () => {
                       e.stopPropagation();
                       handle3DButtonClick();
                     }}
-                    title={has3DBeenViewed && hasTryOnAvailable(formattedProduct.category || product?.category, formattedProduct.name || product?.name) ? "Try on this product" : "Click to open Interactive 3D"}
+                    title={has3DBeenViewed && checkTryOnAvailable() ? "Try on this product" : "Click to open Interactive 3D"}
                     className="absolute top-4 right-4 z-10 flex items-center gap-2 bg-gradient-to-r from-[#FFDFAF] to-[#FFF7DC] text-[#1f1f21] px-3 py-1 rounded-md shadow-[0_6px_20px_rgba(0,0,0,0.35)] border border-[#f1e6c9] hover:scale-105 transform transition-all duration-200 active:scale-95 cursor-pointer"
-                    aria-label={has3DBeenViewed && hasTryOnAvailable(formattedProduct.category || product?.category, formattedProduct.name || product?.name) ? "Try on this product" : "Open Interactive 3D viewer"}
+                    aria-label={has3DBeenViewed && checkTryOnAvailable() ? "Try on this product" : "Open Interactive 3D viewer"}
                   >
                     <span className="w-7 h-7 rounded-full  flex items-center justify-center shadow-inner">
-                      <img src={has3DBeenViewed && hasTryOnAvailable(formattedProduct.category || product?.category, formattedProduct.name || product?.name) ? TryOnBlack : Icon3D} alt={has3DBeenViewed && hasTryOnAvailable(formattedProduct.category || product?.category, formattedProduct.name || product?.name) ? "Try On" : "3D"} className="w-4 h-4" />
+                      <img src={has3DBeenViewed && checkTryOnAvailable() ? TryOnBlack : Icon3D} alt={has3DBeenViewed && checkTryOnAvailable() ? "Try On" : "3D"} className="w-4 h-4" />
                     </span>
                     <span className="avantbold text-sm tracking-wide">
-                      {has3DBeenViewed && hasTryOnAvailable(formattedProduct.category || product?.category, formattedProduct.name || product?.name) ? "Try On" : "Interactive 3D"}
+                      {has3DBeenViewed && checkTryOnAvailable() ? "Try On" : "Interactive 3D"}
                     </span>
                   </button>
                 )}
@@ -1127,7 +1135,7 @@ const ProductDesc = () => {
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
-                    {hasTryOnAvailable(formattedProduct.category || product?.category, formattedProduct.name || product?.name) && (
+                    {checkTryOnAvailable() && (
                       <button
                         onClick={() => {
                           const category = formattedProduct.category || product?.category || "";
@@ -1373,19 +1381,19 @@ const ProductDesc = () => {
                       e.stopPropagation();
                       handle3DButtonClick();
                     }}
-                    title={has3DBeenViewed && hasTryOnAvailable(formattedProduct.category || product?.category, formattedProduct.name || product?.name) ? "Try on this product" : "Click to open Interactive 3D"}
+                    title={has3DBeenViewed && checkTryOnAvailable() ? "Try on this product" : "Click to open Interactive 3D"}
                     className="absolute top-4 right-4 z-10 cursor-pointer flex items-center gap-4 bg-gradient-to-r from-[#FFDFAF] to-[#FFF7DC] text-[#1f1f21] px-5 py-3 rounded-3xl shadow-[0_10px_30px_rgba(0,0,0,0.35)] border border-[#f1e6c9] hover:scale-105 transform transition-all duration-200 active:scale-98"
-                    aria-label={has3DBeenViewed && hasTryOnAvailable(formattedProduct.category || product?.category, formattedProduct.name || product?.name) ? "Try on this product" : "Open Interactive 3D viewer"}
+                    aria-label={has3DBeenViewed && checkTryOnAvailable() ? "Try on this product" : "Open Interactive 3D viewer"}
                   >
                     <span className="w-10 h-10 rounded-full  flex items-center justify-center shadow-inner">
-                      <img src={has3DBeenViewed && hasTryOnAvailable(formattedProduct.category || product?.category, formattedProduct.name || product?.name) ? TryOnBlack : Icon3D} alt={has3DBeenViewed && hasTryOnAvailable(formattedProduct.category || product?.category, formattedProduct.name || product?.name) ? "Try On" : "3D"} className="w-5 h-5" />
+                      <img src={has3DBeenViewed && checkTryOnAvailable() ? TryOnBlack : Icon3D} alt={has3DBeenViewed && checkTryOnAvailable() ? "Try On" : "3D"} className="w-5 h-5" />
                     </span>
                     <div className="text-left">
                       <div className="avantbold text-base tracking-wide">
-                        {has3DBeenViewed && hasTryOnAvailable(formattedProduct.category || product?.category, formattedProduct.name || product?.name) ? "Try On" : "Interactive 3D"}
+                        {has3DBeenViewed && checkTryOnAvailable() ? "Try On" : "Interactive 3D"}
                       </div>
                       <div className="text-xs text-[#6f6f6f]">
-                        {has3DBeenViewed && hasTryOnAvailable(formattedProduct.category || product?.category, formattedProduct.name || product?.name) ? "View on yourself" : "Click to open"}
+                        {has3DBeenViewed && checkTryOnAvailable() ? "View on yourself" : "Click to open"}
                       </div>
                     </div>
                   </button>
@@ -1467,7 +1475,7 @@ const ProductDesc = () => {
                   {formattedProduct.collectionName} {formattedProduct.name}
                 </h2>
                 <div className="flex items-center gap-3">
-                  {hasTryOnAvailable(formattedProduct.category || product?.category, formattedProduct.name || product?.name) && (
+                  {checkTryOnAvailable() && (
                     <button
                       onClick={() => {
                         const category = formattedProduct.category || product?.category || "";

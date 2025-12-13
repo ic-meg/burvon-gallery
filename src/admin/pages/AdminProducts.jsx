@@ -50,6 +50,7 @@ const AdminProducts = ({ hasAccess = true }) => {
     imageUrls: [null, null, null, null, null],
     description: "",
     model3DFile: null,
+    tryOnImageFile: null,
   });
   const [editProduct, setEditProduct] = useState({
     id: null,
@@ -66,6 +67,9 @@ const AdminProducts = ({ hasAccess = true }) => {
     model3DFile: null,
     model3DPath: null,
     model3DUrl: null,
+    tryOnImageFile: null,
+    tryOnImagePath: null,
+    tryOnImageUrl: null,
   });
   const [originalEditProduct, setOriginalEditProduct] = useState(null);
   const [stockData, setStockData] = useState({
@@ -447,6 +451,34 @@ const AdminProducts = ({ hasAccess = true }) => {
     }
   };
 
+  const handleTryOnImageUpload = (file, isEdit = false) => {
+    if (!file) return;
+    const validation = storageService.validateTryOnImageFile(file);
+    if (!validation.valid) {
+      showMessage("error", validation.error);
+      return;
+    }
+    if (isEdit) {
+      setEditProduct((prev) => ({ ...prev, tryOnImageFile: file }));
+    } else {
+      setNewProduct((prev) => ({ ...prev, tryOnImageFile: file }));
+    }
+    showMessage("success", "Try-on image selected");
+  };
+
+  const handleRemoveTryOnImage = (isEdit = false) => {
+    if (isEdit) {
+      setEditProduct((prev) => ({
+        ...prev,
+        tryOnImageFile: null,
+        tryOnImagePath: null,
+        tryOnImageUrl: null,
+      }));
+    } else {
+      setNewProduct((prev) => ({ ...prev, tryOnImageFile: null }));
+    }
+  };
+
   const handleStockClick = (product) => {
     setSelectedProduct(product);
 
@@ -672,6 +704,9 @@ const AdminProducts = ({ hasAccess = true }) => {
     if (editProduct.model3DFile) return true;
     if (editProduct.model3DPath !== originalEditProduct.model3DPath) return true;
 
+    if (editProduct.tryOnImageFile) return true;
+    if (editProduct.tryOnImagePath !== originalEditProduct.tryOnImagePath) return true;
+
     return false;
   };
 
@@ -755,6 +790,22 @@ const AdminProducts = ({ hasAccess = true }) => {
         model3DPath = modelResult.filePath;
       }
 
+      let tryOnImagePath = null;
+      if (newProduct.tryOnImageFile) {
+        showMessage("info", "Uploading try-on image...");
+        const tryOnResult = await storageService.uploadTryOnImage(
+          newProduct.tryOnImageFile,
+          newProduct.name,
+          categoryName
+        );
+        if (!tryOnResult.success) {
+          showMessage("error", `Try-on upload failed: ${tryOnResult.error}`);
+          setSaving(false);
+          return;
+        }
+        tryOnImagePath = tryOnResult.filePath;
+      }
+
       const productData = {
         name: newProduct.name.trim(),
         collection_id: parseInt(newProduct.collection_id),
@@ -769,6 +820,7 @@ const AdminProducts = ({ hasAccess = true }) => {
         images: imageUrls,
         description: newProduct.description?.trim() || "",
         model_3d_path: model3DPath,
+        try_on_image_path: tryOnImagePath,
       };
 
       const result = await createProduct(productData, imageFiles);
@@ -788,6 +840,7 @@ const AdminProducts = ({ hasAccess = true }) => {
           imageUrls: [null, null, null, null, null],
           description: "",
           model3DFile: null,
+          tryOnImageFile: null,
         });
       } else {
         await cleanupFailedImages(uploadedImagePaths);
@@ -870,6 +923,11 @@ const AdminProducts = ({ hasAccess = true }) => {
       model3DPath: product.model_3d_path || null,
       model3DUrl: product.model_3d_path
         ? storageService.get3DModelUrl(product.model_3d_path)
+        : null,
+      tryOnImageFile: null,
+      tryOnImagePath: product.try_on_image_path || null,
+      tryOnImageUrl: product.try_on_image_path
+        ? storageService.getTryOnImageUrl(product.try_on_image_path)
         : null,
     };
 
@@ -981,6 +1039,28 @@ const AdminProducts = ({ hasAccess = true }) => {
         model3DPath = null;
       }
 
+      let tryOnImagePath = editProduct.tryOnImagePath;
+      if (editProduct.tryOnImageFile) {
+        if (originalEditProduct?.tryOnImagePath) {
+          await storageService.deleteTryOnImage(originalEditProduct.tryOnImagePath);
+        }
+        showMessage("info", "Uploading try-on image...");
+        const tryOnResult = await storageService.uploadTryOnImage(
+          editProduct.tryOnImageFile,
+          editProduct.name,
+          categoryName
+        );
+        if (!tryOnResult.success) {
+          showMessage("error", `Try-on upload failed: ${tryOnResult.error}`);
+          setSaving(false);
+          return;
+        }
+        tryOnImagePath = tryOnResult.filePath;
+      } else if (!editProduct.tryOnImagePath && originalEditProduct?.tryOnImagePath) {
+        await storageService.deleteTryOnImage(originalEditProduct.tryOnImagePath);
+        tryOnImagePath = null;
+      }
+
       const productData = {
         name: editProduct.name.trim(),
         collection_id: parseInt(editProduct.collection_id),
@@ -995,6 +1075,7 @@ const AdminProducts = ({ hasAccess = true }) => {
         images: imageUrls,
         description: editProduct.description?.trim() || "",
         model_3d_path: model3DPath,
+        try_on_image_path: tryOnImagePath,
       };
 
       const result = await updateProduct(
@@ -1021,6 +1102,9 @@ const AdminProducts = ({ hasAccess = true }) => {
           model3DFile: null,
           model3DPath: null,
           model3DUrl: null,
+          tryOnImageFile: null,
+          tryOnImagePath: null,
+          tryOnImageUrl: null,
         });
       } else {
         await cleanupFailedImages(uploadedImagePaths);
@@ -2145,6 +2229,8 @@ const AdminProducts = ({ hasAccess = true }) => {
         onImageUpload={handleImageUpload}
         on3DModelUpload={(file) => handle3DModelUpload(file, false)}
         onRemove3DModel={() => handleRemove3DModel(false)}
+        onTryOnImageUpload={(file) => handleTryOnImageUpload(file, false)}
+        onRemoveTryOnImage={() => handleRemoveTryOnImage(false)}
         onAddProduct={handleAddProduct}
         saving={saving}
         uploading={uploading}
@@ -2168,6 +2254,8 @@ const AdminProducts = ({ hasAccess = true }) => {
         onRemoveImage={handleRemoveEditImage}
         on3DModelUpload={(file) => handle3DModelUpload(file, true)}
         onRemove3DModel={() => handleRemove3DModel(true)}
+        onTryOnImageUpload={(file) => handleTryOnImageUpload(file, true)}
+        onRemoveTryOnImage={() => handleRemoveTryOnImage(true)}
         onUpdateProduct={handleUpdateProduct}
         saving={saving}
         uploading={uploading}

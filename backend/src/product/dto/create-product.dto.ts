@@ -78,4 +78,8 @@ export class CreateProductDto {
   @IsOptional()
   @IsString()
   model_3d_path?: string;
+
+  @IsOptional()
+  @IsString()
+  try_on_image_path?: string;
 }

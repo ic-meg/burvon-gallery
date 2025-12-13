@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import Layout from "../../../components/Layout";
 import {
@@ -14,7 +14,8 @@ import { useFaceLandmarks } from "../../../contexts/FaceLandmarksContext";
 import { useHandLandmarks } from "../../../contexts/HandLandmarksContext";
 import { ImageJewelryOverlay } from "../../../components/3Dcomponents/TryOn/ImageJewelryOverlay";
 import HandDetectionGuide from "../../../components/3Dcomponents/TryOn/HandDetectionGuide";
-import { mapCategoryToTryOn, tryOnProducts as products } from "../../../utils/tryOnUtils";
+import { mapCategoryToTryOn, tryOnProducts as staticProducts, getTryOnImageUrlSync } from "../../../utils/tryOnUtils";
+import productApi from "../../../api/productApi";
 
 const categories = [
   { key: "necklace", label: "Necklaces", icon: necklace, iconBlack: necklaceBlack },
@@ -24,7 +25,7 @@ const categories = [
 ];
 
 
-const generateImagePath = (category, productName) => {
+const generateImagePath = (category, productName, tryonImagePath = null) => {
   const categoryMap = {
     necklace: "Necklace",
     earrings: "Earrings",
@@ -32,11 +33,17 @@ const generateImagePath = (category, productName) => {
     bracelet: "Bracelets"
   };
 
+  // Use Supabase path if available
+  if (tryonImagePath) {
+    return getTryOnImageUrlSync(categoryMap[category], productName, tryonImagePath);
+  }
+
+  // Fallback to local path 
   const titleCase = productName.charAt(0).toUpperCase() + productName.slice(1).toLowerCase();
   return `/image/${categoryMap[category]}/${titleCase}Image.png`;
 };
 
-// Products are now imported from tryOnUtils.js
+// Products are now imported from tryOnUtils.js, fallback nalang to 
 
 const fingers = ["Thumb", "Index", "Middle", "Ring", "Pinky"];
 
@@ -50,6 +57,7 @@ const fingerHandMap = {
 
 // Desktop Layout
 const TryOnDesktop = ({
+  products,
   selectedCategory,
   setSelectedCategory,
   selectedProductIdx,
@@ -73,7 +81,9 @@ const TryOnDesktop = ({
   videoReady,
   handLandmarks,
   isJewelryLoading,
-  isOverlayReady
+  isOverlayReady,
+  handleImageLoading,
+  handleImageReady
 }) => {
   const [hoveredCategory, setHoveredCategory] = useState(null);
   const [hoveredPrev, setHoveredPrev] = useState(false);
@@ -181,6 +191,9 @@ const TryOnDesktop = ({
                       selectedJewelryImage={selectedJewelryImage}
                       videoReady={videoReady}
                       selectedFinger={selectedFinger}
+                      onImageLoading={handleImageLoading}
+                      onImageReady={handleImageReady}
+                      cameraOpen={isCameraOpen}
                     />
                     {!isCameraOpen && (
                       <div className="flex flex-col items-center justify-center w-full h-full absolute top-0 left-0 z-10">
@@ -260,7 +273,7 @@ const TryOnDesktop = ({
                         }}
                       >
                         <img
-                          src={generateImagePath(selectedCategory, prod.name)}
+                          src={generateImagePath(selectedCategory, prod.name, prod.try_on_image_path)}
                           alt={prod.name}
                           className="object-contain mb-2 rounded-lg"
                           style={{
@@ -330,6 +343,7 @@ const TryOnDesktop = ({
 
 // Mobile Layout
 const TryOnMobile = ({
+  products,
   selectedCategory,
   setSelectedCategory,
   selectedProductIdx,
@@ -353,7 +367,9 @@ const TryOnMobile = ({
   videoReady,
   handLandmarks,
   isJewelryLoading,
-  isOverlayReady
+  isOverlayReady,
+  handleImageLoading,
+  handleImageReady
 }) => {
   const [hoveredCategory, setHoveredCategory] = useState(null);
   
@@ -447,6 +463,9 @@ const TryOnMobile = ({
               selectedJewelryImage={selectedJewelryImage}
               videoReady={videoReady}
               selectedFinger={selectedFinger}
+              onImageLoading={handleImageLoading}
+              onImageReady={handleImageReady}
+              cameraOpen={isCameraOpen}
             />
             {!isCameraOpen && (
               <div className="flex flex-col items-center justify-center w-full h-full absolute top-0 left-0 z-10">
@@ -548,7 +567,7 @@ const TryOnMobile = ({
                 }}
               >
                 <img
-                  src={generateImagePath(selectedCategory, prod.name)}
+                  src={generateImagePath(selectedCategory, prod.name, prod.try_on_image_path)}
                   alt={prod.name}
                   className="object-contain mb-1 rounded-lg"
                   style={{
@@ -603,17 +622,77 @@ const getRingPosition = (finger) => {
 const TryOn = () => {
   const [searchParams] = useSearchParams();
   
+  // Products state - ALWAYS start with static products for instant UI
+  // API will update with Supabase URLs when ready
+  const [products, setProducts] = useState(staticProducts);
+  const [productsLoaded, setProductsLoaded] = useState(false);
+  
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const result = await productApi.fetchAllProducts();
+        const productsList = result?.data?.products || result?.products || (Array.isArray(result?.data) ? result.data : null);
+        
+        if (productsList && Array.isArray(productsList)) {
+          const groupedProducts = {
+            necklace: [],
+            earrings: [],
+            rings: [],
+            bracelet: [],
+          };
+          
+          const supabaseUrls = [];
+          
+          productsList.forEach(product => {
+            const categorySlug = product.category?.slug || product.category_slug || product.category?.name;
+            const category = mapCategoryToTryOn(categorySlug);
+            
+            // Only include products that have a try_on_image_path (uploaded to Supabase)
+            if (category && groupedProducts[category] && product.try_on_image_path) {
+              groupedProducts[category].push({
+                name: product.name,
+                try_on_image_path: product.try_on_image_path,
+              });
+              
+              const url = getTryOnImageUrlSync(category, product.name, product.try_on_image_path);
+              if (url) supabaseUrls.push(url);
+            }
+          });
+          
+          supabaseUrls.forEach(url => {
+            const img = new Image();
+            img.src = url;
+          });
+          
+          const mergedProducts = { ...staticProducts };
+          Object.keys(groupedProducts).forEach(cat => {
+            if (groupedProducts[cat].length > 0) {
+              // If we have API products with try_on_image_path, use only those
+              mergedProducts[cat] = [...groupedProducts[cat]];
+            }
+          });
+          
+          setProducts(mergedProducts);
+        }
+      } catch (error) {
+        // console.error('[TryOn] Error fetching products:', error);
+      } finally {
+        setProductsLoaded(true);
+      }
+    };
+    
+    fetchProducts();
+  }, []);
+  
   // Get category and product from URL parameters
   const urlCategory = searchParams.get("category");
   const urlProduct = searchParams.get("product");
   
-  // Map URL category to try-on category and validate
   const mappedCategory = urlCategory ? mapCategoryToTryOn(urlCategory) : null;
   const initialCategory = mappedCategory && categories.find(c => c.key === mappedCategory) 
     ? mappedCategory 
     : "necklace";
   
-  // Find product index if product name is provided
   const findProductIndex = (category, productName) => {
     if (!productName || !products[category]) return 0;
     const index = products[category].findIndex(
@@ -626,7 +705,6 @@ const TryOn = () => {
     ? findProductIndex(mappedCategory, urlProduct)
     : 0;
   
-  // Ensure we have a valid product array and index
   const safeProductIdx = products[initialCategory] && products[initialCategory].length > 0
     ? Math.min(initialProductIdx, products[initialCategory].length - 1)
     : 0;
@@ -636,14 +714,34 @@ const TryOn = () => {
   const [selectedFinger, setSelectedFinger] = useState(initialCategory === "rings" ? "Middle" : null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [photo, setPhoto] = useState(null);
-  const initialImagePath = products[initialCategory] && products[initialCategory][safeProductIdx]
-    ? generateImagePath(initialCategory, products[initialCategory][safeProductIdx].name)
-    : generateImagePath("necklace", products.necklace[0].name);
+  
+  // Compute selectedJewelryImage using useMemo (derived state)
+  const selectedJewelryImage = useMemo(() => {
+    const product = products[selectedCategory]?.[selectedProductIdx];
+    if (!product) return null;
 
-  const [selectedJewelryImage, setSelectedJewelryImage] = useState(initialImagePath);
+    return generateImagePath(
+      selectedCategory,
+      product.name,
+      product.try_on_image_path
+    );
+  }, [products, selectedCategory, selectedProductIdx]);
+
   const [videoReady, setVideoReady] = useState(false);
   const [isJewelryLoading, setIsJewelryLoading] = useState(true);
   const [isOverlayReady, setIsOverlayReady] = useState(false);
+
+  // Handle image loading state from ImageJewelryOverlay
+  const handleImageLoading = (loading) => {
+    setIsJewelryLoading(loading);
+  };
+
+  const handleImageReady = (ready) => {
+    setIsOverlayReady(ready);
+    if (ready) {
+      setIsJewelryLoading(false);
+    }
+  };
 
   const videoRef = useRef(null);
   const videoRefCallback = useRef(null);
@@ -653,17 +751,16 @@ const TryOn = () => {
   const overlayCanvasRefMobile = useRef(null);
   
   // Callback ref to handle multiple video elements (desktop/mobile)
-  // Prioritize the visible element (not hidden by CSS)
+ 
   const setVideoRef = (element) => {
     if (element) {
       const isVisible = element.offsetParent !== null || 
                        window.getComputedStyle(element).display !== 'none';
       
-      // Only set ref if this element is visible, or if no ref is set yet
       if (isVisible || !videoRef.current) {
         videoRef.current = element;
         videoRefCallback.current = element;
-        setVideoReady(true); // Notify that video element is ready
+        setVideoReady(true); 
         
         // Ensure stream is attached to the new video element
         if (streamRef.current) {
@@ -671,10 +768,9 @@ const TryOn = () => {
             element.srcObject = streamRef.current;
           }
           
-          // Ensure video is playing if camera is open
           if (isCameraOpen && element.paused) {
             element.play().catch(err => {
-              console.error('[TryOn] Error playing video in setVideoRef:', err);
+              // console.error('[TryOn] Error playing video in setVideoRef:', err);
             });
           }
         }
@@ -693,11 +789,15 @@ const TryOn = () => {
   const streamRef = useRef(null);
   const timeoutRefs = useRef([]);
   const selectedCategoryRef = useRef(selectedCategory);
+  
+  // Error circuit breaker to prevent MediaPipe infinite loops
+  const faceErrorCountRef = useRef(0);
+  const handErrorCountRef = useRef(0);
+  const MAX_ERRORS = 50; 
 
   const { setFaceLandmarks } = useFaceLandmarks();
   const { handLandmarks, setHandLandmarks } = useHandLandmarks();
 
-  // Map category keys to jewelry types for ImageJewelryOverlay
   const categoryToJewelryType = {
     necklace: "necklace",
     earrings: "earrings",
@@ -705,7 +805,6 @@ const TryOn = () => {
     bracelet: "bracelet"
   };
 
-  // Comprehensive cleanup function using useRef to avoid stale closures
   const stopAllMediaRef = useRef();
   stopAllMediaRef.current = () => {
     // console.log('[TryOn] stopAllMedia called');
@@ -714,9 +813,9 @@ const TryOn = () => {
     if (cameraRef.current) {
       try {
         cameraRef.current.stop();
-        console.log('[TryOn] MediaPipe camera stopped');
+        // console.log('[TryOn] MediaPipe camera stopped');
       } catch (err) {
-        console.error('[TryOn] Error stopping camera:', err);
+        // console.error('[TryOn] Error stopping camera:', err);
       }
       cameraRef.current = null;
     }
@@ -727,7 +826,7 @@ const TryOn = () => {
         faceMeshRef.current.close();
         // console.log('[TryOn] FaceMesh closed');
       } catch (err) {
-        console.error('[TryOn] Error closing face mesh:', err);
+        // console.error('[TryOn] Error closing face mesh:', err);
       }
       faceMeshRef.current = null;
     }
@@ -737,7 +836,7 @@ const TryOn = () => {
         handsRef.current.close();
         // console.log('[TryOn] Hands closed');
       } catch (err) {
-        console.error('[TryOn] Error closing hands:', err);
+        // console.error('[TryOn] Error closing hands:', err);
       }
       handsRef.current = null;
     }
@@ -770,21 +869,6 @@ const TryOn = () => {
 
   const stopAllMedia = () => stopAllMediaRef.current();
 
-  // Handle initial image load
-  useEffect(() => {
-    const img = new Image();
-    img.onload = () => {
-      setIsJewelryLoading(false);
-      setTimeout(() => setIsOverlayReady(true), 300);
-    };
-    img.onerror = () => {
-      setIsJewelryLoading(false);
-      setIsOverlayReady(true);
-    };
-    img.src = initialImagePath;
-  }, []);
-
-  // Add page visibility and navigation listeners for cleanup
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
@@ -798,10 +882,8 @@ const TryOn = () => {
       stopAllMedia();
     };
 
-    // Listen for page visibility changes
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
-    // Listen for page unload
     window.addEventListener('beforeunload', handleBeforeUnload);
 
     return () => {
@@ -846,29 +928,44 @@ const TryOn = () => {
           const video = videoRef.current;
 
           const handleLoadedMetadata = () => {
-            if (!isActive) return;
-            video.play().then(() => {
-              if (isActive) setIsCameraOpen(true);
-            }).catch((err) => {
-              console.error('[TryOn] Error playing video:', err);
-              if (isActive) setIsCameraOpen(true);
-            });
+            if (video.videoWidth > 0 && video.videoHeight > 0) {
+              video.play().then(() => {
+                // Open camera immediately when video is ready
+                if (isActive) {
+                  setIsCameraOpen(true);
+                }
+              }).catch((err) => {
+                console.error('[TryOn] Error playing video:', err);
+                if (isActive) {
+                  setIsCameraOpen(true);
+                }
+              });
+            } else {
+              setTimeout(handleLoadedMetadata, 100);
+            }
           };
 
           video.addEventListener('loadedmetadata', handleLoadedMetadata, { once: true });
           video.srcObject = stream;
 
           if (video.readyState >= 1) {
-            video.play().then(() => {
-              if (isActive) setIsCameraOpen(true);
-            }).catch((err) => {
-              console.error('[TryOn] Error playing video (immediate):', err);
-              if (isActive) setIsCameraOpen(true);
-            });
+            if (video.videoWidth > 0 && video.videoHeight > 0) {
+              video.play().then(() => {
+                // Open camera immediately when video is ready
+                if (isActive) {
+                  setIsCameraOpen(true);
+                }
+              }).catch((err) => {
+                console.error('[TryOn] Error playing video (immediate):', err);
+                if (isActive) {
+                  setIsCameraOpen(true);
+                }
+              });
+            }
           }
         }
       } catch (error) {
-        console.error("[TryOn] Error accessing webcam:", error);
+        // console.error("[TryOn] Error accessing webcam:", error);
         if (isActive) setIsCameraOpen(false);
       }
     };
@@ -877,10 +974,8 @@ const TryOn = () => {
 
     return () => {
       isActive = false;
-      // Clear timeouts
       timeoutRefs.current.forEach(timeout => clearTimeout(timeout));
       timeoutRefs.current = [];
-      // Use comprehensive cleanup
       stopAllMedia();
       // console.log('[TryOn] Component unmount cleanup finished');
     };
@@ -893,7 +988,6 @@ const TryOn = () => {
 
   // Detect if user is on mobile device
   const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  // Detect Android specifically for more aggressive optimization
   const isAndroid = /Android/i.test(navigator.userAgent);
 
   // MediaPipe models initialization - changes when category changes
@@ -919,7 +1013,6 @@ const TryOn = () => {
     };
 
     const initializeModels = async () => {
-      // Wait for webcam to be ready
       if (!videoRef.current) {
         await new Promise(resolve => setTimeout(resolve, 100));
       }
@@ -963,39 +1056,35 @@ const TryOn = () => {
             });
             hands.onResults(onHandResults);
             
-            // Add error handler
             if (hands.onError) {
               hands.onError = (error) => {
-                console.error('[TryOn] Hands model error:', error);
+                // console.error('[TryOn] Hands model error:', error);
               };
             }
             
             handsRef.current = hands;
           } catch (error) {
-            console.error('[TryOn] Failed to initialize Hands model:', error);
-            // Try alternative CDN (unpkg)
+            // console.error('[TryOn] Failed to initialize Hands model:', error);
             try {
               const hands = new Hands({
                 locateFile: (file) => `https://unpkg.com/@mediapipe/hands@0.4.1675469404/${file}`,
               });
               hands.setOptions({
                 maxNumHands: 2,
-                // Use lower complexity on Android (0 = lite model), iOS uses standard
                 modelComplexity: isAndroid ? 0 : (isMobileDevice ? 1 : 1),
-                // Lower confidence thresholds on Android for faster processing
                 minDetectionConfidence: isAndroid ? 0.3 : (isMobileDevice ? 0.5 : 0.5),
                 minTrackingConfidence: isAndroid ? 0.3 : (isMobileDevice ? 0.5 : 0.5),
               });
               hands.onResults(onHandResults);
               if (hands.onError) {
                 hands.onError = (error) => {
-                  console.error('[TryOn] Hands model error (alternative):', error);
+                  // console.error('[TryOn] Hands model error (alternative):', error);
                 };
               }
               handsRef.current = hands;
             } catch (altError) {
-              console.error('[TryOn] Alternative Hands model initialization also failed:', altError);
-              console.error('[TryOn] This may be a network/CDN issue. Please check your internet connection.');
+              // console.error('[TryOn] Alternative Hands model initialization also failed:', altError);
+              // console.error('[TryOn] This may be a network/CDN issue. Please check your internet connection.');
             }
           }
         }
@@ -1018,14 +1107,35 @@ const TryOn = () => {
             const currentNeedsHands = currentCategory === "rings" || currentCategory === "bracelet";
 
             // Process FaceMesh if needed for current category
-            if (currentNeedsFaceMesh && faceMeshRef.current && videoRef.current) {
+            if (currentNeedsFaceMesh && faceMeshRef.current && videoRef.current && videoRef.current.readyState >= 2) {
               if (now - lastFrameTime.current >= frameInterval && !isProcessing.current) {
                 lastFrameTime.current = now;
                 isProcessing.current = true;
+                
+                // Circuit breaker: check for too many errors
+                if (faceErrorCountRef.current >= MAX_ERRORS) {
+                  console.warn('Face mesh processing disabled due to too many errors');
+                  isProcessing.current = false;
+                  return;
+                }
+                
                 try {
                   await faceMeshRef.current.send({ image: videoRef.current });
+                  // Reset error count on successful processing
+                  faceErrorCountRef.current = 0;
                 } catch (err) {
-                  console.error('[TryOn] Error processing face mesh:', err);
+                  faceErrorCountRef.current++;
+                  
+                  // Throttle error logging to prevent console spam
+                  if (Date.now() - lastFaceErrorTime.current > 1000) {
+                    console.warn(`Face mesh error (${faceErrorCountRef.current}/${MAX_ERRORS}):`, err);
+                    lastFaceErrorTime.current = Date.now();
+                  }
+                  
+                  // If max errors reached, disable processing
+                  if (faceErrorCountRef.current >= MAX_ERRORS) {
+                    console.error('Face mesh processing permanently disabled due to excessive errors');
+                  }
                 } finally {
                   isProcessing.current = false;
                 }
@@ -1037,9 +1147,19 @@ const TryOn = () => {
               if (now - lastHandFrameTime.current >= frameInterval && !isHandProcessing.current) {
                 lastHandFrameTime.current = now;
                 isHandProcessing.current = true;
+                
+                // Circuit breaker: check for too many hand errors
+                if (handErrorCountRef.current >= MAX_ERRORS) {
+                  console.warn('Hand processing disabled due to too many errors');
+                  isHandProcessing.current = false;
+                  return;
+                }
+                
                 try {
                   if (handsRef.current && videoRef.current.readyState >= 2) {
                     await handsRef.current.send({ image: videoRef.current });
+                    // Reset error count on successful processing
+                    handErrorCountRef.current = 0;
                   } else {
                     if (Math.random() < 0.1) {
                       console.warn('[TryOn] Video not ready for hand processing:', {
@@ -1048,12 +1168,18 @@ const TryOn = () => {
                     }
                   }
                 } catch (err) {
-                  console.error('[TryOn] Error processing hands:', err);
-                  console.error('[TryOn] Error details:', {
-                    message: err.message,
-                    stack: err.stack,
-                    name: err.name
-                  });
+                  handErrorCountRef.current++;
+                  
+                  // Throttle error logging to prevent console spam
+                  if (Date.now() - lastFaceErrorTime.current > 1000) {
+                    console.warn(`Hand processing error (${handErrorCountRef.current}/${MAX_ERRORS}):`, err);
+                  }
+                  
+                  // If max errors reached, disable processing
+                  if (handErrorCountRef.current >= MAX_ERRORS) {
+                    console.error('Hand processing permanently disabled due to excessive errors');
+                  }
+                  
                   if (err.message && (err.message.includes('undefined') || err.message.includes('not loaded'))) {
                     console.warn('[TryOn] Hands model may not be fully loaded, will retry...');
                     handsRef.current = null;
@@ -1098,7 +1224,7 @@ const TryOn = () => {
         try {
           faceMeshRef.current.close();
         } catch (err) {
-          console.error('[TryOn] Error closing face mesh:', err);
+          // console.error('[TryOn] Error closing face mesh:', err);
         }
         faceMeshRef.current = null;
         setFaceLandmarks(null);
@@ -1109,7 +1235,7 @@ const TryOn = () => {
         try {
           handsRef.current.close();
         } catch (err) {
-          console.error('[TryOn] Error closing hands:', err);
+          // console.error('[TryOn] Error closing hands:', err);
         }
         handsRef.current = null;
         setHandLandmarks(null);
@@ -1134,7 +1260,7 @@ const TryOn = () => {
           try {
             await video.play();
           } catch (err) {
-            console.error('[TryOn] Error playing video after photo cleared:', err);
+            // console.error('[TryOn] Error playing video after photo cleared:', err);
           }
         }
         
@@ -1175,10 +1301,26 @@ const TryOn = () => {
                     if (now - lastFrameTime.current >= frameInterval && !isProcessing.current) {
                       lastFrameTime.current = now;
                       isProcessing.current = true;
+                      
+                      // Circuit breaker: check for too many errors
+                      if (faceErrorCountRef.current >= MAX_ERRORS) {
+                        console.warn('Face mesh processing disabled due to too many errors');
+                        isProcessing.current = false;
+                        return;
+                      }
+                      
                       try {
                         await faceMeshRef.current.send({ image: videoRef.current });
+                        // Reset error count on successful processing
+                        faceErrorCountRef.current = 0;
                       } catch (err) {
-                        console.error('[TryOn] Error processing face mesh:', err);
+                        faceErrorCountRef.current++;
+                        
+                        // Throttle error logging to prevent console spam
+                        if (Date.now() - lastFaceErrorTime.current > 1000) {
+                          console.warn(`Face mesh error (${faceErrorCountRef.current}/${MAX_ERRORS}):`, err);
+                          lastFaceErrorTime.current = Date.now();
+                        }
                       } finally {
                         isProcessing.current = false;
                       }
@@ -1189,12 +1331,27 @@ const TryOn = () => {
                     if (now - lastHandFrameTime.current >= frameInterval && !isHandProcessing.current) {
                       lastHandFrameTime.current = now;
                       isHandProcessing.current = true;
+                      
+                      // Circuit breaker: check for too many hand errors
+                      if (handErrorCountRef.current >= MAX_ERRORS) {
+                        console.warn('Hand processing disabled due to too many errors');
+                        isHandProcessing.current = false;
+                        return;
+                      }
+                      
                       try {
                         if (handsRef.current && videoRef.current.readyState >= 2) {
                           await handsRef.current.send({ image: videoRef.current });
+                          // Reset error count on successful processing
+                          handErrorCountRef.current = 0;
                         }
                       } catch (err) {
-                        console.error('[TryOn] Error processing hands:', err);
+                        handErrorCountRef.current++;
+                        
+                        // Throttle error logging to prevent console spam
+                        if (Date.now() - lastFaceErrorTime.current > 1000) {
+                          console.warn(`Hand processing error (${handErrorCountRef.current}/${MAX_ERRORS}):`, err);
+                        }
                       } finally {
                         isHandProcessing.current = false;
                       }
@@ -1247,7 +1404,7 @@ const TryOn = () => {
               // Ensure video is playing
               if (video.paused) {
                 video.play().catch(err => {
-                  console.error('[TryOn] Error playing visible video:', err);
+                  // console.error('[TryOn] Error playing visible video:', err);
                 });
               }
             } else if (oldVideo && oldVideo.srcObject && !video.srcObject) {
@@ -1256,7 +1413,7 @@ const TryOn = () => {
               video.play().then(() => {
                 // Video started
               }).catch(err => {
-                console.error('[TryOn] Error playing visible video:', err);
+                // console.error('[TryOn] Error playing visible video:', err);
               });
             }
             break;
@@ -1283,12 +1440,10 @@ const TryOn = () => {
         
         if (urlProduct) {
           const productIdx = findProductIndex(mappedCategory, urlProduct);
-          if (productIdx >= 0 && products[mappedCategory] && products[mappedCategory][productIdx]) {
+          const product = products[mappedCategory]?.[productIdx];
+          if (productIdx >= 0 && product) {
             if (productIdx !== selectedProductIdx || mappedCategory !== selectedCategory) {
               setSelectedProductIdx(productIdx);
-              setSelectedJewelryImage(
-                generateImagePath(mappedCategory, products[mappedCategory][productIdx].name)
-              );
             }
             return;
           }
@@ -1296,31 +1451,6 @@ const TryOn = () => {
       }
     }
   }, [searchParams]); 
-
-  useEffect(() => {
-    const currentProduct = products[selectedCategory]?.[selectedProductIdx];
-    if (currentProduct) {
-      setIsJewelryLoading(true);
-      setIsOverlayReady(false);
-      const imagePath = generateImagePath(selectedCategory, currentProduct.name);
-
-      // Preload the image
-      const img = new Image();
-      img.onload = () => {
-        setSelectedJewelryImage(imagePath);
-        setIsJewelryLoading(false);
-        // Give a small delay for the overlay to render
-        setTimeout(() => setIsOverlayReady(true), 300);
-      };
-      img.onerror = () => {
-        // Even on error, update the image path and mark as not loading
-        setSelectedJewelryImage(imagePath);
-        setIsJewelryLoading(false);
-        setIsOverlayReady(true);
-      };
-      img.src = imagePath;
-    }
-  }, [selectedCategory, selectedProductIdx]);
 
   const takePhoto = () => {
     if (videoRef.current && isCameraOpen) {
@@ -1386,6 +1516,7 @@ const TryOn = () => {
   return (
     <Layout full>
       <TryOnDesktop
+        products={products}
         selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}
         selectedProductIdx={selectedProductIdx}
@@ -1410,9 +1541,12 @@ const TryOn = () => {
         videoReady={videoReady}
         isJewelryLoading={isJewelryLoading}
         isOverlayReady={isOverlayReady}
+        handleImageLoading={handleImageLoading}
+        handleImageReady={handleImageReady}
       />
 
       <TryOnMobile
+        products={products}
         selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}
         selectedProductIdx={selectedProductIdx}
@@ -1437,6 +1571,8 @@ const TryOn = () => {
         handLandmarks={handLandmarks}
         isJewelryLoading={isJewelryLoading}
         isOverlayReady={isOverlayReady}
+        handleImageLoading={handleImageLoading}
+        handleImageReady={handleImageReady}
       />
     </Layout>
   );

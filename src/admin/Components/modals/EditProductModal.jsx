@@ -1,5 +1,6 @@
 import React from 'react';
-import { Add3D, AddImage, DropDownIconBlack, DropUpIconBlack, Remove } from '../../../assets';
+import { Add3D, AddImage, DropDownIconBlack, DropUpIconBlack, Remove,   TryOnBlack,
+  Icon3D } from '../../../assets';
 
 const EditProductModal = ({
   showModal,
@@ -18,9 +19,12 @@ const EditProductModal = ({
   onEditImageUpload,
   on3DModelUpload,
   onRemove3DModel,
+  onTryOnImageUpload,
+  onRemoveTryOnImage,
   onUpdateProduct,
   saving,
-  uploading
+  uploading,
+
 }) => {
   if (!showModal) return null;
 
@@ -287,7 +291,7 @@ const EditProductModal = ({
                       {(editProduct.model3DFile || editProduct.model3DPath) ? (
                         <>
                           <div className="flex flex-col items-center justify-center">
-                            <img src={Add3D} alt="3D" className="w-5 h-5 opacity-80" />
+                            <img src={Icon3D} alt="3D" className="w-5 h-5 opacity-80" />
                             <span className="text-[8px] text-gray-600 mt-0.5 truncate w-14 text-center">
                               {editProduct.model3DFile 
                                 ? editProduct.model3DFile.name.slice(0, 8) + '...'
@@ -307,7 +311,7 @@ const EditProductModal = ({
                           </button>
                         </>
                       ) : (
-                        <img src={Add3D} alt="3D model" className="w-6 h-6 opacity-60" />
+                        <img src={Icon3D} alt="3D model" className="w-6 h-6 opacity-60" />
                       )}
                     </div>
                     <input
@@ -315,6 +319,44 @@ const EditProductModal = ({
                       className="hidden"
                       accept=".glb,.gltf"
                       onChange={(e) => on3DModelUpload?.(e.target.files[0])}
+                    />
+                  </label>
+                </div>
+                {/* Try-On Image Upload Box */}
+                <div className="relative">
+                  <label className="cursor-pointer">
+                    <div className="w-16 h-16 border-2 border-dashed border-black rounded-lg flex items-center justify-center bg-white hover:bg-gray-50 transition-colors relative overflow-visible">
+                      {(editProduct.tryOnImageFile || editProduct.tryOnImagePath) ? (
+                        <>
+                          <div className="flex flex-col items-center justify-center">
+                            <img src={TryOnBlack} alt="Try-On" className="w-5 h-5 opacity-80" />
+                            <span className="text-[8px] text-gray-600 mt-0.5 truncate w-14 text-center">
+                              {editProduct.tryOnImageFile 
+                                ? editProduct.tryOnImageFile.name.slice(0, 8) + '...'
+                                : 'Try-On'}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              onRemoveTryOnImage?.();
+                            }}
+                            className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center hover:bg-red-600 z-10"
+                          >
+                            <img src={Remove} alt="Remove" className="w-3 h-3 invert" />
+                          </button>
+                        </>
+                      ) : (
+                        <img src={TryOnBlack} alt="Try-On" className="w-6 h-6 opacity-60" />
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept=".png,.webp"
+                      onChange={(e) => onTryOnImageUpload?.(e.target.files[0])}
                     />
                   </label>
                 </div>

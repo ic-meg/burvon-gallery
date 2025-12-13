@@ -350,6 +350,56 @@ class StorageService {
     return data.publicUrl;
   }
 
+  // ------------------- Try-On Image Upload -------------------
+
+
+validateTryOnImageFile(file) {
+  const maxSize = 5 * 1024 * 1024; // 5MB for try-on images
+  const allowedTypes = ['image/png', 'image/webp']; 
+  
+  if (!allowedTypes.includes(file.type)) {
+    return { valid: false, error: 'Try-on images must be PNG or WebP (transparency support required)' };
+  }
+  if (file.size > maxSize) {
+    return { valid: false, error: 'Try-on image must be less than 5MB' };
+  }
+  return { valid: true };
+}
+
+
+async uploadTryOnImage(file, productName, categoryName) {
+  // Path: 3DFiles/TryOn/{Category}/{ProductName}TryOn.png
+  const sanitizedProductName = productName.replace(/[^a-zA-Z0-9]/g, '');
+  const sanitizedCategory = categoryName.replace(/[^a-zA-Z0-9]/g, '');
+  const extension = file.name.split('.').pop();
+  const filePath = `TryOn/${sanitizedCategory}/${sanitizedProductName}TryOn.${extension}`;
+  
+
+  const { data, error } = await supabase.storage
+    .from('3DFiles')
+    .upload(filePath, file, { upsert: true });
+  
+  if (error) return { success: false, error: error.message };
+  
+  return { 
+    success: true, 
+    filePath,
+    url: this.getTryOnImageUrl(filePath)
+  };
+}
+
+getTryOnImageUrl(filePath) {
+  if (!filePath) return null;
+  const { data } = supabase.storage.from('3DFiles').getPublicUrl(filePath);
+  return data?.publicUrl;
+}
+
+async deleteTryOnImage(filePath) {
+  if (!filePath) return { success: true };
+  const { error } = await supabase.storage.from('3DFiles').remove([filePath]);
+  return { success: !error, error: error?.message };
+}
+
 }
 
 export default new StorageService()

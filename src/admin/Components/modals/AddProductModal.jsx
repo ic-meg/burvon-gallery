@@ -17,6 +17,8 @@ const AddProductModal = ({
   onImageUpload,
   on3DModelUpload,
   onRemove3DModel,
+  onTryOnImageUpload,
+  onRemoveTryOnImage,
   onAddProduct,
   saving,
   uploading
@@ -285,6 +287,42 @@ const AddProductModal = ({
                       className="hidden"
                       accept=".glb,.gltf"
                       onChange={(e) => on3DModelUpload?.(e.target.files[0])}
+                    />
+                  </label>
+                </div>
+                {/* Try-On Image Upload Box */}
+                <div className="relative">
+                  <label className="cursor-pointer">
+                    <div className="w-16 h-16 border-2 border-dashed border-black rounded-lg flex items-center justify-center bg-white hover:bg-gray-50 transition-colors relative overflow-visible">
+                      {newProduct.tryOnImageFile ? (
+                        <>
+                          <div className="flex flex-col items-center justify-center">
+                            <span className="text-lg">👗</span>
+                            <span className="text-[8px] text-gray-600 mt-0.5 truncate w-14 text-center">
+                              {newProduct.tryOnImageFile.name.slice(0, 8)}...
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              onRemoveTryOnImage?.();
+                            }}
+                            className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center hover:bg-red-600 z-10"
+                          >
+                            <img src={Remove} alt="Remove" className="w-3 h-3 invert" />
+                          </button>
+                        </>
+                      ) : (
+                        <span className="text-xl opacity-60">👗</span>
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept=".png,.webp"
+                      onChange={(e) => onTryOnImageUpload?.(e.target.files[0])}
                     />
                   </label>
                 </div>

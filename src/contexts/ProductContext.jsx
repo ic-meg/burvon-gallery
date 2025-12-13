@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import productApi from "../api/productApi";
 import storageService from "../services/storageService";
-import { preloadTryOnAvailability } from "../utils/tryOnUtils";
+import { preloadTryOnAvailability, mapCategoryToTryOn } from "../utils/tryOnUtils";
 
 const ProductContext = createContext();
 
@@ -17,6 +17,13 @@ export const ProductProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
   const [productsByCategory, setProductsByCategory] = useState({});
   const [productsByCollection, setProductsByCollection] = useState({});
+  const [tryOnProducts, setTryOnProducts] = useState({
+    necklace: [],
+    earrings: [],
+    rings: [],
+    bracelet: [],
+  });
+  const [tryOnProductsLoaded, setTryOnProductsLoaded] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -80,7 +87,7 @@ export const ProductProvider = ({ children }) => {
       const response = await productApi.fetchAllProducts();
 
       if (response.error) {
-        console.warn("Products API error:", response.error);
+        // console.warn("Products API error:", response.error);
         setError(response.error);
         setProducts([]);
       } else if (response.data) {
@@ -124,6 +131,75 @@ export const ProductProvider = ({ children }) => {
       setLoading(false);
     }
   };
+
+  const fetchTryOnProducts = async () => {
+    try {
+      // console.log('[ProductContext] Fetching try-on products...');
+      const response = await productApi.fetchAllProducts();
+
+      if (response.error) {
+        console.warn('[ProductContext] Try-on products API error:', response.error);
+        setTryOnProductsLoaded(true);
+        return;
+      }
+
+      const apiProducts = response?.data?.products || [];
+      if (!Array.isArray(apiProducts)) {
+        console.warn('[ProductContext] Invalid products structure for try-on');
+        setTryOnProductsLoaded(true);
+        return;
+      }
+
+      const groupedProducts = {
+        necklace: [],
+        earrings: [],
+        rings: [],
+        bracelet: [],
+      };
+
+      apiProducts.forEach(product => {
+        const category = mapCategoryToTryOn(product.category?.slug || product.category?.name);
+        if (category && product.try_on_image_path) {
+          groupedProducts[category].push({
+            name: product.name,
+            try_on_image_path: product.try_on_image_path,
+          });
+        }
+      });
+
+      // console.log('[ProductContext] Try-on products grouped:', groupedProducts);
+      
+      const preloadPromises = [];
+      Object.values(groupedProducts).flat().forEach(product => {
+        if (product.try_on_image_path) {
+          const promise = new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => resolve(true);
+            img.onerror = () => resolve(false);
+            // Get Supabase URL for preloading
+            img.src = `https://mkpmtycdhytnkxkmznsg.supabase.co/storage/v1/object/public/burvon-images/${product.try_on_image_path}`;
+          });
+          preloadPromises.push(promise);
+        }
+      });
+      
+      Promise.all(preloadPromises).then(() => {
+        // console.log('[ProductContext] All try-on images preloaded successfully');
+      }).catch(err => {
+        console.warn('[ProductContext] Some images failed to preload:', err);
+      });
+      
+      setTryOnProducts(groupedProducts);
+      setTryOnProductsLoaded(true);
+    } catch (error) {
+      console.error('[ProductContext] Error fetching try-on products:', error);
+      setTryOnProductsLoaded(true);
+    }
+  };
+
+  useEffect(() => {
+    fetchTryOnProducts();
+  }, []);
 
   const fetchProductById = async (id) => {
     try {
@@ -553,10 +629,13 @@ export const ProductProvider = ({ children }) => {
     products,
     productsByCategory,
     productsByCollection,
+    tryOnProducts,
+    tryOnProductsLoaded,
     loading,
     error,
 
     fetchAllProducts,
+    fetchTryOnProducts,
     fetchProductById,
     fetchProductsByCategory,
     fetchProductsByCollection,

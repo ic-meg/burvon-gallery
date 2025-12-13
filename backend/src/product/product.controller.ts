@@ -17,6 +17,11 @@ export class ProductController {
     return this.productService.getProducts();
   }
 
+  @Get('tryon')
+  findTryOnProducts() {
+    return this.productService.getTryOnProducts();
+  }
+
   @Get('id/:id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.productService.findOne(id);

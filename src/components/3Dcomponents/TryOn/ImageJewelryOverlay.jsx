@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useFaceLandmarks } from "../../../contexts/FaceLandmarksContext";
 import { useHandLandmarks } from "../../../contexts/HandLandmarksContext";
 import { useControls } from "leva";
@@ -13,7 +13,7 @@ const FINGER_LANDMARKS = {
   PINKY: { MCP: 17, PIP: 18 },   // Pinky finger MCP and PIP
 };
 
-export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, useImageOverlay, jewelryType, selectedJewelryImage, videoReady, selectedFinger }) => {
+export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, useImageOverlay, jewelryType, selectedJewelryImage, videoReady, selectedFinger, onImageLoading, onImageReady, cameraOpen }) => {
   const internalCanvasRef = useRef(null);
   const canvasRef = externalCanvasRef || internalCanvasRef;
   const { faceLandmarks } = useFaceLandmarks();
@@ -21,6 +21,12 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
   const imageCacheRef = useRef({});
   const faceLandmarksRef = useRef(faceLandmarks);
   const handLandmarksRef = useRef(handLandmarks);
+  const warnedRef = useRef(false);
+  const [imageLoading, setImageLoading] = useState(false);
+  const [imageReady, setImageReady] = useState(false);
+
+  // Device detection (moved outside effects for performance)
+  const IS_ANDROID = /Android/i.test(navigator.userAgent);
 
   useEffect(() => {
     faceLandmarksRef.current = faceLandmarks;
@@ -151,41 +157,43 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
 
   // Load images into cache
   useEffect(() => {
-    const loadImage = (src) => {
-      if (!src) return Promise.resolve(null);
-
-      if (imageCacheRef.current[src]) {
-        return Promise.resolve(imageCacheRef.current[src]);
-      }
-
-      return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        img.onload = () => {
-          imageCacheRef.current[src] = img;
-          resolve(img);
-        };
-        img.onerror = (err) => {
-          console.error(`[ImageJewelryOverlay] Failed to load image: ${src}`, err);
-          reject(err);
-        };
-        img.src = src;
-      });
-    };
-
-    const imagesToLoad = [necklaceImage, braceletImage, ringImage, earringImage];
-    if (selectedJewelryImage && !imagesToLoad.includes(selectedJewelryImage)) {
-      imagesToLoad.push(selectedJewelryImage);
+    if (!selectedJewelryImage) {
+      setImageLoading(false);
+      setImageReady(false);
+      onImageReady?.(false);
+      return;
     }
 
-    imagesToLoad.forEach((src) => {
-      if (src) {
-        loadImage(src).catch((err) => {
-          console.warn(`[ImageJewelryOverlay] Failed to load image: ${src}`, err);
-        });
-      }
-    });
-  }, [necklaceImage, braceletImage, ringImage, earringImage, selectedJewelryImage]);
+    if (imageCacheRef.current[selectedJewelryImage]) {
+      setImageLoading(false);
+      setImageReady(true);
+      onImageReady?.(true);
+      return;
+    }
+
+    setImageLoading(true);
+    setImageReady(false);
+    onImageLoading?.(true);
+    onImageReady?.(false);
+
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      imageCacheRef.current[selectedJewelryImage] = img;
+      setImageLoading(false);
+      setImageReady(true);
+      warnedRef.current = false; // Reset warning flag on successful load
+      onImageLoading?.(false);
+      onImageReady?.(true);
+    };
+    img.onerror = () => {
+      setImageLoading(false);
+      setImageReady(false);
+      onImageLoading?.(false);
+      onImageReady?.(false);
+    };
+    img.src = selectedJewelryImage;
+  }, [selectedJewelryImage, onImageLoading, onImageReady]);
 
   // Draw jewelry on canvas
   useEffect(() => {
@@ -204,15 +212,14 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
     let isActive = true; // Flag to prevent drawing after cleanup
     let lastDrawTime = 0;
 
-    const isAndroid = /Android/i.test(navigator.userAgent);
     // Android: 25ms = 40fps (faster, more responsive)
     // iOS: 16ms = 60fps (keep fast and smooth)
     // Desktop: 16ms = 60fps
-    const drawInterval = isAndroid ? 25 : 16;
+    const drawInterval = IS_ANDROID ? 25 : 16;
 
     const updateCanvasSize = () => {
       if (video && video.videoWidth && video.videoHeight) {
-        const scale = isAndroid ? 0.6 : 0.75;
+        const scale = IS_ANDROID ? 0.6 : 0.75;
         const scaledWidth = Math.floor(video.videoWidth * scale);
         const scaledHeight = Math.floor(video.videoHeight * scale);
 
@@ -258,11 +265,15 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
       const image = imageCacheRef.current[currentNecklaceImage];
       if (!image || !image.complete) {
         // Image not loaded yet, wait for it
-        if (Math.random() < 0.01) {
+        if (!warnedRef.current) {
           console.warn('[ImageJewelryOverlay] Necklace image not loaded:', currentNecklaceImage, 'Cache keys:', Object.keys(imageCacheRef.current));
+          warnedRef.current = true;
         }
         return;
       }
+
+      // Reset warning flag when image is available
+      warnedRef.current = false;
 
       // Calculate position and size (matching TryOn.html exactly)
       const x = chin.x * canvas.width;
@@ -445,8 +456,9 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
       const image = imageCacheRef.current[currentBraceletImage];
       if (!image || !image.complete) {
         // Image not loaded yet, wait for it
-        if (Math.random() < 0.01) {
+        if (!warnedRef.current) {
           console.warn('[ImageJewelryOverlay] Bracelet image not loaded:', currentBraceletImage, 'Cache keys:', Object.keys(imageCacheRef.current));
+          warnedRef.current = true;
         }
         return;
       }
@@ -524,8 +536,9 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
       const image = imageCacheRef.current[currentEarringImage];
       if (!image || !image.complete) {
         // Image not loaded yet, wait for it
-        if (Math.random() < 0.01) {
+        if (!warnedRef.current) {
           console.warn('[ImageJewelryOverlay] Earring image not loaded:', currentEarringImage, 'Cache keys:', Object.keys(imageCacheRef.current));
+          warnedRef.current = true;
         }
         return;
       }
@@ -763,16 +776,18 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
           if (handLandmarksRef.current) {
             drawBracelet(ctx, canvas);
           } else {
-            if (Math.random() < 0.01) {
+            if (!warnedRef.current) {
               console.warn('[ImageJewelryOverlay] Cannot draw bracelet: no hand landmarks');
+              warnedRef.current = true;
             }
           }
         } else if (jewelryType === "ring") {
           if (handLandmarksRef.current) {
             drawRing(ctx, canvas);
           } else {
-            if (Math.random() < 0.01) {
+            if (!warnedRef.current) {
               console.warn('[ImageJewelryOverlay] Cannot draw ring: no hand landmarks');
+              warnedRef.current = true;
             }
           }
         }
@@ -805,6 +820,7 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
     braceletImage,
     ringImage,
     earringImage,
+    selectedJewelryImage,
     necklaceWidthMultiplier,
     necklaceHeightRatio,
     necklaceYOffset,
@@ -829,9 +845,16 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
     videoRef,
     videoReady,
     selectedFinger,
+    selectedJewelryImage,
   ]);
 
+
   if (!useImageOverlay) return null;
+
+  // but only render canvas when camera is open
+  if (!cameraOpen) {
+    return <div style={{ display: 'none' }} />;
+  }
 
   return (
     <canvas

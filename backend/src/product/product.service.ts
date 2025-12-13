@@ -98,6 +98,48 @@ export class ProductService {
     return { products };
   }
 
+  async getTryOnProducts() {
+    const products = await this.db.product.findMany({
+      where: {
+        try_on_image_path: {
+          not: null,
+        },
+        AND: {
+          try_on_image_path: {
+            not: '',
+          },
+        },
+      },
+      select: {
+        product_id: true,
+        name: true,
+        try_on_image_path: true,
+        category: {
+          select: {
+            name: true,
+            CategoryContent: {
+              select: {
+                slug: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // Transform the response to match frontend expectations
+    const transformedProducts = products.map(product => ({
+      product_id: product.product_id,
+      name: product.name,
+      try_on_image_path: product.try_on_image_path,
+      category: {
+        slug: product.category?.CategoryContent?.[0]?.slug || product.category?.name?.toLowerCase(),
+      },
+    }));
+
+    return { products: transformedProducts };
+  }
+
   async findOne(id: number) {
     const product = await this.db.product.findUnique({
       where: { product_id: id },
