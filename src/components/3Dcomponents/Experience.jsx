@@ -177,9 +177,12 @@ export const Experience = ({ modelPath, onEnvironmentError }) => {
 
         const applyReflectiveToLowest = (group, makeDoubleSide) => {
           if (!group) return;
+
           let lowestMesh = null;
           let lowestY = Infinity;
+
           group.updateWorldMatrix(true, true);
+
           group.traverse((obj) => {
             if (obj.isMesh) {
               const pos = new THREE.Vector3();
@@ -191,11 +194,12 @@ export const Experience = ({ modelPath, onEnvironmentError }) => {
             }
           });
           if (!lowestMesh) return;
+          
           let mat = lowestMesh.material;
           if (mat && mat.clone) mat = mat.clone();
 
-          const envIntensity = isBracelet ? 1.2 : 2.5;
-          const roughness = isBracelet ? 0.15 : 0.1;
+          const envIntensity = isBracelet ? 1.2 : 2;
+          const roughness = isBracelet ? 0.15 : 0.2;
 
           if (
             mat &&
@@ -204,9 +208,9 @@ export const Experience = ({ modelPath, onEnvironmentError }) => {
             mat.envMap = scene.environment;
             mat.envMapIntensity = envIntensity;
             mat.roughness = roughness;
-            mat.metalness = 0.9;
+            mat.metalness = 1;
             mat.clearcoat = 1;
-            mat.clearcoatRoughness = 0.05;
+            mat.clearcoatRoughness = 0;
             if (makeDoubleSide) mat.side = THREE.DoubleSide;
             mat.needsUpdate = true;
             lowestMesh.material = mat;
@@ -216,22 +220,29 @@ export const Experience = ({ modelPath, onEnvironmentError }) => {
               color: mat.color ? mat.color.clone() : new THREE.Color(0xffffff),
               envMap: scene.environment,
               envMapIntensity: envIntensity,
-              roughness: roughness,
-              metalness: 0.9,
+              roughness: 0.02,
+              metalness: 1,
               clearcoat: 1,
-              clearcoatRoughness: 0.05,
+              clearcoatRoughness: 0,
               side: makeDoubleSide ? THREE.DoubleSide : THREE.FrontSide,
+
+                  transparent: false,
+                  opacity: 1,
+                  depthWrite: true,
+                  depthTest: true,
             });
           }
         };
 
         if (!isPairModel) {
           applyReflectiveToLowest(rightRef.current, false);
+          applyReflectiveToLowest(leftRef.current, false);
         }
       } catch (err) {
         requestAnimationFrame(trySetup);
       }
     };
+    
 
     trySetup();
 
@@ -256,8 +267,8 @@ export const Experience = ({ modelPath, onEnvironmentError }) => {
       {/* Primary environment with fallback */}
       {!envError ? (
         <Environment
+         files="/hdri/Jewel-hdri-diamond-set1-3.hdr"
           preset="warehouse"
-          files="/hdri/Jewel-hdri-diamond-set1-3.hdr"
           background
           blur={10}
           onError={(error) => {
@@ -340,16 +351,17 @@ export const Experience = ({ modelPath, onEnvironmentError }) => {
         rotation-x={-Math.PI * 0.5}
         scale={50}
         receiveShadow
+        roughness={0.4}
       >
         <planeGeometry />
-        <shadowMaterial transparent opacity={0.15} />
+        <shadowMaterial transparent opacity={0.3} />
       </mesh>
 
-      <ambientLight intensity={0.5} />
+      <ambientLight intensity={0.35} />
       <hemisphereLight
         skyColor={0xddeeff}
         groundColor={0x444455}
-        intensity={8}
+        intensity={10.3}
       />
       <directionalLight
         castShadow
