@@ -186,11 +186,11 @@ export default function ProductCard({
                 ? "blur-[1px] brightness-50"
                 : ""
             }`}
-            onError={(e) => {
-              if (!e.target.src.includes('placeholder')) {
-                e.target.src = "https://via.placeholder.com/400x400?text=No+Image";
-              }
-            }}
+            // onError={(e) => {
+            //   if (!e.target.src.includes('placeholder')) {
+            //     e.target.src = "https://via.placeholder.com/400x400/cccccc/666666?text=Product+Image";
+            //   }
+            // }}
           />
           {isOutOfStock() && (
             <div className="absolute inset-0 bg-opacity-30 flex items-center justify-center z-20">
@@ -305,7 +305,7 @@ export default function ProductCard({
           loading="lazy"
           onError={(e) => {
             if (!e.target.src.includes('placeholder')) {
-              e.target.src = "https://via.placeholder.com/400x400?text=No+Image";
+              e.target.src = "https://via.placeholder.com/400x400/cccccc/666666?text=Product+Image";
             }
           }}
         />
