@@ -266,7 +266,7 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
       if (!image || !image.complete) {
         // Image not loaded yet, wait for it
         if (!warnedRef.current) {
-          console.warn('[ImageJewelryOverlay] Necklace image not loaded:', currentNecklaceImage, 'Cache keys:', Object.keys(imageCacheRef.current));
+          // console.warn('[ImageJewelryOverlay] Necklace image not loaded:', currentNecklaceImage, 'Cache keys:', Object.keys(imageCacheRef.current));
           warnedRef.current = true;
         }
         return;
@@ -305,7 +305,7 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
       const fingerLandmarks = FINGER_LANDMARKS[fingerToUse];
 
       if (!fingerLandmarks) {
-        console.warn(`[ImageJewelryOverlay] Invalid finger selected: ${fingerToUse}`);
+        // console.warn(`[ImageJewelryOverlay] Invalid finger selected: ${fingerToUse}`);
         return;
       }
 
@@ -457,7 +457,7 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
       if (!image || !image.complete) {
         // Image not loaded yet, wait for it
         if (!warnedRef.current) {
-          console.warn('[ImageJewelryOverlay] Bracelet image not loaded:', currentBraceletImage, 'Cache keys:', Object.keys(imageCacheRef.current));
+          // console.warn('[ImageJewelryOverlay] Bracelet image not loaded:', currentBraceletImage, 'Cache keys:', Object.keys(imageCacheRef.current));
           warnedRef.current = true;
         }
         return;
@@ -537,7 +537,7 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
       if (!image || !image.complete) {
         // Image not loaded yet, wait for it
         if (!warnedRef.current) {
-          console.warn('[ImageJewelryOverlay] Earring image not loaded:', currentEarringImage, 'Cache keys:', Object.keys(imageCacheRef.current));
+          // console.warn('[ImageJewelryOverlay] Earring image not loaded:', currentEarringImage, 'Cache keys:', Object.keys(imageCacheRef.current));
           warnedRef.current = true;
         }
         return;
@@ -777,7 +777,7 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
             drawBracelet(ctx, canvas);
           } else {
             if (!warnedRef.current) {
-              console.warn('[ImageJewelryOverlay] Cannot draw bracelet: no hand landmarks');
+              // console.warn('[ImageJewelryOverlay] Cannot draw bracelet: no hand landmarks');
               warnedRef.current = true;
             }
           }
@@ -786,7 +786,7 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
             drawRing(ctx, canvas);
           } else {
             if (!warnedRef.current) {
-              console.warn('[ImageJewelryOverlay] Cannot draw ring: no hand landmarks');
+              // console.warn('[ImageJewelryOverlay] Cannot draw ring: no hand landmarks');
               warnedRef.current = true;
             }
           }
