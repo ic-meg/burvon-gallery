@@ -95,7 +95,7 @@ const collectionApi = {
       const requestBody = {
         name: collectionData.name.trim(),
         description: collectionData.description.trim(),
-        collection_image: imageUrl || "DEFAULT_PLACEHOLDER",
+        collection_image: imageUrl || "https://via.placeholder.com/400x400?text=Collection+Image",
       };
 
       const response = await fetch(BASE_URL, {

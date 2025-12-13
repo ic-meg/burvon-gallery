@@ -776,11 +776,22 @@ const CollectionPage = () => {
       Array.isArray(collectionContent.collection_image) &&
       collectionContent.collection_image.length > 0
     ) {
-      return collectionContent.collection_image.map((img) => ({ src: img }));
+      const validImages = collectionContent.collection_image
+        .filter(img => img && typeof img === 'string' && img.length > 0 && !img.includes('undefined'))
+        .map((img) => ({ src: img }));
+      
+      if (validImages.length > 0) {
+        return validImages;
+      }
     }
-    if (currentCollection?.collection_image) {
+    
+    if (currentCollection?.collection_image && 
+        typeof currentCollection.collection_image === 'string' && 
+        currentCollection.collection_image.length > 0 &&
+        !currentCollection.collection_image.includes('undefined')) {
       return [{ src: currentCollection.collection_image }];
     }
+    
     return fallbackHeroImages;
   };
 
@@ -880,6 +891,11 @@ const CollectionPage = () => {
                 alt={`Burvon ${collectionName} collection ${index + 1}`}
                 className="w-full h-full object-cover"
                 draggable={false}
+                onError={(e) => {
+                  if (e.target.src !== fallbackHeroImages[0].src) {
+                    e.target.src = fallbackHeroImages[0].src;
+                  }
+                }}
               />
             </picture>
           ))}

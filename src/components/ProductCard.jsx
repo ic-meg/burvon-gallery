@@ -187,8 +187,9 @@ export default function ProductCard({
                 : ""
             }`}
             onError={(e) => {
-              e.target.src =
-                "https://via.placeholder.com/400x400?text=No+Image";
+              if (!e.target.src.includes('placeholder')) {
+                e.target.src = "https://via.placeholder.com/400x400?text=No+Image";
+              }
             }}
           />
           {isOutOfStock() && (
@@ -303,7 +304,9 @@ export default function ProductCard({
           }`}
           loading="lazy"
           onError={(e) => {
-            e.target.src = "https://via.placeholder.com/400x400?text=No+Image";
+            if (!e.target.src.includes('placeholder')) {
+              e.target.src = "https://via.placeholder.com/400x400?text=No+Image";
+            }
           }}
         />
         {isOutOfStock() && (

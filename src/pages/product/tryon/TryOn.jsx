@@ -48,14 +48,11 @@ const generateImagePath = (category, productName, tryonImagePath = null) => {
   if (tryonImagePath && typeof tryonImagePath === 'string' && tryonImagePath.length > 0) {
     try {
       const supabaseUrl = getTryOnImageUrlSync(categoryMap[category], productName, tryonImagePath);
-      // console.log('[TryOn] Generated Supabase URL:', supabaseUrl, 'for path:', tryonImagePath);
       if (supabaseUrl && isValidSupabaseUrl(supabaseUrl)) {
         return supabaseUrl;
       } else {
-        // console.warn('[TryOn] Supabase URL failed validation:', supabaseUrl);
       }
     } catch (error) {
-      // console.warn('[TryOn] Failed to generate Supabase URL:', error);
     }
   }
 
