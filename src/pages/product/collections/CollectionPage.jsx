@@ -457,7 +457,6 @@ const CollectionPage = () => {
               foundCollection.name
             );
           } else {
-            console.warn("Collection not found for slug:", collectionSlug);
 
             const fallbackCollection = {
               id: null,
@@ -475,7 +474,6 @@ const CollectionPage = () => {
             await loadCollectionProducts(null, fallbackCollection.name);
           }
         } else {
-          console.warn("No collections data available");
 
           const fallbackCollection = {
             id: null,
@@ -520,17 +518,30 @@ const CollectionPage = () => {
 
 
   const loadCollectionContent = async (collectionName) => {
+    // Temporarily disable collection content API calls to prevent 404 errors, comment this two to bring it back
+    setCollectionContent(null);
+    return;
+    
     try {
+      // Skip API call if no content API is configured
+      const contentApiBase = import.meta.env.VITE_COLLECTION_CONTENT_API;
+      if (!contentApiBase) {
+        setCollectionContent(null);
+        return;
+      }
+
       const slug = collectionName
         .toLowerCase()
         .replace(/\s+/g, "-")
         .replace(/[^a-z0-9-]/g, "");
-      const apiUrl = `${
-        import.meta.env.VITE_COLLECTION_CONTENT_API ||
-        "http://localhost:3000/content/collection/"
-      }${slug}`;
+      const apiUrl = `${contentApiBase}${slug}`;
 
-      const response = await fetch(apiUrl);
+      const response = await fetch(apiUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        }
+      });
       if (response.ok) {
         const contentData = await response.json();
         
@@ -1025,6 +1036,11 @@ const CollectionPage = () => {
                 src={getPromoImage()}
                 alt={`${collectionName} Collection Highlight`}
                 className="w-full h-auto object-cover"
+                onError={(e) => {
+                  if (e.target.src !== KidsCollHighNeckCrop) {
+                    e.target.src = KidsCollHighNeckCrop;
+                  }
+                }}
               />
             </div>
             <div className="flex-1 text-[#FFF7DC] pl-8 md:pl-16 lg:pl-24">
@@ -1054,6 +1070,11 @@ const CollectionPage = () => {
               alt={`${collectionName} Collection Highlight`}
               className="absolute inset-0 w-full h-full object-cover"
               style={{ objectPosition: "center top" }}
+              onError={(e) => {
+                if (e.target.src !== KidsCollHighNeckCrop) {
+                  e.target.src = KidsCollHighNeckCrop;
+                }
+              }}
             />
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-[#FFF7DC] px-6">
               <h2 className="text-3xl font-bold bebas tracking-wide mb-2 drop-shadow">
