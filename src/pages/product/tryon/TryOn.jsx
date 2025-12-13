@@ -24,6 +24,13 @@ const categories = [
   { key: "bracelet", label: "Bracelets", icon: bracelet, iconBlack: braceletBlack },
 ];
 
+const isValidSupabaseUrl = (url) => {
+  if (!url || typeof url !== 'string') return false;
+  return url.includes('supabase.co') && 
+         url.includes('storage') && 
+         url.includes('3DFiles') && 
+         (url.endsWith('.png') || url.endsWith('.jpg') || url.endsWith('.jpeg'));
+};
 
 const generateImagePath = (category, productName, tryonImagePath = null) => {
   const categoryMap = {
@@ -33,12 +40,26 @@ const generateImagePath = (category, productName, tryonImagePath = null) => {
     bracelet: "Bracelets"
   };
 
-  // Use Supabase path if available
-  if (tryonImagePath) {
-    return getTryOnImageUrlSync(categoryMap[category], productName, tryonImagePath);
+  if (!category || !productName) {
+    return null;
   }
 
-  // Fallback to local path 
+  // Only use Supabase path if tryonImagePath exists and looks valid
+  if (tryonImagePath && typeof tryonImagePath === 'string' && tryonImagePath.length > 0) {
+    try {
+      const supabaseUrl = getTryOnImageUrlSync(categoryMap[category], productName, tryonImagePath);
+      // console.log('[TryOn] Generated Supabase URL:', supabaseUrl, 'for path:', tryonImagePath);
+      if (supabaseUrl && isValidSupabaseUrl(supabaseUrl)) {
+        return supabaseUrl;
+      } else {
+        // console.warn('[TryOn] Supabase URL failed validation:', supabaseUrl);
+      }
+    } catch (error) {
+      // console.warn('[TryOn] Failed to generate Supabase URL:', error);
+    }
+  }
+
+  // Always fallback to local path for products without valid Supabase paths
   const titleCase = productName.charAt(0).toUpperCase() + productName.slice(1).toLowerCase();
   return `/image/${categoryMap[category]}/${titleCase}Image.png`;
 };
@@ -91,7 +112,7 @@ const TryOnDesktop = ({
   
   // Check if hand detection guide should be shown
   const needsHandDetection = selectedCategory === "rings" || selectedCategory === "bracelet";
-  const showHandGuide = needsHandDetection && isCameraOpen && !photo && (!handLandmarks || handLandmarks.length === 0);
+  const showHandGuide = needsHandDetection && isCameraOpen && !photo && !isJewelryLoading && isOverlayReady && (!handLandmarks || handLandmarks.length === 0);
 
   return (
     <div className="hidden lg:block min-h-screen bg-[#181818] px-0 py-20 text-[#fff7dc]">
@@ -276,6 +297,10 @@ const TryOnDesktop = ({
                           src={generateImagePath(selectedCategory, prod.name, prod.try_on_image_path)}
                           alt={prod.name}
                           className="object-contain mb-2 rounded-lg"
+                          onError={(e) => {
+                            // Suppress console errors for missing carousel images
+                            e.preventDefault();
+                          }}
                           style={{
                             width: isActive ? 120 : 80,
                             height: isActive ? 120 : 80,
@@ -375,7 +400,7 @@ const TryOnMobile = ({
   
   // Check if hand detection guide should be shown
   const needsHandDetection = selectedCategory === "rings" || selectedCategory === "bracelet";
-  const showHandGuide = needsHandDetection && isCameraOpen && !photo && (!handLandmarks || handLandmarks.length === 0);
+  const showHandGuide = needsHandDetection && isCameraOpen && !photo && !isJewelryLoading && isOverlayReady && (!handLandmarks || handLandmarks.length === 0);
 
   return (
     <div className="lg:hidden w-full min-h-screen bg-[#181818] px-4 pt-22 text-[#fff7dc]">
@@ -570,6 +595,10 @@ const TryOnMobile = ({
                   src={generateImagePath(selectedCategory, prod.name, prod.try_on_image_path)}
                   alt={prod.name}
                   className="object-contain mb-1 rounded-lg"
+                  onError={(e) => {
+                    // Suppress console errors for missing mobile carousel images
+                    e.preventDefault();
+                  }}
                   style={{
                     width: isActive ? 80 : 60,
                     height: isActive ? 80 : 60,
@@ -647,15 +676,27 @@ const TryOn = () => {
             const categorySlug = product.category?.slug || product.category_slug || product.category?.name;
             const category = mapCategoryToTryOn(categorySlug);
             
-            // Only include products that have a try_on_image_path (uploaded to Supabase)
-            if (category && groupedProducts[category] && product.try_on_image_path) {
+            // Only include products that have a valid try_on_image_path
+            if (category && groupedProducts[category] && product.try_on_image_path && 
+                typeof product.try_on_image_path === 'string' && 
+                product.try_on_image_path.length > 0 &&
+                product.try_on_image_path.includes('.')) { // Must have file extension
+              
               groupedProducts[category].push({
                 name: product.name,
                 try_on_image_path: product.try_on_image_path,
               });
               
-              const url = getTryOnImageUrlSync(category, product.name, product.try_on_image_path);
-              if (url) supabaseUrls.push(url);
+              // Only generate URL if path looks valid to prevent failed requests
+              try {
+                const url = getTryOnImageUrlSync(category, product.name, product.try_on_image_path);
+                if (url && url.includes('supabase')) {
+                  supabaseUrls.push(url);
+                }
+              } catch (error) {
+                // Skip invalid URLs
+                // console.warn('[TryOn] Skipped invalid Supabase URL for:', product.name);
+              }
             }
           });
           
@@ -720,16 +761,42 @@ const TryOn = () => {
     const product = products[selectedCategory]?.[selectedProductIdx];
     if (!product) return null;
 
-    return generateImagePath(
+    const imagePath = generateImagePath(
       selectedCategory,
       product.name,
       product.try_on_image_path
     );
+    
+    return imagePath || null;
   }, [products, selectedCategory, selectedProductIdx]);
 
   const [videoReady, setVideoReady] = useState(false);
   const [isJewelryLoading, setIsJewelryLoading] = useState(true);
   const [isOverlayReady, setIsOverlayReady] = useState(false);
+
+  // Preload default necklace image for faster homepage landing
+  useEffect(() => {
+    if (!urlCategory && !urlProduct && products.necklace && products.necklace.length > 0) {
+      // User came from homepage without params, preload first necklace
+      const defaultProduct = products.necklace[0];
+      const defaultImageUrl = generateImagePath('necklace', defaultProduct.name, defaultProduct.try_on_image_path);
+      
+      // Only preload if we have a valid URL (prevents failed network requests)
+      if (defaultImageUrl && !defaultImageUrl.includes('supabase')) {
+        // console.log('[TryOn] Preloading default necklace image:', defaultImageUrl);
+        const preloadImg = new Image();
+        preloadImg.crossOrigin = "anonymous";
+        preloadImg.onload = () => {
+          // console.log('[TryOn] Default necklace image preloaded successfully');
+        };
+        preloadImg.onerror = () => {
+          // Suppress preload error - image might not exist locally
+          // console.warn('[TryOn] Failed to preload default necklace image');
+        };
+        preloadImg.src = defaultImageUrl;
+      }
+    }
+  }, [products, urlCategory, urlProduct]);
 
   // Handle image loading state from ImageJewelryOverlay
   const handleImageLoading = (loading) => {
@@ -794,6 +861,8 @@ const TryOn = () => {
   const faceErrorCountRef = useRef(0);
   const handErrorCountRef = useRef(0);
   const MAX_ERRORS = 50; 
+  const lastFaceErrorTime = useRef(0);
+  const firstDetectionCompleteRef = useRef(false); // Track first detection for frame rate optimization 
 
   const { setFaceLandmarks } = useFaceLandmarks();
   const { handLandmarks, setHandLandmarks } = useHandLandmarks();
@@ -935,7 +1004,6 @@ const TryOn = () => {
                   setIsCameraOpen(true);
                 }
               }).catch((err) => {
-                console.error('[TryOn] Error playing video:', err);
                 if (isActive) {
                   setIsCameraOpen(true);
                 }
@@ -956,7 +1024,6 @@ const TryOn = () => {
                   setIsCameraOpen(true);
                 }
               }).catch((err) => {
-                console.error('[TryOn] Error playing video (immediate):', err);
                 if (isActive) {
                   setIsCameraOpen(true);
                 }
@@ -995,9 +1062,17 @@ const TryOn = () => {
     const needsFaceMesh = selectedCategory === "necklace" || selectedCategory === "earrings";
     const needsHands = selectedCategory === "rings" || selectedCategory === "bracelet";
 
+ 
+
     const onFaceResults = (results) => {
       if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+ 
         setFaceLandmarks(results.multiFaceLandmarks[0]);
+        
+        // Mark first detection as complete for frame rate optimization
+        if (!firstDetectionCompleteRef.current) {
+          firstDetectionCompleteRef.current = true;
+        }
       } else {
         setFaceLandmarks(null);
       }
@@ -1026,8 +1101,9 @@ const TryOn = () => {
         faceMesh.setOptions({
           maxNumFaces: 1,
           refineLandmarks: true,
-          minDetectionConfidence: 0.5,
-          minTrackingConfidence: 0.5,
+          // Faster detection for homepage landing
+          minDetectionConfidence: 0.3,  // Lower for faster initial detection
+          minTrackingConfidence: 0.3,   // Lower for faster tracking
         });
         faceMesh.onResults(onFaceResults);
         faceMeshRef.current = faceMesh;
@@ -1092,14 +1168,24 @@ const TryOn = () => {
 
       // Start MediaPipe Camera if not already started
       if (videoRef.current && !cameraRef.current) {
-        // Set frame rate based on device type
-        // Mobile (Android/iOS): 67ms = 15fps for much better performance and reduced lag
-        // Desktop: 33ms = 30fps for smoother tracking
-        const frameInterval = isMobileDevice ? 67 : 33;
+        // Dynamic frame rate: faster for initial detection, then slower for performance
+        // Initial detection: 20ms = 50fps for very fast first detection
+        // Normal operation: Mobile 67ms = 15fps, Desktop 33ms = 30fps
+        const isInitialLoad = !urlCategory && !urlProduct; // Homepage landing
+        const frameInterval = isInitialLoad 
+          ? 20  // Very fast for homepage landing
+          : (isMobileDevice ? 67 : 33);
 
         const camera = new Camera(videoRef.current, {
           onFrame: async () => {
             const now = performance.now();
+
+            // Dynamic frame interval: fast until first detection, then normal
+            const isInitialLoad = !urlCategory && !urlProduct;
+            const needsInitialBoost = isInitialLoad && !firstDetectionCompleteRef.current;
+            const currentFrameInterval = needsInitialBoost 
+              ? 20  // Fast initial detection
+              : (isMobileDevice ? 67 : 33); // Normal operation
 
             // Check current category using ref to get latest value
             const currentCategory = selectedCategoryRef.current;
@@ -1108,13 +1194,12 @@ const TryOn = () => {
 
             // Process FaceMesh if needed for current category
             if (currentNeedsFaceMesh && faceMeshRef.current && videoRef.current && videoRef.current.readyState >= 2) {
-              if (now - lastFrameTime.current >= frameInterval && !isProcessing.current) {
+              if (now - lastFrameTime.current >= currentFrameInterval && !isProcessing.current) {
                 lastFrameTime.current = now;
                 isProcessing.current = true;
                 
                 // Circuit breaker: check for too many errors
                 if (faceErrorCountRef.current >= MAX_ERRORS) {
-                  console.warn('Face mesh processing disabled due to too many errors');
                   isProcessing.current = false;
                   return;
                 }
@@ -1128,13 +1213,11 @@ const TryOn = () => {
                   
                   // Throttle error logging to prevent console spam
                   if (Date.now() - lastFaceErrorTime.current > 1000) {
-                    console.warn(`Face mesh error (${faceErrorCountRef.current}/${MAX_ERRORS}):`, err);
                     lastFaceErrorTime.current = Date.now();
                   }
                   
                   // If max errors reached, disable processing
                   if (faceErrorCountRef.current >= MAX_ERRORS) {
-                    console.error('Face mesh processing permanently disabled due to excessive errors');
                   }
                 } finally {
                   isProcessing.current = false;
@@ -1144,13 +1227,12 @@ const TryOn = () => {
 
             // Process Hands if needed for current category
             if (currentNeedsHands && handsRef.current && videoRef.current) {
-              if (now - lastHandFrameTime.current >= frameInterval && !isHandProcessing.current) {
+              if (now - lastHandFrameTime.current >= currentFrameInterval && !isHandProcessing.current) {
                 lastHandFrameTime.current = now;
                 isHandProcessing.current = true;
                 
                 // Circuit breaker: check for too many hand errors
                 if (handErrorCountRef.current >= MAX_ERRORS) {
-                  console.warn('Hand processing disabled due to too many errors');
                   isHandProcessing.current = false;
                   return;
                 }
@@ -1162,9 +1244,7 @@ const TryOn = () => {
                     handErrorCountRef.current = 0;
                   } else {
                     if (Math.random() < 0.1) {
-                      console.warn('[TryOn] Video not ready for hand processing:', {
-                        videoReadyState: videoRef.current?.readyState
-                      });
+                   
                     }
                   }
                 } catch (err) {
@@ -1172,16 +1252,13 @@ const TryOn = () => {
                   
                   // Throttle error logging to prevent console spam
                   if (Date.now() - lastFaceErrorTime.current > 1000) {
-                    console.warn(`Hand processing error (${handErrorCountRef.current}/${MAX_ERRORS}):`, err);
                   }
                   
                   // If max errors reached, disable processing
                   if (handErrorCountRef.current >= MAX_ERRORS) {
-                    console.error('Hand processing permanently disabled due to excessive errors');
                   }
                   
                   if (err.message && (err.message.includes('undefined') || err.message.includes('not loaded'))) {
-                    console.warn('[TryOn] Hands model may not be fully loaded, will retry...');
                     handsRef.current = null;
                   }
                 } finally {
@@ -1190,11 +1267,7 @@ const TryOn = () => {
               }
             } else if (currentNeedsHands) {
               if (Math.random() < 0.05) {
-                console.warn('[TryOn] Cannot process hands:', {
-                  hasHandsModel: !!handsRef.current,
-                  hasVideo: !!videoRef.current,
-                  currentCategory
-                });
+          
               }
             }
           },
@@ -1205,12 +1278,10 @@ const TryOn = () => {
         cameraRef.current = camera;
       } else {
         if (!videoRef.current) {
-          console.warn('[TryOn] Cannot start camera: videoRef.current is null');
         }
         if (cameraRef.current) {
           // Verify that the Hands model is available for the current category
           if (needsHands && !handsRef.current) {
-            console.warn('[TryOn] WARNING: Hands model not initialized but needed for category:', selectedCategory);
           }
         }
       }
@@ -1241,7 +1312,7 @@ const TryOn = () => {
         setHandLandmarks(null);
       }
     };
-  }, [selectedCategory]); // Re-initialize when category changes
+  }, [selectedCategory, isCameraOpen]); // Re-initialize when category changes OR camera opens
 
   // Reattach video stream and recreate MediaPipe Camera when photo is cleared (retry button clicked)
   useEffect(() => {
@@ -1304,7 +1375,6 @@ const TryOn = () => {
                       
                       // Circuit breaker: check for too many errors
                       if (faceErrorCountRef.current >= MAX_ERRORS) {
-                        console.warn('Face mesh processing disabled due to too many errors');
                         isProcessing.current = false;
                         return;
                       }
@@ -1318,7 +1388,6 @@ const TryOn = () => {
                         
                         // Throttle error logging to prevent console spam
                         if (Date.now() - lastFaceErrorTime.current > 1000) {
-                          console.warn(`Face mesh error (${faceErrorCountRef.current}/${MAX_ERRORS}):`, err);
                           lastFaceErrorTime.current = Date.now();
                         }
                       } finally {
@@ -1334,7 +1403,6 @@ const TryOn = () => {
                       
                       // Circuit breaker: check for too many hand errors
                       if (handErrorCountRef.current >= MAX_ERRORS) {
-                        console.warn('Hand processing disabled due to too many errors');
                         isHandProcessing.current = false;
                         return;
                       }
@@ -1350,7 +1418,6 @@ const TryOn = () => {
                         
                         // Throttle error logging to prevent console spam
                         if (Date.now() - lastFaceErrorTime.current > 1000) {
-                          console.warn(`Hand processing error (${handErrorCountRef.current}/${MAX_ERRORS}):`, err);
                         }
                       } finally {
                         isHandProcessing.current = false;

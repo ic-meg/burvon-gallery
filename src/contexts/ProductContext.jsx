@@ -74,7 +74,7 @@ export const ProductProvider = ({ children }) => {
 
       return uploadResults;
     } catch (error) {
-      console.error("Error uploading product images:", error);
+      // console.error("Error uploading product images:", error);
       return [];
     }
   };
@@ -97,7 +97,6 @@ export const ProductProvider = ({ children }) => {
           try {
             productsData = JSON.parse(productsData);
           } catch (parseError) {
-            console.warn("Failed to parse products data:", parseError);
             productsData = [];
           }
         }
@@ -110,21 +109,18 @@ export const ProductProvider = ({ children }) => {
           finalProducts = productsData;
           setProducts(finalProducts);
         } else {
-          console.warn("Unexpected products data structure:", productsData);
           setProducts([]);
         }
         
         // Preload try-on availability for all products
         if (finalProducts.length > 0) {
           preloadTryOnAvailability(finalProducts).catch(err => {
-            console.warn("Failed to preload try-on availability:", err);
           });
         }
       } else {
         setProducts([]);
       }
     } catch (err) {
-      console.error("Failed to fetch products:", err);
       setError(err.message);
       setProducts([]);
     } finally {
@@ -145,7 +141,6 @@ export const ProductProvider = ({ children }) => {
 
       const apiProducts = response?.data?.products || [];
       if (!Array.isArray(apiProducts)) {
-        console.warn('[ProductContext] Invalid products structure for try-on');
         setTryOnProductsLoaded(true);
         return;
       }
@@ -174,10 +169,18 @@ export const ProductProvider = ({ children }) => {
         if (product.try_on_image_path) {
           const promise = new Promise((resolve) => {
             const img = new Image();
-            img.onload = () => resolve(true);
-            img.onerror = () => resolve(false);
-            // Get Supabase URL for preloading
-            img.src = `https://mkpmtycdhytnkxkmznsg.supabase.co/storage/v1/object/public/burvon-images/${product.try_on_image_path}`;
+            img.onload = () => {
+              // console.log('[ProductContext] Successfully preloaded:', storageService.getTryOnImageUrl(product.try_on_image_path));
+              resolve(true);
+            };
+            img.onerror = () => {
+              // console.warn('[ProductContext] Failed to preload:', storageService.getTryOnImageUrl(product.try_on_image_path));
+              resolve(false);
+            };
+            // Use storageService to get consistent Supabase URL format
+            const imageUrl = storageService.getTryOnImageUrl(product.try_on_image_path);
+            // console.log('[ProductContext] Attempting to preload:', imageUrl);
+            img.src = imageUrl;
           });
           preloadPromises.push(promise);
         }
@@ -186,13 +189,13 @@ export const ProductProvider = ({ children }) => {
       Promise.all(preloadPromises).then(() => {
         // console.log('[ProductContext] All try-on images preloaded successfully');
       }).catch(err => {
-        console.warn('[ProductContext] Some images failed to preload:', err);
+        // console.warn('[ProductContext] Some images failed to preload:', err);
       });
       
       setTryOnProducts(groupedProducts);
       setTryOnProductsLoaded(true);
     } catch (error) {
-      console.error('[ProductContext] Error fetching try-on products:', error);
+      // console.error('[ProductContext] Error fetching try-on products:', error);
       setTryOnProductsLoaded(true);
     }
   };
@@ -209,7 +212,7 @@ export const ProductProvider = ({ children }) => {
       const response = await productApi.fetchProductById(id);
 
       if (response.error) {
-        console.warn(`Product API error for ID ${id}:`, response.error);
+        // console.warn(`Product API error for ID ${id}:`, response.error);
         return null;
       } else if (response.data) {
         let productData = response.data;
@@ -218,7 +221,7 @@ export const ProductProvider = ({ children }) => {
           try {
             productData = JSON.parse(productData);
           } catch (parseError) {
-            console.warn("Failed to parse product data:", parseError);
+            // console.warn("Failed to parse product data:", parseError);
             return null;
           }
         }
@@ -228,7 +231,7 @@ export const ProductProvider = ({ children }) => {
 
       return null;
     } catch (err) {
-      console.error(`Failed to fetch product ${id}:`, err);
+      // console.error(`Failed to fetch product ${id}:`, err);
       setError(err.message);
       return null;
     } finally {
@@ -244,10 +247,10 @@ export const ProductProvider = ({ children }) => {
       const response = await productApi.fetchProductsByCategory(categorySlug);
 
       if (response.error) {
-        console.warn(
-          `Products API error for category ${categorySlug}:`,
-          response.error
-        );
+        // console.warn(
+        //   `Products API error for category ${categorySlug}:`,
+        //   response.error
+        // );
         setProductsByCategory((prev) => ({ ...prev, [categorySlug]: [] }));
         return [];
       } else if (response.data) {
@@ -257,7 +260,7 @@ export const ProductProvider = ({ children }) => {
           try {
             productsData = JSON.parse(productsData);
           } catch (parseError) {
-            console.warn("Failed to parse category products data:", parseError);
+            // console.warn("Failed to parse category products data:", parseError);
             productsData = [];
           }
         }
@@ -281,7 +284,7 @@ export const ProductProvider = ({ children }) => {
         // Preload try-on availability for category products
         if (products.length > 0) {
           preloadTryOnAvailability(products).catch(err => {
-            console.warn("Failed to preload try-on availability:", err);
+            // console.warn("Failed to preload try-on availability:", err);
           });
         }
         
@@ -291,10 +294,10 @@ export const ProductProvider = ({ children }) => {
       setProductsByCategory((prev) => ({ ...prev, [categorySlug]: [] }));
       return [];
     } catch (err) {
-      console.error(
-        `Failed to fetch products for category ${categorySlug}:`,
-        err
-      );
+      // console.error(
+      //   `Failed to fetch products for category ${categorySlug}:`,
+      //   err
+      // );
       setError(err.message);
       setProductsByCategory((prev) => ({ ...prev, [categorySlug]: [] }));
       return [];
@@ -311,10 +314,10 @@ export const ProductProvider = ({ children }) => {
       const response = await productApi.fetchProductsByCollection(collectionId);
 
       if (response.error) {
-        console.warn(
-          `Products API error for collection ${collectionId}:`,
-          response.error
-        );
+        // console.warn(
+        //   `Products API error for collection ${collectionId}:`,
+        //   response.error
+        // );
         setProductsByCollection((prev) => ({ ...prev, [collectionId]: [] }));
         return [];
       } else if (response.data) {
@@ -324,10 +327,10 @@ export const ProductProvider = ({ children }) => {
           try {
             productsData = JSON.parse(productsData);
           } catch (parseError) {
-            console.warn(
-              "Failed to parse collection products data:",
-              parseError
-            );
+            // console.warn(
+            //   "Failed to parse collection products data:",
+            //   parseError
+            // );
             productsData = { products: [] };
           }
         }
@@ -366,7 +369,7 @@ export const ProductProvider = ({ children }) => {
         // Preload try-on availability for collection products
         if (products.length > 0) {
           preloadTryOnAvailability(products).catch(err => {
-            console.warn("Failed to preload try-on availability:", err);
+            // console.warn("Failed to preload try-on availability:", err);
           });
         }
         
@@ -376,10 +379,10 @@ export const ProductProvider = ({ children }) => {
       setProductsByCollection((prev) => ({ ...prev, [collectionId]: [] }));
       return [];
     } catch (err) {
-      console.error(
-        `Failed to fetch products for collection ${collectionId}:`,
-        err
-      );
+      // console.error(
+      //   `Failed to fetch products for collection ${collectionId}:`,
+      //   err
+      // );
       setError(err.message);
       setProductsByCollection((prev) => ({ ...prev, [collectionId]: [] }));
       return [];
@@ -414,7 +417,7 @@ export const ProductProvider = ({ children }) => {
       const response = await productApi.createProduct(finalProductData);
 
       if (response.error) {
-        console.warn("Create product API error:", response.error);
+        // console.warn("Create product API error:", response.error);
         if (finalProductData.imagePaths) {
           await storageService.cleanupOldImages(finalProductData.imagePaths);
         }
@@ -426,7 +429,7 @@ export const ProductProvider = ({ children }) => {
 
       return { success: false, error: "Unknown error occurred" };
     } catch (err) {
-      console.error("Failed to create product:", err);
+      // console.error("Failed to create product:", err);
       setError(err.message);
       return { success: false, error: err.message };
     } finally {
@@ -462,7 +465,7 @@ export const ProductProvider = ({ children }) => {
       const response = await productApi.updateProduct(finalProductData, id);
 
       if (response.error) {
-        console.warn("Update product API error:", response.error);
+        // console.warn("Update product API error:", response.error);
         return { success: false, error: response.error };
       } else if (response.data) {
         await fetchAllProducts();
@@ -471,7 +474,7 @@ export const ProductProvider = ({ children }) => {
 
       return { success: false, error: "Unknown error occurred" };
     } catch (err) {
-      console.error("Failed to update product:", err);
+      // console.error("Failed to update product:", err);
       setError(err.message);
       return { success: false, error: err.message };
     } finally {
@@ -489,7 +492,7 @@ export const ProductProvider = ({ children }) => {
       const response = await productApi.deleteProduct(id);
 
       if (response.error) {
-        console.warn("Delete product API error:", response.error);
+        // console.warn("Delete product API error:", response.error);
         return { success: false, error: response.error };
       } else {
         if (product && product.imagePaths) {
@@ -500,7 +503,7 @@ export const ProductProvider = ({ children }) => {
         return { success: true };
       }
     } catch (err) {
-      console.error("Failed to delete product:", err);
+      // console.error("Failed to delete product:", err);
       setError(err.message);
       return { success: false, error: err.message };
     } finally {
@@ -516,7 +519,7 @@ export const ProductProvider = ({ children }) => {
       const response = await productApi.updateProductStock(id, stockData);
 
       if (response.error) {
-        console.warn("Update stock API error:", response.error);
+        // console.warn("Update stock API error:", response.error);
         return { success: false, error: response.error };
       } else if (response.data) {
         await fetchAllProducts();
@@ -525,7 +528,7 @@ export const ProductProvider = ({ children }) => {
 
       return { success: false, error: "Unknown error occurred" };
     } catch (err) {
-      console.error("Failed to update product stock:", err);
+      // console.error("Failed to update product stock:", err);
       setError(err.message);
       return { success: false, error: err.message };
     } finally {
@@ -541,7 +544,7 @@ export const ProductProvider = ({ children }) => {
       const response = await productApi.searchProducts(query);
 
       if (response.error) {
-        console.warn("Search products API error:", response.error);
+        // console.warn("Search products API error:", response.error);
         return [];
       } else if (response.data) {
         let productsData = response.data;
@@ -550,7 +553,7 @@ export const ProductProvider = ({ children }) => {
           try {
             productsData = JSON.parse(productsData);
           } catch (parseError) {
-            console.warn("Failed to parse search results:", parseError);
+            // console.warn("Failed to parse search results:", parseError);
             productsData = [];
           }
         }
@@ -560,7 +563,7 @@ export const ProductProvider = ({ children }) => {
 
       return [];
     } catch (err) {
-      console.error("Failed to search products:", err);
+      // console.error("Failed to search products:", err);
       setError(err.message);
       return [];
     } finally {
@@ -576,7 +579,7 @@ export const ProductProvider = ({ children }) => {
       const response = await productApi.filterProducts(filters);
 
       if (response.error) {
-        console.warn("Filter products API error:", response.error);
+        // console.warn("Filter products API error:", response.error);
         return [];
       } else if (response.data) {
         let productsData = response.data;
@@ -585,7 +588,7 @@ export const ProductProvider = ({ children }) => {
           try {
             productsData = JSON.parse(productsData);
           } catch (parseError) {
-            console.warn("Failed to parse filter results:", parseError);
+            // console.warn("Failed to parse filter results:", parseError);
             productsData = [];
           }
         }
@@ -595,7 +598,7 @@ export const ProductProvider = ({ children }) => {
 
       return [];
     } catch (err) {
-      console.error("Failed to filter products:", err);
+      // console.error("Failed to filter products:", err);
       setError(err.message);
       return [];
     } finally {

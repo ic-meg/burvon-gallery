@@ -186,7 +186,9 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
       onImageLoading?.(false);
       onImageReady?.(true);
     };
-    img.onerror = () => {
+    img.onerror = (error) => {
+      // Suppress console errors for missing Supabase images
+      // console.warn('[ImageJewelryOverlay] Failed to load image:', selectedJewelryImage);
       setImageLoading(false);
       setImageReady(false);
       onImageLoading?.(false);
@@ -197,6 +199,7 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
 
   // Draw jewelry on canvas
   useEffect(() => {
+
     if (!useImageOverlay || !canvasRef.current || !videoRef?.current || !videoReady) {
       return;
     }
@@ -264,9 +267,8 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
       const currentNecklaceImage = jewelryType === "necklace" && selectedJewelryImage ? selectedJewelryImage : necklaceImage;
       const image = imageCacheRef.current[currentNecklaceImage];
       if (!image || !image.complete) {
-        // Image not loaded yet, wait for it
+        // Image not loaded yet, wait lang 
         if (!warnedRef.current) {
-          // console.warn('[ImageJewelryOverlay] Necklace image not loaded:', currentNecklaceImage, 'Cache keys:', Object.keys(imageCacheRef.current));
           warnedRef.current = true;
         }
         return;
@@ -305,7 +307,6 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
       const fingerLandmarks = FINGER_LANDMARKS[fingerToUse];
 
       if (!fingerLandmarks) {
-        // console.warn(`[ImageJewelryOverlay] Invalid finger selected: ${fingerToUse}`);
         return;
       }
 
@@ -457,7 +458,6 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
       if (!image || !image.complete) {
         // Image not loaded yet, wait for it
         if (!warnedRef.current) {
-          // console.warn('[ImageJewelryOverlay] Bracelet image not loaded:', currentBraceletImage, 'Cache keys:', Object.keys(imageCacheRef.current));
           warnedRef.current = true;
         }
         return;
@@ -537,7 +537,6 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
       if (!image || !image.complete) {
         // Image not loaded yet, wait for it
         if (!warnedRef.current) {
-          // console.warn('[ImageJewelryOverlay] Earring image not loaded:', currentEarringImage, 'Cache keys:', Object.keys(imageCacheRef.current));
           warnedRef.current = true;
         }
         return;
@@ -762,22 +761,29 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
         if (faceLandmarksRef.current) {
           drawNecklace(ctx, canvas);
           drawEarrings(ctx, canvas);
+        } else {
         }
         if (handLandmarksRef.current) {
           drawBracelet(ctx, canvas);
           drawRing(ctx, canvas);
+        } else {
         }
       } else {
-        if (jewelryType === "necklace" && faceLandmarksRef.current) {
-          drawNecklace(ctx, canvas);
-        } else if (jewelryType === "earrings" && faceLandmarksRef.current) {
-          drawEarrings(ctx, canvas);
+        if (jewelryType === "necklace") {
+          if (faceLandmarksRef.current) {
+            drawNecklace(ctx, canvas);
+          } else {
+          }
+        } else if (jewelryType === "earrings") {
+          if (faceLandmarksRef.current) {
+            drawEarrings(ctx, canvas);
+          } else {
+          }
         } else if (jewelryType === "bracelet") {
           if (handLandmarksRef.current) {
             drawBracelet(ctx, canvas);
           } else {
             if (!warnedRef.current) {
-              // console.warn('[ImageJewelryOverlay] Cannot draw bracelet: no hand landmarks');
               warnedRef.current = true;
             }
           }
@@ -786,7 +792,6 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
             drawRing(ctx, canvas);
           } else {
             if (!warnedRef.current) {
-              // console.warn('[ImageJewelryOverlay] Cannot draw ring: no hand landmarks');
               warnedRef.current = true;
             }
           }
@@ -846,6 +851,8 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
     videoReady,
     selectedFinger,
     selectedJewelryImage,
+    faceLandmarks,  // Add to trigger re-render when landmarks arrive
+    handLandmarks,  
   ]);
 
 

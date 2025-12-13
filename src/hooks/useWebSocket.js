@@ -56,7 +56,7 @@ export const useWebSocket = (isAdmin = false, onConversationsUpdate = null, onNe
       });
 
       socket.on('connect_error', (err) => {
-        console.error('WebSocket connection error:', err.message);
+        // console.error('WebSocket connection error:', err.message);
         setError('Connection error');
         reconnectAttempts.current++;
 
@@ -79,7 +79,7 @@ export const useWebSocket = (isAdmin = false, onConversationsUpdate = null, onNe
             }
           }
         } catch (err) {
-          console.error('Error processing NEW_MESSAGE:', err);
+          // console.error('Error processing NEW_MESSAGE:', err);
         }
       });
 
@@ -90,7 +90,7 @@ export const useWebSocket = (isAdmin = false, onConversationsUpdate = null, onNe
       });
 
       socket.on('ERROR', (data) => {
-        console.error('WebSocket error:', data);
+        // console.error('WebSocket error:', data);
         setError(data.message || 'An error occurred');
       });
 
@@ -99,7 +99,7 @@ export const useWebSocket = (isAdmin = false, onConversationsUpdate = null, onNe
 
       socketRef.current = socket;
     } catch (err) {
-      console.error('Error creating WebSocket:', err);
+      // console.error('Error creating WebSocket:', err);
       setError('Failed to create connection');
     }
   }, [isAdmin, onConversationsUpdate, onNewMessage]);
@@ -152,7 +152,7 @@ export const useWebSocket = (isAdmin = false, onConversationsUpdate = null, onNe
 
       return true;
     } catch (err) {
-      console.error('Error sending message:', err);
+      // console.error('Error sending message:', err);
       setError('Failed to send message');
       return false;
     }
@@ -170,7 +170,7 @@ export const useWebSocket = (isAdmin = false, onConversationsUpdate = null, onNe
 
       socketRef.current.emit(isTyping ? 'TYPING_START' : 'TYPING_STOP', userIdentifier);
     } catch (err) {
-      console.error('Error sending typing indicator:', err);
+      // console.error('Error sending typing indicator:', err);
     }
   }, [isAdmin]);
 
@@ -186,7 +186,7 @@ export const useWebSocket = (isAdmin = false, onConversationsUpdate = null, onNe
 
       socketRef.current.emit('MARK_READ', userIdentifier);
     } catch (err) {
-      console.error('Error marking as read:', err);
+      // console.error('Error marking as read:', err);
     }
   }, [isAdmin]);
 

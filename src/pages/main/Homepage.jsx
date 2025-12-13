@@ -302,7 +302,7 @@ const Homepage = () => {
 
         return {
           id: product.product_id || product.id || index + 1,
-          images: product.images && product.images.length > 0 ? product.images : ["https://via.placeholder.com/400x400?text=No+Image"],
+          images: product.images && product.images.length > 0 ? product.images : ["PRODUCT IMAGE PLACEHOLDER"],
           name: product.name || "PRODUCT NAME",
           collection: product.collection?.name || product.collection_name || "COLLECTION NAME",
           price,
