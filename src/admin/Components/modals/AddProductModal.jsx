@@ -1,5 +1,5 @@
 import React from 'react';
-import { Add3D, AddImage, DropDownIconBlack, DropUpIconBlack, Remove } from '../../../assets';
+import { Add3D, AddImage, DropDownIconBlack, DropUpIconBlack, Remove, TryOnBlack, Icon3D } from '../../../assets';
 
 const AddProductModal = ({
   showModal,
@@ -261,7 +261,7 @@ const AddProductModal = ({
                       {newProduct.model3DFile ? (
                         <>
                           <div className="flex flex-col items-center justify-center">
-                            <img src={Add3D} alt="3D" className="w-5 h-5 opacity-80" />
+                            <img src={Icon3D} alt="3D" className="w-5 h-5 opacity-80" />
                             <span className="text-[8px] text-gray-600 mt-0.5 truncate w-14 text-center">
                               {newProduct.model3DFile.name.slice(0, 8)}...
                             </span>
@@ -279,7 +279,7 @@ const AddProductModal = ({
                           </button>
                         </>
                       ) : (
-                        <img src={Add3D} alt="3D model" className="w-6 h-6 opacity-60" />
+                         <img src={Icon3D} alt="3D" className="w-5 h-5 opacity-80" />
                       )}
                     </div>
                     <input
@@ -297,7 +297,7 @@ const AddProductModal = ({
                       {newProduct.tryOnImageFile ? (
                         <>
                           <div className="flex flex-col items-center justify-center">
-                            <span className="text-lg">👗</span>
+                            <img src={TryOnBlack} alt="Try-On" className="w-5 h-5 opacity-80" />
                             <span className="text-[8px] text-gray-600 mt-0.5 truncate w-14 text-center">
                               {newProduct.tryOnImageFile.name.slice(0, 8)}...
                             </span>
@@ -315,7 +315,7 @@ const AddProductModal = ({
                           </button>
                         </>
                       ) : (
-                        <span className="text-xl opacity-60">👗</span>
+                          <img src={TryOnBlack} alt="Try-On" className="w-5 h-5 opacity-80" />
                       )}
                     </div>
                     <input
