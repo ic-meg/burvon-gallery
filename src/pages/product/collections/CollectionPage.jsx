@@ -340,6 +340,7 @@ const CollectionPage = () => {
         stock: product.stock,
         size: product.size,
         sizeStocks: product.sizeStocks || [],
+        try_on_image_path: product.try_on_image_path || null,
         category: product.category?.name || product.category || null,
         category_id: product.category_id || null,
       };
@@ -392,6 +393,7 @@ const CollectionPage = () => {
         stock: product.stock,
         size: product.size,
         sizeStocks: product.sizeStocks || [],
+        try_on_image_path: product.try_on_image_path || null,
         category: product.category?.name || product.category || null,
         category_id: product.category_id || null,
       }));
@@ -491,7 +493,7 @@ const CollectionPage = () => {
           await loadCollectionProducts(null, fallbackCollection.name);
         }
       } catch (error) {
-        console.error("Error loading collection data:", error);
+        // console.error("Error loading collection data:", error);
 
         const fallbackCollection = {
           id: null,
@@ -518,12 +520,7 @@ const CollectionPage = () => {
 
 
   const loadCollectionContent = async (collectionName) => {
-    // Temporarily disable collection content API calls to prevent 404 errors, comment this two to bring it back
-    setCollectionContent(null);
-    return;
-    
     try {
-      // Skip API call if no content API is configured
       const contentApiBase = import.meta.env.VITE_COLLECTION_CONTENT_API;
       if (!contentApiBase) {
         setCollectionContent(null);
@@ -550,7 +547,6 @@ const CollectionPage = () => {
           try {
             promoImages = JSON.parse(promoImages);
           } catch (e) {
-            console.error("Failed to parse promo_images:", e);
             promoImages = [];
           }
         }
@@ -560,16 +556,14 @@ const CollectionPage = () => {
           try {
             collectionImages = JSON.parse(collectionImages);
           } catch (e) {
-            console.error("Failed to parse collection_image:", e);
             collectionImages = [];
           }
         }
 
-   
         const parsedContentData = {
           ...contentData,
-          promo_images: promoImages,
-          collection_image: collectionImages,
+          promo_images: Array.isArray(promoImages) ? promoImages : [],
+          collection_image: Array.isArray(collectionImages) ? collectionImages : [],
         };
   
         setCollectionContent(parsedContentData);
@@ -594,10 +588,10 @@ const CollectionPage = () => {
           } else {
           }
         } catch (error) {
-          console.error(
-            `Error fetching products for collection ${collectionId}:`,
-            error
-          );
+          // console.error(
+          //   `Error fetching products for collection ${collectionId}:`,
+          //   error
+          // );
           fetched = [];
         }
       } else {
@@ -765,6 +759,7 @@ const CollectionPage = () => {
           stock: product.stock,
           size: product.size,
           sizeStocks: product.sizeStocks || [],
+          try_on_image_path: product.try_on_image_path || null,
         }));
 
         setCollectionProducts(transformedProducts);
@@ -774,7 +769,7 @@ const CollectionPage = () => {
       setRawProducts([]);
       setCollectionProducts([]);
     } catch (error) {
-      console.error("Error loading products:", error);
+      // console.error("Error loading products:", error);
       setRawProducts([]);
       setCollectionProducts([]);
     }
@@ -788,7 +783,7 @@ const CollectionPage = () => {
       collectionContent.collection_image.length > 0
     ) {
       const validImages = collectionContent.collection_image
-        .filter(img => img && typeof img === 'string' && img.length > 0 && !img.includes('undefined'))
+        .filter(img => img && typeof img === 'string' && img.trim().length > 0 && !img.includes('undefined'))
         .map((img) => ({ src: img }));
       
       if (validImages.length > 0) {
@@ -798,8 +793,9 @@ const CollectionPage = () => {
     
     if (currentCollection?.collection_image && 
         typeof currentCollection.collection_image === 'string' && 
-        currentCollection.collection_image.length > 0 &&
-        !currentCollection.collection_image.includes('undefined')) {
+        currentCollection.collection_image.trim().length > 0 &&
+        !currentCollection.collection_image.includes('undefined') &&
+        !currentCollection.collection_image.includes('placeholder')) {
       return [{ src: currentCollection.collection_image }];
     }
     
@@ -813,9 +809,22 @@ const CollectionPage = () => {
       Array.isArray(collectionContent.promo_images) &&
       collectionContent.promo_images.length > 0
     ) {
-      return collectionContent.promo_images[0];
+      const validPromoImage = collectionContent.promo_images.find(img => 
+        img && typeof img === 'string' && img.trim().length > 0 && !img.includes('undefined')
+      );
+      if (validPromoImage) {
+        return validPromoImage;
+      }
     }
-    return KidsCollHighNeckCrop; // fallback image
+    
+    if (collectionContent?.promo_image && 
+        typeof collectionContent.promo_image === 'string' && 
+        collectionContent.promo_image.trim().length > 0 &&
+        !collectionContent.promo_image.includes('undefined')) {
+      return collectionContent.promo_image;
+    }
+    
+    return KidsCollHighNeckCrop;
   };
 
 
