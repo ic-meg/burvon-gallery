@@ -3,14 +3,13 @@ import { useFaceLandmarks } from "../../../contexts/FaceLandmarksContext";
 import { useHandLandmarks } from "../../../contexts/HandLandmarksContext";
 import { useControls } from "leva";
 
-// Finger landmark mapping
-// Each finger has MCP (base) and PIP (middle joint) landmarks
+// Finger landmarks
 const FINGER_LANDMARKS = {
-  THUMB: { MCP: 2, PIP: 3 },     // Thumb MCP and IP joint
-  INDEX: { MCP: 5, PIP: 6 },     // Index finger MCP and PIP
-  MIDDLE: { MCP: 9, PIP: 10 },   // Middle finger MCP and PIP
-  RING: { MCP: 13, PIP: 14 },    // Ring finger MCP and PIP
-  PINKY: { MCP: 17, PIP: 18 },   // Pinky finger MCP and PIP
+  THUMB: { MCP: 2, PIP: 3 },     // Thumb 
+  INDEX: { MCP: 5, PIP: 6 },     // Index finger 
+  MIDDLE: { MCP: 9, PIP: 10 },   // Middle finger 
+  RING: { MCP: 13, PIP: 14 },    // Ring finger 
+  PINKY: { MCP: 17, PIP: 18 },   // Pinky finger 
 };
 
 export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, useImageOverlay, jewelryType, selectedJewelryImage, videoReady, selectedFinger, onImageLoading, onImageReady, cameraOpen }) => {
@@ -25,7 +24,7 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
   const [imageLoading, setImageLoading] = useState(false);
   const [imageReady, setImageReady] = useState(false);
 
-  // Device detection (moved outside effects for performance)
+  // Device detection 
   const IS_ANDROID = /Android/i.test(navigator.userAgent);
 
   useEffect(() => {
@@ -97,7 +96,7 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
   //   },
   //   necklaceWidthMultiplier: { value: 1.0, min: 1.0, max: 3.0, step: 0.1, label: "Necklace Width Multiplier" },
   //   necklaceHeightRatio: { value: 0.80, min: 0.3, max: 0.8, step: 0.05, label: "Necklace Height Ratio" },
-  //   necklaceYOffset: { value: 30, min: 0, max: 100, step: 5, label: "Necklace Y Offset (px)" },
+  //   necklaceYOffset: { value: 65, min: 0, max: 100, step: 5, label: "Necklace Y Offset (px)" },
   //   ringSizeMultiplier: { value: 2, min: 0.8, max: 2.0, step: 0.1, label: "Ring Size Multiplier" },
   //   ringYOffset: { value: -4, min: -50, max: 50, step: 1, label: "Ring Y Offset (px)" },
   //   ringZOffset: { value: -3, min: -200, max: 200, step: 1, label: "Ring Z Offset (depth adjustment)" },
@@ -133,14 +132,14 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
 
   const necklaceWidthMultiplier = 1.0;
   const necklaceHeightRatio = 0.80;
-  const necklaceYOffset = 60;
+  const necklaceYOffset = 65;
   const ringSizeMultiplier = 2.0;
   const ringYOffset = -4;
   const ringZOffset = -3;
   const ringRotationOffset = 0;
   const ringAutoRotate = true;
-  const ringBandWidth = 0.42;
-  const ringPerspectiveHeight = 0.38;
+  const ringBandWidth = 0.55;
+  const ringPerspectiveHeight = 0.80;
   const braceletWidthMultiplier = 1.0;
   const braceletHeightRatio = 0.20;
   const braceletYOffset = 1;
@@ -233,10 +232,8 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
       }
     };
 
-    // Initial size setup
     updateCanvasSize();
 
-    // Update size when video metadata loads
     const handleLoadedMetadata = () => {
       if (isActive) {
         updateCanvasSize();
@@ -244,13 +241,11 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
     };
     video.addEventListener("loadedmetadata", handleLoadedMetadata);
 
-    // Define draw functions inside useEffect to access latest values
     const drawNecklace = (ctx, canvas) => {
       const landmarks = faceLandmarksRef.current;
       if (!landmarks || !Array.isArray(landmarks) || landmarks.length < 468) {
         return;
       }
-
       // NECKLACE LANDMARKS 
       // 152: Chin center - PRIMARY ANCHOR POINT
       // 234: Left cheek
@@ -263,7 +258,6 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
         return;
       }
 
-      // Get the current image path (may have changed)
       const currentNecklaceImage = jewelryType === "necklace" && selectedJewelryImage ? selectedJewelryImage : necklaceImage;
       const image = imageCacheRef.current[currentNecklaceImage];
       if (!image || !image.complete) {
@@ -274,17 +268,15 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
         return;
       }
 
-      // Reset warning flag when image is available
       warnedRef.current = false;
 
-      // Calculate position and size (matching TryOn.html exactly)
       const x = chin.x * canvas.width;
       const y = chin.y * canvas.height;
       const faceWidth = (right.x - left.x) * canvas.width;
       const width = faceWidth * necklaceWidthMultiplier;
       const height = width * necklaceHeightRatio;
 
-      // Draw necklace centered on chin, slightly below
+      // Draw necklace centered on chin, 
       ctx.drawImage(
         image,
         x - width / 2,
@@ -301,8 +293,6 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
       }
 
       // Determine which finger to use based on selectedFinger prop
-      // Default to MIDDLE if no finger is selected
-      // Convert to uppercase to match FINGER_LANDMARKS keys
       const fingerToUse = (selectedFinger || "MIDDLE").toUpperCase();
       const fingerLandmarks = FINGER_LANDMARKS[fingerToUse];
 
@@ -318,7 +308,6 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
         return;
       }
 
-      // Interpolate between MCP and PIP to get a position just above the base
       // 0.2 = 20% from MCP toward PIP (just above the base, where rings are typically worn)
       const interpolationFactor = 0.2;
       const ringLandmark = {
@@ -438,11 +427,11 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
         return;
       }
 
-      // BRACELET LANDMARKS (from guide):
+      // BRACELET LANDMARKS:
       // 0: Wrist center - PRIMARY ANCHOR POINT
       // 1: Thumb CMC (base of thumb)
       // 17: Pinky MCP (base of pinky)
-      // 9: Middle finger MCP (for rotation calculation)
+      // 9: Middle finger 
       const wrist = landmarks[0];
       const thumbBase = landmarks[1];
       const pinkyBase = landmarks[17];
@@ -452,11 +441,9 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
         return;
       }
 
-      // Get the current image path (may have changed)
       const currentBraceletImage = jewelryType === "bracelet" && selectedJewelryImage ? selectedJewelryImage : braceletImage;
       const image = imageCacheRef.current[currentBraceletImage];
       if (!image || !image.complete) {
-        // Image not loaded yet, wait for it
         if (!warnedRef.current) {
           warnedRef.current = true;
         }
@@ -484,7 +471,6 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
       // Calculate angle from wrist to middle finger (hand's forward direction)
       const angle = Math.atan2(middleY - wristY, middleX - wristX);
 
-      // Adjust angle to be perpendicular to the hand (bracelet wraps around wrist)
       // Convert rotation offset from degrees to radians and add to the angle
       const rotationOffsetRad = (braceletRotationOffset * Math.PI) / 180;
       const braceletAngle = angle + Math.PI / 2 + rotationOffsetRad;
@@ -492,14 +478,11 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
       const x = wristX;
       const y = wristY + braceletYOffset;
 
-      // Save canvas state
       ctx.save();
 
-      // Translate to wrist position and rotate
       ctx.translate(x, y);
       ctx.rotate(braceletAngle);
 
-      // Draw bracelet centered on wrist (now at 0,0 after translate)
       ctx.drawImage(
         image,
         -braceletWidth / 2,
@@ -508,7 +491,6 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
         braceletHeight
       );
 
-      // Restore canvas state
       ctx.restore();
     };
 
@@ -518,10 +500,9 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
         return;
       }
 
-      // EARRING LANDMARKS (from EarringModel.jsx):
+      // EARRING LANDMARKS :
       // 132: Left ear (user's left) - primary
       // 361: Right ear (user's right) - primary
-      // Fallback landmarks for better mobile detection:
       // 234: Left cheek (can help estimate left ear position)
       // 454: Right cheek (can help estimate right ear position)
       // 10: Left temple area
@@ -531,49 +512,39 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
       const leftCheek = landmarks[234];
       const rightCheek = landmarks[454];
 
-      // Get the current image path (may have changed)
       const currentEarringImage = jewelryType === "earrings" && selectedJewelryImage ? selectedJewelryImage : earringImage;
       const image = imageCacheRef.current[currentEarringImage];
       if (!image || !image.complete) {
-        // Image not loaded yet, wait for it
         if (!warnedRef.current) {
           warnedRef.current = true;
         }
         return;
       }
 
-      // Helper function to check if an ear landmark is valid and tracked
       const isEarDetected = (earLandmark, useZDepth = true) => {
         if (!earLandmark) {
           return false;
         }
 
-        // Check if landmark has valid numeric properties
         if (typeof earLandmark.x !== 'number' ||
           typeof earLandmark.y !== 'number' ||
           typeof earLandmark.z !== 'number') {
           return false;
         }
 
-        // Check for NaN values
         if (isNaN(earLandmark.x) ||
           isNaN(earLandmark.y) ||
           isNaN(earLandmark.z)) {
           return false;
         }
 
-        // Check if coordinates are within valid bounds (more lenient for mobile)
         if (earLandmark.x < -0.15 || earLandmark.x > 1.15 ||
           earLandmark.y < -0.15 || earLandmark.y > 1.15) {
           return false;
         }
 
-        // Z-depth check - more lenient on mobile, or skip if z-depth is unreliable
         if (useZDepth) {
-          // Only check z-depth if it's a reasonable value
-          // On mobile, z-depth might be less accurate, so we're more lenient
           if (earLandmark.z > 0.3) {
-            // Z-depth is too far back, likely not visible
             return false;
           }
         }
@@ -582,7 +553,6 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
       };
 
       // Check if left ear is detected and tracked
-      // First check if the primary ear landmark exists and is valid
       let isLeftEarDetected = false;
       let useLeftFallback = false;
 
@@ -650,11 +620,9 @@ export const ImageJewelryOverlay = ({ videoRef, canvasRef: externalCanvasRef, us
           // Only use fallback if z-depth is not too high (ear might still be somewhat visible)
           // But don't use fallback if z-depth is very high (ear is definitely not visible)
           if (rightCheek && isEarDetected(rightCheek, false) && rightCheek.z < earringRightMaxZDepth) {
-            // Check relative z-depth before using fallback
             if (leftEarLandmark && isEarDetected(leftEarLandmark, false)) {
               const zDiff = rightEarLandmark.z - leftEarLandmark.z;
               if (zDiff <= 0.05) {
-                // Cheek is visible and relative position is okay, use as fallback
                 isRightEarDetected = true;
                 useRightFallback = true;
               }
