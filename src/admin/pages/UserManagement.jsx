@@ -8,7 +8,7 @@ import {
   DropUpIconBlack,
 } from '../../assets/index.js';
 
-const UserManagement = ({ hasAccess = true }) => {
+const UserManagement = ({ hasAccess = true, canEdit = true, isCSR = false, isManager = false }) => {
   const API_URL = import.meta.env.VITE_API_URL?.replace(/\/$/, '');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -45,7 +45,6 @@ const UserManagement = ({ hasAccess = true }) => {
   const roleOptions = [
     { value: 'all', label: 'All Roles' },
     { value: 'super_admin', label: 'Super Admin' },
-    { value: 'admin', label: 'Admin' },
     { value: 'manager', label: 'Manager' },
     { value: 'csr', label: 'CSR' },
     { value: 'clerk', label: 'Clerk' }
@@ -125,6 +124,12 @@ const UserManagement = ({ hasAccess = true }) => {
         [field]: value,
         can_access: value === 'super_admin' 
           ? pageOptions.map(p => p.key)
+          : value === 'csr'
+          ? ['Live Chat']
+          : value === 'clerk'
+          ? ['Order Management', 'Product Management', 'Collections Management']
+          : value === 'manager'
+          ? prev.can_access // Keep existing permissions for manager
           : []
       }));
     } else {
@@ -153,6 +158,12 @@ const UserManagement = ({ hasAccess = true }) => {
         [field]: value,
         can_access: value === 'super_admin' 
           ? pageOptions.map(p => p.key)
+          : value === 'csr'
+          ? ['Live Chat']
+          : value === 'clerk'
+          ? ['Order Management', 'Product Management', 'Collections Management']
+          : value === 'manager'
+          ? prev.can_access // Keep existing permissions for manager
           : []
       }));
     } else {
@@ -241,6 +252,22 @@ const UserManagement = ({ hasAccess = true }) => {
 
       if (response.ok) {
         await fetchUsers();
+        
+        // Update localStorage if editing the current user's permissions
+        const currentUser = JSON.parse(localStorage.getItem('adminUser') || '{}');
+        if (currentUser.user_id === editUser.user_id) {
+          const updatedUser = {
+            ...currentUser,
+            full_name: editUser.full_name,
+            email: editUser.email,
+            role: editUser.role,
+            status: editUser.status,
+            can_access: editUser.can_access
+          };
+          localStorage.setItem('adminUser', JSON.stringify(updatedUser));
+          
+        }
+        
         setShowEditUserModal(false);
         setEditUser({
           user_id: null,
@@ -361,7 +388,6 @@ const UserManagement = ({ hasAccess = true }) => {
   const getRoleBadge = (role) => {
     const roleStyles = {
       'super_admin': 'bg-indigo-600 text-white',
-      'admin': 'bg-purple-500 text-white',
       'manager': 'bg-blue-500 text-white',
       'csr': 'bg-green-500 text-white',
       'clerk': 'bg-orange-500 text-white'
@@ -380,7 +406,7 @@ const UserManagement = ({ hasAccess = true }) => {
 
       {/* Error Alert */}
       {error && (
-        <div className="fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg z-50 animate-pulse">
+        <div className="fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg z-[60] animate-pulse">
           {error}
           <button onClick={() => setError(null)} className="ml-4 font-bold">×</button>
         </div>
@@ -388,7 +414,7 @@ const UserManagement = ({ hasAccess = true }) => {
 
       {/* Generated Password Alert */}
       {generatedPassword && (
-        <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg z-50 max-w-md">
+        <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg z-[60] max-w-md">
           <div className="font-bold mb-2">User Created Successfully!</div>
           <div className="text-sm">Password: <span className="font-mono font-bold">{generatedPassword}</span></div>
           <div className="text-xs mt-2">Share this password with the user. It won't be shown again.</div>
@@ -531,8 +557,12 @@ const UserManagement = ({ hasAccess = true }) => {
             <div>
               <button 
                 onClick={() => setShowAddUserModal(true)}
-                disabled={!hasAccess}
-                title={!hasAccess ? 'You do not have permission to perform this action' : ''}
+                disabled={!canEdit}
+                title={!canEdit ? (
+                  isCSR ? 'CSR users can view but not modify user accounts' : 
+                  isManager ? 'Manager users cannot modify User Management' :
+                  'You do not have permission to perform this action'
+                ) : ''}
                 className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors avantbold uppercase text-sm font-medium"
               >
                 Add New User
@@ -579,16 +609,24 @@ const UserManagement = ({ hasAccess = true }) => {
                     <div className="flex justify-center space-x-2">
                       <button 
                         onClick={() => handleEditClick(user)}
-                        disabled={!hasAccess}
-                        title={!hasAccess ? 'You do not have permission to perform this action' : ''}
+                        disabled={!canEdit}
+                        title={!canEdit ? (
+                          isCSR ? 'CSR users can view but not modify user accounts' : 
+                          isManager ? 'Manager users cannot modify User Management' :
+                          'You do not have permission to perform this action'
+                        ) : ''}
                         className="px-3 py-1 bg-transparent border border-black text-black rounded text-xs avant font-medium hover:bg-black hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
                         EDIT
                       </button>
                       <button 
                         onClick={() => handleRemoveUser(user.user_id)}
-                        disabled={!hasAccess}
-                        title={!hasAccess ? 'You do not have permission to perform this action' : ''}
+                        disabled={!canEdit}
+                        title={!canEdit ? (
+                          isCSR ? 'CSR users can view but not modify user accounts' : 
+                          isManager ? 'Manager users cannot modify User Management' :
+                          'You do not have permission to perform this action'
+                        ) : ''}
                         className="px-3 py-1 bg-red-600 text-white rounded text-xs avant font-medium hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
                         REMOVE
@@ -769,7 +807,6 @@ const UserManagement = ({ hasAccess = true }) => {
                       >
                         <option value="">Select Role</option>
                         <option value="super_admin">Super Admin</option>
-                        <option value="admin">Admin</option>
                         <option value="manager">Manager</option>
                         <option value="csr">CSR</option>
                         <option value="clerk">Clerk</option>
@@ -793,25 +830,55 @@ const UserManagement = ({ hasAccess = true }) => {
                   <div>
                     <label className="block text-sm avantbold text-black mb-3">PAGE ACCESS PERMISSIONS</label>
                     <div className="grid grid-cols-3 gap-3">
-                      {pageOptions.map(page => (
-                        <label key={page.key} className={`flex items-center space-x-2 ${newUser.role === 'super_admin' ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}>
-                          <input
-                            type="checkbox"
-                            checked={newUser.can_access.includes(page.key)}
-                            onChange={(e) => handlePageAccessChange(page.key, e.target.checked)}
-                            disabled={newUser.role === 'super_admin'}
-                            className={`w-4 h-4 text-black border-2 border-gray-300 rounded focus:ring-0 focus:ring-offset-0 ${newUser.role === 'super_admin' ? 'opacity-60' : ''}`}
-                          />
-                          <span className="text-sm avant text-black">{page.label}</span>
-                        </label>
-                      ))}
+                      {pageOptions.map(page => {
+                        const isUserManagement = page.key === 'User Management';
+                        const isDisabledForRole = newUser.role === 'super_admin' || newUser.role === 'csr' || newUser.role === 'clerk';
+                        const isDisabled = isDisabledForRole;
+                        
+                        return (
+                          <label key={page.key} className={`flex items-center space-x-2 ${isDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}>
+                            <input
+                              type="checkbox"
+                              checked={newUser.can_access.includes(page.key)}
+                              onChange={(e) => handlePageAccessChange(page.key, e.target.checked)}
+                              disabled={isDisabled}
+                              className={`w-4 h-4 text-black border-2 border-gray-300 rounded focus:ring-0 focus:ring-offset-0 ${isDisabled ? 'opacity-60' : ''}`}
+                            />
+                            <span className="text-sm avant text-black">{page.label}</span>
+                          </label>
+                        );
+                      })}
                     </div>
 
-                    <div className={`${newUser.role === 'super_admin' ? 'bg-purple-50 border-l-4 border-purple-400' : 'bg-blue-50 border-l-4 border-blue-400'} p-3 mt-3`}>
-                      <p className={`text-xs ${newUser.role === 'super_admin' ? 'text-purple-700' : 'text-blue-700'}`}>
+                    <div className={`${
+                      newUser.role === 'super_admin' 
+                        ? 'bg-purple-50 border-l-4 border-purple-400' 
+                        : newUser.role === 'csr'
+                        ? 'bg-green-50 border-l-4 border-green-400'
+                        : newUser.role === 'clerk'
+                        ? 'bg-orange-50 border-l-4 border-orange-400'
+                        : (newUser.role === 'admin' || newUser.role === 'manager')
+                        ? 'bg-blue-50 border-l-4 border-blue-400'
+                        : 'bg-blue-50 border-l-4 border-blue-400'
+                    } p-3 mt-3`}>
+                      <p className={`text-xs ${
+                        newUser.role === 'super_admin' 
+                          ? 'text-purple-700' 
+                          : newUser.role === 'csr'
+                          ? 'text-green-700'
+                          : newUser.role === 'clerk'
+                          ? 'text-orange-700'
+                          : 'text-blue-700'
+                      }`}>
                         {newUser.role === 'super_admin' 
-                          ? '👑 Super Admin has access to all pages automatically.'
-                          : '✓ Password will be auto-generated and shown after user creation.'
+                          ? 'Super Admin has access to all pages automatically.'
+                          : newUser.role === 'csr'
+                          ? ' CSR users only have access to Live Chat by default for customer support.'
+                          : newUser.role === 'clerk'
+                          ? ' Clerk users have access to Order Management, Product Management, and Collections Management by default.'
+                          : newUser.role === 'manager'
+                          ? 'Manager permissions are customizable based on database settings.'
+                          : 'Password will be auto-generated and shown after user creation.'
                         }
                       </p>
                     </div>
@@ -896,7 +963,6 @@ const UserManagement = ({ hasAccess = true }) => {
                     className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm text-black"
                   >
                     <option value="super_admin">Super Admin</option>
-                    <option value="admin">Admin</option>
                     <option value="manager">Manager</option>
                     <option value="csr">CSR</option>
                     <option value="clerk">Clerk</option>
@@ -922,24 +988,54 @@ const UserManagement = ({ hasAccess = true }) => {
               <div>
                 <label className="block text-sm avantbold text-black mb-3">PAGE ACCESS PERMISSIONS</label>
                 <div className="grid grid-cols-3 gap-3">
-                  {pageOptions.map(page => (
-                    <label key={page.key} className={`flex items-center space-x-2 ${editUser.role === 'super_admin' ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}>
-                      <input
-                        type="checkbox"
-                        checked={editUser.can_access.includes(page.key)}
-                        onChange={(e) => handleEditPageAccessChange(page.key, e.target.checked)}
-                        disabled={editUser.role === 'super_admin'}
-                        className={`w-4 h-4 text-black border-2 border-gray-300 rounded focus:ring-0 focus:ring-offset-0 ${editUser.role === 'super_admin' ? 'opacity-60' : ''}`}
-                      />
-                      <span className="text-sm avant text-black">{page.label}</span>
-                    </label>
-                  ))}
+                  {pageOptions.map(page => {
+                    const isUserManagement = page.key === 'User Management';
+                    const isDisabledForRole = editUser.role === 'super_admin' || editUser.role === 'csr' || editUser.role === 'clerk';
+                    const isDisabled = isDisabledForRole;
+                    
+                    return (
+                      <label key={page.key} className={`flex items-center space-x-2 ${isDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}>
+                        <input
+                          type="checkbox"
+                          checked={editUser.can_access.includes(page.key)}
+                          onChange={(e) => handleEditPageAccessChange(page.key, e.target.checked)}
+                          disabled={isDisabled}
+                          className={`w-4 h-4 text-black border-2 border-gray-300 rounded focus:ring-0 focus:ring-offset-0 ${isDisabled ? 'opacity-60' : ''}`}
+                        />
+                        <span className="text-sm avant text-black">{page.label}</span>
+                      </label>
+                    );
+                  })}
                 </div>
 
                 {editUser.role === 'super_admin' && (
                   <div className="bg-purple-50 border-l-4 border-purple-400 p-3 mt-3">
                     <p className="text-xs text-purple-700">
-                      👑 <strong>Super Admin</strong> has access to all pages automatically.
+                       <strong>Super Admin</strong> has access to all pages automatically.
+                    </p>
+                  </div>
+                )}
+
+                {editUser.role === 'csr' && (
+                  <div className="bg-green-50 border-l-4 border-green-400 p-3 mt-3">
+                    <p className="text-xs text-green-700">
+                       <strong>CSR users</strong> only have access to Live Chat by default for customer support.
+                    </p>
+                  </div>
+                )}
+
+                {editUser.role === 'clerk' && (
+                  <div className="bg-orange-50 border-l-4 border-orange-400 p-3 mt-3">
+                    <p className="text-xs text-orange-700">
+                       <strong>Clerk users</strong> have access to Order Management, Product Management, and Collections Management by default.
+                    </p>
+                  </div>
+                )}
+
+                {editUser.role === 'manager' && (
+                  <div className="bg-blue-50 border-l-4 border-blue-400 p-3 mt-3">
+                    <p className="text-xs text-blue-700">
+                      <strong>Manager</strong> permissions are customizable based on database settings.
                     </p>
                   </div>
                 )}

@@ -14,7 +14,7 @@ import {
   DropUpIconBlack,
 } from "../../assets/index.js";
 
-const CollectionManagement = ({ hasAccess = true }) => {
+const CollectionManagement = ({ hasAccess = true, canEdit = true, isCSR = false }) => {
   const {
     collections,
     loading,
@@ -582,8 +582,8 @@ const CollectionManagement = ({ hasAccess = true }) => {
             {/* Add Collection Button */}
             <button
               onClick={() => setShowAddCollectionModal(true)}
-              disabled={!hasAccess}
-              title={!hasAccess ? 'You do not have permission to perform this action' : ''}
+              disabled={!canEdit}
+              title={!canEdit ? (isCSR ? 'CSR users can view but not modify collections' : 'You do not have permission to perform this action') : ''}
               className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors avantbold uppercase text-sm font-medium"
             >
               Add Collection
@@ -614,8 +614,8 @@ const CollectionManagement = ({ hasAccess = true }) => {
                   </p>
                   <button
                     onClick={() => setShowAddCollectionModal(true)}
-                    disabled={!hasAccess}
-                    title={!hasAccess ? 'You do not have permission to perform this action' : ''}
+                    disabled={!canEdit}
+                    title={!canEdit ? (isCSR ? 'CSR users can view but not modify collections' : 'You do not have permission to perform this action') : ''}
                     className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors avant text-sm font-medium"
                   >
                     Add Your First Collection
@@ -791,24 +791,24 @@ const CollectionManagement = ({ hasAccess = true }) => {
                       <div className="flex flex-col space-y-3">
                         <button
                           onClick={() => handleEditClick(collection)}
-                          disabled={!hasAccess}
-                          title={!hasAccess ? 'You do not have permission to perform this action' : ''}
+                          disabled={!canEdit}
+                          title={!canEdit ? (isCSR ? 'CSR users can view but not modify collections' : 'You do not have permission to perform this action') : ''}
                           className="px-6 py-2 bg-transparent border-2 border-black text-black rounded-lg hover:bg-black hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors avant text-sm font-medium whitespace-nowrap"
                         >
                           Edit
                         </button>
                         <button
                           onClick={() => handleManageProductsClick(collection)}
-                          disabled={!hasAccess}
-                          title={!hasAccess ? 'You do not have permission to perform this action' : ''}
+                          disabled={!canEdit}
+                          title={!canEdit ? (isCSR ? 'CSR users can view but not modify collections' : 'You do not have permission to perform this action') : ''}
                           className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors avant text-sm font-medium whitespace-nowrap"
                         >
                           Manage Products
                         </button>
                         <button
                           onClick={() => handleDeleteClick(collection)}
-                          disabled={!hasAccess}
-                          title={!hasAccess ? 'You do not have permission to perform this action' : ''}
+                          disabled={!canEdit}
+                          title={!canEdit ? (isCSR ? 'CSR users can view but not modify collections' : 'You do not have permission to perform this action') : ''}
                           className="px-6 py-2 bg-transparent border-2 border-red-500 text-red-500 rounded-lg hover:bg-red-500 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors avant text-sm font-medium whitespace-nowrap"
                         >
                           Delete

@@ -19,7 +19,7 @@ import {
 } from "../../assets/index.js";
 import storageService from "../../services/storageService";
 
-const AdminProducts = ({ hasAccess = true }) => {
+const AdminProducts = ({ hasAccess = true, canEdit = true, isCSR = false }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -1843,8 +1843,8 @@ const AdminProducts = ({ hasAccess = true }) => {
             <div>
               <button
                 onClick={() => setShowAddProductModal(true)}
-                disabled={!hasAccess}
-                title={!hasAccess ? 'You do not have permission to perform this action' : ''}
+                disabled={!canEdit}
+                title={!canEdit ? (isCSR ? 'CSR users can view but not edit products' : 'You do not have permission to perform this action') : ''}
                 className="px-6 py-2 bg-black text-white uppercase rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors avantbold text-sm font-medium"
               >
                 Add New Product
@@ -1905,15 +1905,15 @@ const AdminProducts = ({ hasAccess = true }) => {
                           Array.isArray(product.images) &&
                           product.images.length > 0
                             ? product.images[0]
-                            : product.image ||
-                              "https://via.placeholder.com/400x400?text=No+Image"
+                            : product.image 
+                             
                         }
                         alt={product.name}
                         className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.target.src =
-                            "https://via.placeholder.com/400x400?text=No+Image";
-                        }}
+                        // onError={(e) => {
+                        //   e.target.src =
+                        //     "https://via.placeholder.com/400x400?text=No+Image";
+                        // }}
                       />
                     </div>
 
@@ -1955,16 +1955,16 @@ const AdminProducts = ({ hasAccess = true }) => {
                         <div className="flex space-x-2">
                           <button
                             onClick={() => handleEditClick(product)}
-                            disabled={!hasAccess}
-                            title={!hasAccess ? 'You do not have permission to perform this action' : ''}
+                            disabled={!canEdit}
+                            title={!canEdit ? (isCSR ? 'CSR users can view but not edit products' : 'You do not have permission to perform this action') : ''}
                             className="flex-1 px-3 py-1 bg-transparent border border-black text-black rounded text-xs avant font-medium hover:bg-black hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                           >
                             EDIT
                           </button>
                           <button
                             onClick={() => handleStockClick(product)}
-                            disabled={!hasAccess}
-                            title={!hasAccess ? 'You do not have permission to perform this action' : ''}
+                            disabled={!canEdit}
+                            title={!canEdit ? (isCSR ? 'CSR users can view but not edit stock levels' : 'You do not have permission to perform this action') : ''}
                             className="flex-1 px-3 py-1 bg-transparent border border-black text-black rounded text-xs avant font-medium hover:bg-black hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                           >
                             STOCKS
@@ -1972,7 +1972,9 @@ const AdminProducts = ({ hasAccess = true }) => {
                         </div>
                         <button
                           onClick={() => handleReviewsClick(product)}
-                          className="w-full px-3 py-1 bg-gray-600 text-white rounded text-xs avant font-medium hover:bg-gray-700 transition-colors"
+                          disabled={!canEdit}
+                          title={!canEdit ? (isCSR ? 'CSR users can view but not manage reviews' : 'You do not have permission to perform this action') : ''}
+                          className="w-full px-3 py-1 bg-gray-600 text-white rounded text-xs avant font-medium hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
                           MANAGE REVIEWS
                         </button>

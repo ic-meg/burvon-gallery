@@ -11,6 +11,16 @@ const AdminHeader = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const navigate = useNavigate();
 
+  // Get admin user data to check role
+  const adminUser = JSON.parse(localStorage.getItem('adminUser') || '{}');
+  const isCSR = adminUser.role === 'CSR' || (adminUser.can_access && adminUser.can_access.length === 1 && adminUser.can_access.includes('Live Chat'));
+  
+  const isClerk = adminUser.role === 'clerk' || (adminUser.can_access && 
+    adminUser.can_access.length === 3 && 
+    adminUser.can_access.includes('Order Management') && 
+    adminUser.can_access.includes('Product Management') && 
+    adminUser.can_access.includes('Collections Management'));
+
   const handleLogout = () => {
     if (window.confirm('Are you sure you want to logout?')) {
       adminLogout();
@@ -97,17 +107,21 @@ const AdminHeader = () => {
           className="max-h-[80px] w-auto object-contain"
           onClick={() => navigate("/admin/dashboard")}
         />
-        
-        {/* Logout Button */}
-        <button
-          onClick={handleLogout}
-          className="text-white hover:opacity-60 transition-opacity"
-          title="Logout"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-        </button>
+
+        <div className="flex items-center gap-3">
+  
+          
+          {/* Logout Button */}
+          <button
+            onClick={handleLogout}
+            className="text-white hover:opacity-60 transition-opacity"
+            title="Logout"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+          </button>
+        </div>
       </header>
 
       {/* Desktop Header */}
@@ -186,6 +200,7 @@ const AdminHeader = () => {
               Content
             </span>
           </nav>
+
           
           {/* Logout Button */}
           <button

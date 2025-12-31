@@ -12,7 +12,7 @@ import {
   DropUpIconBlack
 } from '../../assets/index.js';
 
-const LiveChat = () => {
+const LiveChat = ({ hasAccess = true, canEdit = true, isCSR = false, isClerk = false, isManager = false }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('CHAT'); // Default to CHAT
   const [selectedChat, setSelectedChat] = useState(null); // No auto-selection
@@ -292,8 +292,9 @@ const LiveChat = () => {
     }
   };
 
-  // Handle send message with file display - moves chat to "answered" tab
   const handleSendMessage = async () => {
+    if (!canEdit) return; // Prevent users without edit permission from sending messages
+    
     const currentMessage = getCurrentMessage();
     if ((!currentMessage.trim() && selectedFiles.length === 0) || !currentChat) return;
 
@@ -414,6 +415,8 @@ const LiveChat = () => {
 
   // Handle use template
   const handleUseTemplate = (template) => {
+    if (!canEdit) return; 
+    
     setCurrentMessage(template.content);
     
     // Mark as actively answering when using template
@@ -426,6 +429,8 @@ const LiveChat = () => {
 
   // Handle delete template
   const handleDeleteTemplate = async (templateId) => {
+    if (!canEdit) return; 
+    
     if (!window.confirm('Are you sure you want to delete this template?')) {
       return;
     }
@@ -448,6 +453,8 @@ const LiveChat = () => {
 
   // Handle edit template
   const handleEditTemplateClick = (template) => {
+    if (!canEdit) return; 
+    
     setEditTemplate({
       id: template.id,
       title: template.title,
@@ -459,6 +466,8 @@ const LiveChat = () => {
 
   // Handle add template
   const handleAddTemplate = async () => {
+    if (!canEdit) return; 
+    
     if (!newTemplate.title.trim() || !newTemplate.content.trim()) return;
 
     try {
@@ -817,9 +826,10 @@ const LiveChat = () => {
                     <div className="flex items-end space-x-2">
                       <button 
                         onClick={handleFileSelect}
-                        disabled={selectedFiles.length >= 4}
+                        disabled={selectedFiles.length >= 4 || !canEdit}
+                        title={!canEdit ? 'You do not have permission to send messages or files' : selectedFiles.length >= 4 ? 'Maximum 4 files allowed' : ''}
                         className={`p-2 transition-colors ${
-                          selectedFiles.length >= 4 
+                          selectedFiles.length >= 4 || !canEdit
                             ? 'text-gray-300 cursor-not-allowed' 
                             : 'text-gray-500 hover:text-black'
                         }`}
@@ -833,24 +843,28 @@ const LiveChat = () => {
                         accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt"
                         multiple
                         className="hidden"
+                        disabled={!canEdit}
                       />
                       <textarea
                         ref={textareaRef}
-                        placeholder="Type your message..."
+                        placeholder={!canEdit ? "You do not have permission to send messages..." : "Type your message..."}
                         value={getCurrentMessage()}
                         onChange={handleMessageInputChange}
                         onKeyPress={(e) => {
-                          if (e.key === 'Enter' && !e.shiftKey) {
+                          if (e.key === 'Enter' && !e.shiftKey && canEdit) {
                             e.preventDefault();
                             handleSendMessage();
                           }
                         }}
-                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm text-black resize-none min-h-[40px] max-h-[120px] overflow-y-auto"
+                        disabled={!canEdit}
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm text-black resize-none min-h-[40px] max-h-[120px] overflow-y-auto disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-100"
                         rows="1"
                       />
                       <button
                         onClick={handleSendMessage}
-                        className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors avant text-sm font-medium self-end"
+                        disabled={!canEdit}
+                        title={!canEdit ? 'You do not have permission to send messages' : ''}
+                        className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors avant text-sm font-medium self-end disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400"
                       >
                         ▶
                       </button>
@@ -878,8 +892,14 @@ const LiveChat = () => {
                   <h3 className="text-sm avantbold text-black">AUTOMATED REPLIES</h3>
                 </div>
                 <button
-                  onClick={() => setShowTemplateModal(true)}
-                  className="w-full px-3 py-2 bg-black text-white rounded text-xs avant font-medium hover:bg-gray-800 transition-colors"
+                  onClick={() => canEdit && setShowTemplateModal(true)}
+                  disabled={!canEdit}
+                  title={!canEdit ? 'You do not have permission to manage templates' : ''}
+                  className={`w-full px-3 py-2 rounded text-xs avant font-medium transition-colors ${
+                    !canEdit
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                      : 'bg-black text-white hover:bg-gray-800'
+                  }`}
                 >
                   ADD NEW TEMPLATE
                 </button>
@@ -898,14 +918,26 @@ const LiveChat = () => {
                         <h4 className="text-sm avantbold text-black">{template.title}</h4>
                         <div className="flex gap-2">
                           <button
-                            onClick={() => handleEditTemplateClick(template)}
-                            className="text-xs avant text-gray-600 hover:text-black"
+                            onClick={() => canEdit && handleEditTemplateClick(template)}
+                            disabled={!canEdit}
+                            title={!canEdit ? 'You do not have permission to edit templates' : ''}
+                            className={`text-xs avant transition-colors ${
+                              !canEdit 
+                                ? 'text-gray-400 cursor-not-allowed' 
+                                : 'text-gray-600 hover:text-black'
+                            }`}
                           >
                             EDIT
                           </button>
                           <button
-                            onClick={() => handleDeleteTemplate(template.id)}
-                            className="text-xs avant text-red-600 hover:text-red-800"
+                            onClick={() => canEdit && handleDeleteTemplate(template.id)}
+                            disabled={!canEdit}
+                            title={!canEdit ? 'You do not have permission to delete templates' : ''}
+                            className={`text-xs avant transition-colors ${
+                              !canEdit 
+                                ? 'text-gray-400 cursor-not-allowed' 
+                                : 'text-red-600 hover:text-red-800'
+                            }`}
                           >
                             DELETE
                           </button>
@@ -918,8 +950,14 @@ const LiveChat = () => {
                         </p>
                       )}
                       <button
-                        onClick={() => handleUseTemplate(template)}
-                        className="w-full px-3 py-2 bg-gray-100 text-black rounded hover:bg-gray-200 transition-colors avant text-xs font-medium"
+                        onClick={() => canEdit && handleUseTemplate(template)}
+                        disabled={!canEdit}
+                        title={!canEdit ? 'You do not have permission to send template messages' : ''}
+                        className={`w-full px-3 py-2 rounded transition-colors avant text-xs font-medium ${
+                          !canEdit
+                            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                            : 'bg-gray-100 text-black hover:bg-gray-200'
+                        }`}
                       >
                         USE TEMPLATE
                       </button>

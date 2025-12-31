@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useOutletContext } from "react-router-dom";
 import { useCollection } from "../../../contexts/CollectionContext";
 import storageService from "../../../services/storageService";
 
 import { AddImage, Remove } from "../../../assets/index.js";
 import Toast from "../../../components/Toast";
 
-const CollectionsContent = ({ hasAccess = true }) => {
+const CollectionsContent = () => {
+  const { hasAccess, canEdit, isCSR } = useOutletContext();
   const { collectionSlug } = useParams();
   const location = useLocation();
   const { collections } = useCollection();
@@ -747,16 +748,17 @@ const CollectionsContent = ({ hasAccess = true }) => {
                       />
                     )}
                   </div>
-                  <label className="absolute inset-0 cursor-pointer">
+                  <label className={`absolute inset-0 ${canEdit ? 'cursor-pointer' : 'cursor-not-allowed'}`}>
                     <input
                       type="file"
                       className="hidden"
                       accept="image/*"
                       onChange={(e) => handleCollectionImageUpload(index, e)}
+                      disabled={!canEdit}
                     />
                   </label>
                   {/* Remove button for collection images */}
-                  {(image || collectionImageUrls[index]) && (
+                  {(image || collectionImageUrls[index]) && canEdit && (
                     <button
                       onClick={() => handleCollectionImageRemove(index)}
                       className="absolute -top-2 left-12 w-6 h-6 bg-transparent rounded-full flex items-center justify-center cursor-pointer transition-transform duration-150 hover:scale-125"
@@ -794,12 +796,13 @@ const CollectionsContent = ({ hasAccess = true }) => {
                   type="text"
                   value={promotionalTitle}
                   onChange={(e) => handleTitleChange(e.target.value)}
-                  className={`w-64 px-3 py-2 border-2 rounded-lg focus:outline-none avant text-sm text-black ${
+                  className={`w-64 px-3 py-2 border-2 rounded-lg focus:outline-none avant text-sm text-black disabled:opacity-50 disabled:cursor-not-allowed ${
                     formErrors.promotionalTitle
                       ? "border-red-500"
                       : "border-black"
                   }`}
                   placeholder="Eg. Style It On You"
+                  disabled={!canEdit}
                 />
                 {formErrors.promotionalTitle && (
                   <p className="text-red-500 text-xs mt-1 avant">
@@ -820,12 +823,13 @@ const CollectionsContent = ({ hasAccess = true }) => {
                   onChange={(e) => handleDescriptionChange(e.target.value)}
                   maxLength={100}
                   rows={3}
-                  className={`w-80 px-3 py-2 border-2 rounded-lg focus:outline-none avant text-sm text-black resize-none ${
+                  className={`w-80 px-3 py-2 border-2 rounded-lg focus:outline-none avant text-sm text-black resize-none disabled:opacity-50 disabled:cursor-not-allowed ${
                     formErrors.promotionalDescription
                       ? "border-red-500"
                       : "border-black"
                   }`}
                   placeholder="Eg. Experience our virtual try-on feature and see how each piece looks on you."
+                  disabled={!canEdit}
                 />
                 <div className="flex justify-between items-center mt-1">
                   {formErrors.promotionalDescription && (
@@ -842,7 +846,7 @@ const CollectionsContent = ({ hasAccess = true }) => {
 
             {/* Move the image upload a bit to the left */}
             <div className="flex flex-col items-start space-y-2 -ml-12 relative">
-              <label className="cursor-pointer">
+              <label className={canEdit ? "cursor-pointer" : "cursor-not-allowed"}>
                 <div className="w-16 h-16 border-2 border-dashed border-black rounded-lg flex items-center justify-center bg-white">
                   {promotionalImage ? (
                     <img
@@ -869,10 +873,11 @@ const CollectionsContent = ({ hasAccess = true }) => {
                   className="hidden"
                   accept="image/*"
                   onChange={handlePromotionalImageUpload}
+                  disabled={!canEdit}
                 />
               </label>
               {/* Remove button for promotional image */}
-              {(promotionalImage || promotionalImageUrl) && (
+              {(promotionalImage || promotionalImageUrl) && canEdit && (
                 <button
                   onClick={handlePromotionalImageRemove}
                   className="absolute -top-2 left-12 w-6 h-6 bg-transparent rounded-full flex items-center justify-center cursor-pointer transition-transform duration-150 hover:scale-125"
@@ -913,8 +918,8 @@ const CollectionsContent = ({ hasAccess = true }) => {
 
           <button
             onClick={saveContent}
-            disabled={loading || isSaving || uploading || !hasAccess}
-            title={!hasAccess ? 'You do not have permission to perform this action' : ''}
+            disabled={loading || isSaving || uploading || !hasAccess || !canEdit}
+            title={!hasAccess ? 'You do not have permission to perform this action' : !canEdit ? 'CSR users cannot edit content' : ''}
             className="px-6 py-2 bg-black text-white rounded-xl hover:bg-gray-800 transition-colors avantbold text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
           >
             {(isSaving || uploading) && (
@@ -931,7 +936,7 @@ const CollectionsContent = ({ hasAccess = true }) => {
               : "CONTENT SAVED"}
           </button>
 
-          {hasExistingContent && (
+          {hasExistingContent && canEdit && (
             <button
               onClick={deleteContent}
               disabled={loading || isSaving || uploading || !hasAccess}

@@ -12,7 +12,7 @@ DropUpIconBlack
 } from '../../assets/index.js'
 
 
-const ViewDetailsModal = ({ isOpen, onClose, order, showToast }) => {
+const ViewDetailsModal = ({ isOpen, onClose, order, showToast, canEdit = true, isCSR = false }) => {
   if (!isOpen || !order) return null;
 
 
@@ -340,13 +340,17 @@ const ViewDetailsModal = ({ isOpen, onClose, order, showToast }) => {
           <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-4">
             <button 
               onClick={() => handleStatusUpdate('Cancelled')}
-              className="px-6 py-2 bg-transparent border-2 border-black text-black rounded-lg hover:bg-black hover:text-white transition-colors avant text-sm font-medium"
+              disabled={!canEdit}
+              title={!canEdit ? (isCSR ? 'CSR users can view but not modify orders' : 'You do not have permission to perform this action') : ''}
+              className="px-6 py-2 bg-transparent border-2 border-black text-black rounded-lg hover:bg-black hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors avant text-sm font-medium"
             >
               CANCEL ORDER
             </button>
             <button 
               onClick={() => handleStatusUpdate('Processing')}
-              className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors avant text-sm font-medium"
+              disabled={!canEdit}
+              title={!canEdit ? (isCSR ? 'CSR users can view but not modify orders' : 'You do not have permission to perform this action') : ''}
+              className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors avant text-sm font-medium"
             >
               ACCEPT ORDER
             </button>
@@ -370,7 +374,9 @@ const ViewDetailsModal = ({ isOpen, onClose, order, showToast }) => {
             </button>
             <button 
               onClick={() => handleStatusUpdate('Shipped')}
-              className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors avant text-sm font-medium"
+              disabled={!canEdit}
+              title={!canEdit ? (isCSR ? 'CSR users can view but not modify orders' : 'You do not have permission to perform this action') : ''}
+              className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors avant text-sm font-medium"
             >
               MARK AS SHIPPED
             </button>
@@ -388,7 +394,9 @@ const ViewDetailsModal = ({ isOpen, onClose, order, showToast }) => {
             </button>
             <button 
               onClick={() => handleStatusUpdate('Delivered')}
-              className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors avant text-sm font-medium"
+              disabled={!canEdit}
+              title={!canEdit ? (isCSR ? 'CSR users can view but not modify orders' : 'You do not have permission to perform this action') : ''}
+              className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors avant text-sm font-medium"
             >
               MARK AS DELIVERED
             </button>
@@ -400,13 +408,17 @@ const ViewDetailsModal = ({ isOpen, onClose, order, showToast }) => {
           <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-4">
             <button 
               onClick={() => handleStatusUpdate('Rejected')}
-              className="px-6 py-2 bg-transparent border-2 border-black text-black rounded-lg hover:bg-black hover:text-white transition-colors avant text-sm font-medium"
+              disabled={!canEdit}
+              title={!canEdit ? (isCSR ? 'CSR users can view but not modify orders' : 'You do not have permission to perform this action') : ''}
+              className="px-6 py-2 bg-transparent border-2 border-black text-black rounded-lg hover:bg-black hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors avant text-sm font-medium"
             >
               Reject
             </button>
             <button 
               onClick={() => handleStatusUpdate('Refunded')}
-              className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors avant text-sm font-medium"
+              disabled={!canEdit}
+              title={!canEdit ? (isCSR ? 'CSR users can view but not modify orders' : 'You do not have permission to perform this action') : ''}
+              className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors avant text-sm font-medium"
             >
               Approve
             </button>
@@ -727,7 +739,7 @@ const ViewDetailsModal = ({ isOpen, onClose, order, showToast }) => {
   );
 };
 
-const AdminOrders = ({ hasAccess = true }) => {
+const AdminOrders = ({ hasAccess = true, canEdit = true, isCSR = false }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const statusFromUrl = searchParams.get('status');
   
@@ -1568,6 +1580,8 @@ const AdminOrders = ({ hasAccess = true }) => {
         onClose={() => setShowViewDetailsModal(false)}
         order={selectedOrderForDetails}
         showToast={showToast}
+        canEdit={canEdit}
+        isCSR={isCSR}
       />
 
       {/* Toast Component */}

@@ -6,7 +6,7 @@ import { useCollection } from "../../contexts/CollectionContext";
 
 import { DropDownIconBlack, DropUpIconBlack } from "../../assets/index.js";
 
-const ContentManagement = ({ hasAccess = true }) => {
+const ContentManagement = ({ hasAccess = true, canEdit = true, isCSR = false }) => {
   const [activeTab, setActiveTab] = useState("homepage");
   const [selectedCategory, setSelectedCategory] = useState("necklaces");
   const [selectedCollection, setSelectedCollection] = useState("kids");
@@ -74,12 +74,10 @@ const ContentManagement = ({ hasAccess = true }) => {
             setSelectedCategory(formattedCategories[0].value);
           }
         } else {
-          console.warn("Unexpected response structure:", response);
-          throw new Error("Invalid response structure from categories API");
+     
         }
       } catch (error) {
-        console.error("Error fetching categories:", error);
-        console.error("Error details:", JSON.stringify(error, null, 2));
+
         //fallbck
         setCategoryOptions([
           { value: "necklaces", label: "Necklaces", id: 1 },
@@ -437,7 +435,7 @@ const ContentManagement = ({ hasAccess = true }) => {
 
           <div className="bg-white border-2 border-[#000000] rounded-lg overflow-hidden">
             <div className="px-6 py-16 text-center text-gray-500 avant">
-              <Outlet />
+              <Outlet context={{ hasAccess, canEdit, isCSR, selectedCategory, selectedCollection }} />
             </div>
           </div>
         </div>

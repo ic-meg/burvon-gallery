@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useOutletContext } from "react-router-dom";
 import categoryApi from "../../api/categoryApi.jsx";
 import storageService from "../../services/storageService.js";
 import Toast from "../../components/Toast";
 import { AddImage, Remove } from "../../assets/index.js";
 
-const Categories = ({ hasAccess = true }) => {
+const Categories = () => {
+  // Get props from outlet context
+  const { hasAccess = true, canEdit = true, isCSR = false } = useOutletContext() || {};
+  
   const { categorySlug } = useParams();
   const location = useLocation();
 
@@ -591,16 +594,17 @@ const Categories = ({ hasAccess = true }) => {
                       />
                     )}
                   </div>
-                  <label className="absolute inset-0 cursor-pointer">
+                  <label className={`absolute inset-0 ${canEdit ? 'cursor-pointer' : 'cursor-not-allowed'}`}>
                     <input
                       type="file"
                       className="hidden"
                       accept="image/*"
                       onChange={(e) => handleCategoryImageUpload(index, e)}
+                      disabled={!canEdit}
                     />
                   </label>
                   {/* Remove button for category images */}
-                  {(image || formData.categoryImageUrls[index]) && (
+                  {(image || formData.categoryImageUrls[index]) && canEdit && (
                     <button
                       onClick={() => handleCategoryImageRemove(index)}
                       className="absolute -top-2 -right-2 w-6 h-6 bg-transparent rounded-full flex items-center justify-center cursor-pointer transition-all duration-150 hover:scale-125"
@@ -651,7 +655,8 @@ const Categories = ({ hasAccess = true }) => {
                   maxLength={100}
                   rows={3}
                   placeholder="e.g., Experience our virtual try-on feature and see how each piece looks on you."
-                  className="w-80 px-3 py-2 border-2 border-black rounded-lg focus:outline-none avant text-sm text-black resize-none"
+                  className="w-80 px-3 py-2 border-2 border-black rounded-lg focus:outline-none avant text-sm text-black resize-none disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={!canEdit}
                 />
                 <div className="text-xs text-gray-500 mt-1">
                   {(formData.description || "").length}/100 characters
@@ -660,7 +665,7 @@ const Categories = ({ hasAccess = true }) => {
             </div>
 
             <div className="flex flex-col items-start space-y-2 -ml-12 relative">
-              <label className="cursor-pointer">
+              <label className={canEdit ? "cursor-pointer" : "cursor-not-allowed"}>
                 <div className="w-16 h-16 border-2 border-dashed border-black rounded-lg flex items-center justify-center bg-white">
                   {formData.promotionalImage ? (
                     <img
@@ -687,10 +692,11 @@ const Categories = ({ hasAccess = true }) => {
                   className="hidden"
                   accept="image/*"
                   onChange={handlePromotionalImageUpload}
+                  disabled={!canEdit}
                 />
               </label>
               {/* Remove button for promotional image */}
-              {(formData.promotionalImage || formData.promotionalImageUrl) && (
+              {(formData.promotionalImage || formData.promotionalImageUrl) && canEdit && (
                 <button
                   onClick={handlePromotionalImageRemove}
                   className="absolute -top-2 left-12 w-6 h-6 bg-transparent rounded-full flex items-center justify-center cursor-pointer transition-all duration-150 hover:scale-125"
@@ -715,8 +721,8 @@ const Categories = ({ hasAccess = true }) => {
           </button>
           <button
             onClick={handleSaveChanges}
-            disabled={loading || saving || uploading || !hasAccess}
-            title={!hasAccess ? 'You do not have permission to perform this action' : ''}
+            disabled={loading || saving || uploading || !hasAccess || !canEdit}
+            title={!hasAccess ? 'You do not have permission to perform this action' : !canEdit ? 'CSR users cannot edit content' : ''}
             className="px-6 py-2 bg-black text-white rounded-xl hover:bg-gray-800 transition-colors avantbold text-sm disabled:opacity-50"
           >
             {saving
@@ -725,7 +731,7 @@ const Categories = ({ hasAccess = true }) => {
               ? "UPDATE CONTENT"
               : "SAVE CHANGES"}
           </button>
-          {hasExistingContent && (
+          {hasExistingContent && canEdit && (
             <button
               onClick={deleteContent}
               disabled={loading || saving || !hasAccess}

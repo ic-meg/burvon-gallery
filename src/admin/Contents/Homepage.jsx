@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from "react";
+import { useOutletContext } from "react-router-dom";
 import contentApi from "../../api/contentApi";
 import storageService from "../../services/storageService";
 
 import { AddImage, Remove } from "../../assets/index.js";
 import Toast from "../../components/Toast";
 
-const Homepage = ({ hasAccess = true }) => {
+const Homepage = () => {
+  // Get props from outlet context
+  const { hasAccess = true, canEdit = true, isCSR = false } = useOutletContext() || {};
+  
   const [formData, setFormData] = useState({
     logo: null,
     logoUrl: null, // Supabase URL
@@ -660,8 +664,8 @@ const Homepage = ({ hasAccess = true }) => {
                 {(formData.logo || formData.logoUrl) && (
                   <button
                     onClick={handleLogoRemove}
-                    disabled={!hasAccess}
-                    title={!hasAccess ? 'You do not have permission to perform this action' : ''}
+                    disabled={!canEdit}
+                    title={!canEdit ? (isCSR ? 'CSR users can view but not modify content' : 'You do not have permission to perform this action') : ''}
                     className="absolute -top-2 -right-2 w-6 h-6 bg-transparent rounded-full flex items-center justify-center cursor-pointer transition-all duration-150 hover:scale-125 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <img src={Remove} alt="Remove" className="w-4 h-4" />
@@ -672,15 +676,15 @@ const Homepage = ({ hasAccess = true }) => {
               {/* Align button with the box */}
               <div className="flex flex-col justify-center h-24">
                 <label className="block">
-                  <span className={`px-4 py-3 bg-black text-white rounded-lg cursor-pointer uppercase hover:bg-gray-800 transition-colors avantbold text-sm ${!hasAccess ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                  <span className={`px-4 py-3 bg-black text-white rounded-lg cursor-pointer uppercase hover:bg-gray-800 transition-colors avantbold text-sm ${!canEdit ? 'opacity-50 cursor-not-allowed' : ''}`}>
                     Upload Desktop Logo
                   </span>
                   <input
                     type="file"
                     className="hidden"
                     accept="image/*"
+                    disabled={!canEdit}
                     onChange={handleLogoUpload}
-                    disabled={!hasAccess}
                   />
                 </label>
                 <p className="text-xs text-gray-500 avant mt-2">
@@ -729,8 +733,8 @@ const Homepage = ({ hasAccess = true }) => {
                 {(formData.mobileLogo || formData.mobileLogoUrl) && (
                   <button
                     onClick={handleMobileLogoRemove}
-                    disabled={!hasAccess}
-                    title={!hasAccess ? 'You do not have permission to perform this action' : ''}
+                    disabled={!canEdit}
+                    title={!canEdit ? (isCSR ? 'CSR users can view but not modify content' : 'You do not have permission to perform this action') : ''}
                     className="absolute -top-2 -right-2 w-6 h-6 bg-transparent rounded-full flex items-center justify-center cursor-pointer transition-all duration-150 hover:scale-125 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <img src={Remove} alt="Remove" className="w-4 h-4" />
@@ -741,7 +745,7 @@ const Homepage = ({ hasAccess = true }) => {
               {/* Align button with the box */}
               <div className="flex flex-col justify-center h-24">
                 <label className="block">
-                  <span className={`px-4 py-3 bg-black text-white rounded-lg cursor-pointer uppercase hover:bg-gray-800 transition-colors avantbold text-sm ${!hasAccess ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                  <span className={`px-4 py-3 bg-black text-white rounded-lg cursor-pointer uppercase hover:bg-gray-800 transition-colors avantbold text-sm ${!canEdit ? 'opacity-50 cursor-not-allowed' : ''}`}>
                     Upload Mobile Logo
                   </span>
                   <input
@@ -749,7 +753,7 @@ const Homepage = ({ hasAccess = true }) => {
                     className="hidden"
                     accept="image/*"
                     onChange={handleMobileLogoUpload}
-                    disabled={!hasAccess}
+                    disabled={!canEdit}
                   />
                 </label>
                 <p className="text-xs text-gray-500 avant mt-2">
@@ -794,14 +798,14 @@ const Homepage = ({ hasAccess = true }) => {
                       className="hidden"
                       accept="image/*"
                       onChange={(e) => handleHeroImageUpload(index, e)}
-                      disabled={!hasAccess}
+                      disabled={!canEdit}
                     />
                   </label>
                   {(image || formData.heroImageUrls[index]) && (
                     <button
                       onClick={() => handleHeroImageRemove(index)}
-                      disabled={!hasAccess}
-                      title={!hasAccess ? 'You do not have permission to perform this action' : ''}
+                      disabled={!canEdit}
+                      title={!canEdit ? (isCSR ? 'CSR users can view but not modify content' : 'You do not have permission to perform this action') : ''}
                       className="absolute -top-2 -right-2 w-6 h-6 bg-transparent rounded-full flex items-center justify-center cursor-pointer transition-all duration-150 hover:scale-125 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <img src={Remove} alt="Remove" className="w-4 h-4" />
@@ -834,7 +838,7 @@ const Homepage = ({ hasAccess = true }) => {
                   type="text"
                   value={formData.tryOnTitle}
                   onChange={(e) => handleTitleChange(e.target.value)}
-                  disabled={!hasAccess}
+                  disabled={!canEdit}
                   className="w-64 px-3 py-2 border-2 border-black rounded-lg focus:outline-none avant text-sm text-black disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
@@ -850,7 +854,7 @@ const Homepage = ({ hasAccess = true }) => {
                   value={formData.tryOnDescription}
                   onChange={(e) => handleDescriptionChange(e.target.value)}
                   maxLength={100}
-                  disabled={!hasAccess}
+                  disabled={!canEdit}
                   rows={3}
                   className="w-80 px-3 py-2 border-2 border-black rounded-lg focus:outline-none avant text-sm text-black resize-none disabled:opacity-50 disabled:cursor-not-allowed"
                 />
@@ -889,14 +893,14 @@ const Homepage = ({ hasAccess = true }) => {
                   className="hidden"
                   accept="image/*"
                   onChange={handleTryOnImageUpload}
-                  disabled={!hasAccess}
+                  disabled={!canEdit}
                 />
               </label>
               {(formData.tryOnImage || formData.tryOnImageUrl) && (
                 <button
                   onClick={handleTryOnImageRemove}
-                  disabled={!hasAccess}
-                  title={!hasAccess ? 'You do not have permission to perform this action' : ''}
+                  disabled={!canEdit}
+                  title={!canEdit ? (isCSR ? 'CSR users can view but not modify content' : 'You do not have permission to perform this action') : ''}
                   className="absolute -top-2 left-12 w-6 h-6 bg-transparent rounded-full flex items-center justify-center cursor-pointer transition-all duration-150 hover:scale-125 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <img src={Remove} alt="Remove" className="w-4 h-4" />
@@ -921,8 +925,8 @@ const Homepage = ({ hasAccess = true }) => {
 
           <button
             onClick={saveContent}
-            disabled={loading || saving || uploading || !hasAccess}
-            title={!hasAccess ? 'You do not have permission to perform this action' : ''}
+            disabled={loading || saving || uploading || !canEdit}
+            title={!canEdit ? (isCSR ? 'CSR users can view but not modify content' : 'You do not have permission to perform this action') : ''}
             className="px-6 py-2 bg-black text-white rounded-xl hover:bg-gray-800 transition-colors avantbold text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
           >
             {(saving || uploading) && (
@@ -950,8 +954,8 @@ const Homepage = ({ hasAccess = true }) => {
           {hasExistingContent && (
             <button
               onClick={deleteContent}
-              disabled={loading || saving || uploading || !hasAccess}
-              title={!hasAccess ? 'You do not have permission to perform this action' : ''}
+              disabled={loading || saving || uploading || !canEdit}
+              title={!canEdit ? (isCSR ? 'CSR users can view but not modify content' : 'You do not have permission to perform this action') : ''}
               className="px-6 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors avantbold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
               DELETE ALL
