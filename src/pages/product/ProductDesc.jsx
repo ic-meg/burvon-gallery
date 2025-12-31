@@ -1178,7 +1178,7 @@ const ProductDesc = () => {
                 {/* Stocks */}
                 <div className="flex justify-start -mt-2">
                   <span className="text-sm text-[#959595] avantbold tracking-wider uppercase ">
-                    STOCKS: {getAvailableStock()}
+                    STOCKS: {selectedSize ? getSelectedSizeStock() : getAvailableStock()}
                   </span>
                 </div>
 
@@ -1647,7 +1647,7 @@ const ProductDesc = () => {
 
               <div className="flex flex-row items-center justify-between mt-6 mb-8">
                 <h3 className="text-lg avantbold tracking-wider text-[#959595] uppercase">
-                  STOCKS: {getAvailableStock()}
+                  STOCKS: {selectedSize ? getSelectedSizeStock() : getAvailableStock()}
                 </h3>
                 {/* Show CHECK MY SIZE button only if product has sizes */}
                 {formattedProduct?.sizes &&
