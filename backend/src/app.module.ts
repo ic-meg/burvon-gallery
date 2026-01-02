@@ -13,9 +13,10 @@ import { OrderModule } from './order/order.module';
 import { ChatModule } from './chat/chat.module';
 import { ContentModule } from './content/content.module';
 import { ReviewModule } from './review/review.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, UserModule, ProductModule, CategoryModule, CollectionModule, CartModule, WishlistModule, OrderModule, ChatModule, ContentModule, ReviewModule],
+  imports: [DatabaseModule, AuthModule, UserModule, ProductModule, CategoryModule, CollectionModule, CartModule, WishlistModule, OrderModule, ChatModule, ContentModule, ReviewModule, ReportsModule],
   controllers: [AppController],
   providers: [AppService],
 })
