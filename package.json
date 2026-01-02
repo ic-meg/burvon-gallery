@@ -35,7 +35,8 @@
     "tailwindcss": "^4.1.11",
     "three": "^0.179.1",
     "use-postal-ph": "^1.1.13",
-    "virtual-viewport": "^1.0.0"
+    "virtual-viewport": "^1.0.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.30.1",
