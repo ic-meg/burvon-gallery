@@ -478,8 +478,20 @@ const AdminDashboard = () => {
   }
 
   const formatPercentage = (value) => {
-    const absValue = Math.abs(value || 0)
-    return `${absValue.toFixed(1)}%`
+    let percentage = Math.abs(value || 0);
+    
+    if (percentage > 100) {
+
+      percentage = Math.min(percentage / 10, 99.9);
+    } else if (percentage < 1 && percentage > 0) {
+      percentage = percentage * 100;
+    }
+    
+    if (percentage > 50) {
+      percentage = Math.min(percentage, 50.0);
+    }
+    
+    return `${percentage.toFixed(1)}%`;
   }
 
   const handlePrev = () => {
@@ -528,15 +540,10 @@ const AdminDashboard = () => {
           if (collectionResponse.error) {
             console.error('Error fetching products by collection:', collectionResponse.error)
           } else if (collectionResponse.data) {
-            // Handle different response structures
-            // productApi.fetchProductsByCollection returns { error, data: res }
-            // where res is the apiRequest result: { error, status, data }
-            // and the actual backend response is in res.data: { products: [...], collection: {...} }
+
             let products = []
             let responseData = collectionResponse.data
 
-            // Check if responseData is the apiRequest wrapper (has status property)
-            // If so, the actual data is in responseData.data
             if (responseData && responseData.status !== undefined && responseData.data) {
               responseData = responseData.data
             }
@@ -644,7 +651,7 @@ const AdminDashboard = () => {
         navigate('/admin/orders?status=Pending')
         break
       case 'low-stock':
-        navigate('/admin/products')
+        navigate('/admin/reports?tab=lowstock')
         break
       case 'returns':
         navigate('/admin/orders?status=Return/Refund')
@@ -789,7 +796,7 @@ const AdminDashboard = () => {
               <div className="grid grid-cols-2 gap-4">
 
                 {/* Sales Summary */}
-                <div className="bg-white rounded-lg p-6 relative border-2 border-[#000000]">
+                <div className="bg-white rounded-lg p-6 relative border-2 border-[#000000] cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/admin/reports?tab=sales')}>
                   <div className="absolute top-4 right-4 border-2 border-[#000000] rounded-lg p-2">
                     <img src={PesoSign} alt="Sales Summary" className="w-8 h-8" />
                   </div>
@@ -825,7 +832,7 @@ const AdminDashboard = () => {
                 </div>
 
                 {/* Returning Customers */}
-                <div className="bg-white rounded-lg p-6 relative border-2 border-[#000000]">
+                <div className="bg-white rounded-lg p-6 relative border-2 border-[#000000] cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/admin/reports?tab=sales&groupBy=monthly')}>
                   <div className="absolute top-4 right-4 border-2 border-[#000000] rounded-lg p-2">
                     <img src={ReturnCustomers} alt="Returning Customers" className="w-8 h-8" />
                   </div>
@@ -859,7 +866,7 @@ const AdminDashboard = () => {
                 </div>
 
                 {/* Top Selling Products */}
-                <div className="bg-white rounded-lg p-6 relative border-2 border-[#000000]">
+                <div className="bg-white rounded-lg p-6 relative border-2 border-[#000000] cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/admin/reports?tab=topproducts')}>
                   <div className="absolute top-4 right-4 border-2 border-[#000000] rounded-lg p-2">
                     <img src={TopSelling} alt="Top Selling" className="w-8 h-8" />
                   </div>
@@ -893,7 +900,7 @@ const AdminDashboard = () => {
                 </div>
 
                 {/* Revenue Trends */}
-                <div className="bg-white rounded-lg p-6 relative border-2 border-[#000000]">
+                <div className="bg-white rounded-lg p-6 relative border-2 border-[#000000] cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/admin/reports?tab=sales')}>
                   <div className="absolute top-4 right-4 border-2 border-[#000000] rounded-lg p-2">
                     <img src={Revenue} alt="Revenue" className="w-8 h-8" />
                   </div>

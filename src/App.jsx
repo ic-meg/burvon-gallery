@@ -67,6 +67,7 @@ import CollectionManagement from "./admin/pages/CollectionManagement";
 import LiveChat from "./admin/pages/LiveChat";
 import ContentManagement from "./admin/pages/ContentManagement";
 import UserManagement from "./admin/pages/UserManagement";
+import Reports from "./admin/pages/ReportsManagement";
 
 //admin content management
 import HomepageContent from "./admin/Contents/Homepage";
@@ -364,6 +365,14 @@ const App = () => {
                               element={
                                 <ProtectedAdminRoute requiredPage="User Management">
                                   <UserManagement />
+                                </ProtectedAdminRoute>
+                              }
+                            />
+                            <Route
+                              path="/admin/reports"
+                              element={
+                                <ProtectedAdminRoute requiredPage="Reports">
+                                  <Reports />
                                 </ProtectedAdminRoute>
                               }
                             />
