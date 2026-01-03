@@ -14,7 +14,7 @@ class ProfanityFilter {
     
     const additionalFilipino = [
       'gago', 'tanga', 'bobo', 'ulol', 'puta', 'putang', 'ina', 'putangina', 
-      'tangina', 'kingina', 'hayop', 'leche', 'peste', 'bwisit', 'hudas', 'depota', 'fck', 'f@ck', 'gaga'
+      'tangina', 'kingina', 'hayop', 'leche', 'peste', 'bwisit', 'hudas', 'depota', 'fck', 'f@ck', 'gaga', 'pota', 'putek', 'tangek'
     ];
     LeoProfanity.add(additionalFilipino);
   }
