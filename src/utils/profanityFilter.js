@@ -14,7 +14,9 @@ class ProfanityFilter {
     
     const additionalFilipino = [
       'gago', 'tanga', 'bobo', 'ulol', 'puta', 'putang', 'ina', 'putangina', 
-      'tangina', 'kingina', 'hayop', 'leche', 'peste', 'bwisit', 'hudas', 'depota', 'fck', 'f@ck', 'gaga', 'pota', 'putek', 'tangek'
+      'tangina', 'kingina', 'hayop', 'leche', 'peste', 'bwisit', 'hudas', 'depota', 'fck', 'f@ck', 'gaga', 'pota', 'putek', 'tangek', 'gagu', 'gagi', 
+      'gaghi', 'puki', 'kupal', 'tarantado', 'tarantada', 'tonto', 'tonta', 'bastard', 'bastarda', 
+      'anak ng puta', 'anak ng pucha', 'putang ina mo', 'putangina mo', 'tangina mo', 'kingina mo', 'hayop ka', 'leche ka', 'peste ka', 'bwisit ka', 'hudas ka', 'depota ka', 'g@g@', 'g@ga', 'p@ta', 'p@tek', 't@ngek', 'p@ki'
     ];
     LeoProfanity.add(additionalFilipino);
   }
