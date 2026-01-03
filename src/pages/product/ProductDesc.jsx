@@ -11,6 +11,7 @@ import Toast from "../../components/Toast";
 import { hasTryOnAvailable } from "../../utils/tryOnUtils";
 import { getProductReviews } from "../../api/reviewApi";
 import storageService from "../../services/storageService";
+import { moderateContent } from "../../utils/profanityFilter";
 
 import {
   TryOnBlack,
@@ -240,18 +241,22 @@ const ProductDesc = () => {
   useEffect(() => {
     const fetchReviews = async () => {
       if (product?.id) {
-        const result = await getProductReviews(product.id, 'APPROVED');
+        const result = await getProductReviews(product.id, '');
         if (!result.error && result.data) {
-          const formattedReviews = result.data.map(review => ({
-            id: review.review_id,
-            name: review.show_username && review.user?.full_name
-              ? review.user.full_name
-              : 'Anonymous',
-            collection: product.collection || product.collectionName || '',
-            rating: review.rating,
-            comment: review.review_text || '',
-            images: review.images || []
-          }));
+          const formattedReviews = result.data.map(review => {
+            const moderation = moderateContent(review.review_text || '');
+            return {
+              id: review.review_id,
+              name: review.show_username && review.user?.full_name
+                ? review.user.full_name
+                : 'Anonymous',
+              collection: product.collection || product.collectionName || '',
+              rating: review.rating,
+              comment: moderation.filtered,
+              images: review.images || [],
+              flagged: moderation.flagged
+            };
+          });
           setProductReviews(formattedReviews);
         }
       }

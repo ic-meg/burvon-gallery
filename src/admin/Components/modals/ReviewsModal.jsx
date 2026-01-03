@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
-import { getProductReviews, approveReview, rejectReview } from '../../../api/reviewApi';
+import { getProductReviews } from '../../../api/reviewApi';
 import Toast from '../../../components/Toast';
+import { moderateContent } from '../../../utils/profanityFilter';
 
 const ReviewsModal = ({
   showModal,
   onClose,
-  selectedProduct,
-  reviewFilter,
-  setReviewFilter
+  selectedProduct
 }) => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -38,71 +37,22 @@ const ReviewsModal = ({
     }
   };
 
-  const handleReviewStatusChange = async (reviewId, newStatus) => {
-    try {
-      const token = localStorage.getItem('adminAuthToken') || localStorage.getItem('authToken');
-      if (!token) {
-        setToast({ show: true, message: 'Please login as admin to manage reviews', type: 'error' });
-        return;
-      }
-
-      let result;
-
-      if (newStatus === 'approved' || newStatus === 'APPROVED') {
-        result = await approveReview(reviewId);
-      } else if (newStatus === 'rejected' || newStatus === 'REJECTED') {
-        result = await rejectReview(reviewId);
-      } else {
-        setToast({ show: true, message: 'Invalid status', type: 'error' });
-        return;
-      }
-
-      if (result.error) {
-        const errorMsg = result.error === 'Missing authorization header'
-          ? 'Session expired. Please login again as admin.'
-          : result.error || 'Failed to update review status';
-        setToast({ show: true, message: errorMsg, type: 'error' });
-      } else {
-        setToast({ show: true, message: 'Review status updated successfully', type: 'success' });
-        // Refresh reviews after status change
-        await fetchReviews();
-      }
-    } catch (error) {
-      setToast({ show: true, message: 'An error occurred while updating review status', type: 'error' });
-    }
-  };
-
   const getFilteredReviews = () => {
     if (!reviews || reviews.length === 0) return [];
-
-    const filterMap = {
-      'all': null,
-      'pending': 'PENDING',
-      'approved': 'APPROVED',
-      'rejected': 'REJECTED'
-    };
-
-    const statusFilter = filterMap[reviewFilter.toLowerCase()];
-    if (!statusFilter) return reviews;
-
-    return reviews.filter(review => review.status === statusFilter);
+    return reviews;
   };
 
   const getReviewStats = () => {
     if (!reviews || reviews.length === 0) {
-      return { total: 0, pending: 0, approved: 0, rejected: 0, avgRating: 0 };
+      return { total: 0, avgRating: 0 };
     }
 
-    const approvedReviews = reviews.filter(r => r.status === 'APPROVED');
-    const avgRating = approvedReviews.length > 0
-      ? (approvedReviews.reduce((sum, r) => sum + r.rating, 0) / approvedReviews.length).toFixed(1)
+    const avgRating = reviews.length > 0
+      ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
       : 0;
 
     return {
       total: reviews.length,
-      pending: reviews.filter(r => r.status === 'PENDING').length,
-      approved: reviews.filter(r => r.status === 'APPROVED').length,
-      rejected: reviews.filter(r => r.status === 'REJECTED').length,
       avgRating: avgRating,
     };
   };
@@ -119,6 +69,8 @@ const ReviewsModal = ({
   };
 
   const formatReviewData = (review) => {
+    const moderation = moderateContent(review.review_text || 'No comment provided');
+    
     return {
       id: review.review_id,
       customerName: review.show_username && review.user?.full_name
@@ -126,13 +78,13 @@ const ReviewsModal = ({
         : 'Anonymous',
       email: review.user?.email || 'N/A',
       rating: review.rating,
-      comment: review.review_text || 'No comment provided',
+      comment: moderation.filtered,
+      flagged: moderation.flagged,
       date: new Date(review.created_at).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
         day: 'numeric'
       }),
-      status: review.status.toLowerCase(),
       images: review.images || [],
       videos: review.videos || []
     };
@@ -167,71 +119,15 @@ const ReviewsModal = ({
         {/* Modal Content */}
         <div className="p-6">
           {/* Review Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+          <div className="grid grid-cols-2 gap-4 mb-6">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
               <div className="text-sm avant text-blue-600 mb-1">Total Reviews</div>
               <div className="text-2xl bebas text-blue-800">{getReviewStats().total}</div>
-            </div>
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
-              <div className="text-sm avant text-yellow-600 mb-1">Pending</div>
-              <div className="text-2xl bebas text-yellow-800">{getReviewStats().pending}</div>
-            </div>
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-              <div className="text-sm avant text-green-600 mb-1">Approved</div>
-              <div className="text-2xl bebas text-green-800">{getReviewStats().approved}</div>
-            </div>
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
-              <div className="text-sm avant text-red-600 mb-1">Rejected</div>
-              <div className="text-2xl bebas text-red-800">{getReviewStats().rejected}</div>
             </div>
             <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 text-center">
               <div className="text-sm avant text-purple-600 mb-1">Avg Rating</div>
               <div className="text-2xl bebas text-purple-800">{getReviewStats().avgRating}★</div>
             </div>
-          </div>
-
-          {/* Filter Buttons */}
-          <div className="flex flex-wrap gap-3 mb-6">
-            <button
-              onClick={() => setReviewFilter('all')}
-              className={`px-4 py-2 rounded-lg transition-colors avant text-sm font-medium ${
-                reviewFilter === 'all' 
-                  ? 'bg-black text-white' 
-                  : 'bg-gray-100 text-black hover:bg-gray-200'
-              }`}
-            >
-              All Reviews
-            </button>
-            <button
-              onClick={() => setReviewFilter('pending')}
-              className={`px-4 py-2 rounded-lg transition-colors avant text-sm font-medium ${
-                reviewFilter === 'pending' 
-                  ? 'bg-yellow-600 text-white' 
-                  : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
-              }`}
-            >
-              Pending ({getReviewStats().pending})
-            </button>
-            <button
-              onClick={() => setReviewFilter('approved')}
-              className={`px-4 py-2 rounded-lg transition-colors avant text-sm font-medium ${
-                reviewFilter === 'approved' 
-                  ? 'bg-green-600 text-white' 
-                  : 'bg-green-100 text-green-700 hover:bg-green-200'
-              }`}
-            >
-              Approved ({getReviewStats().approved})
-            </button>
-            <button
-              onClick={() => setReviewFilter('rejected')}
-              className={`px-4 py-2 rounded-lg transition-colors avant text-sm font-medium ${
-                reviewFilter === 'rejected' 
-                  ? 'bg-red-600 text-white' 
-                  : 'bg-red-100 text-red-700 hover:bg-red-200'
-              }`}
-            >
-              Rejected ({getReviewStats().rejected})
-            </button>
           </div>
 
           {/* Reviews List */}
@@ -254,6 +150,11 @@ const ReviewsModal = ({
                         </div>
                         <p className="text-xs avant text-gray-600 mb-2">{formattedReview.email}</p>
                         <p className="avant text-sm text-black">{formattedReview.comment}</p>
+                        {formattedReview.flagged && (
+                          <div className="mt-2 px-2 py-1 bg-orange-100 border border-orange-300 rounded text-xs avant text-orange-700">
+                            Content filtered for inappropriate language
+                          </div>
+                        )}
 
                         {/* Display images if any */}
                         {formattedReview.images && formattedReview.images.length > 0 && (
@@ -283,41 +184,6 @@ const ReviewsModal = ({
                           </div>
                         )}
                       </div>
-                      <div className="flex items-center space-x-2 ml-4">
-                        <span className={`px-2 py-1 rounded text-xs avantbold ${
-                          formattedReview.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                          formattedReview.status === 'approved' ? 'bg-green-100 text-green-700' :
-                          'bg-red-100 text-red-700'
-                        }`}>
-                          {formattedReview.status.charAt(0).toUpperCase() + formattedReview.status.slice(1)}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex space-x-2 pt-3 border-t border-gray-200">
-                      <button
-                        onClick={() => handleReviewStatusChange(formattedReview.id, 'approved')}
-                        disabled={formattedReview.status === 'approved'}
-                        className={`px-4 py-2 text-xs avant font-medium rounded transition-colors ${
-                          formattedReview.status === 'approved'
-                            ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                            : 'bg-green-600 text-white hover:bg-green-700'
-                        }`}
-                      >
-                        Approve
-                      </button>
-                      <button
-                        onClick={() => handleReviewStatusChange(formattedReview.id, 'rejected')}
-                        disabled={formattedReview.status === 'rejected'}
-                        className={`px-4 py-2 text-xs avant font-medium rounded transition-colors ${
-                          formattedReview.status === 'rejected'
-                            ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                            : 'bg-red-600 text-white hover:bg-red-700'
-                        }`}
-                      >
-                        Reject
-                      </button>
                     </div>
                   </div>
                 );
@@ -325,10 +191,7 @@ const ReviewsModal = ({
             ) : (
               <div className="text-center py-8">
                 <p className="text-gray-500 avant">
-                  {reviewFilter === 'all'
-                    ? 'No reviews found for this product.'
-                    : `No ${reviewFilter} reviews found.`
-                  }
+                  No reviews found for this product.
                 </p>
               </div>
             )}

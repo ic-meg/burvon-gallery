@@ -20,6 +20,12 @@ const ProtectedAdminRoute = ({ children, requiredPage }) => {
 
   const hasAccess = user.can_access?.includes(requiredPage);
   
+    // Block managers from accessing User Management completely
+  if (user.role === 'manager' && requiredPage === 'User Management') {
+    navigate('/admin', { replace: true });
+    return null;
+  }
+  
   const isCSR = user.role === 'CSR' || (user.can_access && user.can_access.length === 1 && user.can_access.includes('Live Chat'));
   
   const isClerk = user.role === 'clerk' || (user.can_access && 

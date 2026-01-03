@@ -68,6 +68,13 @@ const UserManagement = ({ hasAccess = true, canEdit = true, isCSR = false, isMan
     { key: 'Content Management', label: 'Content Management' }
   ];
 
+  const getAvailablePageOptions = (userRole) => {
+    if (userRole === 'manager') {
+      return pageOptions.filter(page => page.key !== 'User Management');
+    }
+    return pageOptions;
+  };
+
  
   useEffect(() => {
     fetchUsers();
@@ -830,7 +837,7 @@ const UserManagement = ({ hasAccess = true, canEdit = true, isCSR = false, isMan
                   <div>
                     <label className="block text-sm avantbold text-black mb-3">PAGE ACCESS PERMISSIONS</label>
                     <div className="grid grid-cols-3 gap-3">
-                      {pageOptions.map(page => {
+                      {getAvailablePageOptions(newUser.role).map(page => {
                         const isUserManagement = page.key === 'User Management';
                         const isDisabledForRole = newUser.role === 'super_admin' || newUser.role === 'csr' || newUser.role === 'clerk';
                         const isDisabled = isDisabledForRole;
@@ -988,7 +995,7 @@ const UserManagement = ({ hasAccess = true, canEdit = true, isCSR = false, isMan
               <div>
                 <label className="block text-sm avantbold text-black mb-3">PAGE ACCESS PERMISSIONS</label>
                 <div className="grid grid-cols-3 gap-3">
-                  {pageOptions.map(page => {
+                  {getAvailablePageOptions(editUser.role).map(page => {
                     const isUserManagement = page.key === 'User Management';
                     const isDisabledForRole = editUser.role === 'super_admin' || editUser.role === 'csr' || editUser.role === 'clerk';
                     const isDisabled = isDisabledForRole;
