@@ -4,6 +4,7 @@ import { useWebSocket } from '../../hooks/useWebSocket';
 import { getAuthToken, getUser } from '../../services/authService';
 import Toast from '../../components/Toast';
 import chatApi from '../../api/chatApi';
+import { moderateContent } from '../../utils/profanityFilter';
 
 import {
   AddVideo,
@@ -293,18 +294,20 @@ const LiveChat = ({ hasAccess = true, canEdit = true, isCSR = false, isClerk = f
   };
 
   const handleSendMessage = async () => {
-    if (!canEdit) return; // Prevent users without edit permission from sending messages
+    if (!canEdit) return;
     
     const currentMessage = getCurrentMessage();
     if ((!currentMessage.trim() && selectedFiles.length === 0) || !currentChat) return;
 
-    // Send via WebSocket
+    const moderation = moderateContent(currentMessage);
+    const filteredMessage = moderation.filtered;
+
     const identifier = currentChat.identifier;
     const isUser = identifier.startsWith('user_');
     const isSession = identifier.startsWith('session_');
 
     const messageData = {
-      message: currentMessage,
+      message: filteredMessage,
       admin_id: adminUser?.user_id,
       sender_type: 'admin',
     };
@@ -317,18 +320,19 @@ const LiveChat = ({ hasAccess = true, canEdit = true, isCSR = false, isClerk = f
       targetUserId = parseInt(identifier.replace('user_', ''));
     } else if (isSession) {
       targetSessionId = identifier.replace('session_', '');
-      targetEmail = currentChat.email; // Get email from chat for session-based messages
+      targetEmail = currentChat.email;
     }
 
-    const success = sendMessage(currentMessage, adminUser?.user_id, targetUserId, targetSessionId, targetEmail);
+    const success = sendMessage(filteredMessage, adminUser?.user_id, targetUserId, targetSessionId, targetEmail);
     
     if (success) {
       const newMsg = {
-        chat_id: Date.now(), // Temporary ID
-        message: currentMessage,
+        chat_id: Date.now(),
+        message: filteredMessage,
         is_from_admin: true,
         created_at: new Date().toISOString(),
         admin: adminUser,
+        flagged: moderation.flagged
       };
 
       setChats(prevChats => 
@@ -337,7 +341,7 @@ const LiveChat = ({ hasAccess = true, canEdit = true, isCSR = false, isClerk = f
             ? { 
                 ...chat, 
                 messages: [...chat.messages, newMsg],
-                lastMessage: currentMessage || `You: Sent ${selectedFiles.length} file(s)`,
+                lastMessage: filteredMessage || `You: Sent ${selectedFiles.length} file(s)`,
                 lastSender: "admin",
                 timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                 status: 'answered',

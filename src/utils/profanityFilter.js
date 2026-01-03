@@ -14,7 +14,7 @@ class ProfanityFilter {
     
     const additionalFilipino = [
       'gago', 'tanga', 'bobo', 'ulol', 'puta', 'putang', 'ina', 'putangina', 
-      'tangina', 'kingina', 'hayop', 'leche', 'peste', 'bwisit', 'hudas', 'depota', 'fck', 'f@ck'
+      'tangina', 'kingina', 'hayop', 'leche', 'peste', 'bwisit', 'hudas', 'depota', 'fck', 'f@ck', 'gaga'
     ];
     LeoProfanity.add(additionalFilipino);
   }
@@ -34,6 +34,8 @@ class ProfanityFilter {
       { regex: /d[i1!@*#$%&]+ck/gi, replacement: (match) => '*'.repeat(match.length) },
       { regex: /c[o0@*#$%&!]+ck/gi, replacement: (match) => '*'.repeat(match.length) },
       { regex: /p[u@*#$%&!]+ss[y]*/gi, replacement: (match) => '*'.repeat(match.length) },
+      { regex: /[@*#$%&!a4]+ss\b/gi, replacement: (match) => '*'.repeat(match.length) },
+      { regex: /[@*#$%&!a4]+s[s5$]+/gi, replacement: (match) => '*'.repeat(match.length) },
       { regex: /d[@*#$%&!amn4]+/gi, replacement: (match) => '*'.repeat(match.length) },
       { regex: /h[@*#$%&!ell4]+/gi, replacement: (match) => '*'.repeat(match.length) },
       { regex: /[a@*#$%&!4]+s[s5$]*[h]*[o0]+le/gi, replacement: (match) => '*'.repeat(match.length) },
@@ -76,6 +78,8 @@ class ProfanityFilter {
       /d[i1!@*#$%&]+ck/gi,
       /c[o0@*#$%&!]+ck/gi,
       /p[u@*#$%&!]+ss[y]*/gi,
+      /[@*#$%&!a4]+ss\b/gi,
+      /[@*#$%&!a4]+s[s5$]+/gi,
       /d[@*#$%&!amn4]+/gi,
       /[a@*#$%&!4]+s[s5$]*[h]*[o0]+le/gi,
       /b[i1!]+tc[h]+/gi,

@@ -9,6 +9,7 @@ import { useMobileKeyboardHandler } from "../hooks/useMobileKeyboardHandler";
 import { getChatUserIdentifier, getChatEmail, setChatEmail } from "../utils/chatSession";
 import chatApi from "../api/chatApi";
 import { getUser } from "../services/authService";
+import { moderateContent } from "../utils/profanityFilter";
 
 const FloatingChatButton = () => {
   const [overFooter, setOverFooter] = useState(false);
@@ -292,14 +293,16 @@ const FloatingChatButton = () => {
     const messageToSend = messageText || inputMessage;
     if (!messageToSend.trim() || !isConnected) return;
 
-    // For anonymous users, check if email is needed
     if (userIdentifier.type === 'anonymous' && !getChatEmail()) {
       setShowEmailInput(true);
       return;
     }
 
+    const moderation = moderateContent(messageToSend);
+    const filteredMessage = moderation.filtered;
+
     const email = userIdentifier.email || getChatEmail();
-    const success = sendMessage(messageToSend);
+    const success = sendMessage(filteredMessage);
 
     if (success) {
       if (!messageText) {
