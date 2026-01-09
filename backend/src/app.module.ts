@@ -14,9 +14,11 @@ import { ChatModule } from './chat/chat.module';
 import { ContentModule } from './content/content.module';
 import { ReviewModule } from './review/review.module';
 import { ReportsModule } from './reports/reports.module';
+import { TripoModule } from './tripo/tripo.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, UserModule, ProductModule, CategoryModule, CollectionModule, CartModule, WishlistModule, OrderModule, ChatModule, ContentModule, ReviewModule, ReportsModule],
+  imports: [DatabaseModule, AuthModule, UserModule, ProductModule, CategoryModule, CollectionModule, CartModule, WishlistModule, OrderModule, ChatModule, ContentModule, ReviewModule, ReportsModule, TripoModule, ConfigModule.forRoot({ isGlobal: true })],
   controllers: [AppController],
   providers: [AppService],
 })
