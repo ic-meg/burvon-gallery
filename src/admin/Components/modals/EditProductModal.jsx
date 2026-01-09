@@ -1,6 +1,7 @@
 import React from 'react';
 import { Add3D, AddImage, DropDownIconBlack, DropUpIconBlack, Remove,   TryOnBlack,
   Icon3D } from '../../../assets';
+import TripoModelGenerator from '../../../components/TripoModelGenerator';
 
 const EditProductModal = ({
   showModal,
@@ -24,7 +25,9 @@ const EditProductModal = ({
   onUpdateProduct,
   saving,
   uploading,
-
+  // Tripo 3D Generation props
+  onTripoModelGenerated,
+  onRemoveGeneratedModel
 }) => {
   if (!showModal) return null;
 
@@ -374,6 +377,45 @@ const EditProductModal = ({
               rows={4}
               className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-black avant text-sm resize-none text-black placeholder:text-gray-400"
             />
+          </div>
+
+          {/* Tripo 3D Model Generator */}
+          <div>
+            <label className="block text-sm avantbold text-black mb-3">3D MODEL GENERATION</label>
+            <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-4">
+              <TripoModelGenerator
+                onModelGenerated={onTripoModelGenerated}
+                existingModelUrl={editProduct.generatedModel3DUrl}
+                disabled={saving || uploading}
+                className=""
+              />
+              
+              {/* Show generated model info */}
+              {editProduct.generatedModel3DUrl && (
+                <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="text-sm avantbold text-green-800 mb-1">3D Model Generated</p>
+                      <p className="text-xs avant text-green-600">
+                        Model will be updated when you save the product
+                      </p>
+                      {editProduct.tripoTaskId && (
+                        <p className="text-xs avant text-gray-500 mt-1">
+                          Task ID: {editProduct.tripoTaskId}
+                        </p>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={onRemoveGeneratedModel}
+                      className="text-red-600 hover:text-red-800 text-sm avant font-medium"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Action Buttons */}

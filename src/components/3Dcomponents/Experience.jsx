@@ -16,6 +16,8 @@ export const Experience = ({ modelPath, onEnvironmentError }) => {
   const pathLower = modelPath?.toLowerCase() || '';
   const isPairModel = pathLower.includes('/earrings/') || pathLower.includes('earring');
   const isBracelet = pathLower.includes('/bracelets/') || pathLower.includes('bracelet');
+  // Detect Tripo-generated model by '/tripo/' in the path (adjust if needed)
+  const isTripoModel = pathLower.includes('tripo-');
 
   const earringGapX = 2.0;
   const earringOffsetZ = 1.0;
@@ -307,7 +309,7 @@ export const Experience = ({ modelPath, onEnvironmentError }) => {
                 <Gltf
                   src={effectiveModelPath}
                   position-y={0}
-                  scale={0.5}
+                  scale={isTripoModel ? 10.5 : 0.5}
                   castShadow
                 />
               </group>
@@ -320,7 +322,7 @@ export const Experience = ({ modelPath, onEnvironmentError }) => {
                 <Gltf
                   src={effectiveModelPath}
                   position-y={0}
-                  scale={0.5}
+                  scale={isTripoModel ? 10.5 : 0.5}
                   castShadow
                 />
               </group>

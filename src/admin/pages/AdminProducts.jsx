@@ -10,6 +10,7 @@ import AddProductModal from "../Components/modals/AddProductModal";
 import EditProductModal from "../Components/modals/EditProductModal";
 import ReviewsModal from "../Components/modals/ReviewsModal";
 import StockModal from "../Components/modals/StockModal";
+import TripoModelGenerator from "../../components/TripoModelGenerator";
 
 import {
   NextIConBlack,
@@ -51,6 +52,9 @@ const AdminProducts = ({ hasAccess = true, canEdit = true, isCSR = false }) => {
     description: "",
     model3DFile: null,
     tryOnImageFile: null,
+    // Tripo 3D Generation data
+    generatedModel3DUrl: null,
+    tripoTaskId: null,
   });
   const [editProduct, setEditProduct] = useState({
     id: null,
@@ -70,6 +74,9 @@ const AdminProducts = ({ hasAccess = true, canEdit = true, isCSR = false }) => {
     tryOnImageFile: null,
     tryOnImagePath: null,
     tryOnImageUrl: null,
+    // Tripo 3D Generation data
+    generatedModel3DUrl: null,
+    tripoTaskId: null,
   });
   const [originalEditProduct, setOriginalEditProduct] = useState(null);
   const [stockData, setStockData] = useState({
@@ -479,6 +486,44 @@ const AdminProducts = ({ hasAccess = true, canEdit = true, isCSR = false }) => {
     }
   };
 
+  // Tripo 3D Generation Handlers
+  const handleTripoModelGenerated = (generationResult, isEdit = false) => {
+    const { modelUrl, previewUrl, taskId } = generationResult;
+    
+    if (isEdit) {
+      setEditProduct((prev) => ({
+        ...prev,
+        generatedModel3DUrl: modelUrl,
+        tripoTaskId: taskId,
+      }));
+    } else {
+      setNewProduct((prev) => ({
+        ...prev,
+        generatedModel3DUrl: modelUrl,
+        tripoTaskId: taskId,
+      }));
+    }
+    
+    showMessage("success", "3D model generated successfully! You can now save the product.");
+  };
+
+  const handleRemoveGeneratedModel = (isEdit = false) => {
+    if (isEdit) {
+      setEditProduct((prev) => ({
+        ...prev,
+        generatedModel3DUrl: null,
+        tripoTaskId: null,
+      }));
+    } else {
+      setNewProduct((prev) => ({
+        ...prev,
+        generatedModel3DUrl: null,
+        tripoTaskId: null,
+      }));
+    }
+    showMessage("info", "Generated 3D model removed");
+  };
+
   const handleStockClick = (product) => {
     setSelectedProduct(product);
 
@@ -777,10 +822,12 @@ const AdminProducts = ({ hasAccess = true, canEdit = true, isCSR = false }) => {
       let model3DPath = null;
       if (newProduct.model3DFile) {
         showMessage("info", "Uploading 3D model...");
+        const isTripo = newProduct.model3DFile?.name?.toLowerCase().startsWith('tripo');
         const modelResult = await storageService.upload3DModel(
           newProduct.model3DFile,
           newProduct.name,
-          categoryName
+          categoryName,
+          isTripo
         );
         if (!modelResult.success) {
           showMessage("error", `3D upload failed: ${modelResult.error}`);
@@ -806,6 +853,16 @@ const AdminProducts = ({ hasAccess = true, canEdit = true, isCSR = false }) => {
         tryOnImagePath = tryOnResult.filePath;
       }
 
+      // Handle generated 3D model from Tripo
+      let generatedModel3D = null;
+      if (newProduct.generatedModel3DUrl) {
+        generatedModel3D = {
+          url: newProduct.generatedModel3DUrl,
+          taskId: newProduct.tripoTaskId,
+          source: 'tripo3d'
+        };
+      }
+
       const productData = {
         name: newProduct.name.trim(),
         collection_id: parseInt(newProduct.collection_id),
@@ -821,6 +878,8 @@ const AdminProducts = ({ hasAccess = true, canEdit = true, isCSR = false }) => {
         description: newProduct.description?.trim() || "",
         model_3d_path: model3DPath,
         try_on_image_path: tryOnImagePath,
+        // Add generated 3D model data
+        generated_model_3d: generatedModel3D,
       };
 
       const result = await createProduct(productData, imageFiles);
@@ -841,6 +900,9 @@ const AdminProducts = ({ hasAccess = true, canEdit = true, isCSR = false }) => {
           description: "",
           model3DFile: null,
           tryOnImageFile: null,
+          // Reset Tripo 3D fields
+          generatedModel3DUrl: null,
+          tripoTaskId: null,
         });
       } else {
         await cleanupFailedImages(uploadedImagePaths);
@@ -1023,10 +1085,12 @@ const AdminProducts = ({ hasAccess = true, canEdit = true, isCSR = false }) => {
           await storageService.delete3DModel(originalEditProduct.model3DPath);
         }
         showMessage("info", "Uploading 3D model...");
+        const isTripo = editProduct.model3DFile?.name?.toLowerCase().startsWith('tripo');
         const modelResult = await storageService.upload3DModel(
           editProduct.model3DFile,
           editProduct.name,
-          categoryName
+          categoryName,
+          isTripo
         );
         if (!modelResult.success) {
           showMessage("error", `3D upload failed: ${modelResult.error}`);
@@ -1061,6 +1125,16 @@ const AdminProducts = ({ hasAccess = true, canEdit = true, isCSR = false }) => {
         tryOnImagePath = null;
       }
 
+      // Handle generated 3D model from Tripo
+      let generatedModel3D = null;
+      if (editProduct.generatedModel3DUrl) {
+        generatedModel3D = {
+          url: editProduct.generatedModel3DUrl,
+          taskId: editProduct.tripoTaskId,
+          source: 'tripo3d'
+        };
+      }
+
       const productData = {
         name: editProduct.name.trim(),
         collection_id: parseInt(editProduct.collection_id),
@@ -1076,6 +1150,8 @@ const AdminProducts = ({ hasAccess = true, canEdit = true, isCSR = false }) => {
         description: editProduct.description?.trim() || "",
         model_3d_path: model3DPath,
         try_on_image_path: tryOnImagePath,
+        // Add generated 3D model data
+        generated_model_3d: generatedModel3D,
       };
 
       const result = await updateProduct(
@@ -1105,6 +1181,9 @@ const AdminProducts = ({ hasAccess = true, canEdit = true, isCSR = false }) => {
           tryOnImageFile: null,
           tryOnImagePath: null,
           tryOnImageUrl: null,
+          // Reset Tripo 3D fields
+          generatedModel3DUrl: null,
+          tripoTaskId: null,
         });
       } else {
         await cleanupFailedImages(uploadedImagePaths);
@@ -2236,6 +2315,9 @@ const AdminProducts = ({ hasAccess = true, canEdit = true, isCSR = false }) => {
         onAddProduct={handleAddProduct}
         saving={saving}
         uploading={uploading}
+        // Tripo 3D Generation props
+        onTripoModelGenerated={(result) => handleTripoModelGenerated(result, false)}
+        onRemoveGeneratedModel={() => handleRemoveGeneratedModel(false)}
       />
 
       {/* Edit Product Modal */}
@@ -2261,6 +2343,9 @@ const AdminProducts = ({ hasAccess = true, canEdit = true, isCSR = false }) => {
         onUpdateProduct={handleUpdateProduct}
         saving={saving}
         uploading={uploading}
+        // Tripo 3D Generation props
+        onTripoModelGenerated={(result) => handleTripoModelGenerated(result, true)}
+        onRemoveGeneratedModel={() => handleRemoveGeneratedModel(true)}
       />
 
       {/* Reviews Modal */}

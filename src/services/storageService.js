@@ -275,30 +275,44 @@ class StorageService {
     return { valid: true };
   }
 
-  generate3DModelPath(file, productName, categoryName) {
+  generate3DModelPath(file, productName, categoryName, isTripo = false) {
     const timestamp = Date.now();
     const randomString = Math.random().toString(36).substring(2, 8);
     const fileExtension = file.name.split('.').pop().toLowerCase();
-    
-    const sanitizedName = productName
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, '-')
-      .replace(/-+/g, '-')
-      .substring(0, 50);
-    
+
+    let baseName;
+    if (isTripo) {
+      // Use the original filename (without extension), sanitized, and always prefix 'tripo_'
+      baseName = file.name
+        .replace(/\.[^/.]+$/, '') // remove extension
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '-')
+        .replace(/-+/g, '-')
+        .substring(0, 45); // leave room for 'tripo_'
+      if (!baseName.startsWith('tripo-')) {
+        baseName = `tripo-${baseName}`;
+      }
+    } else {
+      baseName = productName
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '-')
+        .replace(/-+/g, '-')
+        .substring(0, 50);
+    }
+
     const categoryFolder = this.getCategoryFolder(categoryName);
-    
-    return `${categoryFolder}/${sanitizedName}_${timestamp}_${randomString}.${fileExtension}`;
+
+    return `${categoryFolder}/${baseName}_${timestamp}_${randomString}.${fileExtension}`;
   }
 
-  async upload3DModel(file, productName, categoryName) {
+  async upload3DModel(file, productName, categoryName, isTripo = false) {
     const validation = this.validate3DModelFile(file);
     if (!validation.valid) {
       return { success: false, error: validation.error, filePath: null };
     }
 
-    const filePath = this.generate3DModelPath(file, productName, categoryName);
-    
+    const filePath = this.generate3DModelPath(file, productName, categoryName, isTripo);
+
     try {
       const { data, error } = await supabase.storage
         .from(this.STORAGE_BUCKET_3D)
