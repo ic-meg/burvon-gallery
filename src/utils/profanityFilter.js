@@ -29,24 +29,21 @@ class ProfanityFilter {
     let filtered = LeoProfanity.clean(text);
     
     const patterns = [
-      { regex: /f[@*#$%&!uck4]+[ck]*[ing]*/gi, replacement: (match) => '*'.repeat(match.length) },
-      { regex: /s[@*#$%&!hit4]+[t]*/gi, replacement: (match) => '*'.repeat(match.length) },
-      { regex: /b[@*#$%&!o0]+b[s]*/gi, replacement: (match) => '*'.repeat(match.length) },
-      { regex: /t[i1!@*#$%&]+t[s5$]*/gi, replacement: (match) => '*'.repeat(match.length) },
-      { regex: /d[i1!@*#$%&]+ck/gi, replacement: (match) => '*'.repeat(match.length) },
-      { regex: /c[o0@*#$%&!]+ck/gi, replacement: (match) => '*'.repeat(match.length) },
-      { regex: /p[u@*#$%&!]+ss[y]*/gi, replacement: (match) => '*'.repeat(match.length) },
-      { regex: /[@*#$%&!a4]+ss\b/gi, replacement: (match) => '*'.repeat(match.length) },
-      { regex: /[@*#$%&!a4]+s[s5$]+/gi, replacement: (match) => '*'.repeat(match.length) },
-      { regex: /d[@*#$%&!amn4]+/gi, replacement: (match) => '*'.repeat(match.length) },
-      { regex: /h[@*#$%&!ell4]+/gi, replacement: (match) => '*'.repeat(match.length) },
-      { regex: /[a@*#$%&!4]+s[s5$]*[h]*[o0]+le/gi, replacement: (match) => '*'.repeat(match.length) },
-      { regex: /b[i1!]+tc[h]+/gi, replacement: (match) => '*'.repeat(match.length) },
-      { regex: /g[a@*#$%&!4]+g[o0]+/gi, replacement: (match) => '*'.repeat(match.length) },
-      { regex: /t[a@*#$%&!4]+ng[a@*#$%&!4]+/gi, replacement: (match) => '*'.repeat(match.length) },
-      { regex: /b[o0]+b[o0]+/gi, replacement: (match) => '*'.repeat(match.length) },
-      { regex: /p[u]+t[a@*#$%&!4]+/gi, replacement: (match) => '*'.repeat(match.length) },
-      { regex: /[u]+l[o0]+l/gi, replacement: (match) => '*'.repeat(match.length) }
+      { regex: /\bf[@*#$%&!uck4]+[ck]*[ing]*\b/gi, replacement: (match) => '*'.repeat(match.length) },
+      { regex: /\bs[@*#$%&!hit4]+[t]*\b/gi, replacement: (match) => '*'.repeat(match.length) },
+      { regex: /\bb[@*#$%&!o0]+b[s]*\b/gi, replacement: (match) => '*'.repeat(match.length) },
+      { regex: /\bt[i1!@*#$%&]+t[s5$]*\b/gi, replacement: (match) => '*'.repeat(match.length) },
+      { regex: /\bd[i1!@*#$%&]+ck\b/gi, replacement: (match) => '*'.repeat(match.length) },
+      { regex: /\bc[o0@*#$%&!]+ck\b/gi, replacement: (match) => '*'.repeat(match.length) },
+      { regex: /\bp[u@*#$%&!]+ss[y]*\b/gi, replacement: (match) => '*'.repeat(match.length) },
+      { regex: /\b[@*#$%&!a4]+ss\b/gi, replacement: (match) => '*'.repeat(match.length) },
+      { regex: /\bd[@*#$%&!amn4]+\b/gi, replacement: (match) => '*'.repeat(match.length) },
+      { regex: /\bh[@*#$%&!ell4]+\b/gi, replacement: (match) => '*'.repeat(match.length) },
+      { regex: /\b[a@*#$%&!4]+s[s5$]*h[o0]+le\b/gi, replacement: (match) => '*'.repeat(match.length) },
+      { regex: /\bb[i1!]+tc[h]+\b/gi, replacement: (match) => '*'.repeat(match.length) },
+      { regex: /\bg[a@*#$%&!4]+g[o0]+\b/gi, replacement: (match) => '*'.repeat(match.length) },
+      { regex: /\bt[a@*#$%&!4]+ng[a@*#$%&!4]+\b/gi, replacement: (match) => '*'.repeat(match.length) },
+      { regex: /\bp[u]+t[a@*#$%&!4]+\b/gi, replacement: (match) => '*'.repeat(match.length) }
     ];
     
     patterns.forEach(pattern => {
@@ -73,22 +70,20 @@ class ProfanityFilter {
     }
     
     const patterns = [
-      /f[@*#$%&!uck4]+[ck]*/gi,
-      /s[@*#$%&!hit4]+[t]*/gi,
-      /b[@*#$%&!o0]+b[s]*/gi,
-      /t[i1!@*#$%&]+t[s5$]*/gi,
-      /d[i1!@*#$%&]+ck/gi,
-      /c[o0@*#$%&!]+ck/gi,
-      /p[u@*#$%&!]+ss[y]*/gi,
-      /[@*#$%&!a4]+ss\b/gi,
-      /[@*#$%&!a4]+s[s5$]+/gi,
-      /d[@*#$%&!amn4]+/gi,
-      /[a@*#$%&!4]+s[s5$]*[h]*[o0]+le/gi,
-      /b[i1!]+tc[h]+/gi,
-      /g[a@*#$%&!4]+g[o0]+/gi,
-      /t[a@*#$%&!4]+ng[a@*#$%&!4]+/gi,
-      /b[o0]+b[o0]+/gi,
-      /p[u]+t[a@*#$%&!4]+/gi
+      /\bf[@*#$%&!uck4]+[ck]*\b/gi,
+      /\bs[@*#$%&!hit4]+[t]*\b/gi,
+      /\bb[@*#$%&!o0]+b[s]*\b/gi,
+      /\bt[i1!@*#$%&]+t[s5$]*\b/gi,
+      /\bd[i1!@*#$%&]+ck\b/gi,
+      /\bc[o0@*#$%&!]+ck\b/gi,
+      /\bp[u@*#$%&!]+ss[y]*\b/gi,
+      /\b[@*#$%&!a4]+ss\b/gi,
+      /\bd[@*#$%&!amn4]+\b/gi,
+      /\b[a@*#$%&!4]+s[s5$]*h[o0]+le\b/gi,
+      /\bb[i1!]+tc[h]+\b/gi,
+      /\bg[a@*#$%&!4]+g[o0]+\b/gi,
+      /\bt[a@*#$%&!4]+ng[a@*#$%&!4]+\b/gi,
+      /\bp[u]+t[a@*#$%&!4]+\b/gi
     ];
     
     const hasPatternMatch = patterns.some(pattern => pattern.test(text));
