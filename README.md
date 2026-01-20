@@ -46,18 +46,16 @@ Open your browser at [http://localhost:5173](http://localhost:5173)
 
 ---
 
-### 3. Install Backend Dependencies (Laravel) (wala pa 'to, wag pansinin)
+### 3. Install Backend Dependencies (NestJS) 
 
 ```bash
 cd backend
-composer install
+npm install
 cp .env.example .env
-php artisan key:generate
-php artisan migrate
-php artisan serve
+npm run start:dev
 ```
 
-Laravel backend runs at `http://127.0.0.1:8000`
+NestJS backend runs at `localhost:3000`
 
 Make sure `.env` has the correct database credentials.
 
